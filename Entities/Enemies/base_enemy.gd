@@ -54,3 +54,4 @@ func take_damage(amount: int):
 func _update_health_bar():
     if health_bar:
         health_bar.value = float(_health) / float(max_health) * 100.0
+        health_bar.visible = _health < max_health

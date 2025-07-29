@@ -17,7 +17,7 @@ scale = Vector2(0.4, 0.4)
 sprite_frames = ExtResource("2_u23yv")
 animation = &"variant_1_walk_south_west"
 autoplay = "variant_1_walk_south_west"
-frame_progress = 0.11626
+frame_progress = 0.908447
 offset = Vector2(0, -175)
 
 [node name="Hitbox" type="CollisionShape2D" parent="."]

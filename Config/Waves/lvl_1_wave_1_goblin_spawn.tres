@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SpawnInstruction" load_steps=3 format=3 uid="uid://dpg8ws5mge6c2"]
+
+[ext_resource type="PackedScene" uid="uid://br1v6v0da2v1n" path="res://Entities/Enemies/base_enemy.tscn" id="1_3lmuq"]
+[ext_resource type="Script" uid="uid://dky0tbbrvtpkm" path="res://Config/Waves/spawn_instruction.gd" id="2_dd2w5"]
+
+[resource]
+script = ExtResource("2_dd2w5")
+enemy_scene = ExtResource("1_3lmuq")
+count = 5
+path = NodePath("Paths/Spawn2")
+delay = 1.0
+metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
