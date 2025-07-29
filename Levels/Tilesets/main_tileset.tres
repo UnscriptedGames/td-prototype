@@ -1,7 +1,7 @@
 [gd_resource type="TileSet" load_steps=5 format=3 uid="uid://deanuyo4c5m1j"]
 
-[ext_resource type="Texture2D" uid="uid://jrbnwth02bfg" path="res://Levels/Tilesets/Art/dirt.png" id="1_w3cdo"]
-[ext_resource type="Texture2D" uid="uid://bqwjfp5kk2kcq" path="res://Levels/Tilesets/Art/grass.png" id="2_ggvg6"]
+[ext_resource type="Texture2D" uid="uid://jrbnwth02bfg" path="res://Levels/Tilesets/Assets/dirt.png" id="1_w3cdo"]
+[ext_resource type="Texture2D" uid="uid://bqwjfp5kk2kcq" path="res://Levels/Tilesets/Assets/grass.png" id="2_ggvg6"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_w3cdo"]
 resource_name = "Dirt"

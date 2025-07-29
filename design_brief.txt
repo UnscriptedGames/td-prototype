@@ -160,12 +160,15 @@ Prototype TODO List
    - Add Area2D for range detection.
    - Connect to projectile system.
    - Store tower stats in a resource file.
-6. Create base enemy scene and data resource:
-   - Use Area2D as root.
-   - Add AnimatedSprite2D and CollisionShape2D.
+6. Create base enemy scene and data resource. (Complete)
+   - Use Area2D as root. (Complete)
+   - Add AnimatedSprite2D and CollisionShape2D. (Complete)
+   - Add TextureProgressBar as health bar. (Complete)
+   - Add CanvasGroup for health bar grouping. (Complete)
+   - Add exported variant array and random selection logic. (Complete)
+   - Store enemy stats and variants in a resource file. (Complete)
    - Implement movement along Path2D.
    - Add direction-based animation logic (up-left, down-left; flip for right).
-   - Store enemy stats in a resource file.
 7. Implement object pooling for enemies and projectiles.
 8. Build basic UI:
    - Add CanvasLayer and HUD elements (health, currency, wave).

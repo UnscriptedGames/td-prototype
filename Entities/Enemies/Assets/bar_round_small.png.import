@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://jrbnwth02bfg"
-path="res://.godot/imported/dirt.png-b5ffb5517dba9f76c93ce5440731a1d1.ctex"
+uid="uid://efm7vnhsuk84"
+path="res://.godot/imported/bar_round_small.png-8d17d15c76677a2aa3caad7227fb6539.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Levels/Tilesets/Art/dirt.png"
-dest_files=["res://.godot/imported/dirt.png-b5ffb5517dba9f76c93ce5440731a1d1.ctex"]
+source_file="res://Entities/Enemies/Assets/bar_round_small.png"
+dest_files=["res://.godot/imported/bar_round_small.png-8d17d15c76677a2aa3caad7227fb6539.ctex"]
 
 [params]
 
