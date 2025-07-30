@@ -145,12 +145,16 @@ Stretch Goals
 - Expand documentation and tutorials for users and developers.
 
 Prototype TODO List
-1. Set up the agreed folder structure in the project. (Complete)
-2. Create placeholder assets and organise them in the correct folders. (Complete)
-3. Build the main map scene:
-   - Add TileMapLayer(s) for the background and environment. (Complete)
-   - Paint tiles and set up a custom 'buildable' data layer for tower placement. (Complete)
-   - Add Path2D for enemy movement. (Complete)
+1. (Complete) Set up the agreed folder structure in the project.
+2. (Complete) Create placeholder assets and organise them in the correct folders.
+3. Create base level template scene:
+   - (Complete) Refactor main_map.tscn to base_level.tscn for use as a reusable level template.
+   - (Complete) Add TileMapLayer(s) for the background and environment.
+   - (Complete) Paint tiles and set up a custom 'buildable' data layer for tower placement.
+   - (Complete) Add Path2D for enemy movement.
+   - (Complete) Ensure no level-specific content is present in the base template.
+   - (Complete) Move base_level.tscn to Levels/ or Levels/Templates/ as appropriate.
+   - (Complete) Document workflow: create new levels by inheriting from base_level.tscn and adding unique content.
 4. Implement buildable area visibility and ghost tower logic:
    - Highlight buildable tiles when placing towers.
    - Create ghost tower with range indicator and colour feedback.
@@ -160,23 +164,32 @@ Prototype TODO List
    - Add Area2D for range detection.
    - Connect to projectile system.
    - Store tower stats in a resource file.
-6. Create base enemy scene and data resource. (Complete)
-   - Use Area2D as root. (Complete)
-   - Add AnimatedSprite2D and CollisionShape2D. (Complete)
-   - Add TextureProgressBar as health bar. (Complete)
-   - Add exported variant array and random selection logic. (Complete)
-   - Store enemy stats and variants in a resource file. (Complete)
-   - Implement movement along Path2D.
-   - Add direction-based animation logic (up-left, down-left; flip for right).
-
-7. Create modular wave and spawn system. (Complete)
-   - Design and implement SpawnInstruction resource for enemy spawns. (Complete)
-   - Refactor WaveData resource to use array of SpawnInstruction resources. (Complete)
-   - Add NodePath support for path selection in SpawnInstruction. (Complete)
-   - Create and link SpawnInstruction resources for each enemy group. (Complete)
-   - Create and configure WaveData resources for each wave. (Complete)
-   - Remove old dictionary-based wave spawn system. (Complete)
-7. Implement object pooling for enemies and projectiles.
+6. Create base enemy scene and data resource.
+   - (Complete) Use Area2D as root.
+   - (Complete) Add AnimatedSprite2D and CollisionShape2D.
+   - (Complete) Add TextureProgressBar as health bar.
+   - (Complete) Add exported variant array and random selection logic.
+   - (Complete) Store enemy stats and variants in a resource file.
+   - (Complete) Implement movement along Path2D.
+   - (Complete) Add direction-based animation logic (up-left, down-left; flip for right).
+   - (Complete) Implement robust end-of-path and death handling (single die animation, no double signal).
+   - (Complete) Add _has_reached_end flag and prepare_for_new_path() for state management.
+   - (Complete) Ensure pooling support: enemies reset state when reused.
+   - (Complete) Prevent double emission of reached_end_of_path and double death logic.
+7. (Complete) Create modular wave and spawn system.
+   - (Complete) Design and implement SpawnInstruction resource for enemy spawns.
+   - (Complete) Refactor WaveData resource to use array of SpawnInstruction resources.
+   - (Complete) Add NodePath support for path selection in SpawnInstruction.
+   - (Complete) Create and link SpawnInstruction resources for each enemy group.
+   - (Complete) Create and configure WaveData resources for each wave.
+   - (Complete) Remove old dictionary-based wave spawn system.
+8. Implement object pooling for enemies and projectiles.
+   - (Complete) Ensure all code changes follow GDScript style guide and modularity principles.
+   - (Complete) Standardise use of a single EnemyData class for all enemy data resources.
+   - (Complete) Remove duplicate/conflicting class_name EnemyData definitions.
+   - (Complete) Clarify and fix .tres resource inheritance and script references.
+   - (Complete) Diagnose and resolve Godot parser errors related to class naming and resource inheritance.
+   - (Complete) Add/updated comments and structure for clarity and maintainability.
 8. Build basic UI:
    - Add CanvasLayer and HUD elements (health, currency, wave).
    - Connect UI to GameManager signals.

@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="TD Prototype"
-run/main_scene="uid://bir7iuxfukxsb"
+run/main_scene="uid://da4wggnk44ip2"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 
 [display]
