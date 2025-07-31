@@ -10,7 +10,7 @@ data = ExtResource("2_echq7")
 [node name="Animation" parent="." index="0"]
 scale = Vector2(0.3, 0.3)
 sprite_frames = ExtResource("3_an7jk")
-animation = &"purple_die_south_west"
+animation = &"green_walk_south_west"
 autoplay = "green_walk_south_west"
 frame_progress = 0.0
 

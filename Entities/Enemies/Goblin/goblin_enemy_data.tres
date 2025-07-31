@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3 uid="uid://drmee438quq6"]
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3 uid="uid://drmee438quq6"]
 
 [ext_resource type="Script" uid="uid://b5ta2srmrxkqa" path="res://Entities/Enemies/Base Enemy/base_enemy_data.gd" id="1_4yh8q"]
+[ext_resource type="SpriteFrames" uid="uid://dynno8esupq5" path="res://Entities/Enemies/Goblin/goblin_enemy_animations.tres" id="1_x4n50"]
 
 [resource]
 script = ExtResource("1_4yh8q")
@@ -8,4 +9,6 @@ max_health = 2
 speed = 120.0
 reward = 1
 variants = Array[String](["green", "purple", "orange", "yellow"])
+required_actions = Array[String](["walk", "die"])
+animations = ExtResource("1_x4n50")
 metadata/_custom_type_script = "uid://clsibik6yuyvh"
