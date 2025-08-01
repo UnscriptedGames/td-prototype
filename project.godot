@@ -14,6 +14,10 @@ config/name="TD Prototype"
 run/main_scene="uid://da4wggnk44ip2"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 
+[autoload]
+
+GameManager="*res://Systems/GameManager/game_manager.gd"
+
 [display]
 
 window/size/viewport_width=1920

@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="PlayerData" load_steps=2 format=3 uid="uid://difoceiaufuio"]
+
+[ext_resource type="Script" uid="uid://dbsuwqj4fhk0i" path="res://Systems/GameManager/player_data.gd" id="1_8rqla"]
+
+[resource]
+script = ExtResource("1_8rqla")
+health = 20
+currency = 100

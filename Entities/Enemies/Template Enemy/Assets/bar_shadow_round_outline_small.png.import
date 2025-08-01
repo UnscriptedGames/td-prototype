@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cw6payn2hyg8m"
-path="res://.godot/imported/bar_shadow_round_outline_small.png-da32c4a14f24a885fc29d5ce52e14299.ctex"
+path="res://.godot/imported/bar_shadow_round_outline_small.png-cc593fe3143926ec5b04bf2ea22c7aa5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Entities/Enemies/Base Enemy/Assets/bar_shadow_round_outline_small.png"
-dest_files=["res://.godot/imported/bar_shadow_round_outline_small.png-da32c4a14f24a885fc29d5ce52e14299.ctex"]
+source_file="res://Entities/Enemies/Template Enemy/Assets/bar_shadow_round_outline_small.png"
+dest_files=["res://.godot/imported/bar_shadow_round_outline_small.png-cc593fe3143926ec5b04bf2ea22c7aa5.ctex"]
 
 [params]
 
