@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=4 uid="uid://bir7iuxfukxsb"]
+[gd_scene load_steps=4 format=4 uid="uid://bir7iuxfukxsb"]
 
 [ext_resource type="Script" uid="uid://6irywbbrglw3" path="res://Levels/Template Level/template_level.gd" id="1_f16nf"]
 [ext_resource type="TileSet" uid="uid://deanuyo4c5m1j" path="res://Levels/Tilesets/template_tileset.tres" id="1_ser8i"]
+[ext_resource type="PackedScene" uid="uid://qy230vei6n8p" path="res://UI/HUD/level_hud.tscn" id="3_sv07c"]
 
 [node name="TemplateLevel" type="Node2D"]
 script = ExtResource("1_f16nf")
@@ -18,3 +19,5 @@ tile_set = ExtResource("1_ser8i")
 [node name="Paths" type="Node2D" parent="."]
 
 [node name="Animations" type="Node2D" parent="."]
+
+[node name="LevelHud" parent="." instance=ExtResource("3_sv07c")]

@@ -110,21 +110,12 @@ func take_damage(amount: int) -> void:
 		die()
 
 
-## Handles enemy death and plays death animation
+## Handles enemy death, gives a reward, and plays death animation
 func die() -> void:
 	if _is_dying:
 		return
-	_is_dying = true
-	set_process(false)
-	hitbox.set_deferred("disabled", true)
-	if health_bar:
-		health_bar.visible = false
 	emit_signal("died", reward)
-	var animation_name: String = _variant + "_die_" + _last_direction
-	if animation and animation.sprite_frames.has_animation(animation_name):
-		animation.play(animation_name)
-		animation.flip_h = _last_flip_h
-		await animation.animation_finished
+	await _play_death_sequence("die")
 	queue_free()
 
 
@@ -132,20 +123,8 @@ func die() -> void:
 func reached_goal() -> void:
 	if _is_dying:
 		return
-	
-	_is_dying = true
-	set_process(false)
-	hitbox.set_deferred("disabled", true)
-	if health_bar:
-		health_bar.visible = false
-	
-	# Play the death animation based on the last known direction
-	var animation_name: String = _variant + "_die_" + _last_direction
-	if animation and animation.sprite_frames.has_animation(animation_name):
-		animation.play(animation_name)
-		animation.flip_h = _last_flip_h
-		await animation.animation_finished
-	
+	# For now, we reuse the "die" animation. This can be changed to "goal" later.
+	await _play_death_sequence("die")
 	# Clean up the parent PathFollow2D node, which also removes this enemy
 	if is_instance_valid(path_follow):
 		path_follow.queue_free()
@@ -181,6 +160,26 @@ func _play_animation(action: String, direction: String, flip_h: bool = false) ->
 	if animation:
 		animation.play(animation_name)
 		animation.flip_h = flip_h
+
+
+## Plays the common death sequence and returns a signal for when it's finished.
+func _play_death_sequence(action_name: String) -> Signal:
+	_is_dying = true
+	set_process(false)
+	hitbox.set_deferred("disabled", true)
+	if health_bar:
+		health_bar.visible = false
+	
+	# Play the death animation based on the last known direction
+	var animation_name: String = "%s_%s_%s" % [_variant, action_name, _last_direction]
+	if animation and animation.sprite_frames.has_animation(animation_name):
+		animation.play(animation_name)
+		animation.flip_h = _last_flip_h
+		return animation.animation_finished
+	
+	# If no animation is found, return a signal that finishes instantly
+	var timer := get_tree().create_timer(0.0)
+	return timer.timeout
 
 
 ## Updates the health bar display

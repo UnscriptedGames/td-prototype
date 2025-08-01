@@ -3,6 +3,7 @@ extends Node2D
 ## Template Level Script: Handles wave and enemy spawning
 
 @export var level_data: LevelData	# Level data resource containing waves
+@export var level_number: int = 1	# The number of this level
 
 ## Wave State
 var _current_wave_index: int = 0	# Current wave index
@@ -22,7 +23,7 @@ func _ready() -> void:
 	# Start the first wave if level_data is assigned
 	if level_data and not level_data.waves.is_empty():
 		# Inform the GameManager about the level's total waves
-		GameManager.set_level(1, level_data.waves.size())
+		GameManager.set_level(level_number, level_data.waves.size())
 		_start_wave(0)
 
 
@@ -124,7 +125,8 @@ func _on_enemy_finished_path(enemy: TemplateEnemy) -> void:
 		push_error("Branch path node is not valid or was not found: %s" % next_path_nodepath)
 		# If the branch is invalid, treat as reaching the goal
 		GameManager.damage_player(1)
-		path_follow.queue_free()
+		# Tell the enemy to play its death animation and clean itself up
+		enemy.reached_goal()
 		return
 
 	enemy.prepare_for_new_path()

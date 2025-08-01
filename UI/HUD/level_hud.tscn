@@ -1,0 +1,31 @@
+[gd_scene load_steps=2 format=3 uid="uid://qy230vei6n8p"]
+
+[ext_resource type="Script" uid="uid://jt41lox7ggvv" path="res://UI/HUD/level_hud.gd" id="1_mal80"]
+
+[node name="LevelHUD" type="CanvasLayer"]
+layer = 99
+script = ExtResource("1_mal80")
+
+[node name="Health" type="Label" parent="."]
+offset_left = 25.0
+offset_top = 25.0
+offset_right = 95.0
+offset_bottom = 53.0
+theme_override_font_sizes/font_size = 20
+text = "Health:"
+
+[node name="Currency" type="Label" parent="."]
+offset_left = 25.0
+offset_top = 55.0
+offset_right = 105.0
+offset_bottom = 83.0
+theme_override_font_sizes/font_size = 20
+text = "Mousse:"
+
+[node name="Wave" type="Label" parent="."]
+offset_left = 25.0
+offset_top = 85.0
+offset_right = 84.0
+offset_bottom = 113.0
+theme_override_font_sizes/font_size = 20
+text = "Wave:"
