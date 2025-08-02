@@ -6,7 +6,7 @@
 layer = 99
 script = ExtResource("1_mal80")
 
-[node name="Health" type="Label" parent="."]
+[node name="HealthLabel" type="Label" parent="."]
 offset_left = 25.0
 offset_top = 25.0
 offset_right = 95.0
@@ -14,7 +14,7 @@ offset_bottom = 53.0
 theme_override_font_sizes/font_size = 20
 text = "Health:"
 
-[node name="Currency" type="Label" parent="."]
+[node name="CurrencyLabel" type="Label" parent="."]
 offset_left = 25.0
 offset_top = 55.0
 offset_right = 105.0
@@ -22,10 +22,19 @@ offset_bottom = 83.0
 theme_override_font_sizes/font_size = 20
 text = "Mousse:"
 
-[node name="Wave" type="Label" parent="."]
+[node name="WaveLabel" type="Label" parent="."]
 offset_left = 25.0
 offset_top = 85.0
 offset_right = 84.0
 offset_bottom = 113.0
 theme_override_font_sizes/font_size = 20
 text = "Wave:"
+
+[node name="BuildTowerButton" type="Button" parent="."]
+offset_left = 25.0
+offset_top = 1024.0
+offset_right = 141.0
+offset_bottom = 1055.0
+text = "Build Tower"
+
+[connection signal="pressed" from="BuildTowerButton" to="." method="_on_build_tower_button_pressed"]

@@ -2,10 +2,14 @@ extends CanvasLayer
 
 ## Manages and displays player information like health, currency, and wave count.
 
+
+## Announces the player wants to build a tower
+signal build_tower_requested
+
 ## Node References
-@onready var health_label := $Health as Label
-@onready var currency_label := $Currency as Label
-@onready var wave_label := $Wave as Label
+@onready var health_label := $HealthLabel as Label
+@onready var currency_label := $CurrencyLabel as Label
+@onready var wave_label := $WaveLabel as Label
 
 
 ## Called when the node enters the scene tree. Connects to GameManager signals.
@@ -42,3 +46,6 @@ func _on_currency_changed(new_currency: int) -> void:
 ## Updates the wave display when the wave number changes.
 func _on_wave_changed(current_wave: int, total_waves: int) -> void:
 	wave_label.text = "Wave: %d / %d" % [current_wave, total_waves]
+
+func _on_build_tower_button_pressed() -> void:
+	emit_signal("build_tower_requested")
