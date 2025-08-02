@@ -116,7 +116,7 @@ func die() -> void:
 		return
 	emit_signal("died", reward)
 	await _play_death_sequence("die")
-	queue_free()
+	_return_to_pool_and_cleanup()
 
 
 ## Handles the enemy reaching the goal without giving a reward
@@ -125,12 +125,7 @@ func reached_goal() -> void:
 		return
 	# For now, we reuse the "die" animation. This can be changed to "goal" later.
 	await _play_death_sequence("die")
-	# Clean up the parent PathFollow2D node, which also removes this enemy
-	if is_instance_valid(path_follow):
-		path_follow.queue_free()
-	else:
-		# Fallback in case the path_follow node is already gone
-		queue_free()
+	_return_to_pool_and_cleanup()
 
 
 ## Handles movement and animation each frame
@@ -166,6 +161,8 @@ func _play_animation(action: String, direction: String, flip_h: bool = false) ->
 func _play_death_sequence(action_name: String) -> Signal:
 	_is_dying = true
 	set_process(false)
+	# We don't stop processing here, as it needs to finish the animation
+	
 	hitbox.set_deferred("disabled", true)
 	if health_bar:
 		health_bar.visible = false
@@ -195,7 +192,8 @@ func reset() -> void:
 	_update_health_bar()
 	_is_dying = false
 	_has_reached_end = false
-	set_process(true)
+	# Process is enabled by the spawner when ready
+	set_process(false) 
 	hitbox.set_deferred("disabled", false)
 
 
@@ -207,3 +205,16 @@ func prepare_for_new_path() -> void:
 ## Returns true if the enemy is dying
 func is_dying() -> bool:
 	return _is_dying
+
+
+## Handles returning the object to the pool and cleaning up its temporary parent
+func _return_to_pool_and_cleanup() -> void:
+	# Store a reference to the temporary PathFollow2D parent
+	var temp_path_follow := path_follow
+	
+	# Return this enemy to the pool (which will reparent it)
+	ObjectPoolManager.return_object(self)
+	
+	# Now that the enemy has been reparented, we can safely free the old PathFollow2D
+	if is_instance_valid(temp_path_follow):
+		temp_path_follow.queue_free()

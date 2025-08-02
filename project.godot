@@ -17,6 +17,7 @@ config/features=PackedStringArray("4.4", "GL Compatibility")
 [autoload]
 
 GameManager="*res://Systems/GameManager/game_manager.gd"
+ObjectPoolManager="*res://Systems/ObjectPoolManager/object_pool_manager.gd"
 
 [display]
 

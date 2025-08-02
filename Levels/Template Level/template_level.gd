@@ -15,6 +15,19 @@ var _paths: Dictionary = {}	# Cached Path2D nodes for quick lookup
 
 ## Called when the node enters the scene tree
 func _ready() -> void:
+	# Create pools for all unique enemies in this level's data
+	if level_data:
+		var unique_enemies: Array[PackedScene] = []
+		for wave in level_data.waves:
+			for spawn_instruction in (wave as WaveData).spawns:
+				if not unique_enemies.has(spawn_instruction.enemy_scene):
+					unique_enemies.append(spawn_instruction.enemy_scene)
+		
+		# Tell the ObjectPoolManager to create a pool for each unique enemy
+		for enemy_scene in unique_enemies:
+			# We'll create a pool of 20 for each enemy type for now
+			ObjectPoolManager.create_pool(enemy_scene, 20)
+
 	# Cache all Path2D nodes in the scene for quick lookup during spawning
 	for child in get_node("Paths").get_children():
 		if child is Path2D:
@@ -69,7 +82,14 @@ func _spawn_group(spawn_instruction: SpawnInstruction) -> void:
 
 ## Spawns a single enemy and attaches it to a path
 func _spawn_enemy(enemy_scene: PackedScene, path_node: Path2D) -> void:
-	var enemy: TemplateEnemy = enemy_scene.instantiate() as TemplateEnemy
+	# Get an enemy from the object pool instead of instantiating
+	var enemy: TemplateEnemy = ObjectPoolManager.get_object(enemy_scene) as TemplateEnemy
+	if not is_instance_valid(enemy):
+		return # Stop if the pool failed to provide an enemy
+
+	# Reset the enemy to its default state before use
+	enemy.reset()
+	enemy.visible = true
 
 	# Attach a PathFollow2D to move along the path
 	var path_follow := PathFollow2D.new()
@@ -81,6 +101,9 @@ func _spawn_enemy(enemy_scene: PackedScene, path_node: Path2D) -> void:
 	enemy.path_follow = path_follow
 	path_follow.add_child(enemy)
 	enemy.global_position = path_node.global_position
+	
+	# Enable processing now that the enemy is set up
+	enemy.set_process(true)
 
 	# Connect signals for path junctions and death
 	enemy.reached_end_of_path.connect(_on_enemy_finished_path.bind(enemy))
