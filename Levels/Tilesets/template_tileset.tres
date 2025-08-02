@@ -1,8 +1,9 @@
-[gd_resource type="TileSet" load_steps=7 format=3 uid="uid://deanuyo4c5m1j"]
+[gd_resource type="TileSet" load_steps=9 format=3 uid="uid://deanuyo4c5m1j"]
 
 [ext_resource type="Texture2D" uid="uid://jrbnwth02bfg" path="res://Levels/Tilesets/Assets/dirt.png" id="1_u501n"]
 [ext_resource type="Texture2D" uid="uid://vltt1y0bp4qo" path="res://Levels/Level 1/Assets/bonfire.png" id="2_6jbie"]
 [ext_resource type="Texture2D" uid="uid://bqwjfp5kk2kcq" path="res://Levels/Tilesets/Assets/grass.png" id="2_o4cqi"]
+[ext_resource type="Texture2D" uid="uid://53hwxl3wmmmu" path="res://Levels/Tilesets/Assets/Objects/tree.png" id="4_uj42a"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_w3cdo"]
 resource_name = "Ground"
@@ -22,39 +23,62 @@ texture = ExtResource("2_o4cqi")
 texture_region_size = Vector2i(192, 192)
 0:0/0 = 0
 0:0/0/texture_origin = Vector2i(0, 5)
+0:0/0/y_sort_origin = -45
 1:0/0 = 0
 1:0/0/texture_origin = Vector2i(0, 5)
+1:0/0/y_sort_origin = -45
 2:0/0 = 0
 2:0/0/texture_origin = Vector2i(0, 5)
+2:0/0/y_sort_origin = -45
 3:0/0 = 0
 3:0/0/texture_origin = Vector2i(0, 5)
+3:0/0/y_sort_origin = -45
 4:0/0 = 0
 4:0/0/texture_origin = Vector2i(0, 5)
+4:0/0/y_sort_origin = -45
 5:0/0 = 0
 5:0/0/texture_origin = Vector2i(0, 5)
+5:0/0/y_sort_origin = -45
 6:0/0 = 0
 6:0/0/texture_origin = Vector2i(0, 5)
+6:0/0/y_sort_origin = -45
 7:0/0 = 0
 7:0/0/texture_origin = Vector2i(0, 5)
+7:0/0/y_sort_origin = -45
 8:0/0 = 0
 8:0/0/texture_origin = Vector2i(0, 5)
+8:0/0/y_sort_origin = -45
 0:1/0 = 0
 0:1/0/texture_origin = Vector2i(0, 5)
+0:1/0/y_sort_origin = -45
 1:1/0 = 0
 1:1/0/texture_origin = Vector2i(0, 5)
+1:1/0/y_sort_origin = -45
 2:1/0 = 0
 2:1/0/texture_origin = Vector2i(0, 5)
+2:1/0/y_sort_origin = -45
 3:1/0 = 0
 3:1/0/texture_origin = Vector2i(0, 5)
+3:1/0/y_sort_origin = -45
 4:1/0 = 0
 4:1/0/texture_origin = Vector2i(0, 5)
+4:1/0/y_sort_origin = -45
 5:1/0 = 0
 5:1/0/texture_origin = Vector2i(0, 5)
+5:1/0/y_sort_origin = -45
 6:1/0 = 0
 6:1/0/texture_origin = Vector2i(0, 5)
+6:1/0/y_sort_origin = -45
 7:1/0 = 0
 7:1/0/texture_origin = Vector2i(0, 5)
+7:1/0/y_sort_origin = -45
 7:1/0/custom_data_0 = true
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_plllc"]
+texture = ExtResource("4_uj42a")
+texture_region_size = Vector2i(196, 196)
+0:0/0 = 0
+0:0/0/texture_origin = Vector2i(0, 77)
 
 [resource]
 tile_shape = 1
@@ -64,4 +88,5 @@ custom_data_layer_0/type = 1
 sources/0 = SubResource("TileSetAtlasSource_w3cdo")
 sources/18 = SubResource("TileSetAtlasSource_ggvg6")
 sources/1 = SubResource("TileSetAtlasSource_44ow1")
+sources/2 = SubResource("TileSetAtlasSource_plllc")
 tile_proxies/coords_level = [[1, Vector2i(0, 0)], [18, Vector2i(0, 0)], [2, Vector2i(0, 0)], [18, Vector2i(1, 0)], [3, Vector2i(0, 0)], [18, Vector2i(2, 0)], [4, Vector2i(0, 0)], [18, Vector2i(3, 0)], [5, Vector2i(0, 0)], [18, Vector2i(4, 0)], [6, Vector2i(0, 0)], [18, Vector2i(5, 0)], [7, Vector2i(0, 0)], [18, Vector2i(6, 0)], [8, Vector2i(0, 0)], [18, Vector2i(7, 0)], [9, Vector2i(0, 0)], [18, Vector2i(8, 0)], [10, Vector2i(0, 0)], [18, Vector2i(0, 1)], [11, Vector2i(0, 0)], [18, Vector2i(1, 1)], [12, Vector2i(0, 0)], [18, Vector2i(2, 1)], [13, Vector2i(0, 0)], [18, Vector2i(3, 1)], [14, Vector2i(0, 0)], [18, Vector2i(4, 1)], [15, Vector2i(0, 0)], [18, Vector2i(5, 1)], [16, Vector2i(0, 0)], [18, Vector2i(6, 1)], [17, Vector2i(0, 0)], [18, Vector2i(7, 1)]]

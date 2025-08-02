@@ -9,6 +9,9 @@ extends Node2D
 var _current_wave_index: int = 0	# Current wave index
 var _spawning: bool = false	# True if currently spawning enemies
 
+## Node References
+@onready var entities := $Entities # Container for all spawned entities
+
 ## Path Cache
 var _paths: Dictionary = {}	# Cached Path2D nodes for quick lookup
 
@@ -97,10 +100,11 @@ func _spawn_enemy(enemy_scene: PackedScene, path_node: Path2D) -> void:
 	path_follow.loop = false
 	path_node.add_child(path_follow)
 
-	# Use direct property access for type safety
+	# Assign the path_follow node to the enemy, so it knows where to get its position
 	enemy.path_follow = path_follow
-	path_follow.add_child(enemy)
-	enemy.global_position = path_node.global_position
+	
+	# Add the enemy to the Entities container for Y-sorting
+	entities.add_child(enemy)
 	
 	# Enable processing now that the enemy is set up
 	enemy.set_process(true)
@@ -160,12 +164,9 @@ func _on_enemy_finished_path(enemy: TemplateEnemy) -> void:
 	new_path_follow.loop = false
 	next_path.add_child(new_path_follow)
 
-	var last_position: Vector2 = enemy.global_position
-
-	# Reparent the enemy and clean up the old path follower
-	path_follow.remove_child(enemy)
-	new_path_follow.add_child(enemy)
+	# The enemy is not reparented. It stays in the 'Entities' node.
+	# We just give it the new path_follow node to track.
 	enemy.path_follow = new_path_follow
-	enemy.global_position = last_position
 
+	# Clean up the old path follower
 	path_follow.queue_free()
