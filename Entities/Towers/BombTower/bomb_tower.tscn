@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://tm8k7ow23cuu"]
+
+[ext_resource type="PackedScene" uid="uid://dijji12gvss7h" path="res://Entities/Towers/TemplateTower/template_tower.tscn" id="1_l7y83"]
+
+[node name="BombTower" instance=ExtResource("1_l7y83")]

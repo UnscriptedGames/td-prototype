@@ -1,9 +1,9 @@
 [gd_scene load_steps=6 format=3 uid="uid://br1v6v0da2v1n"]
 
-[ext_resource type="Texture2D" uid="uid://cw6payn2hyg8m" path="res://Entities/Enemies/Template Enemy/Assets/bar_shadow_round_outline_small.png" id="1_ejg2d"]
-[ext_resource type="Script" uid="uid://cou6jej7wqrx2" path="res://Entities/Enemies/Template Enemy/template_enemy.gd" id="1_pa3af"]
-[ext_resource type="Texture2D" uid="uid://efm7vnhsuk84" path="res://Entities/Enemies/Template Enemy/Assets/bar_round_small.png" id="2_pa3af"]
-[ext_resource type="SpriteFrames" uid="uid://br8obf1poanq3" path="res://Entities/Enemies/Template Enemy/template_enemy_animations.tres" id="2_u23yv"]
+[ext_resource type="Texture2D" uid="uid://cw6payn2hyg8m" path="res://Entities/Enemies/TemplateEnemy/Assets/bar_shadow_round_outline_small.png" id="1_ejg2d"]
+[ext_resource type="Script" uid="uid://cou6jej7wqrx2" path="res://Entities/Enemies/TemplateEnemy/template_enemy.gd" id="1_pa3af"]
+[ext_resource type="Texture2D" uid="uid://efm7vnhsuk84" path="res://Entities/Enemies/TemplateEnemy/Assets/bar_round_small.png" id="2_pa3af"]
+[ext_resource type="SpriteFrames" uid="uid://br8obf1poanq3" path="res://Entities/Enemies/TemplateEnemy/template_enemy_animations.tres" id="2_u23yv"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_u23yv"]
 radius = 31.0

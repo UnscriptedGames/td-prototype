@@ -85,6 +85,9 @@ func _spawn_group(spawn_instruction: SpawnInstruction) -> void:
 
 ## Spawns a single enemy and attaches it to a path
 func _spawn_enemy(enemy_scene: PackedScene, path_node: Path2D) -> void:
+	# Get a reference to the container where we will place enemies
+	var enemies_container: Node2D = get_node("Entities/Enemies")
+
 	# Get an enemy from the object pool instead of instantiating
 	var enemy: TemplateEnemy = ObjectPoolManager.get_object(enemy_scene) as TemplateEnemy
 	if not is_instance_valid(enemy):
@@ -100,11 +103,11 @@ func _spawn_enemy(enemy_scene: PackedScene, path_node: Path2D) -> void:
 	path_follow.loop = false
 	path_node.add_child(path_follow)
 
-	# Assign the path_follow node to the enemy, so it knows where to get its position
+	# Give the enemy a reference to the PathFollow2D
 	enemy.path_follow = path_follow
-	
-	# Add the enemy to the Entities container for Y-sorting
-	entities.add_child(enemy)
+	# Add the enemy to our new container
+	enemies_container.add_child(enemy)
+	enemy.global_position = path_node.global_position
 	
 	# Enable processing now that the enemy is set up
 	enemy.set_process(true)

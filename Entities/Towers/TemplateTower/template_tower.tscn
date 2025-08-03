@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://dijji12gvss7h"]
+
+[ext_resource type="Script" uid="uid://dh0knpc7tu3b0" path="res://Entities/Towers/TemplateTower/template_tower.gd" id="1_kihhs"]
+
+[node name="TemplateTower" type="Node2D"]
+script = ExtResource("1_kihhs")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+
+[node name="Range" type="Area2D" parent="."]
+
+[node name="RangeShape" type="CollisionPolygon2D" parent="Range"]
+
+[node name="RangeVisual" type="Polygon2D" parent="Range"]

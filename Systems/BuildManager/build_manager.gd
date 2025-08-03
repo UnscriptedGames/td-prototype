@@ -2,18 +2,18 @@ extends Node
 
 ## Manages the tower building process, including ghost towers and placement validation.
 
-@export var highlight_source_id: int = -1 ## Set this in the Inspector!
+@export var ghost_tower_scene: PackedScene ## Set this in the Inspector!
 
 ## Internal State
 var _is_in_build_mode: bool = false
-const _HIGHLIGHT_ATLAS_COORDS := Vector2i(0, 0)
+var _active_ghost_tower: Node2D
+const TOWER_DATA_PLACEHOLDER = preload("res://Entities/Towers/TowerData/placeholder_tower_data.tres")
 
 ## Node References
-@onready var hud: CanvasLayer = get_node("../LevelHUD") # Make sure this matches your HUD node's name
-@onready var tile_maps_node: Node2D = get_node("../TileMaps")
-@onready var grass_layer: TileMapLayer = tile_maps_node.get_node("Grass")
-@onready var objects_layer: TileMapLayer = tile_maps_node.get_node("Objects")
-@onready var highlight_layer: TileMapLayer = tile_maps_node.get_node("Highlight")
+@onready var hud: CanvasLayer = get_node("../LevelHUD")
+@onready var towers_container: Node2D = get_node("../Entities/Towers")
+@onready var grass_layer: TileMapLayer = get_node("../TileMaps/GrassLayer")
+@onready var objects_layer: TileMapLayer = get_node("../TileMaps/ObjectsLayer")
 
 
 ## Called when the node enters the scene tree.
@@ -23,45 +23,68 @@ func _ready() -> void:
 		hud.build_tower_requested.connect(_on_build_tower_requested)
 
 
-## Toggles build mode when the button is pressed.
-func _on_build_tower_requested() -> void:
-	_is_in_build_mode = not _is_in_build_mode
-
-	if _is_in_build_mode:
-		_show_buildable_tiles()
-	else:
-		_hide_buildable_tiles()
-
-
-## Shows all valid buildable locations on the highlight layer.
-func _show_buildable_tiles() -> void:
-	if highlight_source_id == -1:
-		push_error("Highlight Source ID is not set in the BuildManager's Inspector.")
+## Listens for player input during build mode.
+func _unhandled_input(event: InputEvent) -> void:
+	# Only run this logic if we are actively in build mode.
+	if not _is_in_build_mode or not is_instance_valid(_active_ghost_tower):
 		return
 
-	# Get the rectangle of all used cells in the grass layer
-	var used_cells := grass_layer.get_used_cells()
+	# If Right Mouse Button or Escape is pressed, cancel the build.
+	var is_cancel_key: bool = event.is_action_pressed("ui_cancel")
+	var is_right_click: bool = event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.is_pressed()
 
-	for cell_coords in used_cells:
-		var tile_data: TileData = grass_layer.get_cell_tile_data(cell_coords)
+	if is_cancel_key or is_right_click:
+		_exit_build_mode()
+		get_viewport().set_input_as_handled() # Stop the event from propagating
+		return
 
-		# Condition 1: Check if the grass tile is marked as 'buildable'
-		var is_buildable := false
-		if tile_data:
-			is_buildable = tile_data.get_custom_data("buildable")
-
-		# Condition 2: Check if the corresponding tile on the objects layer is empty
-		var is_empty := objects_layer.get_cell_source_id(cell_coords) == -1
-
-		# If both conditions are met, paint a highlight tile
-		if is_buildable and is_empty:
-			highlight_layer.set_cell(
-				cell_coords,
-				highlight_source_id, # Use the exported variable
-				_HIGHLIGHT_ATLAS_COORDS
-			)
+	# If Left Mouse Button is pressed, try to place the tower.
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		# Check if the ghost tower says the location is valid.
+		if _active_ghost_tower.is_placement_valid:
+			var tower_data: TowerData = TOWER_DATA_PLACEHOLDER
+			
+			place_tower(tower_data, _active_ghost_tower.global_position)
+			
+			_exit_build_mode()
+		
+		get_viewport().set_input_as_handled()
 
 
-## Hides all highlights by clearing the layer.
-func _hide_buildable_tiles() -> void:
-	highlight_layer.clear()
+## Toggles build mode when the button is pressed.
+func _on_build_tower_requested() -> void:
+	# If we are already in build mode, cancel it.
+	if _is_in_build_mode:
+		_exit_build_mode()
+		return
+
+	# If we are not in build mode, start it.
+	_is_in_build_mode = true
+
+	# Create and configure the ghost tower
+	if ghost_tower_scene:
+		_active_ghost_tower = ghost_tower_scene.instantiate()
+		add_child(_active_ghost_tower)
+		_active_ghost_tower.initialize(TOWER_DATA_PLACEHOLDER, grass_layer, objects_layer)
+
+
+## Cleans up and exits the build mode state.
+func _exit_build_mode() -> void:
+	_is_in_build_mode = false
+	if is_instance_valid(_active_ghost_tower):
+		_active_ghost_tower.queue_free()
+		_active_ghost_tower = null
+
+
+## Instantiates and places the final tower.
+func place_tower(tower_data: TowerData, position: Vector2) -> void:
+	if not tower_data.placed_tower_scene:
+		push_error("Attempted to place an invalid tower scene. Check the TowerData resource.")
+		return
+
+	var new_tower := tower_data.placed_tower_scene.instantiate()
+	new_tower.global_position = position
+	towers_container.add_child(new_tower)
+	
+	# Deduct cost from player's currency
+	GameManager.remove_currency(tower_data.cost)

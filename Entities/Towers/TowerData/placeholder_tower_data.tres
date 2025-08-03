@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TowerData" load_steps=4 format=3 uid="uid://klmeram0ahx3"]
+
+[ext_resource type="Texture2D" uid="uid://ce1aw8k3wpsqn" path="res://Entities/Towers/01.png" id="1_lcpqh"]
+[ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/TowerData/tower_data.gd" id="2_b7ykc"]
+[ext_resource type="PackedScene" uid="uid://dijji12gvss7h" path="res://Entities/Towers/TemplateTower/template_tower.tscn" id="2_ic03x"]
+
+[resource]
+script = ExtResource("2_b7ykc")
+tower_name = "Tower"
+cost = 10
+tower_range = 1
+damage = 10
+fire_rate = 1.0
+ghost_texture = ExtResource("1_lcpqh")
+placed_tower_scene = ExtResource("2_ic03x")
+metadata/_custom_type_script = "uid://c8knfpcb8mutu"
