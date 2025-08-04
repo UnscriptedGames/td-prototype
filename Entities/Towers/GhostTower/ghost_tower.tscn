@@ -12,6 +12,3 @@ z_index = 1
 [node name="Range" type="Area2D" parent="."]
 
 [node name="RangeShape" type="CollisionPolygon2D" parent="Range"]
-
-[node name="RangeVisual" type="Polygon2D" parent="Range"]
-color = Color(0.139, 0.823, 0.405, 0.75)

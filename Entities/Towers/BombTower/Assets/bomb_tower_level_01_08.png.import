@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ky7dejusob4e"
-path="res://.godot/imported/campfire_smoke.png-6810815e4367026b3f0716f5e8e46a01.ctex"
+uid="uid://b6qone4yt3tah"
+path="res://.godot/imported/bomb_tower_level_01_08.png-80c17796a204ef094ef982f6ef13544c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Levels/Level 1/Assets/campfire_smoke.png"
-dest_files=["res://.godot/imported/campfire_smoke.png-6810815e4367026b3f0716f5e8e46a01.ctex"]
+source_file="res://Entities/Towers/BombTower/Assets/bomb_tower_level_01_08.png"
+dest_files=["res://.godot/imported/bomb_tower_level_01_08.png-80c17796a204ef094ef982f6ef13544c.ctex"]
 
 [params]
 

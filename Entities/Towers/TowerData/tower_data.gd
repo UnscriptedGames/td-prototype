@@ -10,4 +10,5 @@ class_name TowerData
 
 ## Scene & Asset References
 @export var ghost_texture: Texture2D
+@export var visual_offset: Vector2 = Vector2.ZERO
 @export var placed_tower_scene: PackedScene

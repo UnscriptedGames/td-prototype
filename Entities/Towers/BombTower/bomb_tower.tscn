@@ -1,5 +1,20 @@
-[gd_scene load_steps=2 format=3 uid="uid://tm8k7ow23cuu"]
+[gd_scene load_steps=4 format=3 uid="uid://tm8k7ow23cuu"]
 
 [ext_resource type="PackedScene" uid="uid://dijji12gvss7h" path="res://Entities/Towers/TemplateTower/template_tower.tscn" id="1_l7y83"]
+[ext_resource type="SpriteFrames" uid="uid://t7nwup7jl4w4" path="res://Entities/Towers/BombTower/bomb_tower_animations.tres" id="2_usouf"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_usouf"]
+radius = 42.0476
 
 [node name="BombTower" instance=ExtResource("1_l7y83")]
+
+[node name="Sprite" parent="." index="0"]
+sprite_frames = ExtResource("2_usouf")
+animation = &"level_01_shoot"
+autoplay = "level_01_shoot"
+frame_progress = 0.472217
+offset = Vector2(0, -20)
+
+[node name="HitboxShape" parent="Hitbox" index="0"]
+position = Vector2(0, -20)
+shape = SubResource("CircleShape2D_usouf")

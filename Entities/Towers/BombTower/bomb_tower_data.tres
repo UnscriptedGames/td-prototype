@@ -1,5 +1,6 @@
-[gd_resource type="Resource" script_class="TowerData" load_steps=3 format=3 uid="uid://dvgo1u4245bj4"]
+[gd_resource type="Resource" script_class="TowerData" load_steps=4 format=3 uid="uid://dvgo1u4245bj4"]
 
+[ext_resource type="Texture2D" uid="uid://bveql3phnkrk5" path="res://Entities/Towers/BombTower/Assets/01.png" id="1_5w3ek"]
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/TowerData/tower_data.gd" id="1_bohe1"]
 [ext_resource type="PackedScene" uid="uid://tm8k7ow23cuu" path="res://Entities/Towers/BombTower/bomb_tower.tscn" id="1_i3lkk"]
 
@@ -10,5 +11,7 @@ cost = 5
 tower_range = 1
 damage = 10
 fire_rate = 1.0
+ghost_texture = ExtResource("1_5w3ek")
+visual_offset = Vector2(0, -20)
 placed_tower_scene = ExtResource("1_i3lkk")
 metadata/_custom_type_script = "uid://c8knfpcb8mutu"

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://vltt1y0bp4qo"
-path="res://.godot/imported/bonfire.png-a1a26b8d51ff8c0fab64c7115ce25fcf.ctex"
+uid="uid://bveql3phnkrk5"
+path="res://.godot/imported/01.png-0a011ad66f8a60a5907bdc37ae62b13a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Levels/Level 1/Assets/bonfire.png"
-dest_files=["res://.godot/imported/bonfire.png-a1a26b8d51ff8c0fab64c7115ce25fcf.ctex"]
+source_file="res://Entities/Towers/BombTower/Assets/01.png"
+dest_files=["res://.godot/imported/01.png-0a011ad66f8a60a5907bdc37ae62b13a.ctex"]
 
 [params]
 

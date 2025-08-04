@@ -1,7 +1,7 @@
 [gd_resource type="SpriteFrames" load_steps=19 format=3 uid="uid://bkwi0pcvvdulg"]
 
-[ext_resource type="Texture2D" uid="uid://ky7dejusob4e" path="res://Levels/Level 1/Assets/campfire_smoke.png" id="1_18pge"]
-[ext_resource type="Texture2D" uid="uid://bukesp7fn4811" path="res://Levels/Level 1/Assets/campfire_flame.png" id="1_shnhr"]
+[ext_resource type="Texture2D" uid="uid://ky7dejusob4e" path="res://Levels/Level01/Assets/campfire_smoke.png" id="1_18pge"]
+[ext_resource type="Texture2D" uid="uid://bukesp7fn4811" path="res://Levels/Level01/Assets/campfire_flame.png" id="1_shnhr"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wuboc"]
 atlas = ExtResource("1_shnhr")

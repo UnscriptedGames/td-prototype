@@ -3,12 +3,19 @@
 [ext_resource type="Script" uid="uid://dh0knpc7tu3b0" path="res://Entities/Towers/TemplateTower/template_tower.gd" id="1_kihhs"]
 
 [node name="TemplateTower" type="Node2D"]
+y_sort_enabled = true
 script = ExtResource("1_kihhs")
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 
 [node name="Range" type="Area2D" parent="."]
+z_index = -1
 
 [node name="RangeShape" type="CollisionPolygon2D" parent="Range"]
+polygon = PackedVector2Array(0, -144, 288, 0, 0, 144, -288, 0)
 
-[node name="RangeVisual" type="Polygon2D" parent="Range"]
+[node name="Hitbox" type="Area2D" parent="."]
+
+[node name="HitboxShape" type="CollisionShape2D" parent="Hitbox"]
+
+[connection signal="input_event" from="Hitbox" to="." method="_on_hitbox_input_event"]

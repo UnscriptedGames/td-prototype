@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ce1aw8k3wpsqn"
-path="res://.godot/imported/01.png-b36246e7790e3082fd97ad6661fbab3c.ctex"
+uid="uid://xl0jjm1jvvpg"
+path="res://.godot/imported/highlight_surround.png-2d0ec340a56defc613f70fd2e3738f6e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Entities/Towers/01.png"
-dest_files=["res://.godot/imported/01.png-b36246e7790e3082fd97ad6661fbab3c.ctex"]
+source_file="res://Levels/Tilesets/Assets/highlight_surround.png"
+dest_files=["res://.godot/imported/highlight_surround.png-2d0ec340a56defc613f70fd2e3738f6e.ctex"]
 
 [params]
 
