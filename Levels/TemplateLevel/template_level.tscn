@@ -42,8 +42,14 @@ y_sort_enabled = true
 
 [node name="Animations" type="Node2D" parent="."]
 
-[node name="BuildManager" type="Node2D" parent="."]
+[node name="BuildManager" type="Node2D" parent="." groups=["build_manager"]]
 script = ExtResource("3_x6qrl")
 ghost_tower_scene = ExtResource("4_gxwin")
+selected_tower_id = 0
+selected_range_id = 1
+valid_tower_id = 2
+invalid_tower_id = 3
+valid_range_id = 4
+invalid_range_id = 5
 
 [node name="LevelHUD" parent="." instance=ExtResource("3_sv07c")]

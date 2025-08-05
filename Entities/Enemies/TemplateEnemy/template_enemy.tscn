@@ -1,15 +1,13 @@
-[gd_scene load_steps=6 format=3 uid="uid://br1v6v0da2v1n"]
+[gd_scene load_steps=5 format=3 uid="uid://br1v6v0da2v1n"]
 
 [ext_resource type="Texture2D" uid="uid://cw6payn2hyg8m" path="res://Entities/Enemies/TemplateEnemy/Assets/bar_shadow_round_outline_small.png" id="1_ejg2d"]
 [ext_resource type="Script" uid="uid://cou6jej7wqrx2" path="res://Entities/Enemies/TemplateEnemy/template_enemy.gd" id="1_pa3af"]
 [ext_resource type="Texture2D" uid="uid://efm7vnhsuk84" path="res://Entities/Enemies/TemplateEnemy/Assets/bar_round_small.png" id="2_pa3af"]
 [ext_resource type="SpriteFrames" uid="uid://br8obf1poanq3" path="res://Entities/Enemies/TemplateEnemy/template_enemy_animations.tres" id="2_u23yv"]
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_u23yv"]
-radius = 31.0
-height = 82.0
-
 [node name="TemplateEnemy" type="Area2D"]
+collision_layer = 2
+collision_mask = 0
 script = ExtResource("1_pa3af")
 
 [node name="Animation" type="AnimatedSprite2D" parent="."]
@@ -20,9 +18,8 @@ autoplay = "variant_1_walk_south_west"
 frame_progress = 0.292839
 offset = Vector2(0, -175)
 
-[node name="Hitbox" type="CollisionShape2D" parent="."]
+[node name="HitboxShape" type="CollisionShape2D" parent="."]
 position = Vector2(-1, -44)
-shape = SubResource("CapsuleShape2D_u23yv")
 
 [node name="HealthBar" type="TextureProgressBar" parent="."]
 offset_left = -48.0

@@ -85,9 +85,5 @@ autoplay = "flames"
 frame_progress = 0.113154
 
 [node name="BuildManager" parent="." index="4"]
-highlight_tower_id = 0
-highlight_range_id = 1
-valid_tower_id = 2
-valid_range_id = 3
 invalid_tower_id = 4
-invalid_range_id = 5
+valid_range_id = 3

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TowerData" load_steps=4 format=3 uid="uid://c5v3s0n3fxli3"]
+
+[ext_resource type="Texture2D" uid="uid://c76ybfld4rufa" path="res://Entities/Towers/MagicTower/Assets/magic_tower_level01_01.png" id="1_5ig1c"]
+[ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/TowerData/tower_data.gd" id="1_rrhbf"]
+[ext_resource type="PackedScene" uid="uid://pfn6g0trbvuw" path="res://Entities/Towers/MagicTower/magic_tower.tscn" id="2_glcib"]
+
+[resource]
+script = ExtResource("1_rrhbf")
+tower_name = "Tower"
+cost = 10
+tower_range = 1
+damage = 10
+fire_rate = 1.0
+ghost_texture = ExtResource("1_5ig1c")
+visual_offset = Vector2(0, -30)
+placed_tower_scene = ExtResource("2_glcib")
+metadata/_custom_type_script = "uid://c8knfpcb8mutu"

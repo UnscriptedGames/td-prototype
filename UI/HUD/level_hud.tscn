@@ -1,10 +1,16 @@
-[gd_scene load_steps=2 format=3 uid="uid://qy230vei6n8p"]
+[gd_scene load_steps=5 format=3 uid="uid://qy230vei6n8p"]
 
 [ext_resource type="Script" uid="uid://jt41lox7ggvv" path="res://UI/HUD/level_hud.gd" id="1_mal80"]
+[ext_resource type="Resource" uid="uid://dvgo1u4245bj4" path="res://Entities/Towers/BombTower/bomb_tower_data.tres" id="2_3otiq"]
+[ext_resource type="Resource" uid="uid://bojj6xdad27bq" path="res://Entities/Towers/ArcherTower/archer_tower_data.tres" id="3_ais3w"]
+[ext_resource type="Resource" uid="uid://c5v3s0n3fxli3" path="res://Entities/Towers/MagicTower/magic_tower_data.tres" id="4_rorbr"]
 
 [node name="LevelHUD" type="CanvasLayer"]
 layer = 99
 script = ExtResource("1_mal80")
+bomb_tower_data = ExtResource("2_3otiq")
+archer_tower_data = ExtResource("3_ais3w")
+magic_tower_data = ExtResource("4_rorbr")
 
 [node name="HealthLabel" type="Label" parent="."]
 offset_left = 25.0
@@ -33,8 +39,47 @@ text = "Wave:"
 [node name="BuildTowerButton" type="Button" parent="."]
 offset_left = 25.0
 offset_top = 1024.0
-offset_right = 141.0
+offset_right = 145.0
 offset_bottom = 1055.0
 text = "Build Tower"
 
+[node name="TowerBuildMenu" type="VBoxContainer" parent="."]
+visible = false
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 155.0
+offset_top = -138.0
+offset_right = 285.0
+offset_bottom = -25.0
+grow_vertical = 0
+theme_override_constants/separation = 10
+alignment = 2
+
+[node name="BuildBombTowerButton" type="Button" parent="TowerBuildMenu"]
+layout_mode = 2
+text = "Bomb"
+
+[node name="BuildArcherTowerButton" type="Button" parent="TowerBuildMenu"]
+layout_mode = 2
+text = "Archer
+"
+
+[node name="BuildMagicTowerButton" type="Button" parent="TowerBuildMenu"]
+layout_mode = 2
+text = "Magic
+"
+
+[node name="SellTowerButton" type="Button" parent="."]
+visible = false
+offset_left = 25.0
+offset_top = 983.0
+offset_right = 145.0
+offset_bottom = 1014.0
+text = "Sell Tower"
+
 [connection signal="pressed" from="BuildTowerButton" to="." method="_on_build_tower_button_pressed"]
+[connection signal="pressed" from="TowerBuildMenu/BuildBombTowerButton" to="." method="_on_build_bomb_tower_button_pressed"]
+[connection signal="pressed" from="TowerBuildMenu/BuildArcherTowerButton" to="." method="_on_build_archer_tower_button_pressed"]
+[connection signal="pressed" from="TowerBuildMenu/BuildMagicTowerButton" to="." method="_on_build_magic_tower_button_pressed"]
+[connection signal="pressed" from="SellTowerButton" to="." method="_on_sell_tower_button_pressed"]

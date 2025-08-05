@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://bgedhv3rnitf0"]
+
+[ext_resource type="PackedScene" uid="uid://dijji12gvss7h" path="res://Entities/Towers/TemplateTower/template_tower.tscn" id="1_8gvhp"]
+[ext_resource type="SpriteFrames" uid="uid://uv5b7lqunufa" path="res://Entities/Towers/ArcherTower/archer_tower_animations.tres" id="2_cmcjc"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_cmcjc"]
+radius = 40.0
+height = 114.0
+
+[node name="ArcherTower" instance=ExtResource("1_8gvhp")]
+
+[node name="Sprite" parent="." index="0"]
+sprite_frames = ExtResource("2_cmcjc")
+animation = &"level_01_shoot"
+autoplay = "level_01_shoot"
+frame_progress = 0.376939
+offset = Vector2(0, -30)
+
+[node name="HitboxShape" parent="Hitbox" index="0"]
+position = Vector2(0, -36)
+shape = SubResource("CapsuleShape2D_cmcjc")

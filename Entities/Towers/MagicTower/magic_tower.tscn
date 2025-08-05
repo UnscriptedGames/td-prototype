@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://pfn6g0trbvuw"]
+
+[ext_resource type="PackedScene" uid="uid://dijji12gvss7h" path="res://Entities/Towers/TemplateTower/template_tower.tscn" id="1_t6hxg"]
+[ext_resource type="SpriteFrames" uid="uid://c1sx4lknkbr1r" path="res://Entities/Towers/MagicTower/magic_tower_animations.tres" id="2_vtecl"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_vtecl"]
+radius = 48.0
+height = 114.0
+
+[node name="MagicTower" instance=ExtResource("1_t6hxg")]
+
+[node name="Sprite" parent="." index="0"]
+sprite_frames = ExtResource("2_vtecl")
+animation = &"level_01_shoot"
+autoplay = "level_01_shoot"
+frame_progress = 0.542452
+offset = Vector2(0, -30)
+
+[node name="HitboxShape" parent="Hitbox" index="0"]
+position = Vector2(0, -38)
+shape = SubResource("CapsuleShape2D_vtecl")

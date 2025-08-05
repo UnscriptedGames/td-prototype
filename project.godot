@@ -26,6 +26,11 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/size/resizable=false
 
+[layer_names]
+
+2d_physics/layer_1="towers"
+2d_physics/layer_2="enemies"
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
