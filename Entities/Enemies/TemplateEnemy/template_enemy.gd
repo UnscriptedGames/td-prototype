@@ -7,23 +7,45 @@ class_name TemplateEnemy
 signal died(reward_amount)	# Emitted when the enemy dies
 signal reached_end_of_path	# Emitted when the enemy reaches the end of a path
 
+
+## Enums
+enum State {
+	MOVING,
+	DYING,
+	REACHED_GOAL
+}
+
+
 ## Static Caches
 static var _valid_variants_cache: Dictionary = {}	# Cache for valid variants per enemy type
 
+
 ## Exported Data
 @export var data: EnemyData	# Enemy data resource
+
 
 ## Enemy Stats
 var max_health: int = 10	# Maximum health
 var speed: float = 60.0	# Movement speed
 var reward: int = 1	# Reward for defeating this enemy
+var health: int:
+	get:
+		return _health
+	set(value):
+		if state == State.DYING:
+			return
+		_health = max(0, value)
+		_update_health_bar()
+		if _health == 0:
+			die()
+
 
 ## Internal State
+var state: State = State.MOVING	# Current state
 var _health: int	# Current health
 var _variant: String = ""	# Current variant name
 var _last_direction: String = "south_west"	# Last animation direction
 var _last_flip_h: bool = false	# Last horizontal flip state
-var _is_dying: bool = false	# True if enemy is dying
 var _has_reached_end: bool = false	# True if enemy reached end of path
 
 ## Node References
@@ -100,20 +122,11 @@ func _validate_and_cache_variants() -> Array:
 	return valid_variants
 
 
-## Applies damage to the enemy
-func take_damage(amount: int) -> void:
-	if _is_dying:
-		return
-	_health -= amount
-	_update_health_bar()
-	if _health <= 0:
-		die()
-
-
 ## Handles enemy death, gives a reward, and plays death animation
 func die() -> void:
-	if _is_dying:
+	if state == State.DYING:
 		return
+	state = State.DYING
 	emit_signal("died", reward)
 	await _play_death_sequence("die")
 	_return_to_pool_and_cleanup()
@@ -121,8 +134,9 @@ func die() -> void:
 
 ## Handles the enemy reaching the goal without giving a reward
 func reached_goal() -> void:
-	if _is_dying:
+	if state == State.DYING or state == State.REACHED_GOAL:
 		return
+	state = State.REACHED_GOAL
 	# For now, we reuse the "die" animation. This can be changed to "goal" later.
 	await _play_death_sequence("die")
 	_return_to_pool_and_cleanup()
@@ -159,7 +173,6 @@ func _play_animation(action: String, direction: String, flip_h: bool = false) ->
 
 ## Plays the common death sequence and returns a signal for when it's finished.
 func _play_death_sequence(action_name: String) -> Signal:
-	_is_dying = true
 	set_process(false)
 	# We don't stop processing here, as it needs to finish the animation
 	
@@ -190,7 +203,7 @@ func _update_health_bar() -> void:
 func reset() -> void:
 	_health = max_health
 	_update_health_bar()
-	_is_dying = false
+	state = State.MOVING
 	_has_reached_end = false
 	# Process is enabled by the spawner when ready
 	set_process(false) 
@@ -204,7 +217,7 @@ func prepare_for_new_path() -> void:
 
 ## Returns true if the enemy is dying
 func is_dying() -> bool:
-	return _is_dying
+	return state == State.DYING
 
 
 ## Handles returning the object to the pool and cleaning up its temporary parent

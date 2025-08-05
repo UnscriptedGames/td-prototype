@@ -5,10 +5,23 @@ class_name TemplateTower
 
 signal selected(tower)
 
+
+## Enums
+enum State {
+	IDLE,
+	ATTACKING
+}
+
+
 var data: TowerData
 var _highlight_layer: TileMapLayer
 var _highlight_tower_source_id: int = -1
 var _highlight_range_source_id: int = -1
+
+
+## Internal State
+var state: State = State.IDLE
+
 
 ## Node References
 @onready var sprite: AnimatedSprite2D = $Sprite
