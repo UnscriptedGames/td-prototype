@@ -18,7 +18,14 @@ autoplay = "variant_1_walk_south_west"
 frame_progress = 0.292839
 offset = Vector2(0, -175)
 
-[node name="HitboxShape" type="CollisionShape2D" parent="."]
+[node name="PositionShape" type="CollisionShape2D" parent="."]
+position = Vector2(-1, -44)
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 4
+collision_mask = 0
+
+[node name="HitboxShape" type="CollisionShape2D" parent="Hitbox"]
 position = Vector2(-1, -44)
 
 [node name="HealthBar" type="TextureProgressBar" parent="."]
@@ -29,3 +36,5 @@ offset_bottom = -122.0
 value = 50.0
 texture_under = ExtResource("1_ejg2d")
 texture_progress = ExtResource("2_pa3af")
+
+[node name="TargetPoint" type="Marker2D" parent="."]

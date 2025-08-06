@@ -50,7 +50,7 @@ var _has_reached_end: bool = false	# True if enemy reached end of path
 
 ## Node References
 @onready var animation := $Animation as AnimatedSprite2D	# Animation node
-@onready var hitbox := $HitboxShape as CollisionShape2D	# Hitbox node
+@onready var hitbox := $PositionShape as CollisionShape2D	# Hitbox node
 @onready var health_bar := $HealthBar as TextureProgressBar	# Health bar node
 
 ## Public Properties

@@ -1,17 +1,23 @@
-[gd_resource type="Resource" script_class="TowerData" load_steps=4 format=3 uid="uid://dvgo1u4245bj4"]
+[gd_resource type="Resource" script_class="TowerData" load_steps=5 format=3 uid="uid://dvgo1u4245bj4"]
 
-[ext_resource type="Texture2D" uid="uid://bveql3phnkrk5" path="res://Entities/Towers/BombTower/Assets/01.png" id="1_5w3ek"]
+[ext_resource type="Texture2D" uid="uid://dskepbmtd6tld" path="res://Entities/Towers/BombTower/Assets/bomb_tower_level01_01.png" id="1_5jr0x"]
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/TowerData/tower_data.gd" id="1_bohe1"]
 [ext_resource type="PackedScene" uid="uid://tm8k7ow23cuu" path="res://Entities/Towers/BombTower/bomb_tower.tscn" id="1_i3lkk"]
+[ext_resource type="PackedScene" uid="uid://dqtf52tasrqvr" path="res://Entities/Projectiles/BombProjectile/bomb_projectile.tscn" id="3_5jr0x"]
 
 [resource]
 script = ExtResource("1_bohe1")
 tower_name = "Tower"
 cost = 5
 tower_range = 1
-damage = 10
-fire_rate = 1.0
-ghost_texture = ExtResource("1_5w3ek")
+damage = 1
+fire_rate = 0.5
+projectile_speed = 150.0
+is_aoe = true
+ghost_texture = ExtResource("1_5jr0x")
 visual_offset = Vector2(0, -20)
 placed_tower_scene = ExtResource("1_i3lkk")
+projectile_scene = ExtResource("3_5jr0x")
+shoot_animations = Array[String](["level_01_shoot"])
+idle_animations = Array[String](["level_01_idle"])
 metadata/_custom_type_script = "uid://c8knfpcb8mutu"

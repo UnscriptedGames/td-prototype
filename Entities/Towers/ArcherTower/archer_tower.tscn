@@ -13,7 +13,7 @@ height = 114.0
 sprite_frames = ExtResource("2_cmcjc")
 animation = &"level_01_shoot"
 autoplay = "level_01_shoot"
-frame_progress = 0.376939
+frame_progress = 0.0349188
 offset = Vector2(0, -30)
 
 [node name="HitboxShape" parent="Hitbox" index="0"]

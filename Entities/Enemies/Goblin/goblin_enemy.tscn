@@ -1,12 +1,14 @@
-[gd_scene load_steps=5 format=3 uid="uid://dawi37fxxor7q"]
+[gd_scene load_steps=6 format=3 uid="uid://dawi37fxxor7q"]
 
 [ext_resource type="PackedScene" uid="uid://br1v6v0da2v1n" path="res://Entities/Enemies/TemplateEnemy/template_enemy.tscn" id="1_ptqmb"]
 [ext_resource type="Resource" uid="uid://drmee438quq6" path="res://Entities/Enemies/Goblin/goblin_enemy_data.tres" id="2_echq7"]
 [ext_resource type="SpriteFrames" uid="uid://dynno8esupq5" path="res://Entities/Enemies/Goblin/goblin_enemy_animations.tres" id="3_an7jk"]
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_echq7"]
-radius = 28.0
-height = 84.0
+[sub_resource type="CircleShape2D" id="CircleShape2D_echq7"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_an7jk"]
+radius = 29.0
+height = 86.0
 
 [node name="Goblin" instance=ExtResource("1_ptqmb")]
 data = ExtResource("2_echq7")
@@ -18,13 +20,22 @@ animation = &"green_walk_south_west"
 autoplay = "green_walk_south_west"
 frame_progress = 0.0
 
-[node name="HitboxShape" parent="." index="1"]
-position = Vector2(0, -35)
-shape = SubResource("CapsuleShape2D_echq7")
+[node name="PositionShape" parent="." index="1"]
+visible = false
+position = Vector2(0, -3)
+shape = SubResource("CircleShape2D_echq7")
 
-[node name="HealthBar" parent="." index="2"]
+[node name="HitboxShape" parent="Hitbox" index="0"]
+visible = false
+position = Vector2(0, -35)
+shape = SubResource("CapsuleShape2D_an7jk")
+
+[node name="HealthBar" parent="." index="3"]
 offset_left = -33.0
 offset_top = -99.0
 offset_right = 63.0
 offset_bottom = -83.0
 scale = Vector2(0.7, 0.7)
+
+[node name="TargetPoint" parent="." index="4"]
+position = Vector2(0, -30)

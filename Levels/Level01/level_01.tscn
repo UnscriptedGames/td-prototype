@@ -46,7 +46,7 @@ tile_set = ExtResource("4_5muv1")
 tile_map_data = PackedByteArray("AAAEABIAAQAAAAAAAAA=")
 tile_set = ExtResource("3_vkb5y")
 
-[node name="Enemies" parent="Entities" index="1"]
+[node name="Enemies" parent="Entities" index="2"]
 y_sort_enabled = true
 
 [node name="Spawn1" type="Path2D" parent="Paths" index="0"]

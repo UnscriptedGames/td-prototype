@@ -32,25 +32,30 @@ func create_pool(scene: PackedScene, initial_size: int) -> void:
 		container.add_child(obj)
 
 
-## Retrieves an object from the specified pool.
+## Retrieves an object from the specified pool and resets it.
 func get_object(scene: PackedScene) -> Node:
 	var scene_path := scene.resource_path
 	# Ensure a pool for this scene exists
 	if not _pools.has(scene_path):
 		push_error("This object pool does not exist: %s" % scene_path)
 		return null
-	
-	# If the pool is empty, create a new object as a fallback (the "safety net")
+
+	var obj: Node
+	# If the pool is empty, create a new object as a fallback
 	if _pools[scene_path].is_empty():
 		if OS.is_debug_build():
 			print("Object pool for '%s' was empty. Instantiating a new one." % scene_path)
-		var new_obj := scene.instantiate()
-		return new_obj
-
+		obj = scene.instantiate()
 	# If the pool has objects, get one from the front of the array
-	var obj: Node = _pools[scene_path].pop_front()
-	# Reparent the object from the pool container to the main scene tree
-	obj.get_parent().remove_child(obj)
+	else:
+		obj = _pools[scene_path].pop_front()
+		# Reparent the object from the pool container to the main scene tree
+		obj.get_parent().remove_child(obj)
+
+	# If the object has a reset function, call it.
+	if obj.has_method("reset"):
+		obj.reset()
+
 	return obj
 
 

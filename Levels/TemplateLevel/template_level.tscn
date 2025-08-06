@@ -36,6 +36,10 @@ y_sort_enabled = true
 [node name="Towers" type="Node2D" parent="Entities"]
 y_sort_enabled = true
 
+[node name="Projectiles" type="Node2D" parent="Entities" groups=["projectiles_container"]]
+z_index = 1
+y_sort_enabled = true
+
 [node name="Enemies" type="Node2D" parent="Entities"]
 
 [node name="Paths" type="Node2D" parent="."]

@@ -18,27 +18,35 @@ var _paths: Dictionary = {}	# Cached Path2D nodes for quick lookup
 
 ## Called when the node enters the scene tree
 func _ready() -> void:
-	# Create pools for all unique enemies in this level's data
 	if level_data:
+		# Create pools for all unique enemies in this level
 		var unique_enemies: Array[PackedScene] = []
 		for wave in level_data.waves:
 			for spawn_instruction in (wave as WaveData).spawns:
 				if not unique_enemies.has(spawn_instruction.enemy_scene):
 					unique_enemies.append(spawn_instruction.enemy_scene)
-		
-		# Tell the ObjectPoolManager to create a pool for each unique enemy
+
 		for enemy_scene in unique_enemies:
-			# We'll create a pool of 20 for each enemy type for now
 			ObjectPoolManager.create_pool(enemy_scene, 20)
 
-	# Cache all Path2D nodes in the scene for quick lookup during spawning
-	for child in get_node("Paths").get_children():
-		if child is Path2D:
-			_paths["Paths/" + child.name] = child
+		# Create pools for all unique projectiles used by available towers
+		var unique_projectiles: Array[PackedScene] = []
+		for tower_data in level_data.available_towers:
+			if tower_data.projectile_scene and not unique_projectiles.has(tower_data.projectile_scene):
+				unique_projectiles.append(tower_data.projectile_scene)
 
-	# Start the first wave if level_data is assigned
+		for projectile_scene in unique_projectiles:
+			ObjectPoolManager.create_pool(projectile_scene, 50)
+
+	# Cache all Path2D nodes using a relative path string as the key
+	var paths_node: Node2D = get_node("Paths")
+	for child in paths_node.get_children():
+		if child is Path2D:
+			var key_string := "%s/%s" % [paths_node.name, child.name]
+			_paths[key_string] = child
+
+	# Start the first wave
 	if level_data and not level_data.waves.is_empty():
-		# Inform the GameManager about the level's total waves
 		GameManager.set_level(level_number, level_data.waves.size())
 		_start_wave(0)
 

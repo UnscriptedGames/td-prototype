@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b6qone4yt3tah"
-path="res://.godot/imported/bomb_tower_level_01_08.png-80c17796a204ef094ef982f6ef13544c.ctex"
+uid="uid://dk1infvwumxet"
+path="res://.godot/imported/bomb_projectile.png-be9f530bf86617d05a7ccf81c7b187e9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Entities/Towers/BombTower/Assets/bomb_tower_level_01_08.png"
-dest_files=["res://.godot/imported/bomb_tower_level_01_08.png-80c17796a204ef094ef982f6ef13544c.ctex"]
+source_file="res://Entities/Projectiles/BombProjectile/Assets/bomb_projectile.png"
+dest_files=["res://.godot/imported/bomb_projectile.png-be9f530bf86617d05a7ccf81c7b187e9.ctex"]
 
 [params]
 

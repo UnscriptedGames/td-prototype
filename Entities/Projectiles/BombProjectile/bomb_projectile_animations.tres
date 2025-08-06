@@ -1,0 +1,14 @@
+[gd_resource type="SpriteFrames" load_steps=2 format=3 uid="uid://c1a0lwrllkxj6"]
+
+[ext_resource type="Texture2D" uid="uid://dk1infvwumxet" path="res://Entities/Projectiles/BombProjectile/Assets/bomb_projectile.png" id="1_dgax5"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_dgax5")
+}],
+"loop": false,
+"name": &"fly",
+"speed": 5.0
+}]
