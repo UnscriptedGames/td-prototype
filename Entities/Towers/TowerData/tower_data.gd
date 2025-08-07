@@ -7,7 +7,8 @@ class_name TowerData
 @export var tower_range: int = 1
 @export var damage: int = 10
 @export var fire_rate: float = 1.0 # Attacks per second
-@export var projectile_speed: float = 800.0
+@export var seconds_per_tile: float = 0.15
+@export var visual_speed_correction: float = 1.0
 @export var is_aoe: bool = false
 
 ## Scene & Asset References
