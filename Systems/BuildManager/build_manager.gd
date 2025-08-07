@@ -97,9 +97,7 @@ func place_tower(tower_data: TowerData, build_position: Vector2, range_points: P
 	new_tower.global_position = build_position
 	towers_container.add_child(new_tower)
 
-	# Pass the PathLayer reference to the new tower
-	var path_layer_ref: TileMapLayer = get_node("../TileMaps/PathLayer")
-	new_tower.initialize(tower_data, path_layer_ref, highlight_layer, selected_tower_id, selected_range_id)
+	new_tower.initialize(tower_data, highlight_layer, selected_tower_id, selected_range_id)
 	new_tower.set_range_polygon(range_points)
 	
 	GameManager.remove_currency(tower_data.cost)

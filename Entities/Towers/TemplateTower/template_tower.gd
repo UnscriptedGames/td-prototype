@@ -12,7 +12,6 @@ var data: TowerData
 var current_level: int = 1
 
 var _highlight_layer: TileMapLayer
-var _path_layer: TileMapLayer
 var _highlight_tower_source_id: int = -1
 var _highlight_range_source_id: int = -1
 
@@ -54,10 +53,8 @@ func _process(_delta: float) -> void:
 			_attack()
 
 
-## Called by the BuildManager to set up the tower.
-func initialize(new_tower_data: TowerData, p_path_layer: TileMapLayer, new_highlight_layer: TileMapLayer, tower_highlight_id: int, range_highlight_id: int) -> void:
+func initialize(new_tower_data: TowerData, new_highlight_layer: TileMapLayer, tower_highlight_id: int, range_highlight_id: int) -> void:
 	data = new_tower_data
-	_path_layer = p_path_layer # Add this
 	_highlight_layer = new_highlight_layer
 	_highlight_tower_source_id = tower_highlight_id
 	_highlight_range_source_id = range_highlight_id
@@ -180,39 +177,23 @@ func _spawn_projectile() -> void:
 	_projectiles_container.add_child(projectile)
 	projectile.global_position = muzzle.global_position
 	
-	# If the original target is still valid, calculate duration and initialize a normal shot.
+	# If the original target is still valid, initialize a normal shot.
 	if is_instance_valid(_current_target) and _current_target.state == TemplateEnemy.State.MOVING:
-		var duration := _calculate_flight_duration(_current_target.global_position)
+		if OS.is_debug_build():
+			print("Tower: Firing NORMAL shot.")
 		projectile.initialize(
-			_current_target, data.damage, data.is_aoe, duration
+			_current_target,
+			data.damage,
+			data.projectile_speed,
+			data.is_aoe
 		)
-	# Otherwise, calculate duration and initialize a "dud" shot.
+	# Otherwise, initialize a "dud" shot to the last known position.
 	else:
-		var duration := _calculate_flight_duration(_target_last_known_position)
+		if OS.is_debug_build():
+			print("Tower: Firing DUD shot to ", _target_last_known_position)
 		projectile.initialize_dud_shot(
-			_target_last_known_position, data.damage, data.is_aoe, duration
+			_target_last_known_position,
+			data.projectile_speed,
+			data.damage,
+			data.is_aoe
 		)
-
-## Calculates projectile flight time based on grid distance and a visual correction factor.
-func _calculate_flight_duration(target_pos: Vector2) -> float:
-	# Use any valid layer for coordinate conversion, since they share the same grid.
-	var map_layer: TileMapLayer = _highlight_layer
-
-	# Get start and end positions in tile coordinates
-	var start_coords: Vector2i = map_layer.local_to_map(muzzle.global_position)
-	var end_coords: Vector2i = map_layer.local_to_map(target_pos)
-
-	# Calculate grid distance (Manhattan distance)
-	var distance_in_tiles: int = abs(start_coords.x - end_coords.x) + abs(start_coords.y - end_coords.y)
-
-	# Calculate base duration based on tiles to travel and seconds per tile
-	var duration: float = distance_in_tiles * data.seconds_per_tile
-
-	# Apply visual correction for long-screen-distance paths
-	var travel_vector: Vector2 = target_pos - muzzle.global_position
-	# If the path is more horizontal than vertical, apply the correction
-	if abs(travel_vector.x) > abs(travel_vector.y) * 2.0:
-		duration *= data.visual_speed_correction
-
-	return duration
-		
