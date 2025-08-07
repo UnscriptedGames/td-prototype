@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="TD Prototype"
-run/main_scene="uid://da4wggnk44ip2"
+run/main_scene="uid://di4vl01euv8ya"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 
 [autoload]
@@ -19,6 +19,7 @@ config/features=PackedStringArray("4.4", "GL Compatibility")
 GameManager="*res://Systems/GameManager/game_manager.gd"
 ObjectPoolManager="*res://Systems/ObjectPoolManager/object_pool_manager.gd"
 HighlightManager="*res://Systems/HighlightManager/highlight_manager.gd"
+SceneManager="*res://Systems/SceneManager/scene_manager.gd"
 
 [display]
 

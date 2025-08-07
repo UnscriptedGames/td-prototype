@@ -1,4 +1,5 @@
 extends Node2D
+class_name TemplateLevel
 
 ## Template Level Script: Handles wave and enemy spawning
 
@@ -16,28 +17,9 @@ var _spawning: bool = false	# True if currently spawning enemies
 var _paths: Dictionary = {}	# Cached Path2D nodes for quick lookup
 
 
-## Called when the node enters the scene tree
+## This is now only called AFTER the scene is in the tree and ready.
 func _ready() -> void:
-	if level_data:
-		# Create pools for all unique enemies in this level
-		var unique_enemies: Array[PackedScene] = []
-		for wave in level_data.waves:
-			for spawn_instruction in (wave as WaveData).spawns:
-				if not unique_enemies.has(spawn_instruction.enemy_scene):
-					unique_enemies.append(spawn_instruction.enemy_scene)
-
-		for enemy_scene in unique_enemies:
-			ObjectPoolManager.create_pool(enemy_scene, 20)
-
-		# Create pools for all unique projectiles used by available towers
-		var unique_projectiles: Array[PackedScene] = []
-		for tower_data in level_data.available_towers:
-			if tower_data.projectile_scene and not unique_projectiles.has(tower_data.projectile_scene):
-				unique_projectiles.append(tower_data.projectile_scene)
-
-		for projectile_scene in unique_projectiles:
-			ObjectPoolManager.create_pool(projectile_scene, 50)
-
+	print("LEVEL: _ready() has started.")
 	# Cache all Path2D nodes using a relative path string as the key
 	var paths_node: Node2D = get_node("Paths")
 	for child in paths_node.get_children():

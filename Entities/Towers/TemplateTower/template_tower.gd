@@ -193,7 +193,7 @@ func _spawn_projectile() -> void:
 			print("Tower: Firing DUD shot to ", _target_last_known_position)
 		projectile.initialize_dud_shot(
 			_target_last_known_position,
-			data.projectile_speed,
 			data.damage,
+			data.projectile_speed,
 			data.is_aoe
 		)

@@ -11,6 +11,9 @@ func create_pool(scene: PackedScene, initial_size: int) -> void:
 	# Don't create the same pool twice
 	if _pools.has(scene.resource_path):
 		return
+	
+	var scene_name := scene.resource_path.get_file().get_basename()
+	print("POOL MANAGER: Creating pool for '%s' with %d objects..." % [scene_name, initial_size])
 
 	# Create a new array to hold the pooled objects
 	_pools[scene.resource_path] = []
@@ -26,10 +29,13 @@ func create_pool(scene: PackedScene, initial_size: int) -> void:
 		var obj := scene.instantiate()
 		# Deactivate the object until it's needed
 		obj.set_process(false)
+		obj.set_physics_process(false)
 		obj.visible = false
 		# Add the object to our internal array and the container node
 		_pools[scene.resource_path].append(obj)
 		container.add_child(obj)
+	
+	print("POOL MANAGER: Pool for '%s' created." % scene_name)
 
 
 ## Retrieves an object from the specified pool and resets it.
@@ -67,8 +73,9 @@ func return_object(obj: Node) -> void:
 		obj.queue_free() # Destroy the object if its pool doesn't exist
 		return
 	
-	# Deactivate the object
+	# Deactivate the object completely.
 	obj.set_process(false)
+	obj.set_physics_process(false)
 	obj.visible = false
 	
 	# Find the correct container node to reparent the object to

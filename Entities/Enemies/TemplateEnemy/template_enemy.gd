@@ -167,7 +167,11 @@ func _process(delta: float) -> void:
 func _play_animation(action: String, direction: String, flip_h: bool = false) -> void:
 	var animation_name: String = _variant + "_" + action + "_" + direction
 	if animation:
-		animation.play(animation_name)
+		# ONLY play the animation if it's not already the current one.
+		if animation.animation != animation_name:
+			animation.play(animation_name)
+		
+		# We can still update the flip value every frame.
 		animation.flip_h = flip_h
 
 

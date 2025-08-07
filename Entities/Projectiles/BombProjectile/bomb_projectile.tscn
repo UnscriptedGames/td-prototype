@@ -15,6 +15,7 @@ arc_height = 150.0
 sprite_frames = ExtResource("2_jldjl")
 animation = &"fly"
 autoplay = "fly"
+frame_progress = 0.375411
 
 [node name="HitboxShape" parent="." index="1"]
 shape = SubResource("CircleShape2D_jldjl")

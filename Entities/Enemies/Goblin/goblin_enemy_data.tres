@@ -6,9 +6,8 @@
 [resource]
 script = ExtResource("2_x4n50")
 max_health = 5
-speed = 50.0
+speed = 80.0
 reward = 1
 variants = Array[String](["green", "purple", "orange", "yellow"])
 required_actions = Array[String](["walk", "die"])
 animations = ExtResource("1_x4n50")
-metadata/_custom_type_script = "uid://clsibik6yuyvh"
