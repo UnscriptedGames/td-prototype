@@ -18,7 +18,7 @@ func create_pool(scene: PackedScene, initial_size: int) -> void:
 	# Create a new array to hold the pooled objects
 	_pools[scene.resource_path] = []
 
-	# Create a container node to hold the objects for better organization
+	# Create a container node to hold the objects for better organisation
 	var container := Node.new()
 	container.name = "%s_pool" % scene.resource_path.get_file().get_basename()
 	add_child(container)
