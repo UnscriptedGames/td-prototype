@@ -1,26 +1,18 @@
-[gd_resource type="TileSet" load_steps=11 format=3 uid="uid://deanuyo4c5m1j"]
+[gd_resource type="TileSet" load_steps=7 format=3 uid="uid://deanuyo4c5m1j"]
 
-[ext_resource type="Texture2D" uid="uid://jrbnwth02bfg" path="res://Levels/Tilesets/Assets/dirt.png" id="1_u501n"]
-[ext_resource type="Texture2D" uid="uid://bqwjfp5kk2kcq" path="res://Levels/Tilesets/Assets/grass.png" id="2_o4cqi"]
-[ext_resource type="Texture2D" uid="uid://vltt1y0bp4qo" path="res://Levels/Level01/Assets/bonfire.png" id="2_uj42a"]
-[ext_resource type="Texture2D" uid="uid://xl0jjm1jvvpg" path="res://Levels/Tilesets/Assets/highlight_surround.png" id="5_mtd8f"]
-[ext_resource type="Texture2D" uid="uid://b8w7ye0mkjvwk" path="res://Levels/Tilesets/Assets/highlight_range - Copy.png" id="6_mtd8f"]
+[ext_resource type="Texture2D" uid="uid://jrbnwth02bfg" path="res://Levels/Tilesets/Assets/dirt.png" id="1_i3kv2"]
+[ext_resource type="Texture2D" uid="uid://bqwjfp5kk2kcq" path="res://Levels/Tilesets/Assets/grass.png" id="2_r2swg"]
+[ext_resource type="Texture2D" uid="uid://dhnis23d42r8d" path="res://Levels/Tilesets/Assets/Objects/bridge_north_east.png" id="3_tkscy"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_w3cdo"]
 resource_name = "Ground"
-texture = ExtResource("1_u501n")
+texture = ExtResource("1_i3kv2")
 texture_region_size = Vector2i(192, 192)
 0:0/0 = 0
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_44ow1"]
-texture = ExtResource("2_uj42a")
-texture_region_size = Vector2i(77, 57)
-0:0/0 = 0
-0:0/0/texture_origin = Vector2i(0, 5)
-
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ggvg6"]
 resource_name = "Grass"
-texture = ExtResource("2_o4cqi")
+texture = ExtResource("2_r2swg")
 texture_region_size = Vector2i(192, 192)
 0:0/0 = 0
 0:0/0/texture_origin = Vector2i(0, 5)
@@ -70,26 +62,22 @@ texture_region_size = Vector2i(192, 192)
 6:1/0 = 0
 6:1/0/texture_origin = Vector2i(0, 5)
 6:1/0/y_sort_origin = -45
+7:1/next_alternative_id = 2
 7:1/0 = 0
 7:1/0/texture_origin = Vector2i(0, 5)
 7:1/0/y_sort_origin = -45
 7:1/0/custom_data_0 = true
+7:1/1 = 1
+7:1/1/texture_origin = Vector2i(0, 5)
+7:1/1/y_sort_origin = -45
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_38q01"]
-resource_name = "Highlight Tower"
-texture = ExtResource("5_mtd8f")
-texture_region_size = Vector2i(192, 192)
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_rjn0s"]
+resource_name = "Bridge NE"
+texture = ExtResource("3_tkscy")
+texture_region_size = Vector2i(236, 136)
 0:0/0 = 0
-0:0/0/texture_origin = Vector2i(0, 3)
-0:0/0/modulate = Color(0.843184, 0.843184, 0.843184, 1)
-
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_iqlq5"]
-resource_name = "Highlight Range"
-texture = ExtResource("6_mtd8f")
-texture_region_size = Vector2i(192, 192)
-0:0/0 = 0
-0:0/0/texture_origin = Vector2i(0, 3)
-0:0/0/modulate = Color(1, 1, 1, 0.5)
+0:0/0/texture_origin = Vector2i(10, 8)
+0:0/0/y_sort_origin = 54
 
 [resource]
 tile_shape = 1
@@ -98,7 +86,5 @@ custom_data_layer_0/name = "buildable"
 custom_data_layer_0/type = 1
 sources/0 = SubResource("TileSetAtlasSource_w3cdo")
 sources/18 = SubResource("TileSetAtlasSource_ggvg6")
-sources/1 = SubResource("TileSetAtlasSource_44ow1")
-sources/5 = SubResource("TileSetAtlasSource_38q01")
-sources/6 = SubResource("TileSetAtlasSource_iqlq5")
+sources/3 = SubResource("TileSetAtlasSource_rjn0s")
 tile_proxies/coords_level = [[1, Vector2i(0, 0)], [18, Vector2i(0, 0)], [2, Vector2i(0, 0)], [18, Vector2i(1, 0)], [3, Vector2i(0, 0)], [18, Vector2i(2, 0)], [4, Vector2i(0, 0)], [18, Vector2i(3, 0)], [5, Vector2i(0, 0)], [18, Vector2i(4, 0)], [6, Vector2i(0, 0)], [18, Vector2i(5, 0)], [7, Vector2i(0, 0)], [18, Vector2i(6, 0)], [8, Vector2i(0, 0)], [18, Vector2i(7, 0)], [9, Vector2i(0, 0)], [18, Vector2i(8, 0)], [10, Vector2i(0, 0)], [18, Vector2i(0, 1)], [11, Vector2i(0, 0)], [18, Vector2i(1, 1)], [12, Vector2i(0, 0)], [18, Vector2i(2, 1)], [13, Vector2i(0, 0)], [18, Vector2i(3, 1)], [14, Vector2i(0, 0)], [18, Vector2i(4, 1)], [15, Vector2i(0, 0)], [18, Vector2i(5, 1)], [16, Vector2i(0, 0)], [18, Vector2i(6, 1)], [17, Vector2i(0, 0)], [18, Vector2i(7, 1)]]

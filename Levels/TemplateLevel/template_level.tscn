@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=4 uid="uid://bir7iuxfukxsb"]
+[gd_scene load_steps=7 format=4 uid="uid://bir7iuxfukxsb"]
 
 [ext_resource type="Script" uid="uid://6irywbbrglw3" path="res://Levels/TemplateLevel/template_level.gd" id="1_f16nf"]
-[ext_resource type="TileSet" uid="uid://deanuyo4c5m1j" path="res://Levels/Tilesets/template_tileset.tres" id="1_ser8i"]
+[ext_resource type="TileSet" uid="uid://deanuyo4c5m1j" path="res://Levels/Tilesets/path_tileset.tres" id="1_ser8i"]
 [ext_resource type="PackedScene" uid="uid://qy230vei6n8p" path="res://UI/HUD/level_hud.tscn" id="3_sv07c"]
 [ext_resource type="Script" uid="uid://cyy8netls8x7r" path="res://Systems/BuildManager/build_manager.gd" id="3_x6qrl"]
+[ext_resource type="Script" uid="uid://yny7h3dispg0" path="res://Addons/Tools/tilemap_buildable_overlay.gd" id="3_ylfxi"]
 [ext_resource type="PackedScene" uid="uid://d3ilyyujh1y78" path="res://Entities/Towers/GhostTower/ghost_tower.tscn" id="4_gxwin"]
 
 [node name="TemplateLevel" type="Node2D"]
@@ -20,8 +21,19 @@ tile_map_data = PackedByteArray("AAD/////AAAAAAAAAAD//wEAAAAAAAAAAAD//wMAAAAAAAA
 tile_set = ExtResource("1_ser8i")
 
 [node name="PathLayer" type="TileMapLayer" parent="TileMaps"]
-z_index = -2
+z_index = 10
 y_sort_enabled = true
+script = ExtResource("3_ylfxi")
+overlay_enabled = null
+target_layer_path = null
+valid_source_id = null
+valid_atlas_coords = null
+valid_alt_index = null
+invalid_source_id = null
+invalid_atlas_coords = null
+invalid_alt_index = null
+run_in_game = null
+force_refresh = null
 
 [node name="HighlightLayer" type="TileMapLayer" parent="TileMaps"]
 z_index = -1

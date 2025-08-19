@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://vltt1y0bp4qo"
-path="res://.godot/imported/bonfire.png-97220bf43ae083a76357425e4a3c4c60.ctex"
+uid="uid://cc7n53r81kw60"
+path="res://.godot/imported/house_small.png-379c619953079ed12ce661030f14a8ad.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Levels/Level01/Assets/bonfire.png"
-dest_files=["res://.godot/imported/bonfire.png-97220bf43ae083a76357425e4a3c4c60.ctex"]
+source_file="res://Levels/Tilesets/Assets/Objects/house_small.png"
+dest_files=["res://.godot/imported/house_small.png-379c619953079ed12ce661030f14a8ad.ctex"]
 
 [params]
 
