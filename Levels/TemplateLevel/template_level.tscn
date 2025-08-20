@@ -24,16 +24,6 @@ tile_set = ExtResource("1_ser8i")
 z_index = 10
 y_sort_enabled = true
 script = ExtResource("3_ylfxi")
-overlay_enabled = null
-target_layer_path = null
-valid_source_id = null
-valid_atlas_coords = null
-valid_alt_index = null
-invalid_source_id = null
-invalid_atlas_coords = null
-invalid_alt_index = null
-run_in_game = null
-force_refresh = null
 
 [node name="HighlightLayer" type="TileMapLayer" parent="TileMaps"]
 z_index = -1

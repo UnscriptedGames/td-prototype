@@ -75,9 +75,14 @@ texture_region_size = Vector2i(192, 192)
 resource_name = "Bridge NE"
 texture = ExtResource("3_tkscy")
 texture_region_size = Vector2i(236, 136)
+0:0/next_alternative_id = 2
 0:0/0 = 0
 0:0/0/texture_origin = Vector2i(10, 8)
 0:0/0/y_sort_origin = 54
+0:0/1 = 1
+0:0/1/flip_h = true
+0:0/1/texture_origin = Vector2i(-11, 13)
+0:0/1/y_sort_origin = 54
 
 [resource]
 tile_shape = 1
