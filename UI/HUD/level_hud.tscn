@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://qy230vei6n8p"]
+[gd_scene load_steps=6 format=3 uid="uid://qy230vei6n8p"]
 
 [ext_resource type="Script" uid="uid://jt41lox7ggvv" path="res://UI/HUD/level_hud.gd" id="1_mal80"]
 [ext_resource type="Resource" uid="uid://dvgo1u4245bj4" path="res://Entities/Towers/BombTower/bomb_tower_data.tres" id="2_3otiq"]
 [ext_resource type="Resource" uid="uid://bojj6xdad27bq" path="res://Entities/Towers/ArcherTower/archer_tower_data.tres" id="3_ais3w"]
 [ext_resource type="Resource" uid="uid://c5v3s0n3fxli3" path="res://Entities/Towers/MagicTower/magic_tower_data.tres" id="4_rorbr"]
+[ext_resource type="Theme" uid="uid://cva31h3i30ii7" path="res://Themes/hud_theme.tres" id="5_41t3o"]
 
 [node name="LevelHUD" type="CanvasLayer"]
 layer = 99
@@ -12,74 +13,101 @@ bomb_tower_data = ExtResource("2_3otiq")
 archer_tower_data = ExtResource("3_ais3w")
 magic_tower_data = ExtResource("4_rorbr")
 
-[node name="HealthLabel" type="Label" parent="."]
+[node name="HudRoot" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("5_41t3o")
+
+[node name="StatsContainer" type="PanelContainer" parent="HudRoot"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 0
 offset_left = 25.0
 offset_top = 25.0
-offset_right = 95.0
-offset_bottom = 53.0
-theme_override_font_sizes/font_size = 20
-text = "Health:"
+offset_right = 225.0
+offset_bottom = 137.0
 
-[node name="CurrencyLabel" type="Label" parent="."]
-offset_left = 25.0
-offset_top = 55.0
-offset_right = 105.0
-offset_bottom = 83.0
-theme_override_font_sizes/font_size = 20
-text = "Gold:"
+[node name="LabelContainer" type="VBoxContainer" parent="HudRoot/StatsContainer"]
+layout_mode = 2
 
-[node name="WaveLabel" type="Label" parent="."]
-offset_left = 25.0
-offset_top = 85.0
-offset_right = 84.0
-offset_bottom = 113.0
+[node name="WaveLabel" type="Label" parent="HudRoot/StatsContainer/LabelContainer"]
+layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Wave:"
 
-[node name="BuildTowerButton" type="Button" parent="."]
-offset_left = 25.0
-offset_top = 1024.0
-offset_right = 145.0
-offset_bottom = 1055.0
-text = "Build Tower"
+[node name="HealthLabel" type="Label" parent="HudRoot/StatsContainer/LabelContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Health:"
 
-[node name="TowerBuildMenu" type="VBoxContainer" parent="."]
-visible = false
+[node name="CurrencyLabel" type="Label" parent="HudRoot/StatsContainer/LabelContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Gold:"
+
+[node name="BuildButtonsGroup" type="MarginContainer" parent="HudRoot"]
+layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 155.0
-offset_top = -138.0
-offset_right = 285.0
+offset_left = 25.0
+offset_top = -213.0
+offset_right = 393.0
 offset_bottom = -25.0
 grow_vertical = 0
-theme_override_constants/separation = 10
+
+[node name="Columns" type="HBoxContainer" parent="HudRoot/BuildButtonsGroup"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="MainButtons" type="VBoxContainer" parent="HudRoot/BuildButtonsGroup/Columns"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_constants/separation = 12
 alignment = 2
 
-[node name="BuildBombTowerButton" type="Button" parent="TowerBuildMenu"]
+[node name="SellTowerButton" type="Button" parent="HudRoot/BuildButtonsGroup/Columns/MainButtons"]
+visible = false
+layout_mode = 2
+text = "Sell Tower"
+
+[node name="BuildTowerButton" type="Button" parent="HudRoot/BuildButtonsGroup/Columns/MainButtons"]
+layout_mode = 2
+text = "Build Tower"
+
+[node name="NextWave" type="Button" parent="HudRoot/BuildButtonsGroup/Columns/MainButtons"]
+layout_mode = 2
+text = "Next Wave"
+
+[node name="TowerBuildMenu" type="VBoxContainer" parent="HudRoot/BuildButtonsGroup/Columns"]
+visible = false
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+alignment = 2
+
+[node name="BuildBombTowerButton" type="Button" parent="HudRoot/BuildButtonsGroup/Columns/TowerBuildMenu"]
 layout_mode = 2
 text = "Bomb"
 
-[node name="BuildArcherTowerButton" type="Button" parent="TowerBuildMenu"]
+[node name="BuildArcherTowerButton" type="Button" parent="HudRoot/BuildButtonsGroup/Columns/TowerBuildMenu"]
 layout_mode = 2
 text = "Archer
 "
 
-[node name="BuildMagicTowerButton" type="Button" parent="TowerBuildMenu"]
+[node name="BuildMagicTowerButton" type="Button" parent="HudRoot/BuildButtonsGroup/Columns/TowerBuildMenu"]
 layout_mode = 2
 text = "Magic
 "
 
-[node name="SellTowerButton" type="Button" parent="."]
-visible = false
-offset_left = 25.0
-offset_top = 983.0
-offset_right = 145.0
-offset_bottom = 1014.0
-text = "Sell Tower"
-
-[connection signal="pressed" from="BuildTowerButton" to="." method="_on_build_tower_button_pressed"]
-[connection signal="pressed" from="TowerBuildMenu/BuildBombTowerButton" to="." method="_on_build_bomb_tower_button_pressed"]
-[connection signal="pressed" from="TowerBuildMenu/BuildArcherTowerButton" to="." method="_on_build_archer_tower_button_pressed"]
-[connection signal="pressed" from="TowerBuildMenu/BuildMagicTowerButton" to="." method="_on_build_magic_tower_button_pressed"]
-[connection signal="pressed" from="SellTowerButton" to="." method="_on_sell_tower_button_pressed"]
+[connection signal="pressed" from="HudRoot/BuildButtonsGroup/Columns/MainButtons/SellTowerButton" to="." method="_on_sell_tower_button_pressed"]
+[connection signal="pressed" from="HudRoot/BuildButtonsGroup/Columns/MainButtons/BuildTowerButton" to="." method="_on_build_tower_button_pressed"]
+[connection signal="pressed" from="HudRoot/BuildButtonsGroup/Columns/MainButtons/NextWave" to="." method="_on_next_wave_pressed"]
+[connection signal="pressed" from="HudRoot/BuildButtonsGroup/Columns/TowerBuildMenu/BuildBombTowerButton" to="." method="_on_build_bomb_tower_button_pressed"]
+[connection signal="pressed" from="HudRoot/BuildButtonsGroup/Columns/TowerBuildMenu/BuildArcherTowerButton" to="." method="_on_build_archer_tower_button_pressed"]
+[connection signal="pressed" from="HudRoot/BuildButtonsGroup/Columns/TowerBuildMenu/BuildMagicTowerButton" to="." method="_on_build_magic_tower_button_pressed"]

@@ -7,11 +7,15 @@ class_name TemplateLevel
 @export var level_number: int = 1	# The number of this level
 
 ## Wave State
-var _current_wave_index: int = 0	# Current wave index
+var _current_wave_index: int = 0	# Index of the next wave to start
 var _spawning: bool = false	# True if currently spawning enemies
+var _pending_group_spawns: int = 0	# Number of groups still spawning in the current wave
 
 ## Node References
 @onready var entities := $Entities # Container for all spawned entities
+
+# Cached reference to the HUD to control the NextWave button.
+var _level_hud: LevelHUD = null
 
 ## Path Cache
 var _paths: Dictionary = {}	# Cached Path2D nodes for quick lookup
@@ -19,18 +23,33 @@ var _paths: Dictionary = {}	# Cached Path2D nodes for quick lookup
 
 ## This is now only called AFTER the scene is in the tree and ready.
 func _ready() -> void:
-	print("LEVEL: _ready() has started.")
-	# Cache all Path2D nodes using a relative path string as the key
+	# Cache all Path2D nodes using a relative path string as the key.
 	var paths_node: Node2D = get_node("Paths")
 	for child in paths_node.get_children():
 		if child is Path2D:
 			var key_string := "%s/%s" % [paths_node.name, child.name]
 			_paths[key_string] = child
 
-	# Start the first wave
+	# Register level meta with the GameManager (total waves shown in HUD).
 	if level_data and not level_data.waves.is_empty():
 		GameManager.set_level(level_number, level_data.waves.size())
-		_start_wave(0)
+
+	# Cache the Level HUD and wire the NextWave button signal.
+	_level_hud = get_node_or_null("LevelHUD") as LevelHUD
+	if is_instance_valid(_level_hud):
+		_level_hud.next_wave_requested.connect(_on_next_wave_requested)
+		# Set initial button state and label.
+		if level_data and _current_wave_index < level_data.waves.size():
+			_level_hud.set_next_wave_enabled(true)
+			_level_hud.set_next_wave_text("Begin")
+		else:
+			_level_hud.set_next_wave_enabled(false)
+			_level_hud.set_next_wave_text("Final Wave")
+	else:
+		if OS.is_debug_build():
+			push_warning("LevelHUD not found in TemplateLevel. NextWave control unavailable.")
+
+	# Do not auto-start any waves here. Waves begin only on player request via HUD.
 
 
 ## Starts a wave by index
@@ -38,10 +57,11 @@ func _start_wave(wave_index: int) -> void:
 	if wave_index >= level_data.waves.size():
 		return
 
+	# Inform the GameManager which wave is starting (using 1-based for UI).
+	GameManager.set_wave(wave_index + 1)
+
+	# Record the wave being started, then spawn its groups.
 	_current_wave_index = wave_index
-	# Inform the GameManager which wave is starting (using 1-based for UI)
-	GameManager.set_wave(_current_wave_index + 1)
-	
 	var wave: WaveData = level_data.waves[wave_index]
 	if wave:
 		_spawning = true
@@ -50,6 +70,12 @@ func _start_wave(wave_index: int) -> void:
 
 ## Spawns all enemy groups in a wave
 func _spawn_wave(wave: WaveData) -> void:
+	# Track how many groups are in flight and start them concurrently.
+	_pending_group_spawns = wave.spawns.size()
+	if _pending_group_spawns <= 0:
+		_on_wave_spawn_finished()
+		return
+
 	for spawn_instruction in wave.spawns:
 		_spawn_group(spawn_instruction)
 
@@ -61,6 +87,7 @@ func _spawn_group(spawn_instruction: SpawnInstruction) -> void:
 	var path_node: Path2D = _paths.get(path_key, null)
 	if not path_node:
 		push_error("Path not found: %s" % path_key)
+		_on_group_spawn_finished()
 		return
 
 	# Wait for the start_delay before spawning this group
@@ -71,6 +98,8 @@ func _spawn_group(spawn_instruction: SpawnInstruction) -> void:
 		_spawn_enemy(spawn_instruction.enemy_scene, path_node)
 		if i < spawn_instruction.count - 1:
 			await get_tree().create_timer(spawn_instruction.enemy_delay).timeout
+
+	_on_group_spawn_finished()
 
 
 ## Spawns a single enemy and attaches it to a path
@@ -163,3 +192,50 @@ func _on_enemy_finished_path(enemy: TemplateEnemy) -> void:
 
 	# Clean up the old path follower
 	path_follow.queue_free()
+
+
+## Called when the HUD requests the next wave.
+func _on_next_wave_requested() -> void:
+	# Ignore presses while a wave's spawn routine is running.
+	if _spawning:
+		return
+
+	# Do not allow starting beyond the last wave; keep disabled and show final label.
+	if level_data and _current_wave_index >= level_data.waves.size():
+		if is_instance_valid(_level_hud):
+			_level_hud.set_next_wave_enabled(false)
+			_level_hud.set_next_wave_text("Final Wave")
+		return
+
+	_spawning = true
+	if is_instance_valid(_level_hud):
+		_level_hud.set_next_wave_enabled(false)
+		_level_hud.set_next_wave_text("Spawning")
+
+	# Start the current wave and advance the index for the next press.
+	_start_wave(_current_wave_index)
+	_current_wave_index += 1
+
+
+## Decrements the group counter and marks the wave as finished if all groups are done.
+func _on_group_spawn_finished() -> void:
+	_pending_group_spawns -= 1
+	if _pending_group_spawns <= 0:
+		_on_wave_spawn_finished()
+
+
+## Marks the end of the spawning phase and re-enables the HUD control.
+func _on_wave_spawn_finished() -> void:
+	_spawning = false
+	if not is_instance_valid(_level_hud):
+		return
+
+	# If there are no more waves, keep disabled and show final label.
+	if not level_data or _current_wave_index >= level_data.waves.size():
+		_level_hud.set_next_wave_enabled(false)
+		_level_hud.set_next_wave_text("Final Wave")
+		return
+
+	# Otherwise enable and prompt the next manual start.
+	_level_hud.set_next_wave_enabled(true)
+	_level_hud.set_next_wave_text("Next Wave")

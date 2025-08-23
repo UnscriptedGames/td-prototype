@@ -9,7 +9,7 @@ extends TileMapLayer
 ##
 
 
-## ===== Exports =====
+## Exports
 
 @export var overlay_enabled: bool = true:
 	# Master toggle for the mirror overlay.
@@ -30,7 +30,7 @@ extends TileMapLayer
 		_cache_highlight_layer()
 		call_deferred("_rebuild_overlay")
 
-# Valid (buildable) highlight
+## Valid Highlight
 @export var valid_source_id: int = 0:
 	# TileSet source ID for valid tiles on the target layer.
 	set(value):
@@ -49,7 +49,7 @@ extends TileMapLayer
 		valid_alt_index = value
 		call_deferred("_rebuild_overlay")
 
-# Invalid (non-buildable) highlight
+## Invalid Highlight
 @export var invalid_source_id: int = 0:
 	# TileSet source ID for invalid tiles on the target layer.
 	set(value):
@@ -82,14 +82,14 @@ extends TileMapLayer
 
 
 
-## ===== Internals =====
+## Internals
 
 var _highlight_layer: TileMapLayer = null
 var _tile_set_connected: bool = false
 
 
 
-## ===== Built-ins =====
+## Built-ins
 
 func _enter_tree() -> void:
 	# Cache target and listen to TileSet edits.
@@ -106,7 +106,7 @@ func _exit_tree() -> void:
 
 
 
-## ===== Public Helpers =====
+## Public Helpers
 
 func refresh_now() -> void:
 	# Manual rebuild callable from the editor.
@@ -114,7 +114,7 @@ func refresh_now() -> void:
 
 
 
-## ===== Private Methods =====
+## Private Methods
 
 func _cache_highlight_layer() -> void:
 	# Resolve the target highlight layer from the exported path.
@@ -187,8 +187,10 @@ func _rebuild_overlay() -> void:
 			valid_coords = Vector2i.ZERO
 		var valid_atlas := valid_source as TileSetAtlasSource
 		if not valid_atlas.has_tile(valid_coords):
-			push_warning("Valid atlas coords %s not found in source %d."
-				% [str(valid_coords), valid_source_id])
+			push_warning(
+				"Valid atlas coords %s not found in source %d."
+				% [str(valid_coords), valid_source_id]
+			)
 			_highlight_layer.queue_redraw()
 			return
 
@@ -205,8 +207,10 @@ func _rebuild_overlay() -> void:
 			invalid_coords = Vector2i.ZERO
 		var invalid_atlas := invalid_source as TileSetAtlasSource
 		if not invalid_atlas.has_tile(invalid_coords):
-			push_warning("Invalid atlas coords %s not found in source %d."
-				% [str(invalid_coords), invalid_source_id])
+			push_warning(
+				"Invalid atlas coords %s not found in source %d."
+				% [str(invalid_coords), invalid_source_id]
+			)
 			_highlight_layer.queue_redraw()
 			return
 
@@ -220,14 +224,14 @@ func _rebuild_overlay() -> void:
 		if is_buildable:
 			if valid_is_atlas:
 				_highlight_layer.set_cell(
-					cell, valid_source_id, valid_coords, valid_alt_index
+						cell, valid_source_id, valid_coords, valid_alt_index
 				)
 			else:
 				_highlight_layer.set_cell(cell, valid_source_id)
 		else:
 			if invalid_is_atlas:
 				_highlight_layer.set_cell(
-					cell, invalid_source_id, invalid_coords, invalid_alt_index
+						cell, invalid_source_id, invalid_coords, invalid_alt_index
 				)
 			else:
 				_highlight_layer.set_cell(cell, invalid_source_id)
