@@ -1,4 +1,4 @@
-[gd_resource type="TileSet" load_steps=27 format=3 uid="uid://did7hsalbpaxs"]
+[gd_resource type="TileSet" load_steps=31 format=3 uid="uid://did7hsalbpaxs"]
 
 [ext_resource type="Texture2D" uid="uid://vltt1y0bp4qo" path="res://Levels/Tilesets/Assets/Objects/bonfire.png" id="1_853bf"]
 [ext_resource type="Texture2D" uid="uid://dn2q1picn2fql" path="res://Levels/Tilesets/Assets/Objects/cart.png" id="1_bar8v"]
@@ -11,8 +11,10 @@
 [ext_resource type="Texture2D" uid="uid://bix3cll8a5hix" path="res://Levels/Tilesets/Assets/Objects/fence6.png" id="7_nsci5"]
 [ext_resource type="Texture2D" uid="uid://dc4kmb22vq1yq" path="res://Levels/Tilesets/Assets/Objects/sign2_r.png" id="8_5t2kj"]
 [ext_resource type="Texture2D" uid="uid://822upifwqhug" path="res://Levels/Tilesets/Assets/Objects/buildings.png" id="10_065xh"]
+[ext_resource type="Texture2D" uid="uid://dhnis23d42r8d" path="res://Levels/Tilesets/Assets/Objects/bridge_north_east.png" id="11_3ua6t"]
 [ext_resource type="Texture2D" uid="uid://mh8dfb2tpeb0" path="res://Levels/Tilesets/Assets/Objects/anvil.png" id="11_065xh"]
 [ext_resource type="Texture2D" uid="uid://r2xjyx5ef2si" path="res://Levels/Tilesets/Assets/Objects/well.png" id="12_3ua6t"]
+[ext_resource type="Texture2D" uid="uid://dyeoma83o6myd" path="res://Levels/Tilesets/Assets/Objects/bridge_north_west.png" id="13_h03uy"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_a2p2a"]
 texture = ExtResource("1_bar8v")
@@ -119,11 +121,24 @@ texture_region_size = Vector2i(74, 54)
 24:0/0 = 0
 24:0/0/texture_origin = Vector2i(-1, 11)
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_7ccg2"]
+texture = ExtResource("11_3ua6t")
+texture_region_size = Vector2i(236, 136)
+0:0/next_alternative_id = 2
+0:0/0 = 0
+0:0/0/texture_origin = Vector2i(9, 9)
+
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_5t2kj"]
 texture = ExtResource("7_jktjb")
 texture_region_size = Vector2i(80, 56)
 0:0/0 = 0
 0:0/0/texture_origin = Vector2i(-14, 10)
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ds4v1"]
+texture = ExtResource("13_h03uy")
+texture_region_size = Vector2i(236, 136)
+0:0/0 = 0
+0:0/0/texture_origin = Vector2i(12, 2)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_rs1dx"]
 texture = ExtResource("11_065xh")
@@ -154,4 +169,6 @@ sources/18 = SubResource("TileSetAtlasSource_xuyjl")
 sources/19 = SubResource("TileSetAtlasSource_rwky1")
 sources/21 = SubResource("TileSetAtlasSource_3ua6t")
 sources/22 = SubResource("TileSetAtlasSource_ass4v")
+sources/3 = SubResource("TileSetAtlasSource_7ccg2")
+sources/5 = SubResource("TileSetAtlasSource_ds4v1")
 tile_proxies/coords_level = [[1, Vector2i(0, 0)], [18, Vector2i(0, 0)], [2, Vector2i(0, 0)], [21, Vector2i(0, 0)], [3, Vector2i(0, 0)], [22, Vector2i(0, 0)], [3, Vector2i(4, 0)], [22, Vector2i(4, 0)], [3, Vector2i(8, 0)], [22, Vector2i(8, 0)], [3, Vector2i(12, 0)], [22, Vector2i(12, 0)], [3, Vector2i(16, 0)], [22, Vector2i(16, 0)], [3, Vector2i(20, 0)], [22, Vector2i(20, 0)], [4, Vector2i(0, 0)], [3, Vector2i(4, 0)], [5, Vector2i(0, 0)], [21, Vector2i(4, 0)], [6, Vector2i(0, 0)], [21, Vector2i(8, 0)], [7, Vector2i(0, 0)], [21, Vector2i(12, 0)], [8, Vector2i(0, 0)], [3, Vector2i(8, 0)], [9, Vector2i(0, 0)], [3, Vector2i(12, 0)], [10, Vector2i(0, 0)], [3, Vector2i(16, 0)], [11, Vector2i(0, 0)], [3, Vector2i(20, 0)], [12, Vector2i(0, 0)], [18, Vector2i(2, 1)], [13, Vector2i(0, 0)], [18, Vector2i(3, 1)], [14, Vector2i(0, 0)], [18, Vector2i(4, 1)], [15, Vector2i(0, 0)], [18, Vector2i(5, 1)], [16, Vector2i(0, 0)], [18, Vector2i(6, 1)], [17, Vector2i(0, 0)], [18, Vector2i(7, 1)], [20, Vector2i(0, 0)], [22, Vector2i(24, 0)]]

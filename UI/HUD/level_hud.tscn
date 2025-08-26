@@ -7,7 +7,8 @@
 [ext_resource type="Theme" uid="uid://cva31h3i30ii7" path="res://Themes/hud_theme.tres" id="5_41t3o"]
 
 [node name="LevelHUD" type="CanvasLayer"]
-layer = 99
+layer = 10
+follow_viewport_enabled = true
 script = ExtResource("1_mal80")
 bomb_tower_data = ExtResource("2_3otiq")
 archer_tower_data = ExtResource("3_ais3w")

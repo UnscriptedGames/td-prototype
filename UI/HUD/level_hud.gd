@@ -9,11 +9,9 @@ signal sell_tower_requested
 ## Announces the player has requested the next wave to start from the HUD.
 signal next_wave_requested
 
-
 @export var bomb_tower_data: TowerData
 @export var archer_tower_data: TowerData
 @export var magic_tower_data: TowerData
-
 
 ## Node references (kept to your current scene paths).
 @onready var health_label := $HudRoot/StatsContainer/LabelContainer/HealthLabel as Label
