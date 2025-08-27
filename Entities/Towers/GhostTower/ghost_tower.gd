@@ -5,7 +5,6 @@ extends Node2D
 # These will be set by the BuildManager when the ghost is created.
 var data: TowerData
 var path_layer: TileMapLayer
-var object_layer: TileMapLayer
 var highlight_layer: TileMapLayer
 var highlight_ids: Dictionary
 
@@ -24,22 +23,26 @@ func _exit_tree() -> void:
 	HighlightManager.hide_highlights(highlight_layer)
 
 
-## Called by the BuildManager to set up the ghost tower.
-func initialize(p_data: TowerData, p_path_layer: TileMapLayer, p_object_layer: TileMapLayer, p_highlight_layer: TileMapLayer, p_highlight_ids: Dictionary) -> void:
-	data = p_data
-	path_layer = p_path_layer
-	object_layer = p_object_layer
-	highlight_layer = p_highlight_layer
-	highlight_ids = p_highlight_ids
+# Initialises the ghost with tower data and the required layers (no ObjectLayer parameter).
+func initialize(
+		tower_data: TowerData,                 # Data that defines visuals and behaviour for this ghost.
+		path_layer_node: TileMapLayer,         # Path layer used to read the 'buildable' custom data.
+		highlight_layer_node: TileMapLayer,    # Layer used for valid/invalid highlight tiles.
+		highlight_ids_map: Dictionary          # Mapping of highlight tile IDs for quick lookups.
+	) -> void:
+	data = tower_data                         # Store tower data for sprite/range setup.
+	path_layer = path_layer_node              # Cache the path layer reference for validity checks.
+	highlight_layer = highlight_layer_node    # Cache the highlight layer for preview feedback.
+	highlight_ids = highlight_ids_map         # Cache the highlight tile IDs dictionary.
 
-	if not is_instance_valid(data):
+	if not is_instance_valid(data):           # Fail fast if the tower data is missing/invalid.
 		push_error("GhostTower is missing its TowerData!")
 		queue_free()
 		return
 
-	sprite.texture = data.ghost_texture
-	sprite.position = data.visual_offset
-	_generate_range_polygon()
+	sprite.texture = data.ghost_texture       # Apply the ghost sprite texture.
+	sprite.position = data.visual_offset      # Apply any visual offset to line up with the tile centre.
+	_generate_range_polygon()                 # Precompute the range polygon so preview renders immediately.
 
 
 ## Called every frame. Updates position and validity.
@@ -60,23 +63,15 @@ func _process(_delta: float) -> void:
 		_last_tile_pos = map_coords
 
 
-## Checks tile data to determine if the current location is a valid build spot.
+# Updates preview validity using BuildManager's single rule (PathLayer 'buildable' only).
 func _update_placement_validity(map_coords: Vector2i) -> void:
-	if not is_instance_valid(path_layer) or not is_instance_valid(object_layer):
+	# Fail safe if Path layer isn't ready.
+	if not is_instance_valid(path_layer):
 		is_placement_valid = false
 		return
 
-	var is_buildable := false
-	var tile_data: TileData = path_layer.get_cell_tile_data(map_coords)
-	if tile_data:
-		is_buildable = tile_data.get_custom_data("buildable")
-
-	var is_empty := object_layer.get_cell_source_id(map_coords) == -1
-
-	if is_buildable and is_empty:
-		is_placement_valid = true
-	else:
-		is_placement_valid = false
+	# Single source of truth.
+	is_placement_valid = BuildManager.is_buildable_at(path_layer, map_coords)
 
 
 ## Returns the calculated points for the range polygon.

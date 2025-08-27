@@ -103,25 +103,37 @@ func place_tower(tower_data: TowerData, build_position: Vector2, range_points: P
 	GameManager.remove_currency(tower_data.cost)
 
 
-## Private: Handles input logic when in the BUILDING_TOWER state.
+## Handles input while in build mode; final placement uses PathLayer 'buildable' only.
 func _handle_input_building(event: InputEvent) -> void:
-	var is_cancel: bool = event.is_action_pressed("ui_cancel") or \
-						(event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.is_pressed())
-	
+	# Determine if the player is cancelling build mode (Esc or Right-click).
+	var is_cancel: bool = event.is_action_pressed("ui_cancel") \
+		or ((event is InputEventMouseButton) and event.button_index == MOUSE_BUTTON_RIGHT and event.is_pressed())
 	if is_cancel:
-		_exit_build_mode()
-		get_viewport().set_input_as_handled()
+		_exit_build_mode()                          # Leave build mode immediately on cancel.
+		get_viewport().set_input_as_handled()       # Consume the input so nothing else reacts.
 		return
 
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		if _ghost_tower.is_placement_valid:
+	# If the player left-clicks, attempt to place a tower.
+	if (event is InputEventMouseButton) and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		var path_layer: TileMapLayer = get_node("../TileMaps/PathLayer") as TileMapLayer   # Source of 'buildable'.
+		if (not is_instance_valid(path_layer)) or (not is_instance_valid(_ghost_tower)):
+			get_viewport().set_input_as_handled()   # Safety: if either is missing, consume input and bail.
+			return
+
+		# Convert the ghost's world position into the Path layer's cell coordinates.
+		var map_coords: Vector2i = path_layer.local_to_map(path_layer.to_local(_ghost_tower.global_position))
+
+		# Authoritative rule: only the Path layer's tileset custom data 'buildable' matters.
+		var can_place: bool = is_buildable_at(path_layer, map_coords)
+
+		# If allowed, place the tower and exit build mode.
+		if can_place:
 			var tower_data: TowerData = _ghost_tower.data
 			var range_points: PackedVector2Array = _ghost_tower.get_range_points()
 			place_tower(tower_data, _ghost_tower.global_position, range_points)
-			# Exit build mode after a successful placement.
 			_exit_build_mode()
-		
-		get_viewport().set_input_as_handled()
+
+		get_viewport().set_input_as_handled()       # Consume the click regardless of result.
 
 
 ## Private: Selects a tower
@@ -162,26 +174,28 @@ func _get_tower_at_position(screen_position: Vector2) -> TemplateTower:
 	return null
 
 
-## Private: Sets up and enters the build mode state.
+## Enters build mode and spawns/initialises the ghost (no ObjectLayer argument).
 func _enter_build_mode(tower_data: TowerData) -> void:
-	_deselect_current_tower()
-	state = State.BUILDING_TOWER
+	_deselect_current_tower()                              # Clear any current selection.
+	state = State.BUILDING_TOWER                           # Route input to the building handler.
 
-	if ghost_tower_scene:
-		_ghost_tower = ghost_tower_scene.instantiate()
-		add_child(_ghost_tower)
+	if ghost_tower_scene:                                  # Only proceed if the scene exists.
+		_ghost_tower = ghost_tower_scene.instantiate()     # Create the ghost tower preview.
+		add_child(_ghost_tower)                            # Parent under the manager for tidy cleanup.
 
-		var highlight_ids := {
-			"valid_tower": valid_tower_id, "invalid_tower": invalid_tower_id,
-			"valid_range": valid_range_id, "invalid_range": invalid_range_id
+		var highlight_ids := {                             # IDs for valid/invalid highlight tiles.
+			"valid_tower": valid_tower_id,
+			"invalid_tower": invalid_tower_id,
+			"valid_range": valid_range_id,
+			"invalid_range": invalid_range_id,
 		}
 
-		_ghost_tower.initialize(
-			tower_data,
-			get_node("../TileMaps/PathLayer"),
-			get_node("../TileMaps/ObjectLayer"),
-			highlight_layer,
-			highlight_ids
+		var path_layer := get_node("../TileMaps/PathLayer") as TileMapLayer
+		_ghost_tower.initialize(                           # New 4-arg signature (no ObjectLayer).
+			tower_data,                                    # Tower data for visuals / range.
+			path_layer,                                    # Source of 'buildable' custom data.
+			highlight_layer,                               # Layer that draws preview highlights.
+			highlight_ids                                  # Mapping of highlight tile IDs.
 		)
 
 
@@ -191,3 +205,13 @@ func _exit_build_mode() -> void:
 	if is_instance_valid(_ghost_tower):
 		_ghost_tower.queue_free()
 		_ghost_tower = null
+
+
+# Returns true if the Path layer cell has the 'buildable' tileset custom data.
+static func is_buildable_at(path_layer: TileMapLayer, map_coords: Vector2i) -> bool:
+	if path_layer == null or not is_instance_valid(path_layer):
+		return false
+	var tile_data: TileData = path_layer.get_cell_tile_data(map_coords)  # TileMapLayer API: coords only
+	if tile_data == null:
+		return false
+	return bool(tile_data.get_custom_data("buildable"))
