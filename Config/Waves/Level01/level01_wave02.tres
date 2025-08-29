@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="WaveData" load_steps=5 format=3 uid="uid://ds3k7w5ricl01"]
+
+[ext_resource type="Script" uid="uid://yqynaikbh4b2" path="res://Config/Waves/wave_data.gd" id="1_ecju3"]
+[ext_resource type="Script" uid="uid://dky0tbbrvtpkm" path="res://Config/Waves/spawn_instruction.gd" id="2_mc1b4"]
+[ext_resource type="Resource" uid="uid://c2dixhlm0j0om" path="res://Config/Waves/Level01/Wave02/spawn01_goblins.tres" id="3_do1ii"]
+[ext_resource type="Resource" uid="uid://xmdyxue4ntwp" path="res://Config/Waves/Level01/Wave02/spawn02_wolves.tres" id="4_ta7fp"]
+
+[resource]
+script = ExtResource("1_ecju3")
+start_delay = 0.0
+reward_multiplier = 1.0
+is_boss_wave = false
+spawns = Array[ExtResource("2_mc1b4")]([ExtResource("3_do1ii"), ExtResource("4_ta7fp")])
+metadata/_custom_type_script = "uid://yqynaikbh4b2"

@@ -1,0 +1,40 @@
+[gd_scene load_steps=6 format=3 uid="uid://cc7omqgmtsbsf"]
+
+[ext_resource type="PackedScene" uid="uid://br1v6v0da2v1n" path="res://Entities/Enemies/TemplateEnemy/template_enemy.tscn" id="1_0i1ut"]
+[ext_resource type="Resource" uid="uid://bbtnrt1okevpv" path="res://Config/Enemies/Kobolt/kobolt_enemy_data.tres" id="2_nxdsg"]
+[ext_resource type="SpriteFrames" uid="uid://d24d7fdkrg38x" path="res://Entities/Enemies/Kobolt/kobolt_enemy_animations.tres" id="3_lx36u"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_echq7"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_an7jk"]
+radius = 29.0
+height = 94.18
+
+[node name="Kobolt" instance=ExtResource("1_0i1ut")]
+scale = Vector2(2, 2)
+data = ExtResource("2_nxdsg")
+
+[node name="Animation" parent="." index="0"]
+scale = Vector2(0.3, 0.3)
+sprite_frames = ExtResource("3_lx36u")
+animation = &"red_die_south_west"
+autoplay = "red_walk_south_west"
+frame_progress = 0.0
+
+[node name="PositionShape" parent="." index="1"]
+position = Vector2(0, -3)
+shape = SubResource("CircleShape2D_echq7")
+
+[node name="HitboxShape" parent="Hitbox" index="0"]
+position = Vector2(0, -42.09)
+shape = SubResource("CapsuleShape2D_an7jk")
+
+[node name="HealthBar" parent="." index="3"]
+offset_left = -33.0
+offset_top = -113.85
+offset_right = 63.0
+offset_bottom = -97.85
+scale = Vector2(0.7, 0.7)
+
+[node name="TargetPoint" parent="." index="4"]
+position = Vector2(-3, -27)

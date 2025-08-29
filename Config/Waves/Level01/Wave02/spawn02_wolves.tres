@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SpawnInstruction" load_steps=3 format=3 uid="uid://xmdyxue4ntwp"]
+
+[ext_resource type="PackedScene" uid="uid://c1nby7lef2o4r" path="res://Entities/Enemies/Wolf/wolf_enemy.tscn" id="1_swycu"]
+[ext_resource type="Script" uid="uid://dky0tbbrvtpkm" path="res://Config/Waves/spawn_instruction.gd" id="2_vngi8"]
+
+[resource]
+script = ExtResource("2_vngi8")
+enemy_scene = ExtResource("1_swycu")
+path = NodePath("Paths/Spawn2")
+count = 3
+enemy_delay = 1.0
+start_delay = 2.0
+metadata/_custom_type_script = "uid://dky0tbbrvtpkm"

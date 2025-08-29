@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SpawnInstruction" load_steps=3 format=3 uid="uid://c2dixhlm0j0om"]
+
+[ext_resource type="PackedScene" uid="uid://dawi37fxxor7q" path="res://Entities/Enemies/Goblin/goblin_enemy.tscn" id="1_tlgre"]
+[ext_resource type="Script" uid="uid://dky0tbbrvtpkm" path="res://Config/Waves/spawn_instruction.gd" id="2_dyv5o"]
+
+[resource]
+script = ExtResource("2_dyv5o")
+enemy_scene = ExtResource("1_tlgre")
+path = NodePath("Paths/Spawn1")
+count = 3
+enemy_delay = 1.5
+start_delay = 0.0
+metadata/_custom_type_script = "uid://dky0tbbrvtpkm"

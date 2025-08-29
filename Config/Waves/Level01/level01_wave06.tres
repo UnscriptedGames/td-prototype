@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WaveData" load_steps=4 format=3 uid="uid://8oao61u4s6cl"]
+
+[ext_resource type="Script" uid="uid://yqynaikbh4b2" path="res://Config/Waves/wave_data.gd" id="1_hkpn1"]
+[ext_resource type="Script" uid="uid://dky0tbbrvtpkm" path="res://Config/Waves/spawn_instruction.gd" id="2_u8v0s"]
+[ext_resource type="Resource" uid="uid://cb1iyxui7nfxj" path="res://Config/Waves/Level01/Wave06/spawn02_kobolt.tres" id="3_x3r2h"]
+
+[resource]
+script = ExtResource("1_hkpn1")
+start_delay = 0.0
+reward_multiplier = 1.0
+is_boss_wave = true
+spawns = Array[ExtResource("2_u8v0s")]([ExtResource("3_x3r2h")])
+metadata/_custom_type_script = "uid://yqynaikbh4b2"

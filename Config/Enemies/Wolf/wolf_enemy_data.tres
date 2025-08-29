@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3 uid="uid://ds3cgsbk38hj3"]
+
+[ext_resource type="SpriteFrames" uid="uid://dhgbnbj6e3alf" path="res://Entities/Enemies/Wolf/wolf_enemy_animations.tres" id="1_exwb0"]
+[ext_resource type="Script" uid="uid://b5ta2srmrxkqa" path="res://Entities/Enemies/TemplateEnemy/template_enemy_data.gd" id="2_7qykf"]
+
+[resource]
+script = ExtResource("2_7qykf")
+max_health = 2
+speed = 120.0
+reward = 1
+variants = Array[String](["grey"])
+required_actions = Array[String](["walk", "die"])
+animations = ExtResource("1_exwb0")

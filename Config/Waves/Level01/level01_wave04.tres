@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="WaveData" load_steps=5 format=3 uid="uid://2m2loh3nb0x3"]
+
+[ext_resource type="Script" uid="uid://yqynaikbh4b2" path="res://Config/Waves/wave_data.gd" id="1_g6dyh"]
+[ext_resource type="Script" uid="uid://dky0tbbrvtpkm" path="res://Config/Waves/spawn_instruction.gd" id="2_puf4l"]
+[ext_resource type="Resource" uid="uid://81dt7wyh55w7" path="res://Config/Waves/Level01/Wave04/spawn01_skeletons.tres" id="3_kl5c8"]
+[ext_resource type="Resource" uid="uid://btdgm03l3e1ue" path="res://Config/Waves/Level01/Wave04/spawn02_skeletons.tres" id="4_g6dyh"]
+
+[resource]
+script = ExtResource("1_g6dyh")
+start_delay = 0.0
+reward_multiplier = 1.0
+is_boss_wave = false
+spawns = Array[ExtResource("2_puf4l")]([ExtResource("3_kl5c8"), ExtResource("4_g6dyh")])
+metadata/_custom_type_script = "uid://yqynaikbh4b2"

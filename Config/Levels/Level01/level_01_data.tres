@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="LevelData" load_steps=12 format=3 uid="uid://sct6jvx6tm1y"]
+
+[ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/TowerData/tower_data.gd" id="1_x1iwa"]
+[ext_resource type="Resource" uid="uid://c5v3s0n3fxli3" path="res://Config/Towers/MagicTower/magic_tower_data.tres" id="2_im0jt"]
+[ext_resource type="Resource" uid="uid://bojj6xdad27bq" path="res://Config/Towers/ArcherTower/archer_tower_data.tres" id="3_v1whh"]
+[ext_resource type="Resource" uid="uid://dvgo1u4245bj4" path="res://Config/Towers/BombTower/bomb_tower_data.tres" id="4_rqawx"]
+[ext_resource type="Script" uid="uid://bcm5msgk0utl6" path="res://Levels/TemplateLevel/template_data.gd" id="5_iqjng"]
+[ext_resource type="Resource" uid="uid://dwwxxb2gk87lj" path="res://Config/Waves/Level01/level01_wave01.tres" id="6_6fos6"]
+[ext_resource type="Resource" uid="uid://ym3kxf5y13g1" path="res://Config/Waves/Level01/level01_wave05.tres" id="6_lvn3s"]
+[ext_resource type="Resource" uid="uid://2m2loh3nb0x3" path="res://Config/Waves/Level01/level01_wave04.tres" id="6_x1iwa"]
+[ext_resource type="Resource" uid="uid://ds3k7w5ricl01" path="res://Config/Waves/Level01/level01_wave02.tres" id="7_lort5"]
+[ext_resource type="Resource" uid="uid://b8v0fb3y44xpf" path="res://Config/Waves/Level01/level01_wave03.tres" id="8_c17k8"]
+[ext_resource type="Resource" uid="uid://8oao61u4s6cl" path="res://Config/Waves/Level01/level01_wave06.tres" id="11_rqawx"]
+
+[resource]
+script = ExtResource("5_iqjng")
+waves = Array[Resource]([ExtResource("6_6fos6"), ExtResource("7_lort5"), ExtResource("8_c17k8"), ExtResource("6_x1iwa"), ExtResource("6_lvn3s"), ExtResource("11_rqawx")])
+available_towers = Array[ExtResource("1_x1iwa")]([ExtResource("2_im0jt"), ExtResource("3_v1whh"), ExtResource("4_rqawx")])
+metadata/_custom_type_script = "uid://bcm5msgk0utl6"
