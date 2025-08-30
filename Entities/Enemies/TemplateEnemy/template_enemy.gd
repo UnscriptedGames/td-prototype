@@ -41,17 +41,23 @@ var health: int:
 
 
 ## Internal State
+const CORNER_SMOOTHING: float = 5.0 # How quickly the enemy turns at corners. Higher is sharper.
+
 var state: State = State.MOVING	# Current state
 var _health: int	# Current health
 var _variant: String = ""	# Current variant name
+var _path_offset: float = 0.0	# Personal offset from the path center
+var _smoothed_right_vector: Vector2 = Vector2.RIGHT # The smoothed perpendicular vector for cornering
 var _last_direction: String = "south_west"	# Last animation direction
 var _last_flip_h: bool = false	# Last horizontal flip state
 var _has_reached_end: bool = false	# True if enemy reached end of path
+
 
 ## Node References
 @onready var animation := $Animation as AnimatedSprite2D	# Animation node
 @onready var hitbox := $PositionShape as CollisionShape2D	# Hitbox node
 @onready var health_bar := $HealthBar as TextureProgressBar	# Health bar node
+
 
 ## Public Properties
 var path_follow: PathFollow2D	# PathFollow2D node for movement
@@ -145,19 +151,36 @@ func reached_goal() -> void:
 ## Handles movement and animation each frame
 func _process(delta: float) -> void:
 	if path_follow and is_instance_valid(path_follow.get_parent()):
+		# Move the follower along the path
 		path_follow.progress += speed * delta
-		global_position = path_follow.global_position
+		
+		# Smooth the perpendicular vector to create nice arcs around corners
+		_smoothed_right_vector = _smoothed_right_vector.lerp(path_follow.transform.x, CORNER_SMOOTHING * delta)
+
+		# Calculate the final position using the path position and the smoothed offset
+		var path_position: Vector2 = path_follow.global_position
+		global_position = path_position + (_smoothed_right_vector.normalized() * _path_offset)
+
+		# Get current and next positions to determine visual animation direction
 		var path: Path2D = path_follow.get_parent() as Path2D
 		var current_pos: Vector2 = path.curve.sample_baked(path_follow.progress)
-		var next_progress = min(path_follow.progress + 1.0, path.curve.get_baked_length())
+		var next_progress: float = min(path_follow.progress + 1.0, path.curve.get_baked_length())
 		var future_pos: Vector2 = path.curve.sample_baked(next_progress)
 		var direction: Vector2 = (future_pos - current_pos).normalized()
+
+		# Determine animation direction based on movement
 		var anim_dir: String = "north_west" if direction.y < 0 else "south_west"
 		var flip_h: bool = direction.x > 0
+
+		# Store the last direction for the death animation
 		if path_follow.progress < path.curve.get_baked_length() - 0.1:
 			_last_direction = anim_dir
 			_last_flip_h = flip_h
+
+		# Play the walking animation
 		_play_animation("walk", anim_dir, flip_h)
+
+		# Check if the enemy has reached the end of the path
 		if not _has_reached_end and path_follow.progress >= path.curve.get_baked_length():
 			_has_reached_end = true
 			emit_signal("reached_end_of_path", self)
@@ -209,8 +232,14 @@ func reset() -> void:
 	_update_health_bar()
 	state = State.MOVING
 	_has_reached_end = false
+	_smoothed_right_vector = Vector2.RIGHT # Reset the smoothed vector
+
+	# Assign a random path offset when the enemy is reset (i.e. spawned)
+	if data:
+		_path_offset = randf_range(-data.max_path_offset, data.max_path_offset)
+
 	# Process is enabled by the spawner when ready
-	set_process(false) 
+	set_process(false)
 	hitbox.set_deferred("disabled", false)
 
 

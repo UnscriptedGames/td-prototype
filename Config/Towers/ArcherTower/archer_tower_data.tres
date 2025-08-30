@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="TowerData" load_steps=5 format=3 uid="uid://bojj6xdad27bq"]
 
-[ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/TowerData/tower_data.gd" id="1_njmit"]
+[ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/TemplateTower/tower_data.gd" id="1_njmit"]
 [ext_resource type="Texture2D" uid="uid://bi5vo1w8ytlun" path="res://Entities/Towers/ArcherTower/Assets/archer_tower_level01_01.png" id="1_olgkv"]
 [ext_resource type="PackedScene" uid="uid://bgedhv3rnitf0" path="res://Entities/Towers/ArcherTower/archer_tower.tscn" id="2_2d21g"]
 [ext_resource type="PackedScene" uid="uid://d1b6de67vc5gr" path="res://Entities/Projectiles/ArrowProjectile/arrow_projectile.tscn" id="3_2d21g"]

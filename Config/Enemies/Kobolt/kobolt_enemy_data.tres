@@ -5,10 +5,11 @@
 
 [resource]
 script = ExtResource("2_o1hu3")
-max_health = 200
+max_health = 50
 speed = 30.0
-reward = 30
-damage = 50
+reward = 15
+damage = 1
+max_path_offset = 32.0
 variants = Array[String](["red"])
 required_actions = Array[String](["walk", "die"])
 animations = ExtResource("1_2logp")
