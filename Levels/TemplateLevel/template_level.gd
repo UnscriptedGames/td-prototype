@@ -180,7 +180,7 @@ func _on_enemy_finished_path(enemy: TemplateEnemy) -> void:
 
 	var has_branches := "branches" in current_path and not (current_path.branches as Array).is_empty()
 	if not has_branches:
-		GameManager.damage_player(1)
+		GameManager.damage_player(enemy.data.damage)
 		enemy.reached_goal()
 		return
 
@@ -188,7 +188,7 @@ func _on_enemy_finished_path(enemy: TemplateEnemy) -> void:
 	var next_path := current_path.get_node_or_null(next_path_nodepath) as Path2D
 	if not next_path:
 		push_error("Invalid branch path: %s" % next_path_nodepath)
-		GameManager.damage_player(1)
+		GameManager.damage_player(enemy.data.damage)
 		enemy.reached_goal()
 		return
 
