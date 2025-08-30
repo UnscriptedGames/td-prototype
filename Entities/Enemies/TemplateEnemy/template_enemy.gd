@@ -4,8 +4,8 @@ extends Area2D
 class_name TemplateEnemy
 
 ## Signals
-signal died(reward_amount)	# Emitted when the enemy dies
-signal reached_end_of_path	# Emitted when the enemy reaches the end of a path
+signal died(enemy, reward_amount)	# Emitted when the enemy dies
+signal reached_end_of_path(enemy)	# Emitted when the enemy reaches the end of a path
 
 
 ## Enums
@@ -127,7 +127,7 @@ func die() -> void:
 	if state == State.DYING:
 		return
 	state = State.DYING
-	emit_signal("died", reward)
+	emit_signal("died", self, reward)
 	await _play_death_sequence("die")
 	_return_to_pool_and_cleanup()
 
@@ -160,7 +160,7 @@ func _process(delta: float) -> void:
 		_play_animation("walk", anim_dir, flip_h)
 		if not _has_reached_end and path_follow.progress >= path.curve.get_baked_length():
 			_has_reached_end = true
-			emit_signal("reached_end_of_path")
+			emit_signal("reached_end_of_path", self)
 
 
 ## Plays the specified animation for the current variant

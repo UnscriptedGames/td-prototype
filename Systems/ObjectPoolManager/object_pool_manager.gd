@@ -58,10 +58,6 @@ func get_object(scene: PackedScene) -> Node:
 		# Reparent the object from the pool container to the main scene tree
 		obj.get_parent().remove_child(obj)
 
-	# If the object has a reset function, call it.
-	if obj.has_method("reset"):
-		obj.reset()
-
 	return obj
 
 

@@ -137,7 +137,6 @@ func _spawn_enemy(enemy_scene: PackedScene, path_node: Path2D) -> void:
 	if not is_instance_valid(enemy):
 		return
 
-	enemy.reset()
 	enemy.visible = true
 
 	var path_follow := PathFollow2D.new()
@@ -148,15 +147,18 @@ func _spawn_enemy(enemy_scene: PackedScene, path_node: Path2D) -> void:
 	enemy.path_follow = path_follow
 
 	enemies_container.add_child(enemy)
+	enemy.reset()
 	enemy.global_position = path_node.global_position
 
 	enemy.set_process(true)
 
-	enemy.reached_end_of_path.connect(_on_enemy_finished_path.bind(enemy))
-	enemy.died.connect(_on_enemy_died)
+	if not enemy.reached_end_of_path.is_connected(_on_enemy_finished_path):
+		enemy.reached_end_of_path.connect(_on_enemy_finished_path)
+	if not enemy.died.is_connected(_on_enemy_died):
+		enemy.died.connect(_on_enemy_died)
 
 
-func _on_enemy_died(reward_amount: int) -> void:
+func _on_enemy_died(enemy: TemplateEnemy, reward_amount: int) -> void:
 	# Awards currency for defeated enemies.
 	GameManager.add_currency(reward_amount)
 
