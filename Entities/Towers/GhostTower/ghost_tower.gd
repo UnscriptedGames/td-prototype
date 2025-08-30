@@ -59,7 +59,10 @@ func _process(_delta: float) -> void:
 	_update_placement_validity(map_coords)
 
 	if map_coords != _last_tile_pos:
-		HighlightManager.show_ghost_highlights(highlight_layer, map_coords, data.tower_range, highlight_ids, is_placement_valid)
+		var tower_range = 0
+		if not data.levels.is_empty():
+			tower_range = data.levels[0].tower_range
+		HighlightManager.show_ghost_highlights(highlight_layer, map_coords, tower_range, highlight_ids, is_placement_valid)
 		_last_tile_pos = map_coords
 
 
@@ -83,7 +86,10 @@ func get_range_points() -> PackedVector2Array:
 func _generate_range_polygon() -> void:
 	var points: PackedVector2Array = []
 	var full_tile_size := Vector2(192, 96)
-	var range_multiplier: float = data.tower_range + 0.5
+	var tower_range = 0
+	if not data.levels.is_empty():
+		tower_range = data.levels[0].tower_range
+	var range_multiplier: float = tower_range + 0.5
 
 	points.append(Vector2(0, -full_tile_size.y * range_multiplier))
 	points.append(Vector2(full_tile_size.x * range_multiplier, 0))
