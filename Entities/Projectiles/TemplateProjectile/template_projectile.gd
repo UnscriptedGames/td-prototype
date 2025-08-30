@@ -45,7 +45,8 @@ func initialize(target_enemy: TemplateEnemy, damage_amount: int, projectile_spee
 		_last_known_position = _target.global_position
 	
 	# Connect the signal for direct hits.
-	area_entered.connect(_on_area_entered)
+	if not area_entered.is_connected(_on_area_entered):
+		area_entered.connect(_on_area_entered)
 
 
 ## Called by the tower for a "dud" shot when the target is already dead.
