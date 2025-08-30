@@ -63,18 +63,16 @@ func initialize(new_tower_data: TowerData, new_highlight_layer: TileMapLayer, to
 		push_error("Placed tower was initialized without valid TowerData!")
 		return
 	
-	if data.fire_rate > 0:
-		fire_rate_timer.wait_time = 1.0 / data.fire_rate
-	
-	animation_player.play(data.idle_animations[current_level - 1])
+	_apply_level_stats()
 
 
 func select() -> void:
 	var center_coords := _highlight_layer.local_to_map(global_position)
+	var current_level_data: TowerLevelData = data.levels[current_level - 1]
 	HighlightManager.show_selection_highlights(
 		_highlight_layer,
 		center_coords,
-		data.tower_range,
+		current_level_data.tower_range,
 		_highlight_tower_source_id,
 		_highlight_range_source_id
 	)
@@ -128,7 +126,8 @@ func _find_new_target() -> void:
 
 ## Private: Fires a projectile at the current target if the cooldown is ready.
 func _attack() -> void:
-	if not fire_rate_timer.is_stopped() or _is_firing or not data.projectile_scene:
+	var current_level_data: TowerLevelData = data.levels[current_level - 1]
+	if not fire_rate_timer.is_stopped() or _is_firing or not current_level_data.projectile_scene:
 		return
 	
 	_is_firing = true
@@ -139,7 +138,7 @@ func _attack() -> void:
 	else:
 		_target_last_known_position = _current_target.global_position
 	
-	var anim_name: String = data.shoot_animations[current_level - 1]
+	var anim_name: String = current_level_data.shoot_animation
 	
 	var animation: Animation = animation_player.get_animation(anim_name)
 	if not animation:
@@ -160,15 +159,16 @@ func _attack() -> void:
 
 
 func _on_animation_finished(_anim_name: StringName) -> void:
-	var current_shoot_anim = data.shoot_animations[current_level - 1]
-	if animation_player.get_assigned_animation() == current_shoot_anim:
-		animation_player.play(data.idle_animations[current_level - 1])
+	var current_level_data: TowerLevelData = data.levels[current_level - 1]
+	if animation_player.get_assigned_animation() == current_level_data.shoot_animation:
+		animation_player.play(current_level_data.idle_animation)
 		animation_player.speed_scale = 1.0
 		_is_firing = false
 
 
 func _spawn_projectile() -> void:
-	var projectile: TemplateProjectile = ObjectPoolManager.get_object(data.projectile_scene) as TemplateProjectile
+	var current_level_data: TowerLevelData = data.levels[current_level - 1]
+	var projectile: TemplateProjectile = ObjectPoolManager.get_object(current_level_data.projectile_scene) as TemplateProjectile
 	if not is_instance_valid(projectile):
 		push_error("ObjectPoolManager failed to provide a projectile.")
 		return
@@ -183,9 +183,9 @@ func _spawn_projectile() -> void:
 			print("Tower: Firing NORMAL shot.")
 		projectile.initialize(
 			_current_target,
-			data.damage,
-			data.projectile_speed,
-			data.is_aoe
+			current_level_data.damage,
+			current_level_data.projectile_speed,
+			current_level_data.is_aoe
 		)
 	# Otherwise, initialize a "dud" shot to the last known position.
 	else:
@@ -193,7 +193,47 @@ func _spawn_projectile() -> void:
 			print("Tower: Firing DUD shot to ", _target_last_known_position)
 		projectile.initialize_dud_shot(
 			_target_last_known_position,
-			data.damage,
-			data.projectile_speed,
-			data.is_aoe
+			current_level_data.damage,
+			current_level_data.projectile_speed,
+			current_level_data.is_aoe
 		)
+
+
+func upgrade() -> void:
+	if current_level >= data.levels.size():
+		return # Already at max level
+
+	var next_level_data: TowerLevelData = data.levels[current_level]
+	if not GameManager.player_data.can_afford(next_level_data.cost):
+		return # Cannot afford upgrade
+
+	GameManager.player_data.deduct_currency(next_level_data.cost)
+	current_level += 1
+	_apply_level_stats()
+
+
+func _apply_level_stats() -> void:
+	if not is_instance_valid(data) or data.levels.is_empty():
+		push_error("Tower data is invalid or has no levels defined.")
+		return
+
+	if current_level > data.levels.size():
+		push_error("Attempted to apply stats for a level that does not exist.")
+		return
+
+	var current_level_data: TowerLevelData = data.levels[current_level - 1]
+
+	# Apply fire rate
+	if current_level_data.fire_rate > 0:
+		fire_rate_timer.wait_time = 1.0 / current_level_data.fire_rate
+	else:
+		# If fire rate is 0 or less, disable the timer to prevent division by zero
+		fire_rate_timer.stop()
+
+	# Play idle animation
+	if not current_level_data.idle_animation.is_empty():
+		animation_player.play(current_level_data.idle_animation)
+
+	# Note: Damage, projectile speed, etc., are read directly from the data
+	# when spawning projectiles, so they don't need to be stored in variables here.
+	# The tower's range is also read directly when needed for selection highlights.

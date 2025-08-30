@@ -19,6 +19,7 @@ signal next_wave_requested
 @onready var wave_label := $HudRoot/StatsContainer/LabelContainer/WaveLabel as Label
 @onready var build_tower_button := $HudRoot/BuildButtonsGroup/Columns/MainButtons/BuildTowerButton as Button
 @onready var sell_tower_button := $HudRoot/BuildButtonsGroup/Columns/MainButtons/SellTowerButton as Button
+@onready var upgrade_button := $HudRoot/BuildButtonsGroup/Columns/MainButtons/UpgradeButton as Button
 @onready var tower_build_menu := $HudRoot/BuildButtonsGroup/Columns/TowerBuildMenu as VBoxContainer
 @onready var next_wave_button := $HudRoot/BuildButtonsGroup/Columns/MainButtons/NextWave as Button
 @onready var build_bomb_tower_button := $HudRoot/BuildButtonsGroup/Columns/TowerBuildMenu/BuildBombTowerButton as Button
@@ -29,6 +30,9 @@ signal next_wave_requested
 ## Called when this HUD enters the scene tree.
 ## Connects to BuildManager (selection state) and GameManager (stats).
 func _ready() -> void:
+	# This can also be connected from the editor.
+	upgrade_button.pressed.connect(_on_upgrade_button_pressed)
+
 	# Connect to the BuildManager in the active level (group ensures decoupling).
 	var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
 	if is_instance_valid(build_manager):
@@ -66,11 +70,14 @@ func _exit_tree() -> void:
 ## Shows the Sell button when a tower is selected.
 func _on_tower_selected() -> void:
 	sell_tower_button.visible = true
+	upgrade_button.visible = true
+	_update_upgrade_button()
 
 
 ## Hides the Sell button when selection is cleared.
 func _on_tower_deselected() -> void:
 	sell_tower_button.visible = false
+	upgrade_button.visible = false
 
 
 ## Toggles the tower build menu when the Build button is pressed.
@@ -93,6 +100,40 @@ func _on_health_changed(new_health: int) -> void:
 func _on_currency_changed(new_currency: int) -> void:
 	currency_label.text = "Gold: %d" % new_currency
 	_update_tower_build_buttons(new_currency)
+	_update_upgrade_button()
+
+
+func _on_upgrade_button_pressed() -> void:
+	var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
+	if is_instance_valid(build_manager) and is_instance_valid(build_manager.get_selected_tower()):
+		build_manager.get_selected_tower().upgrade()
+		# After an upgrade attempt, refresh the button state
+		_update_upgrade_button()
+
+
+func _update_upgrade_button() -> void:
+	if not upgrade_button.visible:
+		return
+
+	var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
+	if not is_instance_valid(build_manager):
+		return
+
+	var selected_tower: TemplateTower = build_manager.get_selected_tower()
+	if not is_instance_valid(selected_tower):
+		return
+
+	var tower_data: TowerData = selected_tower.data
+	var current_level: int = selected_tower.current_level
+
+	if current_level >= tower_data.levels.size():
+		upgrade_button.text = "Max Level"
+		upgrade_button.disabled = true
+	else:
+		var next_level_data: TowerLevelData = tower_data.levels[current_level]
+		var cost: int = next_level_data.cost
+		upgrade_button.text = "Upgrade (%dg)" % cost
+		upgrade_button.disabled = not GameManager.player_data.can_afford(cost)
 
 
 ## Updates the Wave label from GameManager.
@@ -141,16 +182,28 @@ func _on_build_magic_tower_button_pressed() -> void:
 ## Refreshes build-button labels and enabled state based on current gold.
 func _update_tower_build_buttons(player_gold: int) -> void:
 	if is_instance_valid(bomb_tower_data) and is_instance_valid(build_bomb_tower_button):
-		var bomb_cost: int = bomb_tower_data.cost
-		build_bomb_tower_button.text = "Bomb (%dg)" % bomb_cost
-		build_bomb_tower_button.disabled = player_gold < bomb_cost
+		if not bomb_tower_data.levels.is_empty():
+			var bomb_cost: int = bomb_tower_data.levels[0].cost
+			build_bomb_tower_button.text = "Bomb (%dg)" % bomb_cost
+			build_bomb_tower_button.disabled = player_gold < bomb_cost
+		else:
+			build_bomb_tower_button.text = "Bomb (N/A)"
+			build_bomb_tower_button.disabled = true
 
 	if is_instance_valid(archer_tower_data) and is_instance_valid(build_archer_tower_button):
-		var archer_cost: int = archer_tower_data.cost
-		build_archer_tower_button.text = "Archer (%dg)" % archer_cost
-		build_archer_tower_button.disabled = player_gold < archer_cost
+		if not archer_tower_data.levels.is_empty():
+			var archer_cost: int = archer_tower_data.levels[0].cost
+			build_archer_tower_button.text = "Archer (%dg)" % archer_cost
+			build_archer_tower_button.disabled = player_gold < archer_cost
+		else:
+			build_archer_tower_button.text = "Archer (N/A)"
+			build_archer_tower_button.disabled = true
 
 	if is_instance_valid(magic_tower_data) and is_instance_valid(build_magic_tower_button):
-		var magic_cost: int = magic_tower_data.cost
-		build_magic_tower_button.text = "Magic (%dg)" % magic_cost
-		build_magic_tower_button.disabled = player_gold < magic_cost
+		if not magic_tower_data.levels.is_empty():
+			var magic_cost: int = magic_tower_data.levels[0].cost
+			build_magic_tower_button.text = "Magic (%dg)" % magic_cost
+			build_magic_tower_button.disabled = player_gold < magic_cost
+		else:
+			build_magic_tower_button.text = "Magic (N/A)"
+			build_magic_tower_button.disabled = true
