@@ -29,10 +29,6 @@ window/size/resizable=false
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/gamedev_assistant/plugin.cfg")
-
 [layer_names]
 
 2d_physics/layer_1="towers"
