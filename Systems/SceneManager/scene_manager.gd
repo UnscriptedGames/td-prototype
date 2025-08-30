@@ -32,8 +32,11 @@ func load_scene(scene_path: String) -> void:
 		# Create projectile pools
 		var unique_projectiles: Array[PackedScene] = []
 		for tower_data in level_data.available_towers:
-			if tower_data.projectile_scene and not unique_projectiles.has(tower_data.projectile_scene):
-				unique_projectiles.append(tower_data.projectile_scene)
+			for level in tower_data.levels:
+				if is_instance_valid(level) and is_instance_valid(level.projectile_scene):
+					if not unique_projectiles.has(level.projectile_scene):
+						unique_projectiles.append(level.projectile_scene)
+
 		for projectile_scene in unique_projectiles:
 			ObjectPoolManager.create_pool(projectile_scene, 50)
 	

@@ -78,7 +78,12 @@ func _on_sell_tower_requested() -> void:
 		return
 	
 	var tower_data: TowerData = _selected_tower.data
-	var refund_amount := int(tower_data.cost * 0.80)
+	if tower_data.levels.is_empty():
+		push_error("TowerData for '%s' has no levels defined; cannot determine refund amount." % tower_data.tower_name)
+		return
+
+	var build_cost: int = tower_data.levels[0].cost
+	var refund_amount := int(build_cost * 0.80)
 	
 	GameManager.add_currency(refund_amount)
 	
@@ -100,7 +105,12 @@ func place_tower(tower_data: TowerData, build_position: Vector2, range_points: P
 	new_tower.initialize(tower_data, highlight_layer, selected_tower_id, selected_range_id)
 	new_tower.set_range_polygon(range_points)
 	
-	GameManager.remove_currency(tower_data.cost)
+	if tower_data.levels.is_empty():
+		push_error("TowerData for '%s' has no levels defined; cannot deduct build cost." % tower_data.tower_name)
+		return
+
+	var build_cost: int = tower_data.levels[0].cost
+	GameManager.remove_currency(build_cost)
 
 
 ## Handles input while in build mode; final placement uses PathLayer 'buildable' only.
