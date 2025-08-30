@@ -64,6 +64,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			_deselect_current_tower()
 
 
+func get_selected_tower() -> TemplateTower:
+	return _selected_tower
+
+
 ## Toggles build mode when the button is pressed.
 func _on_build_tower_requested(tower_data: TowerData) -> void:
 	if state == State.BUILDING_TOWER:

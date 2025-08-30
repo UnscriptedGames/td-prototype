@@ -207,7 +207,7 @@ func upgrade() -> void:
 	if not GameManager.player_data.can_afford(next_level_data.cost):
 		return # Cannot afford upgrade
 
-	GameManager.player_data.deduct_currency(next_level_data.cost)
+	GameManager.remove_currency(next_level_data.cost)
 	current_level += 1
 	_apply_level_stats()
 

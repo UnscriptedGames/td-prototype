@@ -1,7 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://tm8k7ow23cuu"]
+[gd_scene load_steps=14 format=3 uid="uid://tm8k7ow23cuu"]
 
 [ext_resource type="PackedScene" uid="uid://dijji12gvss7h" path="res://Entities/Towers/TemplateTower/template_tower.tscn" id="1_l7y83"]
+[ext_resource type="Texture2D" uid="uid://cui84rt2runhh" path="res://Entities/Towers/BombTower/Assets/bomb_tower_level02_spritesheet.png" id="2_t7s1i"]
 [ext_resource type="Texture2D" uid="uid://xlfmca8a8kpw" path="res://Entities/Towers/BombTower/Assets/bomb_tower_level01_spritesheet.png" id="2_usouf"]
+[ext_resource type="Texture2D" uid="uid://c3e8r43xakout" path="res://Entities/Towers/BombTower/Assets/bomb_tower_level03_spritesheet.png" id="4_bp527"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_usouf"]
 radius = 42.0476
@@ -20,6 +22,18 @@ tracks/0/keys = {
 "update": 1,
 "values": [1]
 }
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:texture")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_t7s1i")]
+}
 
 [sub_resource type="Animation" id="Animation_usouf"]
 resource_name = "level_01_idle"
@@ -34,6 +48,18 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:texture")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_usouf")]
 }
 
 [sub_resource type="Animation" id="Animation_t7s1i"]
@@ -66,18 +92,174 @@ tracks/1/keys = {
 "method": &"_spawn_projectile"
 }]
 }
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite:texture")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_usouf")]
+}
+
+[sub_resource type="Animation" id="Animation_yrhkj"]
+resource_name = "level_02_idle"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:texture")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_t7s1i")]
+}
+
+[sub_resource type="Animation" id="Animation_jymx1"]
+resource_name = "level_02_shoot"
+length = 1.8
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4, 5, 6, 7, 8]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.6),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"_spawn_projectile"
+}]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite:texture")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_t7s1i")]
+}
+
+[sub_resource type="Animation" id="Animation_4ivrp"]
+resource_name = "level_03_idle"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:texture")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("4_bp527")]
+}
+
+[sub_resource type="Animation" id="Animation_oet1t"]
+resource_name = "level_03_shoot"
+length = 1.8
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4, 5, 6, 7, 8]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.6),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"_spawn_projectile"
+}]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite:texture")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("4_bp527")]
+}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_t7s1i"]
 _data = {
 &"RESET": SubResource("Animation_bp527"),
 &"level_01_idle": SubResource("Animation_usouf"),
-&"level_01_shoot": SubResource("Animation_t7s1i")
+&"level_01_shoot": SubResource("Animation_t7s1i"),
+&"level_02_idle": SubResource("Animation_yrhkj"),
+&"level_02_shoot": SubResource("Animation_jymx1"),
+&"level_03_idle": SubResource("Animation_4ivrp"),
+&"level_03_shoot": SubResource("Animation_oet1t")
 }
 
 [node name="BombTower" instance=ExtResource("1_l7y83")]
 
 [node name="Sprite" parent="." index="0"]
-texture = ExtResource("2_usouf")
+texture = ExtResource("2_t7s1i")
 offset = Vector2(0, -20)
 hframes = 9
 frame = 1
