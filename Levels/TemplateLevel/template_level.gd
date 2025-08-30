@@ -158,7 +158,7 @@ func _spawn_enemy(enemy_scene: PackedScene, path_node: Path2D) -> void:
 		enemy.died.connect(_on_enemy_died)
 
 
-func _on_enemy_died(enemy: TemplateEnemy, reward_amount: int) -> void:
+func _on_enemy_died(_enemy: TemplateEnemy, reward_amount: int) -> void:
 	# Awards currency for defeated enemies.
 	GameManager.add_currency(reward_amount)
 
