@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="LevelData" load_steps=12 format=3 uid="uid://sct6jvx6tm1y"]
 
-[ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/TowerData/tower_data.gd" id="1_x1iwa"]
+[ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/TemplateTower/tower_data.gd" id="1_x1iwa"]
 [ext_resource type="Resource" uid="uid://c5v3s0n3fxli3" path="res://Config/Towers/MagicTower/magic_tower_data.tres" id="2_im0jt"]
 [ext_resource type="Resource" uid="uid://bojj6xdad27bq" path="res://Config/Towers/ArcherTower/archer_tower_data.tres" id="3_v1whh"]
 [ext_resource type="Resource" uid="uid://dvgo1u4245bj4" path="res://Config/Towers/BombTower/bomb_tower_data.tres" id="4_rqawx"]
