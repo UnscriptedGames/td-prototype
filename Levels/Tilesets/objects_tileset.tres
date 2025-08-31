@@ -53,6 +53,7 @@ texture_region_size = Vector2i(96, 93)
 0:0/1 = 1
 0:0/1/flip_h = true
 0:0/1/texture_origin = Vector2i(-17, -2)
+0:0/1/y_sort_origin = 12
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_wyf6g"]
 texture = ExtResource("6_h03uy")
