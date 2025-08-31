@@ -72,12 +72,14 @@ func _on_tower_selected() -> void:
 	sell_tower_button.visible = true
 	upgrade_button.visible = true
 	_update_upgrade_button()
+	_update_sell_button()
 
 
 ## Hides the Sell button when selection is cleared.
 func _on_tower_deselected() -> void:
 	sell_tower_button.visible = false
 	upgrade_button.visible = false
+	sell_tower_button.text = "Sell"
 
 
 ## Toggles the tower build menu when the Build button is pressed.
@@ -107,8 +109,9 @@ func _on_upgrade_button_pressed() -> void:
 	var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
 	if is_instance_valid(build_manager) and is_instance_valid(build_manager.get_selected_tower()):
 		build_manager.get_selected_tower().upgrade()
-		# After an upgrade attempt, refresh the button state
+		# After an upgrade attempt, refresh the button states
 		_update_upgrade_button()
+		_update_sell_button()
 
 
 func _update_upgrade_button() -> void:
@@ -134,6 +137,15 @@ func _update_upgrade_button() -> void:
 		var cost: int = next_level_data.cost
 		upgrade_button.text = "Upgrade (%dg)" % cost
 		upgrade_button.disabled = not GameManager.player_data.can_afford(cost)
+
+
+func _update_sell_button() -> void:
+	var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
+	if not is_instance_valid(build_manager):
+		return
+
+	var sell_value := build_manager.get_selected_tower_sell_value()
+	sell_tower_button.text = "Sell (%dg)" % sell_value
 
 
 ## Updates the Wave label from GameManager.

@@ -68,6 +68,22 @@ func get_selected_tower() -> TemplateTower:
 	return _selected_tower
 
 
+func get_selected_tower_sell_value() -> int:
+	if not is_instance_valid(_selected_tower):
+		return 0
+	
+	var tower_data: TowerData = _selected_tower.data
+	if tower_data.levels.is_empty():
+		push_error("TowerData for '%s' has no levels defined; cannot determine refund amount." % tower_data.tower_name)
+		return 0
+
+	var total_cost := 0
+	for i in range(_selected_tower.current_level):
+		total_cost += _selected_tower.data.levels[i].cost
+	
+	return int(total_cost * 0.80)
+
+
 ## Toggles build mode when the button is pressed.
 func _on_build_tower_requested(tower_data: TowerData) -> void:
 	if state == State.BUILDING_TOWER:
@@ -81,16 +97,7 @@ func _on_sell_tower_requested() -> void:
 	if not is_instance_valid(_selected_tower):
 		return
 	
-	var tower_data: TowerData = _selected_tower.data
-	if tower_data.levels.is_empty():
-		push_error("TowerData for '%s' has no levels defined; cannot determine refund amount." % tower_data.tower_name)
-		return
-
-	var total_cost := 0
-	for i in range(_selected_tower.current_level):
-		total_cost += _selected_tower.data.levels[i].cost
-
-	var refund_amount := int(total_cost * 0.80)
+	var refund_amount := get_selected_tower_sell_value()
 	
 	GameManager.add_currency(refund_amount)
 	

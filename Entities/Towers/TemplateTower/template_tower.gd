@@ -209,6 +209,7 @@ func upgrade() -> void:
 
 	GameManager.remove_currency(next_level_data.cost)
 	current_level += 1
+	_is_firing = false
 	_apply_level_stats()
 	_update_range_polygon()
 	select()
