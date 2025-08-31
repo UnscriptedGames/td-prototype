@@ -72,7 +72,21 @@ func _on_tower_selected() -> void:
 	sell_tower_button.visible = true
 	upgrade_button.visible = true
 	_update_upgrade_button()
-	_update_sell_button()
+
+	var is_boss_wave := false
+	if GameManager.level_data and GameManager.current_wave > 0:
+		var wave_index := GameManager.current_wave - 1
+		if wave_index < GameManager.level_data.waves.size():
+			var current_wave_data: WaveData = GameManager.level_data.waves[wave_index]
+			if current_wave_data:
+				is_boss_wave = current_wave_data.is_boss_wave
+
+	if is_boss_wave:
+		sell_tower_button.text = "Boss Wave"
+		sell_tower_button.disabled = true
+	else:
+		sell_tower_button.disabled = false
+		_update_sell_button()
 
 
 ## Hides the Sell button when selection is cleared.

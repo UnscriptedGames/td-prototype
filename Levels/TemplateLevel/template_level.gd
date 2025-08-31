@@ -33,8 +33,8 @@ func _ready() -> void:
 			_paths[key_string] = child
 
 	# Register level metadata so the HUD shows total waves.
-	if level_data and not level_data.waves.is_empty():
-		GameManager.set_level(level_number, level_data.waves.size())
+	if level_data:
+		GameManager.set_level(level_number, level_data)
 
 	# Prepare HUD button state and connect the wave request signal.
 	if is_instance_valid(_level_hud):

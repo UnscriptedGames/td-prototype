@@ -8,6 +8,7 @@ signal level_changed(current_level)
 
 ## Player and level state variables
 var player_data: PlayerData
+var level_data: LevelData
 var current_level: int = 0
 var current_wave: int = 0
 var total_waves: int = 0
@@ -27,9 +28,13 @@ func set_player_data(data: PlayerData) -> void:
 
 
 ## Sets the current level and total waves, then emits relevant signals
-func set_level(level: int, wave_count: int) -> void:
+func set_level(level: int, data: LevelData) -> void:
 	current_level = level
-	total_waves = wave_count
+	level_data = data
+	if data and not data.waves.is_empty():
+		total_waves = data.waves.size()
+	else:
+		total_waves = 0
 	emit_signal("level_changed", current_level)
 	emit_signal("wave_changed", current_wave, total_waves)
 
