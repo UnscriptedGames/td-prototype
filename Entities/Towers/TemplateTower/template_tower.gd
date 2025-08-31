@@ -210,6 +210,22 @@ func upgrade() -> void:
 	GameManager.remove_currency(next_level_data.cost)
 	current_level += 1
 	_apply_level_stats()
+	_update_range_polygon()
+	select()
+
+
+func _update_range_polygon() -> void:
+	var points: PackedVector2Array = []
+	var full_tile_size := Vector2(192, 96)
+	var tower_range: int = data.levels[current_level - 1].tower_range
+	var range_multiplier: float = tower_range + 0.5
+
+	points.append(Vector2(0, -full_tile_size.y * range_multiplier))
+	points.append(Vector2(full_tile_size.x * range_multiplier, 0))
+	points.append(Vector2(0, full_tile_size.y * range_multiplier))
+	points.append(Vector2(-full_tile_size.x * range_multiplier, 0))
+
+	range_shape.polygon = points
 
 
 func _apply_level_stats() -> void:

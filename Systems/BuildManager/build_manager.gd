@@ -86,8 +86,11 @@ func _on_sell_tower_requested() -> void:
 		push_error("TowerData for '%s' has no levels defined; cannot determine refund amount." % tower_data.tower_name)
 		return
 
-	var build_cost: int = tower_data.levels[0].cost
-	var refund_amount := int(build_cost * 0.80)
+	var total_cost := 0
+	for i in range(_selected_tower.current_level):
+		total_cost += _selected_tower.data.levels[i].cost
+
+	var refund_amount := int(total_cost * 0.80)
 	
 	GameManager.add_currency(refund_amount)
 	

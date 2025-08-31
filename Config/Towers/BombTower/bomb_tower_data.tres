@@ -21,7 +21,7 @@ idle_animation = "level_01_idle"
 [sub_resource type="Resource" id="Resource_v3ouq"]
 script = ExtResource("2_ettj2")
 cost = 6
-tower_range = 2
+tower_range = 1
 damage = 3
 fire_rate = 0.7
 projectile_speed = 150.0
