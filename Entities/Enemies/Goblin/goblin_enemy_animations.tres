@@ -391,7 +391,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_qvldy")
 }],
 "loop": true,
-"name": &"green_walk_north_west",
+"name": &"green_move_north_west",
 "speed": 6.0
 }, {
 "frames": [{
@@ -408,7 +408,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_1muj2")
 }],
 "loop": true,
-"name": &"green_walk_south_west",
+"name": &"green_move_south_west",
 "speed": 6.0
 }, {
 "frames": [{
@@ -471,7 +471,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_aj6hu")
 }],
 "loop": true,
-"name": &"orange_walk_north_west",
+"name": &"orange_move_north_west",
 "speed": 6.0
 }, {
 "frames": [{
@@ -488,7 +488,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_jvf7i")
 }],
 "loop": true,
-"name": &"orange_walk_south_west",
+"name": &"orange_move_south_west",
 "speed": 6.0
 }, {
 "frames": [{
@@ -551,7 +551,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_vycne")
 }],
 "loop": true,
-"name": &"purple_walk_north_west",
+"name": &"purple_move_north_west",
 "speed": 6.0
 }, {
 "frames": [{
@@ -568,7 +568,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_n2i8w")
 }],
 "loop": true,
-"name": &"purple_walk_south_west",
+"name": &"purple_move_south_west",
 "speed": 6.0
 }, {
 "frames": [{
@@ -631,7 +631,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_cowgs")
 }],
 "loop": true,
-"name": &"yellow_walk_north_west",
+"name": &"yellow_move_north_west",
 "speed": 6.0
 }, {
 "frames": [{
@@ -648,6 +648,6 @@ animations = [{
 "texture": SubResource("AtlasTexture_ahp42")
 }],
 "loop": true,
-"name": &"yellow_walk_south_west",
+"name": &"yellow_move_south_west",
 "speed": 6.0
 }]

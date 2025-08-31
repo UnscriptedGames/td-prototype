@@ -17,8 +17,8 @@ data = ExtResource("2_nxdsg")
 [node name="Animation" parent="." index="0"]
 scale = Vector2(0.3, 0.3)
 sprite_frames = ExtResource("3_lx36u")
-animation = &"red_die_south_west"
-autoplay = "red_walk_south_west"
+animation = &"red_move_south_west"
+autoplay = "red_move_south_west"
 frame_progress = 0.0
 
 [node name="PositionShape" parent="." index="1"]

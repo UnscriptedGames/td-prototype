@@ -16,9 +16,9 @@ data = ExtResource("2_k81li")
 [node name="Animation" parent="." index="0"]
 scale = Vector2(0.3, 0.3)
 sprite_frames = ExtResource("3_eq1k7")
-animation = &"brown_walk_south_west"
-autoplay = "brown_walk_south_west"
-frame_progress = 0.356342
+animation = &"brown_move_south_west"
+autoplay = "brown_move_south_west"
+frame_progress = 0.0
 
 [node name="PositionShape" parent="." index="1"]
 position = Vector2(0, -3)

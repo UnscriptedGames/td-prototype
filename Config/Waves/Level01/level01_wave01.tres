@@ -1,13 +1,14 @@
-[gd_resource type="Resource" script_class="WaveData" load_steps=4 format=3 uid="uid://dwwxxb2gk87lj"]
+[gd_resource type="Resource" script_class="WaveData" load_steps=5 format=3 uid="uid://dwwxxb2gk87lj"]
 
 [ext_resource type="Script" uid="uid://yqynaikbh4b2" path="res://Config/Waves/wave_data.gd" id="1_en4ss"]
 [ext_resource type="Script" uid="uid://dky0tbbrvtpkm" path="res://Config/Waves/spawn_instruction.gd" id="2_3tmne"]
 [ext_resource type="Resource" uid="uid://beoymem7tbj2f" path="res://Config/Waves/Level01/Wave01/spawn02_goblins.tres" id="3_6qpgx"]
+[ext_resource type="Resource" uid="uid://dxby0wptfa3ue" path="res://Config/Waves/Level01/Wave01/fly02_birds.tres" id="4_3tmne"]
 
 [resource]
 script = ExtResource("1_en4ss")
 start_delay = 0.0
 reward_multiplier = 1.0
 is_boss_wave = false
-spawns = Array[ExtResource("2_3tmne")]([ExtResource("3_6qpgx")])
+spawns = Array[ExtResource("2_3tmne")]([ExtResource("3_6qpgx"), ExtResource("4_3tmne")])
 metadata/_custom_type_script = "uid://yqynaikbh4b2"

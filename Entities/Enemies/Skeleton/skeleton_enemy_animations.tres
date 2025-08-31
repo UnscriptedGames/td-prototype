@@ -167,7 +167,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_c05cp")
 }],
 "loop": true,
-"name": &"brown_walk_north_west",
+"name": &"brown_move_north_west",
 "speed": 4.0
 }, {
 "frames": [{
@@ -190,6 +190,6 @@ animations = [{
 "texture": SubResource("AtlasTexture_fvdsc")
 }],
 "loop": true,
-"name": &"brown_walk_south_west",
+"name": &"brown_move_south_west",
 "speed": 4.0
 }]

@@ -176,9 +176,9 @@ func _process(delta: float) -> void:
 		if path_follow.progress < path.curve.get_baked_length() - 0.1:
 			_last_direction = anim_dir
 			_last_flip_h = flip_h
-
-		# Play the walking animation
-		_play_animation("walk", anim_dir, flip_h)
+ 
+		# Play the moving animation
+		_play_animation("move", anim_dir, flip_h)
 
 		# Check if the enemy has reached the end of the path
 		if not _has_reached_end and path_follow.progress >= path.curve.get_baked_length():

@@ -11,5 +11,5 @@ reward = 1
 damage = 2
 max_path_offset = 32.0
 variants = Array[String](["green", "purple", "orange", "yellow"])
-required_actions = Array[String](["walk", "die"])
+required_actions = Array[String](["move", "die"])
 animations = ExtResource("1_x4n50")

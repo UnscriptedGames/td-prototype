@@ -17,8 +17,8 @@ data = ExtResource("2_2a4x7")
 [node name="Animation" parent="." index="0"]
 scale = Vector2(0.3, 0.3)
 sprite_frames = ExtResource("3_2a4x7")
-animation = &"grey_walk_south_west"
-autoplay = "grey_walk_south_west"
+animation = &"grey_move_south_west"
+autoplay = "grey_move_south_west"
 frame_progress = 0.0
 offset = Vector2(-100, -175)
 

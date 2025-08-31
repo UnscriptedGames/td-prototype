@@ -1,0 +1,43 @@
+[gd_scene load_steps=6 format=3 uid="uid://bo1oxf231jssk"]
+
+[ext_resource type="PackedScene" uid="uid://br1v6v0da2v1n" path="res://Entities/Enemies/TemplateEnemy/template_enemy.tscn" id="1_b8htm"]
+[ext_resource type="Resource" uid="uid://fb5svrl36qsa" path="res://Config/Enemies/Bird/bird_enemy_data.tres" id="2_p31xv"]
+[ext_resource type="SpriteFrames" uid="uid://b3ygbnw74u4m7" path="res://Entities/Enemies/Bird/bird_enemy_animations.tres" id="3_y04f5"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_echq7"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_an7jk"]
+radius = 28.91
+height = 94.0
+
+[node name="Bird" instance=ExtResource("1_b8htm")]
+data = ExtResource("2_p31xv")
+
+[node name="Animation" parent="." index="0"]
+scale = Vector2(0.8, 0.8)
+sprite_frames = ExtResource("3_y04f5")
+animation = &"grey_move_south_west"
+autoplay = "grey_move_south_west"
+frame_progress = 0.0
+offset = Vector2(0, -55)
+
+[node name="PositionShape" parent="." index="1"]
+visible = false
+position = Vector2(0, -3)
+shape = SubResource("CircleShape2D_echq7")
+
+[node name="HitboxShape" parent="Hitbox" index="0"]
+visible = false
+position = Vector2(0, -58.185)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_an7jk")
+
+[node name="HealthBar" parent="." index="3"]
+offset_left = -34.0
+offset_top = -111.55
+offset_right = 62.0
+offset_bottom = -95.55
+scale = Vector2(0.7, 0.7)
+
+[node name="TargetPoint" parent="." index="4"]
+position = Vector2(0, -55.91)
