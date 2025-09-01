@@ -75,6 +75,14 @@ func _ready() -> void:
 	reward = data.reward
 	_health = max_health
 
+	# Handle flying enemies
+	if data.is_flying:
+		y_sort_enabled = false
+		z_index = 10
+	else:
+		y_sort_enabled = true
+		z_index = 0
+
 	# Validate and select a variant
 	var data_key: String = data.resource_path
 	var valid_variants: Array = []
