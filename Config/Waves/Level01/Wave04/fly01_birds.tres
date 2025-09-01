@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SpawnInstruction" load_steps=3 format=3 uid="uid://bp7l4g7061dt7"]
+
+[ext_resource type="PackedScene" uid="uid://bo1oxf231jssk" path="res://Entities/Enemies/Bird/bird_enemy.tscn" id="1_kfc2i"]
+[ext_resource type="Script" uid="uid://dky0tbbrvtpkm" path="res://Config/Waves/spawn_instruction.gd" id="2_6cwcl"]
+
+[resource]
+script = ExtResource("2_6cwcl")
+enemy_scene = ExtResource("1_kfc2i")
+path = NodePath("Paths/Fly01")
+count = 4
+enemy_delay = 2.0
+start_delay = 0.0
+metadata/_custom_type_script = "uid://dky0tbbrvtpkm"

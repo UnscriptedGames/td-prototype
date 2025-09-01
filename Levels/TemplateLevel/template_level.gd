@@ -50,13 +50,7 @@ func _ready() -> void:
 		if OS.is_debug_build():
 			push_warning("LevelHUD not found in TemplateLevel.")
 
-	# Defer HUD scale+offset sync so the camera's Inspector zoom is applied first.
-	call_deferred("_sync_hud_scale_and_offset")
-
-	# Re-apply HUD sync on window resize (Aspect=expand changes viewport size).
-	get_viewport().size_changed.connect(_on_viewport_size_changed)
-
-
+	
 func _exit_tree() -> void:
 	# Disconnect HUD signals to avoid leaks in recycled scenes.
 	if is_instance_valid(_level_hud):
@@ -81,23 +75,6 @@ func _start_wave(wave_index: int) -> void:
 
 
 ## Custom Private Methods
-
-func _apply_view_scale_from_camera() -> void:
-	# Mirrors the Camera2D zoom to the HUD CanvasLayer scale.
-	if not is_instance_valid(_level_camera) or not is_instance_valid(_level_hud):
-		if OS.is_debug_build():
-			push_warning("Level camera or HUD missing; cannot mirror zoom.")
-		return
-
-	_level_hud.scale = _level_camera.zoom
-
-
-func _apply_view_scale_from_camera_deferred() -> int:
-	# Waits one frame so Inspector values (e.g., zoom) are applied, then syncs.
-	await get_tree().process_frame
-	_apply_view_scale_from_camera()
-	return 0
-
 
 func _spawn_wave(wave: WaveData) -> void:
 	# Starts all spawn groups in a wave.
@@ -245,30 +222,3 @@ func _on_wave_spawn_finished() -> void:
 
 	_level_hud.set_next_wave_enabled(true)
 	_level_hud.set_next_wave_text("Next Wave")
-
-
-func _sync_hud_scale_and_offset() -> void:
-	# Scales the HUD by the inverse of camera zoom, then offsets it so it stays centred.
-	if not is_instance_valid(_level_camera) or not is_instance_valid(_level_hud):
-		if OS.is_debug_build():
-			push_warning("TemplateLevel: level camera or HUD missing; cannot sync HUD.")
-		return
-
-	# 1) Read current camera zoom (Vector2). For zoom-out (e.g., 0.8333), HUD must grow (1/zoom).
-	var z := _level_camera.zoom
-	var s := Vector2(1.0 / z.x, 1.0 / z.y)
-
-	# 2) Apply HUD scale to match world scale perceptually.
-	_level_hud.scale = s
-
-	# 3) Compute offsets so the scaled HUD remains visually centred on screen.
-	#    Because CanvasLayer scales from top-left, we shift by half of the added size.
-	var vp_size := Vector2(get_viewport().size)  # Current viewport size in pixels.
-	var ox := -(s.x - 1.0) * vp_size.x * 0.5
-	var oy := -(s.y - 1.0) * vp_size.y * 0.5
-	_level_hud.offset = Vector2(ox, oy)
-
-
-func _on_viewport_size_changed() -> void:
-	# Re-synchronises HUD scale and offset when the window size changes.
-	_sync_hud_scale_and_offset()

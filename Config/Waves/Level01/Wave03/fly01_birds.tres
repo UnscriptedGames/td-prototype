@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_yiljj")
 enemy_scene = ExtResource("1_yb3pe")
-path = NodePath("Paths/Fly2")
+path = NodePath("Paths/Fly01")
 count = 4
 enemy_delay = 2.0
 start_delay = 0.0

@@ -9,6 +9,7 @@ max_health = 7
 speed = 50.0
 reward = 2
 damage = 1
+is_flying = false
 max_path_offset = 32.0
 variants = Array[String](["brown"])
 required_actions = Array[String](["move", "die"])

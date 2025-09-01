@@ -5,4 +5,4 @@
 [resource]
 script = ExtResource("1_8rqla")
 health = 20
-currency = 20
+currency = 200

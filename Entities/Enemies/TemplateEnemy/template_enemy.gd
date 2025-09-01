@@ -73,15 +73,6 @@ func _ready() -> void:
 	max_health = data.max_health
 	speed = data.speed
 	reward = data.reward
-	_health = max_health
-
-	# Handle flying enemies
-	if data.is_flying:
-		y_sort_enabled = false
-		z_index = 10
-	else:
-		y_sort_enabled = true
-		z_index = 0
 
 	# Validate and select a variant
 	var data_key: String = data.resource_path
@@ -99,7 +90,8 @@ func _ready() -> void:
 		set_process(false)
 		visible = false
 
-	_update_health_bar()
+	# Set the initial state
+	reset()
 
 
 ## Validates all variants in the EnemyData resource
@@ -141,6 +133,11 @@ func die() -> void:
 	if state == State.DYING:
 		return
 	state = State.DYING
+
+	# If the enemy is a flying type, make it "fall" to the ground for its death animation
+	if data and data.is_flying:
+		z_index = 0
+
 	emit_signal("died", self, reward)
 	await _play_death_sequence("die")
 	_return_to_pool_and_cleanup()
@@ -151,6 +148,11 @@ func reached_goal() -> void:
 	if state == State.DYING or state == State.REACHED_GOAL:
 		return
 	state = State.REACHED_GOAL
+	
+	# If the enemy is a flying type, make it "fall" to the ground
+	if data and data.is_flying:
+		z_index = 0
+		
 	# For now, we reuse the "die" animation. This can be changed to "goal" later.
 	await _play_death_sequence("die")
 	_return_to_pool_and_cleanup()
@@ -245,6 +247,12 @@ func reset() -> void:
 	# Assign a random path offset when the enemy is reset (i.e. spawned)
 	if data:
 		_path_offset = randf_range(-data.max_path_offset, data.max_path_offset)
+
+		# Handle flying enemies
+		if data.is_flying:
+			z_index = 10
+		else:
+			z_index = 0
 
 	# Process is enabled by the spawner when ready
 	set_process(false)

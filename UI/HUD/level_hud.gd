@@ -30,9 +30,6 @@ signal next_wave_requested
 ## Called when this HUD enters the scene tree.
 ## Connects to BuildManager (selection state) and GameManager (stats).
 func _ready() -> void:
-	# This can also be connected from the editor.
-	upgrade_button.pressed.connect(_on_upgrade_button_pressed)
-
 	# Connect to the BuildManager in the active level (group ensures decoupling).
 	var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
 	if is_instance_valid(build_manager):

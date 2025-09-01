@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=4 uid="uid://da4wggnk44ip2"]
+[gd_scene load_steps=14 format=4 uid="uid://da4wggnk44ip2"]
 
 [ext_resource type="PackedScene" uid="uid://bir7iuxfukxsb" path="res://Levels/TemplateLevel/template_level.tscn" id="1_sm372"]
 [ext_resource type="Resource" uid="uid://sct6jvx6tm1y" path="res://Config/Levels/Level01/level_01_data.tres" id="2_5muv1"]
@@ -34,7 +34,13 @@ point_count = 8
 
 [sub_resource type="Curve2D" id="Curve2D_vkb5y"]
 _data = {
-"points": PackedVector2Array(0, 0, 0, 0, 1366, -12, 0, 0, 0, 0, 890, 877)
+"points": PackedVector2Array(0, 0, 0, 0, 359, -18, 0, 0, 0, 0, 816, 883)
+}
+point_count = 2
+
+[sub_resource type="Curve2D" id="Curve2D_2nk17"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 1364, -18, 0, 0, 0, 0, 915, 879)
 }
 point_count = 2
 
@@ -67,42 +73,52 @@ tile_set = ExtResource("5_vkb5y")
 [node name="Enemies" parent="Entities" index="2"]
 y_sort_enabled = true
 
-[node name="Spawn1" type="Path2D" parent="Paths" index="0"]
+[node name="Spawn01" type="Path2D" parent="Paths" index="0"]
 curve = SubResource("Curve2D_h4a6w")
 script = ExtResource("4_2nk17")
-branches = Array[NodePath]([NodePath("../End1"), NodePath("../End2")])
+branches = Array[NodePath]([NodePath("../End01"), NodePath("../End02")])
 
-[node name="Spawn2" type="Path2D" parent="Paths" index="1"]
+[node name="Spawn02" type="Path2D" parent="Paths" index="1"]
 curve = SubResource("Curve2D_vbwyf")
 script = ExtResource("4_2nk17")
-branches = Array[NodePath]([NodePath("../End1"), NodePath("../End2")])
+branches = Array[NodePath]([NodePath("../End01"), NodePath("../End02")])
 
-[node name="End1" type="Path2D" parent="Paths" index="2"]
+[node name="End01" type="Path2D" parent="Paths" index="2"]
 curve = SubResource("Curve2D_1n5yv")
 
-[node name="End2" type="Path2D" parent="Paths" index="3"]
+[node name="End02" type="Path2D" parent="Paths" index="3"]
 curve = SubResource("Curve2D_oql6h")
 
-[node name="Fly2" type="Path2D" parent="Paths" index="4"]
-z_index = 5
+[node name="Fly01" type="Path2D" parent="Paths" index="4"]
+z_index = 10
 curve = SubResource("Curve2D_vkb5y")
 
+[node name="Fly02" type="Path2D" parent="Paths" index="5"]
+z_index = 10
+curve = SubResource("Curve2D_2nk17")
+
+[node name="Animations" parent="." index="3"]
+y_sort_enabled = true
+
 [node name="Smoke" type="AnimatedSprite2D" parent="Animations" index="0"]
-z_index = 1
-position = Vector2(863, 831)
+y_sort_enabled = true
+position = Vector2(863, 906)
 sprite_frames = ExtResource("5_fgavm")
 animation = &"smoke"
 autoplay = "smoke"
 frame_progress = 0.510573
+offset = Vector2(0, -70)
 
 [node name="Flame" type="AnimatedSprite2D" parent="Animations" index="1"]
 z_index = 1
-position = Vector2(864, 879)
+y_sort_enabled = true
+position = Vector2(864, 904.7)
 scale = Vector2(1.4, 1.4)
 sprite_frames = ExtResource("5_fgavm")
 animation = &"flames"
 autoplay = "flames"
 frame_progress = 0.113154
+offset = Vector2(0, -20)
 
 [node name="BuildManager" parent="." index="4"]
 invalid_tower_id = 4

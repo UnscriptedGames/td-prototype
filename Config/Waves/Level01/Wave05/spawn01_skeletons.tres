@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_wdvac")
 enemy_scene = ExtResource("1_u3gal")
-path = NodePath("Paths/Spawn1")
+path = NodePath("Paths/Spawn01")
 count = 2
 enemy_delay = 6.0
 start_delay = 2.0
