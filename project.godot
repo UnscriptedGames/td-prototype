@@ -20,6 +20,7 @@ GameManager="*res://Systems/GameManager/game_manager.gd"
 ObjectPoolManager="*res://Systems/ObjectPoolManager/object_pool_manager.gd"
 HighlightManager="*res://Systems/HighlightManager/highlight_manager.gd"
 SceneManager="*res://Systems/SceneManager/scene_manager.gd"
+GlobalSignals="*res://Systems/GlobalSignals/global_signals.gd"
 
 [display]
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=4 uid="uid://bir7iuxfukxsb"]
+[gd_scene load_steps=9 format=4 uid="uid://bir7iuxfukxsb"]
 
 [ext_resource type="Script" uid="uid://6irywbbrglw3" path="res://Levels/TemplateLevel/template_level.gd" id="1_f16nf"]
 [ext_resource type="TileSet" uid="uid://deanuyo4c5m1j" path="res://Levels/Tilesets/path_tileset.tres" id="1_ser8i"]
@@ -6,6 +6,8 @@
 [ext_resource type="Script" uid="uid://cyy8netls8x7r" path="res://Systems/BuildManager/build_manager.gd" id="3_x6qrl"]
 [ext_resource type="Script" uid="uid://yny7h3dispg0" path="res://addons/Tools/tilemap_buildable_overlay.gd" id="3_ylfxi"]
 [ext_resource type="PackedScene" uid="uid://d3ilyyujh1y78" path="res://Entities/Towers/GhostTower/ghost_tower.tscn" id="4_gxwin"]
+[ext_resource type="PackedScene" uid="uid://bofddehla75b3" path="res://Entities/Cards/card_manager.tscn" id="7_3pnw0"]
+[ext_resource type="PackedScene" uid="uid://cwisj0cf6hqqu" path="res://UI/CardsHUD/cards_hud.tscn" id="8_85qtr"]
 
 [node name="TemplateLevel" type="Node2D"]
 y_sort_enabled = true
@@ -64,7 +66,7 @@ invalid_tower_id = 3
 valid_range_id = 4
 invalid_range_id = 5
 
-[node name="LevelHUD" parent="." instance=ExtResource("3_sv07c")]
+[node name="CardManager" parent="." instance=ExtResource("7_3pnw0")]
 
 [node name="LevelCamera" type="Camera2D" parent="."]
 position = Vector2(960, 540)
@@ -73,3 +75,9 @@ limit_top = 0
 limit_right = 1920
 limit_bottom = 1080
 position_smoothing_enabled = true
+
+[node name="LevelHUD" parent="." instance=ExtResource("3_sv07c")]
+
+[node name="CardsHUD" parent="." instance=ExtResource("8_85qtr")]
+
+[editable path="CardsHUD"]

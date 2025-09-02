@@ -31,9 +31,15 @@ var _selected_tower: TemplateTower
 
 ## Called when the node enters the scene tree.
 func _ready() -> void:
+	# Connects to signals from the LevelHUD for legacy build buttons.
 	if is_instance_valid(hud):
+		# Connects the signal for when a build button is clicked.
 		hud.build_tower_requested.connect(_on_build_tower_requested)
+		# Connects the signal for when the sell button is clicked.
 		hud.sell_tower_requested.connect(_on_sell_tower_requested)
+
+	# Connects to the new global signal for card-based building requests.
+	GlobalSignals.build_tower_requested.connect(_on_build_tower_requested)
 
 
 ## Listens for player input for building and selection.

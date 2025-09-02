@@ -21,6 +21,8 @@ var _paths: Dictionary = {}
 @onready var entities: Node2D = $Entities
 @onready var _level_hud: LevelHUD = $LevelHUD as LevelHUD
 @onready var _level_camera: Camera2D = $LevelCamera as Camera2D
+@onready var _card_manager: CardManager = $CardManager
+@onready var _hand_controller: HandController = $CardsHUD/HandContainer
 
 ## Built-in Methods
 
@@ -36,6 +38,14 @@ func _ready() -> void:
 	if level_data:
 		GameManager.set_level(level_number, level_data)
 
+	# --- Card System Initialisation ---
+	# Initialise the HandController with a reference to the CardManager first.
+	_hand_controller.initialise(_card_manager)
+	
+	# Now that the UI is listening, initialise the CardManager to draw the hand.
+	if GameManager.player_data.deck:
+		_card_manager.initialise_deck(GameManager.player_data.deck, GameManager.player_data.hand_size)
+		
 	# Prepare HUD button state and connect the wave request signal.
 	if is_instance_valid(_level_hud):
 		if level_data and _current_wave_index < level_data.waves.size():

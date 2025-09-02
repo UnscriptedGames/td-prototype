@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DeckData" load_steps=5 format=3 uid="uid://bn71y3nnwjlyq"]
+
+[ext_resource type="Texture2D" uid="uid://bbnk4onkxnshy" path="res://Assets/card_back.png" id="1_qw4hc"]
+[ext_resource type="Script" uid="uid://drvh5madwcotk" path="res://Entities/Cards/card_data.gd" id="1_wwci7"]
+[ext_resource type="Script" uid="uid://brvxhg6y1rh68" path="res://Entities/Cards/deck_data.gd" id="2_lnmr1"]
+[ext_resource type="Resource" uid="uid://b8ab3b01oeqpu" path="res://Config/Cards/card_build_archer_tower.tres" id="3_c6g2i"]
+
+[resource]
+script = ExtResource("2_lnmr1")
+cards = Array[ExtResource("1_wwci7")]([ExtResource("3_c6g2i"), ExtResource("3_c6g2i"), ExtResource("3_c6g2i"), ExtResource("3_c6g2i"), ExtResource("3_c6g2i")])
+card_back_texture = ExtResource("1_qw4hc")
+metadata/_custom_type_script = "uid://brvxhg6y1rh68"

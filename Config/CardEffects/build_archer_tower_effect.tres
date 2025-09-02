@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="BuildTowerEffect" load_steps=3 format=3 uid="uid://dc8fkph33ui3e"]
+
+[ext_resource type="Script" uid="uid://1pgmy4c6yckj" path="res://Entities/Cards/build_tower_effect.gd" id="1_3t14m"]
+[ext_resource type="Resource" uid="uid://bojj6xdad27bq" path="res://Config/Towers/ArcherTower/archer_tower_data.tres" id="2_0ld3r"]
+
+[resource]
+script = ExtResource("1_3t14m")
+tower_data = ExtResource("2_0ld3r")
+metadata/_custom_type_script = "uid://1pgmy4c6yckj"
