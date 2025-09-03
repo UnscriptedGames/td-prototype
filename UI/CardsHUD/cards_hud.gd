@@ -83,7 +83,7 @@ func handle_global_click(event: InputEventMouseButton) -> bool:
 
 	# If we reach here, it was a background click in expanded mode
 	condense()
-	return true # Handled
+	return false # Not handled, so other UI can process it.
 
 func expand() -> void:
 	_toggle_cards(true)
