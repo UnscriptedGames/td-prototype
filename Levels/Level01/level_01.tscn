@@ -1,11 +1,11 @@
 [gd_scene load_steps=14 format=4 uid="uid://da4wggnk44ip2"]
 
 [ext_resource type="PackedScene" uid="uid://bir7iuxfukxsb" path="res://Levels/TemplateLevel/template_level.tscn" id="1_sm372"]
-[ext_resource type="Resource" uid="uid://sct6jvx6tm1y" path="res://Config/Levels/Level01/level_01_data.tres" id="2_5muv1"]
+[ext_resource type="Resource" uid="uid://sct6jvx6tm1y" path="res://Config/Levels/level_01_data.tres" id="2_5muv1"]
 [ext_resource type="TileSet" uid="uid://deanuyo4c5m1j" path="res://Levels/Tilesets/path_tileset.tres" id="3_vkb5y"]
 [ext_resource type="Script" uid="uid://dql3pw67f5uhe" path="res://Levels/TemplateLevel/path_data.gd" id="4_2nk17"]
 [ext_resource type="TileSet" uid="uid://dq71bx8v7hske" path="res://Levels/Tilesets/highlight_tileset.tres" id="4_5muv1"]
-[ext_resource type="SpriteFrames" uid="uid://bkwi0pcvvdulg" path="res://Levels/Level01/Assets/level_1_animations.tres" id="5_fgavm"]
+[ext_resource type="SpriteFrames" uid="uid://bkwi0pcvvdulg" path="res://Levels/Level01/level_1_animations.tres" id="5_fgavm"]
 [ext_resource type="TileSet" uid="uid://did7hsalbpaxs" path="res://Levels/Tilesets/objects_tileset.tres" id="5_vkb5y"]
 
 [sub_resource type="Curve2D" id="Curve2D_h4a6w"]
@@ -126,5 +126,3 @@ valid_range_id = 3
 
 [node name="CardsHUD" parent="." index="8"]
 layer = 15
-
-[editable path="CardsHUD"]

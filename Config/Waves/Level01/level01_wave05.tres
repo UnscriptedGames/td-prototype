@@ -1,18 +1,69 @@
-[gd_resource type="Resource" script_class="WaveData" load_steps=9 format=3 uid="uid://ym3kxf5y13g1"]
+[gd_resource type="Resource" script_class="WaveData" load_steps=12 format=3 uid="uid://ym3kxf5y13g1"]
 
-[ext_resource type="Script" uid="uid://yqynaikbh4b2" path="res://Config/Waves/wave_data.gd" id="1_sxbaw"]
-[ext_resource type="Script" uid="uid://dky0tbbrvtpkm" path="res://Config/Waves/spawn_instruction.gd" id="2_shqeu"]
-[ext_resource type="Resource" uid="uid://ddl4om5wb3bsi" path="res://Config/Waves/Level01/Wave05/spawn01_goblins.tres" id="3_ujt41"]
-[ext_resource type="Resource" uid="uid://i51o1lgjevhs" path="res://Config/Waves/Level01/Wave05/spawn01_skeletons.tres" id="4_fq7o6"]
-[ext_resource type="Resource" uid="uid://cq2qvhorg6lmw" path="res://Config/Waves/Level01/Wave05/spawn01_wolves.tres" id="5_88sgg"]
-[ext_resource type="Resource" uid="uid://b7s3vtmx4j8p0" path="res://Config/Waves/Level01/Wave05/spawn02_goblins.tres" id="6_33tq4"]
-[ext_resource type="Resource" uid="uid://s65yh6gyj6gl" path="res://Config/Waves/Level01/Wave05/spawn02_skeletons.tres" id="7_eonrq"]
-[ext_resource type="Resource" uid="uid://b64llk2m2i8q2" path="res://Config/Waves/Level01/Wave05/spawn02_wolves.tres" id="8_tvqck"]
+[ext_resource type="Script" uid="uid://yqynaikbh4b2" path="res://Core/Data/wave_data.gd" id="1_ujt41"]
+[ext_resource type="Script" uid="uid://dky0tbbrvtpkm" path="res://Core/Data/spawn_instruction.gd" id="2_fq7o6"]
+[ext_resource type="PackedScene" uid="uid://dawi37fxxor7q" path="res://Entities/Enemies/Goblin/goblin_enemy.tscn" id="3_shqeu"]
+[ext_resource type="PackedScene" uid="uid://cjaicim438kkt" path="res://Entities/Enemies/Skeleton/skeleton_enemy.tscn" id="4_gtlh0"]
+[ext_resource type="PackedScene" uid="uid://c1nby7lef2o4r" path="res://Entities/Enemies/Wolf/wolf_enemy.tscn" id="5_ka7qo"]
+
+[sub_resource type="Resource" id="Resource_ujt41"]
+script = ExtResource("2_fq7o6")
+enemy_scene = ExtResource("3_shqeu")
+path = NodePath("Paths/Spawn01")
+count = 5
+enemy_delay = 1.5
+start_delay = 0.0
+metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
+
+[sub_resource type="Resource" id="Resource_fq7o6"]
+script = ExtResource("2_fq7o6")
+enemy_scene = ExtResource("4_gtlh0")
+path = NodePath("Paths/Spawn01")
+count = 2
+enemy_delay = 6.0
+start_delay = 2.0
+metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
+
+[sub_resource type="Resource" id="Resource_88sgg"]
+script = ExtResource("2_fq7o6")
+enemy_scene = ExtResource("5_ka7qo")
+path = NodePath("Paths/Spawn01")
+count = 5
+enemy_delay = 2.0
+start_delay = 2.5
+metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
+
+[sub_resource type="Resource" id="Resource_33tq4"]
+script = ExtResource("2_fq7o6")
+enemy_scene = ExtResource("3_shqeu")
+path = NodePath("Paths/Spawn02")
+count = 4
+enemy_delay = 1.0
+start_delay = 5.0
+metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
+
+[sub_resource type="Resource" id="Resource_eonrq"]
+script = ExtResource("2_fq7o6")
+enemy_scene = ExtResource("4_gtlh0")
+path = NodePath("Paths/Spawn02")
+count = 3
+enemy_delay = 5.0
+start_delay = 8.0
+metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
+
+[sub_resource type="Resource" id="Resource_tvqck"]
+script = ExtResource("2_fq7o6")
+enemy_scene = ExtResource("5_ka7qo")
+path = NodePath("Paths/Spawn02")
+count = 3
+enemy_delay = 1.5
+start_delay = 0.0
+metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
 
 [resource]
-script = ExtResource("1_sxbaw")
+script = ExtResource("1_ujt41")
 start_delay = 0.0
 reward_multiplier = 1.0
 is_boss_wave = false
-spawns = Array[ExtResource("2_shqeu")]([ExtResource("3_ujt41"), ExtResource("4_fq7o6"), ExtResource("5_88sgg"), ExtResource("6_33tq4"), ExtResource("7_eonrq"), ExtResource("8_tvqck")])
+spawns = Array[ExtResource("2_fq7o6")]([SubResource("Resource_ujt41"), SubResource("Resource_fq7o6"), SubResource("Resource_88sgg"), SubResource("Resource_33tq4"), SubResource("Resource_eonrq"), SubResource("Resource_tvqck")])
 metadata/_custom_type_script = "uid://yqynaikbh4b2"

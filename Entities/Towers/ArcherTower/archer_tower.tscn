@@ -1,6 +1,6 @@
 [gd_scene load_steps=14 format=3 uid="uid://bgedhv3rnitf0"]
 
-[ext_resource type="PackedScene" uid="uid://dijji12gvss7h" path="res://Entities/Towers/TemplateTower/template_tower.tscn" id="1_8gvhp"]
+[ext_resource type="PackedScene" uid="uid://dijji12gvss7h" path="res://Entities/Towers/_TemplateTower/template_tower.tscn" id="1_8gvhp"]
 [ext_resource type="Texture2D" uid="uid://bhim1nyfagr1n" path="res://Entities/Towers/ArcherTower/Assets/archer_tower_level01_spritesheet.png" id="2_cmcjc"]
 [ext_resource type="Texture2D" uid="uid://6r5314msfpmd" path="res://Entities/Towers/ArcherTower/Assets/archer_tower_level02_spritesheet.png" id="2_kc3mf"]
 [ext_resource type="Texture2D" uid="uid://crwmeqjybguqd" path="res://Entities/Towers/ArcherTower/Assets/archer_tower_level03_spritesheet.png" id="4_1bov1"]

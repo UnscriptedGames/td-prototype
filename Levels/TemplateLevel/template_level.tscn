@@ -2,9 +2,9 @@
 
 [ext_resource type="Script" uid="uid://6irywbbrglw3" path="res://Levels/TemplateLevel/template_level.gd" id="1_f16nf"]
 [ext_resource type="TileSet" uid="uid://deanuyo4c5m1j" path="res://Levels/Tilesets/path_tileset.tres" id="1_ser8i"]
-[ext_resource type="PackedScene" uid="uid://qy230vei6n8p" path="res://UI/HUD/level_hud.tscn" id="3_sv07c"]
-[ext_resource type="Script" uid="uid://cyy8netls8x7r" path="res://Systems/BuildManager/build_manager.gd" id="3_x6qrl"]
-[ext_resource type="Script" uid="uid://yny7h3dispg0" path="res://addons/Tools/tilemap_buildable_overlay.gd" id="3_ylfxi"]
+[ext_resource type="PackedScene" uid="uid://qy230vei6n8p" path="res://UI/LevelHUD/level_hud.tscn" id="3_sv07c"]
+[ext_resource type="Script" uid="uid://cyy8netls8x7r" path="res://Systems/build_manager.gd" id="3_x6qrl"]
+[ext_resource type="Script" uid="uid://yny7h3dispg0" path="res://Addons/Tools/tilemap_buildable_overlay.gd" id="3_ylfxi"]
 [ext_resource type="PackedScene" uid="uid://d3ilyyujh1y78" path="res://Entities/Towers/GhostTower/ghost_tower.tscn" id="4_gxwin"]
 [ext_resource type="PackedScene" uid="uid://bofddehla75b3" path="res://Entities/Cards/card_manager.tscn" id="7_3pnw0"]
 [ext_resource type="PackedScene" uid="uid://cwisj0cf6hqqu" path="res://UI/CardsHUD/cards_hud.tscn" id="8_85qtr"]

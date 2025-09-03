@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://cjaicim438kkt"]
 
-[ext_resource type="PackedScene" uid="uid://br1v6v0da2v1n" path="res://Entities/Enemies/TemplateEnemy/template_enemy.tscn" id="1_ajw0v"]
-[ext_resource type="Resource" uid="uid://cl3lou6vqcvn3" path="res://Config/Enemies/Skeleton/skeleton_enemy_data.tres" id="2_k81li"]
+[ext_resource type="PackedScene" uid="uid://br1v6v0da2v1n" path="res://Entities/Enemies/_TemplateEnemy/template_enemy.tscn" id="1_ajw0v"]
+[ext_resource type="Resource" uid="uid://cl3lou6vqcvn3" path="res://Config/Enemies/skeleton_enemy_data.tres" id="2_k81li"]
 [ext_resource type="SpriteFrames" uid="uid://dfa8qhtkd4ij7" path="res://Entities/Enemies/Skeleton/skeleton_enemy_animations.tres" id="3_eq1k7"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_echq7"]

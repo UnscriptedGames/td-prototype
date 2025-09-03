@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="TowerData" load_steps=9 format=3 uid="uid://c5v3s0n3fxli3"]
+
+[ext_resource type="Texture2D" uid="uid://c76ybfld4rufa" path="res://Entities/Towers/MagicTower/Assets/magic_tower_level01_01.png" id="1_5ig1c"]
+[ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_rrhbf"]
+[ext_resource type="PackedScene" uid="uid://pfn6g0trbvuw" path="res://Entities/Towers/MagicTower/magic_tower.tscn" id="2_glcib"]
+[ext_resource type="Script" uid="uid://cajll6x5mfyy4" path="res://Entities/Towers/_TemplateTower/tower_level_data.gd" id="2_vcqlg"]
+[ext_resource type="PackedScene" uid="uid://cbjoufki8jid4" path="res://Entities/Projectiles/BoneProjectile/bone_projectile.tscn" id="3_glcib"]
+
+[sub_resource type="Resource" id="Resource_vcqlg"]
+script = ExtResource("2_vcqlg")
+cost = 8
+tower_range = 1
+damage = 2
+fire_rate = 1.0
+projectile_speed = 400.0
+is_aoe = false
+projectile_scene = ExtResource("3_glcib")
+shoot_animation = "level_01_shoot"
+idle_animation = "level_01_idle"
+
+[sub_resource type="Resource" id="Resource_c4xoo"]
+script = ExtResource("2_vcqlg")
+cost = 9
+tower_range = 2
+damage = 2
+fire_rate = 1.0
+projectile_speed = 400.0
+is_aoe = false
+projectile_scene = ExtResource("3_glcib")
+shoot_animation = "level_02_shoot"
+idle_animation = "level_02_idle"
+
+[sub_resource type="Resource" id="Resource_pu0hc"]
+script = ExtResource("2_vcqlg")
+cost = 10
+tower_range = 3
+damage = 2
+fire_rate = 1.0
+projectile_speed = 400.0
+is_aoe = false
+projectile_scene = ExtResource("3_glcib")
+shoot_animation = "level_03_shoot"
+idle_animation = "level_03_idle"
+
+[resource]
+script = ExtResource("1_rrhbf")
+tower_name = "Tower"
+ghost_texture = ExtResource("1_5ig1c")
+visual_offset = Vector2(0, -30)
+placed_tower_scene = ExtResource("2_glcib")
+levels = Array[ExtResource("2_vcqlg")]([SubResource("Resource_vcqlg"), SubResource("Resource_c4xoo"), SubResource("Resource_pu0hc")])
+metadata/_custom_type_script = "uid://c8knfpcb8mutu"

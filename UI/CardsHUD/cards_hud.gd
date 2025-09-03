@@ -12,7 +12,7 @@ const CARD_SPACING: int = 20
 # --- ONREADY VARIABLES ---
 
 @onready var _hand_container_parent: Control = $HandContainerParent
-@onready var _hand_container: HBoxContainer = $HandContainerParent/HandContainer
+@onready var _hand_container: HandController = $HandContainerParent/HandContainer
 
 # --- VARIABLES ---
 
@@ -58,7 +58,7 @@ func on_hand_changed() -> void:
 
 func is_position_on_a_card(screen_position: Vector2) -> bool:
 	for card in _hand_container.get_children():
-		if card is CardUI:
+		if card is Card:
 			if card.get_global_rect().has_point(screen_position):
 				return true
 	return false
@@ -97,12 +97,12 @@ func condense() -> void:
 func _on_card_manager_hand_changed(new_hand: Array[CardData]) -> void:
 	_hand_container.display_hand(new_hand)
 
-func _on_hand_container_card_played(card_ui: CardUI) -> void:
-	if not GameManager.player_data.can_afford(card_ui.card_data.cost):
+func _on_hand_container_card_played(card: Card) -> void:
+	if not GameManager.player_data.can_afford(card.card_data.cost):
 		print("Cannot afford card")
 		return
 
-	var card_index: int = _hand_container.get_children().find(card_ui)
+	var card_index: int = _hand_container.get_children().find(card)
 	if card_index == -1:
 		push_error("Clicked card not found in HandController.")
 		return
@@ -123,8 +123,8 @@ func _toggle_cards(should_expand: bool, animate: bool = true) -> void:
 	_is_transitioning = true
 	var duration: float = TRANSITION_DURATION if animate else 0.0
 	var parent_size: Vector2 = _hand_container_parent.size
-	var first_card_ui: CardUI = _hand_container.get_child(0)
-	var card_original_size: Vector2 = first_card_ui.card_data.front_texture.get_size()
+	var first_card: Card = _hand_container.get_child(0)
+	var card_original_size: Vector2 = first_card.card_data.front_texture.get_size()
 
 	if should_expand:
 		var tween: Tween = create_tween().set_parallel()
@@ -149,7 +149,7 @@ func _toggle_cards(should_expand: bool, animate: bool = true) -> void:
 		)
 
 		for i in range(_hand_container.get_child_count()):
-			var card: CardUI = _hand_container.get_child(i)
+			var card: Card = _hand_container.get_child(i)
 			if card:
 				card.hover_enabled = true
 				card.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -178,7 +178,7 @@ func _toggle_cards(should_expand: bool, animate: bool = true) -> void:
 		var spacing: float = final_card_size.x + target_separation
 
 		for i in range(cards.size()):
-			var card: CardUI = cards[i]
+			var card: Card = cards[i]
 			var delay: float = (cards.size() - 1 - i) * step_delay if animate else 0.0
 
 			card.hover_enabled = false

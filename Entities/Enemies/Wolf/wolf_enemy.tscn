@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://c1nby7lef2o4r"]
 
-[ext_resource type="PackedScene" uid="uid://br1v6v0da2v1n" path="res://Entities/Enemies/TemplateEnemy/template_enemy.tscn" id="1_a2wg1"]
-[ext_resource type="Resource" uid="uid://ds3cgsbk38hj3" path="res://Config/Enemies/Wolf/wolf_enemy_data.tres" id="2_2a4x7"]
+[ext_resource type="PackedScene" uid="uid://br1v6v0da2v1n" path="res://Entities/Enemies/_TemplateEnemy/template_enemy.tscn" id="1_a2wg1"]
+[ext_resource type="Resource" uid="uid://ds3cgsbk38hj3" path="res://Config/Enemies/wolf_enemy_data.tres" id="2_2a4x7"]
 [ext_resource type="SpriteFrames" uid="uid://dhgbnbj6e3alf" path="res://Entities/Enemies/Wolf/wolf_enemy_animations.tres" id="3_2a4x7"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_echq7"]

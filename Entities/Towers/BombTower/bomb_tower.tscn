@@ -1,6 +1,6 @@
 [gd_scene load_steps=14 format=3 uid="uid://tm8k7ow23cuu"]
 
-[ext_resource type="PackedScene" uid="uid://dijji12gvss7h" path="res://Entities/Towers/TemplateTower/template_tower.tscn" id="1_l7y83"]
+[ext_resource type="PackedScene" uid="uid://dijji12gvss7h" path="res://Entities/Towers/_TemplateTower/template_tower.tscn" id="1_l7y83"]
 [ext_resource type="Texture2D" uid="uid://cui84rt2runhh" path="res://Entities/Towers/BombTower/Assets/bomb_tower_level02_spritesheet.png" id="2_t7s1i"]
 [ext_resource type="Texture2D" uid="uid://xlfmca8a8kpw" path="res://Entities/Towers/BombTower/Assets/bomb_tower_level01_spritesheet.png" id="2_usouf"]
 [ext_resource type="Texture2D" uid="uid://c3e8r43xakout" path="res://Entities/Towers/BombTower/Assets/bomb_tower_level03_spritesheet.png" id="4_bp527"]

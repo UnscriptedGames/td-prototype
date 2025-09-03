@@ -2,19 +2,19 @@ class_name HandController
 extends HBoxContainer
 
 ## @description Manages the visual display of the player's hand. It instances
-## CardUI scenes and emits a signal when a card is played.
+## Card scenes and emits a signal when a card is played.
 
 # --- SIGNALS ---
 
 ## Emitted when a card in the hand is pressed.
-signal card_played(card_ui: CardUI)
+signal card_played(card: Card)
 ## Emitted after the hand has been visually updated.
 signal hand_display_updated
 
-# --- EXPORT VARIABLES ---
+# --- CONSTANTS ---
 
 ## The scene used to represent a single card in the hand.
-@export var card_ui_scene: PackedScene
+const CARD_SCENE: PackedScene = preload("res://Entities/Cards/card.tscn")
 
 
 # --- PUBLIC METHODS ---
@@ -27,18 +27,18 @@ func display_hand(new_hand: Array[CardData]) -> void:
 
 	# Loop through each card in the new hand data.
 	for card_data in new_hand:
-		# Create a new instance of our CardUI scene.
-		var new_card_ui: CardUI = card_ui_scene.instantiate()
+		# Create a new instance of our Card scene.
+		var new_card: Card = CARD_SCENE.instantiate()
 
 		# Add the new card instance as a child of this container FIRST.
 		# This ensures its @onready variables are initialised.
-		add_child(new_card_ui)
+		add_child(new_card)
 		
 		# Connect to the new card's pressed signal.
-		new_card_ui.card_pressed.connect(_on_card_ui_pressed.bind(new_card_ui))
+		new_card.card_pressed.connect(_on_card_pressed)
 
 		# Now that it's in the scene tree, call the display function.
-		new_card_ui.display(card_data)
+		new_card.display(card_data)
 
 	# Emit a signal to notify parent that the hand has been updated.
 	hand_display_updated.emit()
@@ -47,15 +47,15 @@ func display_hand(new_hand: Array[CardData]) -> void:
 
 ## Clears all cards from the hand display.
 func _clear_hand() -> void:
-	# Loop through all existing card UI nodes in the container.
+	# Loop through all existing card nodes in the container.
 	for card_node in get_children():
 		# Remove the node from the scene and free it from memory.
 		card_node.queue_free()
 
 # --- SIGNAL HANDLERS ---
 
-## Called when a specific CardUI instance emits its card_pressed signal.
-## @param card_ui: The specific CardUI node that was clicked.
-func _on_card_ui_pressed(card_ui: CardUI) -> void:
+## Called when a specific Card instance emits its card_pressed signal.
+## @param card: The specific Card node that was clicked.
+func _on_card_pressed(card: Card) -> void:
 	# Emit a signal to let the parent controller handle the logic.
-	card_played.emit(card_ui)
+	card_played.emit(card)

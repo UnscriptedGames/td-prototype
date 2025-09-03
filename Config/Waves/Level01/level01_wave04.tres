@@ -1,16 +1,50 @@
-[gd_resource type="Resource" script_class="WaveData" load_steps=7 format=3 uid="uid://2m2loh3nb0x3"]
+[gd_resource type="Resource" script_class="WaveData" load_steps=9 format=3 uid="uid://2m2loh3nb0x3"]
 
-[ext_resource type="Script" uid="uid://yqynaikbh4b2" path="res://Config/Waves/wave_data.gd" id="1_g6dyh"]
-[ext_resource type="Script" uid="uid://dky0tbbrvtpkm" path="res://Config/Waves/spawn_instruction.gd" id="2_puf4l"]
-[ext_resource type="Resource" uid="uid://81dt7wyh55w7" path="res://Config/Waves/Level01/Wave04/spawn01_skeletons.tres" id="3_kl5c8"]
-[ext_resource type="Resource" uid="uid://btdgm03l3e1ue" path="res://Config/Waves/Level01/Wave04/spawn02_skeletons.tres" id="4_g6dyh"]
-[ext_resource type="Resource" uid="uid://bp7l4g7061dt7" path="res://Config/Waves/Level01/Wave04/fly01_birds.tres" id="5_puf4l"]
-[ext_resource type="Resource" uid="uid://criofyioxiill" path="res://Config/Waves/Level01/Wave04/fly02_birds.tres" id="6_82yqx"]
+[ext_resource type="Script" uid="uid://yqynaikbh4b2" path="res://Core/Data/wave_data.gd" id="1_puf4l"]
+[ext_resource type="Script" uid="uid://dky0tbbrvtpkm" path="res://Core/Data/spawn_instruction.gd" id="2_82yqx"]
+[ext_resource type="PackedScene" uid="uid://cjaicim438kkt" path="res://Entities/Enemies/Skeleton/skeleton_enemy.tscn" id="3_kl5c8"]
+[ext_resource type="PackedScene" uid="uid://bo1oxf231jssk" path="res://Entities/Enemies/Bird/bird_enemy.tscn" id="4_g6dyh"]
+
+[sub_resource type="Resource" id="Resource_puf4l"]
+script = ExtResource("2_82yqx")
+enemy_scene = ExtResource("3_kl5c8")
+path = NodePath("Paths/Spawn02")
+count = 3
+enemy_delay = 5.0
+start_delay = 3.0
+metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
+
+[sub_resource type="Resource" id="Resource_82yqx"]
+script = ExtResource("2_82yqx")
+enemy_scene = ExtResource("3_kl5c8")
+path = NodePath("Paths/Spawn01")
+count = 3
+enemy_delay = 5.0
+start_delay = 0.0
+metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
+
+[sub_resource type="Resource" id="Resource_kvwo6"]
+script = ExtResource("2_82yqx")
+enemy_scene = ExtResource("4_g6dyh")
+path = NodePath("Paths/Fly01")
+count = 4
+enemy_delay = 2.0
+start_delay = 0.0
+metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
+
+[sub_resource type="Resource" id="Resource_7b6yc"]
+script = ExtResource("2_82yqx")
+enemy_scene = ExtResource("4_g6dyh")
+path = NodePath("Paths/Fly02")
+count = 4
+enemy_delay = 2.0
+start_delay = 0.0
+metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
 
 [resource]
-script = ExtResource("1_g6dyh")
+script = ExtResource("1_puf4l")
 start_delay = 0.0
 reward_multiplier = 1.0
 is_boss_wave = false
-spawns = Array[ExtResource("2_puf4l")]([ExtResource("3_kl5c8"), ExtResource("4_g6dyh"), ExtResource("5_puf4l"), ExtResource("6_82yqx")])
+spawns = Array[ExtResource("2_82yqx")]([SubResource("Resource_puf4l"), SubResource("Resource_82yqx"), SubResource("Resource_kvwo6"), SubResource("Resource_7b6yc")])
 metadata/_custom_type_script = "uid://yqynaikbh4b2"

@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://cn3fnavrd27t1"]
+
+[ext_resource type="Script" uid="uid://np85bqcr44ll" path="res://Entities/Cards/card.gd" id="1_s8qo3"]
+
+[node name="CardUI" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_s8qo3")
+
+[node name="CardArt" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 159.0
+offset_bottom = 220.0

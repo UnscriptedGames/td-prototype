@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://cc7omqgmtsbsf"]
 
-[ext_resource type="PackedScene" uid="uid://br1v6v0da2v1n" path="res://Entities/Enemies/TemplateEnemy/template_enemy.tscn" id="1_0i1ut"]
-[ext_resource type="Resource" uid="uid://bbtnrt1okevpv" path="res://Config/Enemies/Kobolt/kobolt_enemy_data.tres" id="2_nxdsg"]
+[ext_resource type="PackedScene" uid="uid://br1v6v0da2v1n" path="res://Entities/Enemies/_TemplateEnemy/template_enemy.tscn" id="1_0i1ut"]
+[ext_resource type="Resource" uid="uid://bbtnrt1okevpv" path="res://Config/Enemies/kobolt_enemy_data.tres" id="2_nxdsg"]
 [ext_resource type="SpriteFrames" uid="uid://d24d7fdkrg38x" path="res://Entities/Enemies/Kobolt/kobolt_enemy_animations.tres" id="3_lx36u"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_echq7"]

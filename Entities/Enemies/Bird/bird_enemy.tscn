@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://bo1oxf231jssk"]
 
-[ext_resource type="PackedScene" uid="uid://br1v6v0da2v1n" path="res://Entities/Enemies/TemplateEnemy/template_enemy.tscn" id="1_b8htm"]
-[ext_resource type="Resource" uid="uid://fb5svrl36qsa" path="res://Config/Enemies/Bird/bird_enemy_data.tres" id="2_p31xv"]
+[ext_resource type="PackedScene" uid="uid://br1v6v0da2v1n" path="res://Entities/Enemies/_TemplateEnemy/template_enemy.tscn" id="1_b8htm"]
+[ext_resource type="Resource" uid="uid://fb5svrl36qsa" path="res://Config/Enemies/bird_enemy_data.tres" id="2_p31xv"]
 [ext_resource type="SpriteFrames" uid="uid://b3ygbnw74u4m7" path="res://Entities/Enemies/Bird/bird_enemy_animations.tres" id="3_y04f5"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_echq7"]
