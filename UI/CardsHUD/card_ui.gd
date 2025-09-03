@@ -64,10 +64,10 @@ func display(new_card_data: CardData) -> void:
 		_card_art.pivot_offset = custom_minimum_size * Vector2(0.5, 1.0)
 
 
-## Applies a new scale to the card's art and updates its minimum size.
+## Animates the card's scale and updates its minimum size for layout.
 ## @param new_scale: The target scale (e.g., Vector2(0.4, 0.4)).
 ## @param duration: The time the animation should take.
-func set_scale(new_scale: Vector2, duration: float) -> void:
+func animate_scale(new_scale: Vector2, duration: float) -> void:
 	var tween: Tween = create_tween().set_parallel()
 
 	# Animate the visual scale of the artwork.
@@ -85,11 +85,11 @@ func set_scale(new_scale: Vector2, duration: float) -> void:
 func _on_mouse_entered() -> void:
 	if not hover_enabled:
 		return
-	set_scale(Vector2(1.1, 1.1), 0.1)
+	animate_scale(Vector2(1.1, 1.1), 0.1)
 
 
 ## Called when the mouse cursor exits the control's rectangle.
 func _on_mouse_exited() -> void:
 	if not hover_enabled:
 		return
-	set_scale(Vector2(1.0, 1.0), 0.1)
+	animate_scale(Vector2(1.0, 1.0), 0.1)

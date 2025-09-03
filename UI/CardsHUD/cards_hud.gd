@@ -166,7 +166,7 @@ func _toggle_cards(expand: bool, animate: bool = true) -> void:
 			card.hover_enabled = expand
 			card.z_index = _hand_container.get_child_count() - i if not expand else 0
 			# The card now handles its own scaling animation, including updating its minimum size.
-			card.set_scale(target_scale, duration)
+			card.animate_scale(target_scale, duration)
 
 	await tween.finished
 	_is_expanded = expand
