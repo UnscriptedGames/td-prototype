@@ -41,6 +41,10 @@ func _ready() -> void:
 	# --- Card System Initialisation ---
 	# Initialise the CardsHUD with a reference to the CardManager.
 	_cards_hud.initialise(_card_manager)
+
+	# Register the LevelHUD with the InputManager
+	if is_instance_valid(_level_hud):
+		InputManager.register_level_hud(_level_hud)
 		
 	# Prepare HUD button state and connect the wave request signal.
 	if is_instance_valid(_level_hud):
