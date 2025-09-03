@@ -140,12 +140,11 @@ func _toggle_cards(expand: bool, animate: bool = true) -> void:
 		var final_card_width: float = card_original_size.x
 		var final_container_width: float = (_hand_container.get_child_count() * final_card_width) + ((_hand_container.get_child_count() - 1) * target_separation)
 		var final_container_height: float = card_original_size.y
+		var final_expanded_size = Vector2(final_container_width, final_container_height)
 
-		# Center the container based on its final expanded size.
-		target_position = Vector2(
-			(viewport_size.x - final_container_width) / 2.0,
-			(viewport_size.y - final_container_height) / 2.0
-		)
+		# Set pivot to the center and position the pivot in the center of the viewport.
+		_hand_container.pivot_offset = final_expanded_size / 2.0
+		target_position = viewport_size / 2.0
 	else: # Condense
 		target_scale = CONDENSED_SCALE
 
@@ -157,12 +156,11 @@ func _toggle_cards(expand: bool, animate: bool = true) -> void:
 
 		# Calculate final size of the container when fully condensed.
 		var final_container_width: float = (_hand_container.get_child_count() - 1) * (final_card_size.x + target_separation) + final_card_size.x
+		var final_condensed_size = Vector2(final_container_width, final_card_size.y)
 
-		# Position the container in the bottom right based on its final condensed size.
-		target_position = Vector2(
-			viewport_size.x - final_container_width - CONDENSED_MARGIN,
-			viewport_size.y - final_card_size.y - CONDENSED_MARGIN
-		)
+		# Set pivot to the bottom-right and position the pivot in the bottom-right of the viewport (with margin).
+		_hand_container.pivot_offset = final_condensed_size
+		target_position = viewport_size - Vector2(CONDENSED_MARGIN, CONDENSED_MARGIN)
 
 	# --- Animate ---
 	tween.tween_property(_hand_container, "position", target_position, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
