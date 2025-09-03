@@ -3,8 +3,6 @@ class_name TemplateTower
 
 ## The base script for all towers.
 
-signal selected(tower)
-
 enum State { IDLE, ATTACKING }
 
 @export var state: State = State.IDLE
