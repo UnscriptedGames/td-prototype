@@ -32,7 +32,6 @@ var _projectiles_container: Node2D
 
 
 func _ready() -> void:
-	hitbox.input_event.connect(_on_hitbox_input_event)
 	animation_player.animation_finished.connect(_on_animation_finished)
 	_projectiles_container = get_tree().get_first_node_in_group("projectiles_container")
 
@@ -84,12 +83,6 @@ func deselect() -> void:
 
 func set_range_polygon(points: PackedVector2Array) -> void:
 	range_shape.polygon = points
-
-
-func _on_hitbox_input_event(_viewport: Viewport, event: InputEvent, _shape_idx: int) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		emit_signal("selected", self)
-		get_viewport().set_input_as_handled()
 
 
 func _on_range_area_entered(area: Area2D) -> void:
