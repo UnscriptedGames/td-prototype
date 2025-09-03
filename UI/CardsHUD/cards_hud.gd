@@ -11,7 +11,6 @@ const CARD_SPACING: int = 20
 
 # --- ONREADY VARIABLES ---
 
-@onready var _background_click_detector: Control = $BackgroundClickDetector
 @onready var _hand_container_parent: Control = $HandContainerParent
 @onready var _hand_container: HBoxContainer = $HandContainerParent/HandContainer
 
@@ -24,8 +23,7 @@ var _is_transitioning: bool = false
 # --- BUILT-IN METHODS ---
 
 func _ready() -> void:
-	_background_click_detector.gui_input.connect(_on_background_gui_input)
-	_hand_container.gui_input.connect(_on_hand_container_gui_input)
+	InputManager.register_cards_hud(self)
 
 	_hand_container.add_theme_constant_override("separation", CARD_SPACING)
 	_update_hand_position() # Initial position
@@ -43,8 +41,10 @@ func initialise(manager: CardManager) -> void:
 	_hand_container.hand_display_updated.connect(on_hand_changed)
 
 	# Initialise the CardManager to draw the hand.
-	if GameManager.player_data.deck:
+	if GameManager.player_data and GameManager.player_data.deck:
 		_card_manager.initialise_deck(GameManager.player_data.deck, GameManager.player_data.hand_size)
+	else:
+		push_error("GameManager player_data or deck not ready when CardsHUD initialised.")
 
 func on_hand_changed() -> void:
 	# Called by HandController when the hand changes.
@@ -55,27 +55,43 @@ func on_hand_changed() -> void:
 		# If the hand was condensed, re-apply the condensed state to the new cards.
 		_toggle_cards(false, false) # No animation
 
+func is_position_on_a_card(screen_position: Vector2) -> bool:
+	for card in _hand_container.get_children():
+		if card is CardUI:
+			if card.get_global_rect().has_point(screen_position):
+				return true
+	return false
+
+func handle_global_click(event: InputEventMouseButton) -> bool:
+	if _is_transitioning:
+		return true # Consume clicks during transition
+
+	# If condensed, check for click on the hand to expand
+	if not _is_expanded:
+		# The user wants to click on the condensed pile to expand.
+		# The pile is the _hand_container.
+		if _hand_container.get_global_rect().has_point(event.position):
+			expand()
+			return true # Handled
+		# If click was elsewhere, do nothing.
+		return false
+
+	# If expanded, check for click on a card
+	if is_position_on_a_card(event.position):
+		# Click was on a card, let the card handle it.
+		return false
+
+	# If we reach here, it was a background click in expanded mode
+	condense()
+	return true # Handled
+
+func expand() -> void:
+	_toggle_cards(true)
+
+func condense() -> void:
+	_toggle_cards(false)
+
 # --- SIGNAL HANDLERS ---
-
-func _on_background_gui_input(event: InputEvent) -> void:
-	print("Background received input event: ", event.as_text())
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		print("Mouse button pressed on background.")
-		if _is_expanded and not _is_transitioning:
-			print("Condensing cards...")
-			_condense_cards()
-		else:
-			print("State check failed: is_expanded=", _is_expanded, ", is_transitioning=", _is_transitioning)
-
-func _on_hand_container_gui_input(event: InputEvent) -> void:
-	print("Hand container received input event: ", event.as_text())
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		print("Mouse button pressed on hand container.")
-		if not _is_expanded and not _is_transitioning:
-			print("Expanding cards...")
-			_expand_cards()
-		else:
-			print("State check failed: is_expanded=", _is_expanded, ", is_transitioning=", _is_transitioning)
 
 func _on_card_manager_hand_changed(new_hand: Array[CardData]) -> void:
 	_hand_container.display_hand(new_hand)
@@ -155,9 +171,3 @@ func _toggle_cards(expand: bool, animate: bool = true) -> void:
 	_is_expanded = expand
 	_is_transitioning = false
 	_hand_container_parent.mouse_filter = Control.MOUSE_FILTER_IGNORE if expand else Control.MOUSE_FILTER_STOP
-
-func _expand_cards() -> void:
-	_toggle_cards(true)
-
-func _condense_cards() -> void:
-	_toggle_cards(false)
