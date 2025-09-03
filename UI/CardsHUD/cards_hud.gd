@@ -116,56 +116,68 @@ func _update_hand_position() -> void:
 	_hand_container.position.y = (viewport_size.y - _hand_container.size.y) / 2
 
 func _toggle_cards(expand: bool, animate: bool = true) -> void:
-	if _is_transitioning:
+	if _is_transitioning or _hand_container.get_child_count() == 0:
 		return
 
 	_is_transitioning = true
 	var tween: Tween = create_tween().set_parallel()
+	var duration: float = TRANSITION_DURATION if animate else 0.0
+	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
 
-	var duration = TRANSITION_DURATION if animate else 0.0
+	# Get the base, original size of a card from its texture data for reliable calculations.
+	var first_card_ui: CardUI = _hand_container.get_child(0)
+	var card_original_size: Vector2 = first_card_ui.card_data.front_texture.get_size()
 
-	var target_scale = CONDENSED_SCALE if not expand else EXPANDED_SCALE
+	var target_scale: Vector2
 	var target_separation: float
 	var target_position: Vector2
 
 	if expand:
+		target_scale = EXPANDED_SCALE
 		target_separation = float(CARD_SPACING)
-		var viewport_size: Vector2 = get_viewport().get_visible_rect().size
-		var container_width = _hand_container.size.x
-		target_position = Vector2((viewport_size.x - container_width) / 2, (viewport_size.y - _hand_container.size.y) / 2)
-	else:
-		var card_width = 0
-		if _hand_container.get_child_count() > 0:
-			var first_card = _hand_container.get_child(0)
-			if first_card is CardUI:
-				card_width = first_card.size.x
 
-		target_separation = -card_width * 0.9
+		# Calculate final size of the container when fully expanded.
+		var final_card_width: float = card_original_size.x
+		var final_container_width: float = (_hand_container.get_child_count() * final_card_width) + ((_hand_container.get_child_count() - 1) * target_separation)
+		var final_container_height: float = card_original_size.y
 
-		var condensed_width = (_hand_container.get_child_count() - 1) * (card_width + target_separation) + card_width
-		condensed_width *= target_scale.x
-		var condensed_height = _hand_container.size.y * target_scale.y
-
-		var viewport_size: Vector2 = get_viewport().get_visible_rect().size
+		# Center the container based on its final expanded size.
 		target_position = Vector2(
-			viewport_size.x - condensed_width - CONDENSED_MARGIN,
-			viewport_size.y - condensed_height - CONDENSED_MARGIN
+			(viewport_size.x - final_container_width) / 2.0,
+			(viewport_size.y - final_container_height) / 2.0
+		)
+	else: # Condense
+		target_scale = CONDENSED_SCALE
+
+		# Calculate final size of a card when condensed.
+		var final_card_size: Vector2 = card_original_size * target_scale
+
+		# Calculate separation based on the final condensed card width for correct overlap.
+		target_separation = -final_card_size.x * 0.9
+
+		# Calculate final size of the container when fully condensed.
+		var final_container_width: float = (_hand_container.get_child_count() - 1) * (final_card_size.x + target_separation) + final_card_size.x
+
+		# Position the container in the bottom right based on its final condensed size.
+		target_position = Vector2(
+			viewport_size.x - final_container_width - CONDENSED_MARGIN,
+			viewport_size.y - final_card_size.y - CONDENSED_MARGIN
 		)
 
+	# --- Animate ---
 	tween.tween_property(_hand_container, "position", target_position, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
 	tween.tween_method(
-		func(value): _hand_container.add_theme_constant_override("separation", value),
+		func(value: float) -> void: _hand_container.add_theme_constant_override("separation", int(value)),
 		_hand_container.get_theme_constant("separation"),
 		target_separation,
 		duration
 	)
 
 	for i in range(_hand_container.get_child_count()):
-		var card = _hand_container.get_child(i)
-		if card is CardUI:
+		var card: CardUI = _hand_container.get_child(i)
+		if card:
 			card.hover_enabled = expand
 			card.z_index = _hand_container.get_child_count() - i if not expand else 0
-			# The card now handles its own scaling animation, including updating its minimum size.
 			card.animate_scale(target_scale, duration)
 
 	await tween.finished
