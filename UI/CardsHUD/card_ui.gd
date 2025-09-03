@@ -61,7 +61,7 @@ func display(new_card_data: CardData) -> void:
 		custom_minimum_size = _card_art.texture.get_size()
 
 		# Set the pivot point to the bottom-center of the card for scaling effects.
-		_card_art.pivot_offset = custom_minimum_size * Vector2(0.5, 1.0)
+		pivot_offset = custom_minimum_size * Vector2(0.5, 1.0)
 
 
 ## Animates the card's scale and updates its minimum size for layout.

@@ -22,7 +22,8 @@ var _is_transitioning: bool = false
 
 # --- BUILT-IN METHODS ---
 
-func _ready() -> void:
+func _ready():
+	await get_tree().process_frame
 	InputManager.register_cards_hud(self)
 
 	_hand_container.add_theme_constant_override("separation", CARD_SPACING)
@@ -115,70 +116,94 @@ func _update_hand_position() -> void:
 	_hand_container.position.x = (viewport_size.x - _hand_container.size.x) / 2
 	_hand_container.position.y = (viewport_size.y - _hand_container.size.y) / 2
 
-func _toggle_cards(expand: bool, animate: bool = true) -> void:
+func _toggle_cards(should_expand: bool, animate: bool = true) -> void:
 	if _is_transitioning or _hand_container.get_child_count() == 0:
 		return
 
 	_is_transitioning = true
-	var tween: Tween = create_tween().set_parallel()
 	var duration: float = TRANSITION_DURATION if animate else 0.0
-	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
-
-	# Get the base, original size of a card from its texture data for reliable calculations.
+	var parent_size: Vector2 = _hand_container_parent.size
 	var first_card_ui: CardUI = _hand_container.get_child(0)
 	var card_original_size: Vector2 = first_card_ui.card_data.front_texture.get_size()
 
-	var target_scale: Vector2
-	var target_separation: float
-	var target_position: Vector2
+	if should_expand:
+		var tween: Tween = create_tween().set_parallel()
+		var target_scale: Vector2 = EXPANDED_SCALE
+		var target_separation: float = float(CARD_SPACING)
 
-	if expand:
-		target_scale = EXPANDED_SCALE
-		target_separation = float(CARD_SPACING)
-
-		# Calculate final size of the container when fully expanded.
 		var final_card_width: float = card_original_size.x
 		var final_container_width: float = (_hand_container.get_child_count() * final_card_width) + ((_hand_container.get_child_count() - 1) * target_separation)
 		var final_container_height: float = card_original_size.y
-		var final_expanded_size = Vector2(final_container_width, final_container_height)
 
-		# Set pivot to the center and position the pivot in the center of the viewport.
-		_hand_container.pivot_offset = final_expanded_size / 2.0
-		target_position = viewport_size / 2.0
+		var target_position: Vector2 = Vector2(
+			(parent_size.x - final_container_width) / 2.0,
+			(parent_size.y - final_container_height) / 2.0
+		)
+
+		tween.tween_property(_hand_container, "position", target_position, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+		tween.tween_method(
+			func(value: float) -> void: _hand_container.add_theme_constant_override("separation", int(value)),
+			_hand_container.get_theme_constant("separation"),
+			target_separation,
+			duration
+		)
+
+		for i in range(_hand_container.get_child_count()):
+			var card: CardUI = _hand_container.get_child(i)
+			if card:
+				card.hover_enabled = true
+				card.mouse_filter = Control.MOUSE_FILTER_STOP
+				card.z_index = 0
+				card.animate_scale(target_scale, duration)
+
+		await tween.finished
 	else: # Condense
-		target_scale = CONDENSED_SCALE
-
-		# Calculate final size of a card when condensed.
+		var cards = _hand_container.get_children()
+		var target_scale: Vector2 = CONDENSED_SCALE
 		var final_card_size: Vector2 = card_original_size * target_scale
+		var target_separation: int = int(-final_card_size.x * 0.9)
+		var final_container_width: float = (cards.size() - 1) * (final_card_size.x + target_separation) + final_card_size.x
+		
+		var container_target_pos: Vector2 = Vector2(
+			parent_size.x - final_container_width - CONDENSED_MARGIN,
+			parent_size.y - final_card_size.y - CONDENSED_MARGIN
+		)
+		
+		for card in cards:
+			_hand_container.remove_child(card)
+			_hand_container_parent.add_child(card)
 
-		# Calculate separation based on the final condensed card width for correct overlap.
-		target_separation = -final_card_size.x * 0.9
+		var tween: Tween = create_tween().set_parallel()
+		var step_delay: float = 0.08
+		var spacing: float = final_card_size.x + target_separation
 
-		# Calculate final size of the container when fully condensed.
-		var final_container_width: float = (_hand_container.get_child_count() - 1) * (final_card_size.x + target_separation) + final_card_size.x
-		var final_condensed_size = Vector2(final_container_width, final_card_size.y)
+		for i in range(cards.size()):
+			var card: CardUI = cards[i]
+			var delay: float = (cards.size() - 1 - i) * step_delay if animate else 0.0
 
-		# Set pivot to the bottom-right and position the pivot in the bottom-right of the viewport (with margin).
-		_hand_container.pivot_offset = final_condensed_size
-		target_position = viewport_size - Vector2(CONDENSED_MARGIN, CONDENSED_MARGIN)
+			card.hover_enabled = false
+			card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			card.z_index = cards.size() - i
 
-	# --- Animate ---
-	tween.tween_property(_hand_container, "position", target_position, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
-	tween.tween_method(
-		func(value: float) -> void: _hand_container.add_theme_constant_override("separation", int(value)),
-		_hand_container.get_theme_constant("separation"),
-		target_separation,
-		duration
-	)
+			var card_art: TextureRect = card.get_node("CardArt")
+			var card_texture_size: Vector2 = card.card_data.front_texture.get_size()
+			var target_min_size: Vector2 = card_texture_size * target_scale
+			var card_target_pos: Vector2 = container_target_pos + Vector2(i * spacing, 0)
 
-	for i in range(_hand_container.get_child_count()):
-		var card: CardUI = _hand_container.get_child(i)
-		if card:
-			card.hover_enabled = expand
-			card.z_index = _hand_container.get_child_count() - i if not expand else 0
-			card.animate_scale(target_scale, duration)
+			tween.tween_property(card, "global_position", card_target_pos, duration).set_delay(delay).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+			tween.tween_property(card_art, "scale", target_scale, duration).set_delay(delay).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+			tween.tween_property(card, "custom_minimum_size", target_min_size, duration).set_delay(delay).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
 
-	await tween.finished
-	_is_expanded = expand
+		await tween.finished
+
+		_hand_container.position = container_target_pos
+		_hand_container.add_theme_constant_override("separation", target_separation)
+
+		for card in cards:
+			_hand_container_parent.remove_child(card)
+			_hand_container.add_child(card)
+			card.position = Vector2.ZERO
+
+	_is_expanded = should_expand
 	_is_transitioning = false
-	_hand_container_parent.mouse_filter = Control.MOUSE_FILTER_IGNORE if expand else Control.MOUSE_FILTER_STOP
+	_hand_container_parent.mouse_filter = Control.MOUSE_FILTER_IGNORE if should_expand else Control.MOUSE_FILTER_STOP
