@@ -2,9 +2,10 @@
 
 [ext_resource type="Script" uid="uid://bdcymlxpvhb4p" path="res://UI/CardsHUD/hand_controller.gd" id="1_1eneu"]
 [ext_resource type="PackedScene" uid="uid://cn3fnavrd27t1" path="res://UI/CardsHUD/card_ui.tscn" id="2_37irv"]
-[ext_resource type="Script" path="res://UI/CardsHUD/cards_hud.gd" id="3_abcde"]
+[ext_resource type="Script" uid="uid://c1juk6jjvoe1" path="res://UI/CardsHUD/cards_hud.gd" id="3_abcde"]
 
 [node name="CardsHUD" type="CanvasLayer"]
+layer = 11
 script = ExtResource("3_abcde")
 
 [node name="BackgroundClickDetector" type="Control" parent="."]
@@ -14,7 +15,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
 
 [node name="HandContainerParent" type="Control" parent="."]
 layout_mode = 3

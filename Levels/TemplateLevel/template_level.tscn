@@ -76,6 +76,6 @@ limit_right = 1920
 limit_bottom = 1080
 position_smoothing_enabled = true
 
-[node name="LevelHUD" parent="." instance=ExtResource("3_sv07c")]
-
 [node name="CardsHUD" parent="." instance=ExtResource("8_85qtr")]
+
+[node name="LevelHUD" parent="." instance=ExtResource("3_sv07c")]
