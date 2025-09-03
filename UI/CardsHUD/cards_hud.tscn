@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bdcymlxpvhb4p" path="res://UI/CardsHUD/hand_controller.gd" id="1_1eneu"]
 [ext_resource type="PackedScene" uid="uid://cn3fnavrd27t1" path="res://UI/CardsHUD/card_ui.tscn" id="2_37irv"]
-[ext_resource type="Script" uid="uid://c1juk6jjvoe1" path="res://UI/CardsHUD/cards_hud.gd" id="3_abcde"]
+[ext_resource type="Script" uid="uid://lisuugj8v3yo" path="res://UI/CardsHUD/cards_hud.gd" id="3_abcde"]
 
 [node name="CardsHUD" type="CanvasLayer"]
 layer = 11

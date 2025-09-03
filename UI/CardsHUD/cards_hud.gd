@@ -24,28 +24,9 @@ var _is_transitioning: bool = false
 # --- BUILT-IN METHODS ---
 
 func _ready() -> void:
-	_background_click_detector.gui_input.connect(
-		func(event):
-			print("Background received input event: ", event.as_text())
-			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-				print("Mouse button pressed on background.")
-				if _is_expanded and not _is_transitioning:
-					print("Condensing cards...")
-					_condense_cards()
-				else:
-					print("State check failed: is_expanded=", _is_expanded, ", is_transitioning=", _is_transitioning)
-	)
-	_hand_container.gui_input.connect(
-		func(event):
-			print("Hand container received input event: ", event.as_text())
-			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-				print("Mouse button pressed on hand container.")
-				if not _is_expanded and not _is_transitioning:
-					print("Expanding cards...")
-					_expand_cards()
-				else:
-					print("State check failed: is_expanded=", _is_expanded, ", is_transitioning=", _is_transitioning)
-	)
+	_background_click_detector.gui_input.connect(_on_background_gui_input)
+	_hand_container.gui_input.connect(_on_hand_container_gui_input)
+
 	_hand_container.add_theme_constant_override("separation", CARD_SPACING)
 	_update_hand_position() # Initial position
 
@@ -75,6 +56,26 @@ func on_hand_changed() -> void:
 		_toggle_cards(false, false) # No animation
 
 # --- SIGNAL HANDLERS ---
+
+func _on_background_gui_input(event: InputEvent) -> void:
+	print("Background received input event: ", event.as_text())
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		print("Mouse button pressed on background.")
+		if _is_expanded and not _is_transitioning:
+			print("Condensing cards...")
+			_condense_cards()
+		else:
+			print("State check failed: is_expanded=", _is_expanded, ", is_transitioning=", _is_transitioning)
+
+func _on_hand_container_gui_input(event: InputEvent) -> void:
+	print("Hand container received input event: ", event.as_text())
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		print("Mouse button pressed on hand container.")
+		if not _is_expanded and not _is_transitioning:
+			print("Expanding cards...")
+			_expand_cards()
+		else:
+			print("State check failed: is_expanded=", _is_expanded, ", is_transitioning=", _is_transitioning)
 
 func _on_card_manager_hand_changed(new_hand: Array[CardData]) -> void:
 	_hand_container.display_hand(new_hand)
@@ -136,8 +137,6 @@ func _toggle_cards(expand: bool, animate: bool = true) -> void:
 		)
 
 	tween.tween_property(_hand_container, "position", target_position, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
-	# There is no "theme_override_constants/separation" property to tween.
-	# I will tween a dummy property and use a callback to set the separation.
 	tween.tween_method(
 		func(value): _hand_container.add_theme_constant_override("separation", value),
 		_hand_container.get_theme_constant("separation"),

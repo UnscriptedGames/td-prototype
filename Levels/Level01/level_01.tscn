@@ -123,3 +123,8 @@ offset = Vector2(0, -20)
 [node name="BuildManager" parent="." index="4"]
 invalid_tower_id = 4
 valid_range_id = 3
+
+[node name="CardsHUD" parent="." index="8"]
+layer = 15
+
+[editable path="CardsHUD"]
