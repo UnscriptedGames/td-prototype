@@ -22,6 +22,9 @@ signal card_pressed
 ## Stores the data associated with this specific card instance.
 var card_data: CardData
 
+## Determines if the hover animation should play.
+var hover_enabled: bool = true
+
 
 # --- BUILT-IN METHODS ---
 
@@ -66,6 +69,8 @@ func display(new_card_data: CardData) -> void:
 
 ## Called when the mouse cursor enters the control's rectangle.
 func _on_mouse_entered() -> void:
+	if not hover_enabled:
+		return
 	# Create a tween to animate a property change smoothly.
 	var tween: Tween = create_tween()
 	# Animate the 'scale' property from its current value to 1.1 over 0.1 seconds.
@@ -74,6 +79,8 @@ func _on_mouse_entered() -> void:
 
 ## Called when the mouse cursor exits the control's rectangle.
 func _on_mouse_exited() -> void:
+	if not hover_enabled:
+		return
 	# Create a tween to animate the card back to its original size.
 	var tween: Tween = create_tween()
 	# Animate the 'scale' property back to 1.0.
