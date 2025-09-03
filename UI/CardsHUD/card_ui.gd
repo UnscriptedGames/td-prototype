@@ -16,12 +16,6 @@ signal card_pressed
 ## A reference to the node that displays the card's artwork.
 @onready var _card_art: TextureRect = $CardArt
 
-## A reference to the node that displays the card's name.
-@onready var _name_label: Label = $NameLabel
-
-## A reference to the node that displays the card's cost.
-@onready var _cost_label: Label = $CostLabel
-
 
 # --- VARIABLES ---
 
@@ -57,12 +51,6 @@ func display(new_card_data: CardData) -> void:
 	
 	# Set the texture for the card's main art.
 	_card_art.texture = card_data.front_texture
-	
-	# Set the text for the card's name.
-	_name_label.text = card_data.card_name
-	
-	# Set the text for the card's cost, converting the integer to a string.
-	_cost_label.text = str(card_data.cost)
 	
 	# Set the minimum size of this entire control node to match the art size.
 	# This allows the HBoxContainer to arrange it correctly.

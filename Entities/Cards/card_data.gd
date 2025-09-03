@@ -8,12 +8,6 @@ extends Resource
 
 # --- EXPORT VARIABLES ---
 
-## The name of the card displayed to the player.
-@export var card_name: String = "New Card"
-
-## The description or flavour text for the card.
-@export_multiline var description: String = "Card description here."
-
 ## The currency cost to play this card.
 @export var cost: int = 1
 
