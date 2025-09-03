@@ -69,6 +69,10 @@ func display(new_card_data: CardData) -> void:
 	if _card_art.texture:
 		custom_minimum_size = _card_art.texture.get_size()
 
+		# Set the pivot point to the bottom-center of the card.
+		# This makes the hover scaling animation expand from that point.
+		pivot_offset = custom_minimum_size * Vector2(0.5, 1.0)
+
 
 # --- SIGNAL HANDLERS ---
 

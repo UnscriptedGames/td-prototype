@@ -5,19 +5,14 @@
 
 [node name="CardsHUD" type="CanvasLayer"]
 
-[node name="HandContainer" type="HBoxContainer" parent="."]
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
+[node name="HandCenter" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -411.0
-offset_top = -569.0
-offset_right = -370.0
-offset_bottom = -502.0
 grow_horizontal = 2
-grow_vertical = 0
-size_flags_horizontal = 3
-theme_override_constants/separation = 20
+grow_vertical = 2
+
+[node name="HandContainer" type="HBoxContainer" parent="HandCenter"]
+layout_mode = 2
 script = ExtResource("1_1eneu")
 card_ui_scene = ExtResource("2_37irv")

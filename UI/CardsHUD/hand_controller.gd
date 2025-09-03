@@ -10,11 +10,21 @@ extends HBoxContainer
 ## The scene used to represent a single card in the hand.
 @export var card_ui_scene: PackedScene
 
+## The spacing between cards in the hand.
+@export var card_spacing: int = 20
+
 
 # --- VARIABLES ---
 
 ## A reference to the main CardManager.
 var _card_manager: CardManager
+
+
+# --- BUILT-IN METHODS ---
+
+func _ready() -> void:
+	# Set the separation between cards from the exported variable.
+	add_theme_constant_override("separation", card_spacing)
 
 
 # --- PUBLIC METHODS ---
