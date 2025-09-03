@@ -86,7 +86,7 @@ func _on_hand_container_card_played(card_ui: CardUI) -> void:
 func _update_hand_position() -> void:
 	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
 	_hand_container.position.x = (viewport_size.x - _hand_container.size.x) / 2
-	_hand_container.position.y = viewport_size.y - _hand_container.size.y - 20 # 20px margin
+	_hand_container.position.y = (viewport_size.y - _hand_container.size.y) / 2
 
 func _toggle_cards(expand: bool, animate: bool = true) -> void:
 	if _is_transitioning:
@@ -105,7 +105,7 @@ func _toggle_cards(expand: bool, animate: bool = true) -> void:
 		target_separation = float(CARD_SPACING)
 		var viewport_size: Vector2 = get_viewport().get_visible_rect().size
 		var container_width = _hand_container.size.x
-		target_position = Vector2((viewport_size.x - container_width) / 2, viewport_size.y - _hand_container.size.y - 20)
+		target_position = Vector2((viewport_size.x - container_width) / 2, (viewport_size.y - _hand_container.size.y) / 2)
 	else:
 		var card_width = 0
 		if _hand_container.get_child_count() > 0:
