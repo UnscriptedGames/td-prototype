@@ -79,5 +79,3 @@ position_smoothing_enabled = true
 [node name="LevelHUD" parent="." instance=ExtResource("3_sv07c")]
 
 [node name="CardsHUD" parent="." instance=ExtResource("8_85qtr")]
-
-[editable path="CardsHUD"]
