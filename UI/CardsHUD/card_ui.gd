@@ -60,9 +60,23 @@ func display(new_card_data: CardData) -> void:
 	if _card_art.texture:
 		custom_minimum_size = _card_art.texture.get_size()
 
-		# Set the pivot point to the bottom-center of the card.
-		# This makes the hover scaling animation expand from that point.
-		pivot_offset = custom_minimum_size * Vector2(0.5, 1.0)
+		# Set the pivot point to the bottom-center of the card for scaling effects.
+		_card_art.pivot_offset = custom_minimum_size * Vector2(0.5, 1.0)
+
+
+## Applies a new scale to the card's art and updates its minimum size.
+## @param new_scale: The target scale (e.g., Vector2(0.4, 0.4)).
+## @param duration: The time the animation should take.
+func set_scale(new_scale: Vector2, duration: float) -> void:
+	var tween: Tween = create_tween().set_parallel()
+
+	# Animate the visual scale of the artwork.
+	tween.tween_property(_card_art, "scale", new_scale, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+
+	# Animate the layout size of the container.
+	if _card_art.texture:
+		var target_min_size = _card_art.texture.get_size() * new_scale
+		tween.tween_property(self, "custom_minimum_size", target_min_size, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
 
 
 # --- SIGNAL HANDLERS ---
@@ -71,17 +85,11 @@ func display(new_card_data: CardData) -> void:
 func _on_mouse_entered() -> void:
 	if not hover_enabled:
 		return
-	# Create a tween to animate a property change smoothly.
-	var tween: Tween = create_tween()
-	# Animate the 'scale' property from its current value to 1.1 over 0.1 seconds.
-	tween.tween_property(self, "scale", Vector2(1.1, 1.1), 0.1)
+	set_scale(Vector2(1.1, 1.1), 0.1)
 
 
 ## Called when the mouse cursor exits the control's rectangle.
 func _on_mouse_exited() -> void:
 	if not hover_enabled:
 		return
-	# Create a tween to animate the card back to its original size.
-	var tween: Tween = create_tween()
-	# Animate the 'scale' property back to 1.0.
-	tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.1)
+	set_scale(Vector2(1.0, 1.0), 0.1)

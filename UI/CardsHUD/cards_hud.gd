@@ -165,7 +165,8 @@ func _toggle_cards(expand: bool, animate: bool = true) -> void:
 		if card is CardUI:
 			card.hover_enabled = expand
 			card.z_index = _hand_container.get_child_count() - i if not expand else 0
-			tween.tween_property(card, "scale", target_scale, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+			# The card now handles its own scaling animation, including updating its minimum size.
+			card.set_scale(target_scale, duration)
 
 	await tween.finished
 	_is_expanded = expand
