@@ -22,7 +22,7 @@ var _paths: Dictionary = {}
 @onready var _level_hud: LevelHUD = $LevelHUD as LevelHUD
 @onready var _level_camera: Camera2D = $LevelCamera as Camera2D
 @onready var _card_manager: CardManager = $CardManager
-@onready var _cards_hud: CardsHUD = $CardsHUD
+@onready var _cards_hud: CardsHUD = $CardsHUD as CardsHUD
 
 ## Built-in Methods
 
