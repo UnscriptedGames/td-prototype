@@ -1,7 +1,6 @@
 extends Node
 
 ## Manages all player input and delegates to the appropriate systems based on game state.
-class_name InputManager
 
 enum State {
 	DEFAULT,        # Default gameplay state, interacting with cards and UI.
