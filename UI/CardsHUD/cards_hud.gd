@@ -8,6 +8,7 @@ const CONDENSED_SCALE: Vector2 = Vector2(0.4, 0.4)
 const TRANSITION_DURATION: float = 0.5
 const CONDENSED_MARGIN: float = 25.0
 const CARD_SPACING: int = 20
+const BASE_VIEWPORT_WIDTH: float = 1920.0
 
 # --- ONREADY VARIABLES ---
 
@@ -143,7 +144,7 @@ func _toggle_cards(should_expand: bool, animate: bool = true) -> void:
 	_is_transitioning = true
 	var duration: float = 0.4 if animate else 0.0
 
-	var viewport_size: Vector2 = get_viewport().size
+	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
 	var cards: Array[Node] = _hand_container.get_children()
 	var card_original_size: Vector2 = cards[0].card_data.front_texture.get_size()
 
@@ -186,10 +187,11 @@ func _toggle_cards(should_expand: bool, animate: bool = true) -> void:
 		var final_container_width: float = (cards.size() - 1) * (final_card_size.x + target_separation) + final_card_size.x
 		
 		var container_target_size: Vector2 = Vector2(final_container_width, final_card_size.y)
-		# --- THIS IS THE ONLY LINE THAT CHANGES ---
+		var relative_margin: float = (CONDENSED_MARGIN / BASE_VIEWPORT_WIDTH) * viewport_size.x
+		
 		var container_target_pos: Vector2 = Vector2(
-			CONDENSED_MARGIN, # Position from the left edge.
-			viewport_size.y - final_card_size.y - CONDENSED_MARGIN
+			relative_margin,
+			viewport_size.y - final_card_size.y - relative_margin
 		)
 		
 		# Animate the container's layout properties.
