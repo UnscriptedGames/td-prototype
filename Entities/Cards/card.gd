@@ -10,12 +10,14 @@ extends Control
 ## Emitted when this card is clicked by the player, passing a reference to itself.
 signal card_pressed(card: Card)
 
-
 # --- ONREADY VARIABLES ---
 
+## A reference to the container that holds the card's artwork.
+@onready var _art_container: Control = $ArtContainer
 ## A reference to the node that displays the card's artwork.
-@onready var _card_art: TextureRect = $CardArt
-
+@onready var _card_art: TextureRect = $ArtContainer/CardArt
+## A reference to the node that plays this card's animations.
+@onready var _animation_player: AnimationPlayer = $AnimationPlayer
 
 # --- VARIABLES ---
 
@@ -51,45 +53,39 @@ func _gui_input(event: InputEvent) -> void:
 func display(new_card_data: CardData) -> void:
 	# Store the card's data for later reference.
 	card_data = new_card_data
-	
+
 	# Set the texture for the card's main art.
 	_card_art.texture = card_data.front_texture
-	
+
 	# Set the minimum size of this entire control node to match the art size.
 	# This allows the HBoxContainer to arrange it correctly.
 	if _card_art.texture:
-		custom_minimum_size = _card_art.texture.get_size()
+		var art_size: Vector2 = _card_art.texture.get_size()
+		custom_minimum_size = art_size
 
-		# Set the pivot point to the bottom-center of the card for scaling effects.
-		pivot_offset = custom_minimum_size * Vector2(0.5, 1.0)
-
-
-## Animates the card's scale and updates its minimum size for layout.
-## @param new_scale: The target scale (e.g., Vector2(0.4, 0.4)).
-## @param duration: The time the animation should take.
-func animate_scale(new_scale: Vector2, duration: float) -> void:
-	var tween: Tween = create_tween().set_parallel()
-
-	# Animate the visual scale of the artwork.
-	tween.tween_property(_card_art, "scale", new_scale, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
-
-	# Animate the layout size of the container.
-	if _card_art.texture:
-		var target_min_size = _card_art.texture.get_size() * new_scale
-		tween.tween_property(self, "custom_minimum_size", target_min_size, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
-
+		# --- NEW LINES ---
+		# Set the ArtContainer's size to match the artwork.
+		_art_container.size = art_size
+		# Set the pivot to the center of the container for scaling effects.
+		_art_container.pivot_offset = art_size / 2.0
 
 # --- SIGNAL HANDLERS ---
 
 ## Called when the mouse cursor enters the control's rectangle.
 func _on_mouse_entered() -> void:
+	# This function is responsible for the hover-on animation.
 	if not hover_enabled:
 		return
-	animate_scale(Vector2(1.1, 1.1), 0.1)
+
+	# Play the animation we created in the editor.
+	_animation_player.play("hover_on")
 
 
 ## Called when the mouse cursor exits the control's rectangle.
 func _on_mouse_exited() -> void:
+	# This function is responsible for the hover-off animation.
 	if not hover_enabled:
 		return
-	animate_scale(Vector2(1.0, 1.0), 0.1)
+
+	# Play the animation we created in the editor.
+	_animation_player.play("hover_off")
