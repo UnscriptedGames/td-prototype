@@ -13,6 +13,19 @@ extends CardEffect
 
 # --- VIRTUAL METHOD OVERRIDES ---
 
+## Returns the cost of the tower's first level.
+## @return The cost of the tower, or 0 if data is invalid.
+func get_cost() -> int:
+	# Check if the tower data is valid and has at least one level defined.
+	if not tower_data or tower_data.levels.is_empty():
+		# If data is missing, log an error and return 0 to be safe.
+		push_error("BuildTowerEffect is missing TowerData or it has no levels.")
+		return 0
+	
+	# Return the cost from the first level's data resource.
+	return tower_data.levels[0].cost
+
+
 ## Executes the build tower effect by emitting a global signal.
 ## The BuildManager listens for this signal to enter build mode.
 ## @param context: A dictionary (unused in this specific effect).

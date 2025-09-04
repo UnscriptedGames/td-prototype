@@ -98,15 +98,30 @@ func _on_card_manager_hand_changed(new_hand: Array[CardData]) -> void:
 	_hand_container.display_hand(new_hand)
 
 func _on_hand_container_card_played(card: Card) -> void:
-	if not GameManager.player_data.can_afford(card.card_data.cost):
-		print("Cannot afford card")
+	# Safely check if the card and its effect are valid before proceeding.
+	if not is_instance_valid(card.card_data) or not is_instance_valid(card.card_data.effect):
+		# Log an error if the card is improperly configured.
+		push_error("Card is missing its CardData or a CardEffect resource.")
 		return
 
+	# Get the cost by calling the new function on the card's effect.
+	var card_cost: int = card.card_data.effect.get_cost()
+
+	# Check if the player has enough currency to play the card.
+	if not GameManager.player_data.can_afford(card_cost):
+		# In a debug build, print a message that the card is unaffordable.
+		if OS.is_debug_build():
+			print("Cannot afford card. Cost: %d, Player Gold: %d" % [card_cost, GameManager.player_data.currency])
+		return
+
+	# Find the index of the played card within the hand container.
 	var card_index: int = _hand_container.get_children().find(card)
+	# If the card isn't found, log an error.
 	if card_index == -1:
 		push_error("Clicked card not found in HandController.")
 		return
 
+	# If all checks pass, tell the CardManager to play the card.
 	_card_manager.play_card(card_index, {})
 
 # --- PRIVATE METHODS ---

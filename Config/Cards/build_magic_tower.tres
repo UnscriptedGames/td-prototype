@@ -12,7 +12,6 @@ metadata/_custom_type_script = "uid://1pgmy4c6yckj"
 
 [resource]
 script = ExtResource("4_yk1qq")
-cost = 100
 front_texture = ExtResource("3_pa3ia")
 effect = SubResource("Resource_ocjl4")
 metadata/_custom_type_script = "uid://drvh5madwcotk"

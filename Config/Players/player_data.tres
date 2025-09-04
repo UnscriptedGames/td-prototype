@@ -6,6 +6,6 @@
 [resource]
 script = ExtResource("1_8rqla")
 health = 20
-currency = 200
+currency = 20
 deck = ExtResource("1_b6lc8")
 hand_size = 5
