@@ -26,6 +26,8 @@ var _is_transitioning: bool = false
 func _ready():
 	await get_tree().process_frame
 	InputManager.register_cards_hud(self)
+	GlobalSignals.build_mode_entered.connect(_on_build_mode_entered)
+	GlobalSignals.build_mode_exited.connect(_on_build_mode_exited)
 
 	_hand_container.add_theme_constant_override("separation", CARD_SPACING)
 	_update_hand_position() # Initial position
@@ -94,6 +96,14 @@ func condense() -> void:
 	_toggle_cards(false)
 
 # --- SIGNAL HANDLERS ---
+
+func _on_build_mode_entered() -> void:
+	_hand_container_parent.hide()
+
+
+func _on_build_mode_exited() -> void:
+	_hand_container_parent.show()
+
 
 func _on_card_manager_hand_changed(new_hand: Array[CardData]) -> void:
 	_hand_container.display_hand(new_hand)

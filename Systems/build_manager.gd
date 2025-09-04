@@ -199,6 +199,7 @@ func _enter_build_mode(tower_data: TowerData) -> void:
 	_deselect_current_tower()
 	state = State.BUILDING_TOWER
 	InputManager.set_state(InputManager.State.BUILDING_TOWER) # Notify InputManager
+	GlobalSignals.build_mode_entered.emit()
 
 	if ghost_tower_scene:
 		_ghost_tower = ghost_tower_scene.instantiate()
@@ -218,6 +219,7 @@ func _enter_build_mode(tower_data: TowerData) -> void:
 func _exit_build_mode() -> void:
 	state = State.VIEWING
 	InputManager.set_state(InputManager.State.DEFAULT) # Notify InputManager
+	GlobalSignals.build_mode_exited.emit()
 	if is_instance_valid(_ghost_tower):
 		_ghost_tower.queue_free()
 		_ghost_tower = null
