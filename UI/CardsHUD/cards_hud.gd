@@ -64,11 +64,13 @@ func initialise(manager: CardManager) -> void:
 
 func on_hand_changed() -> void:
 	# This function is called after the HandController has created the new card nodes.
-	# We tell it to update the visual positions of the cards.
+	# We must wait one frame before calculating positions to ensure any nodes
+	# that were queue_free()'d have been fully processed and removed.
+	await get_tree().process_frame
+
+	# Now that we are sure the old card nodes are gone, we can safely update.
 	# The 'false' argument means the repositioning should be instant (no animation).
-	# DEFERRED: We wait until the current frame is finished before calculating positions
-	# to prevent race conditions and ensure all nodes are ready.
-	_hand_container.call_deferred("update_card_positions", _is_expanded, false)
+	_hand_container.update_card_positions(_is_expanded, false)
 
 
 func is_position_on_a_card(screen_position: Vector2) -> bool:
