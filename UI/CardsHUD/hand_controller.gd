@@ -53,32 +53,22 @@ func update_card_positions(is_expanded: bool, animate: bool) -> Signal:
 	## Calculates and applies card layouts by sizing and positioning this container.
 	var cards: Array[Node] = get_children()
 
-	# --- START ADVANCED DEBUGGING BLOCK ---
-	if OS.is_debug_build():
-		print("--- ADVANCED DEBUGGING: Child Node Report ---")
-		print("Running in frame: ", Engine.get_process_frames())
-		print("Actual child count: ", cards.size())
-		for i in range(cards.size()):
-			var card_node = cards[i]
-			var card_name = card_node.name
-			var instance_id = card_node.get_instance_id()
-			var is_queued_for_deletion = card_node.is_queued_for_deletion()
-			print("  - Child %d: Name='%s', ID=%s, QueuedForDeletion=%s" % [i, card_name, instance_id, is_queued_for_deletion])
+	# --- START DEBUGGING BLOCK ---
+	if OS.is_debug_build() and not cards.is_empty():
 		print("--- Running Card Layout Calculation ---")
 		print("Number of cards: ", cards.size())
-		if not cards.is_empty():
-			var first_card: Card = cards[0]
-			if is_instance_valid(first_card) and is_instance_valid(first_card.card_data):
-				var card_texture: Texture2D = first_card.card_data.front_texture
-				if is_instance_valid(card_texture):
-					print("Card texture resource path: ", card_texture.resource_path)
-					print("REPORTED CARD SIZE: ", card_texture.get_size())
-				else:
-					print("ERROR: Card texture is not valid.")
+		var first_card: Card = cards[0]
+		if is_instance_valid(first_card) and is_instance_valid(first_card.card_data):
+			var card_texture: Texture2D = first_card.card_data.front_texture
+			if is_instance_valid(card_texture):
+				print("Card texture resource path: ", card_texture.resource_path)
+				print("REPORTED CARD SIZE: ", card_texture.get_size())
 			else:
-				print("ERROR: First card or its data is not valid.")
-		print("---------------------------------------------")
-	# --- END ADVANCED DEBUGGING BLOCK ---
+				print("ERROR: Card texture is not valid.")
+		else:
+			print("ERROR: First card or its data is not valid.")
+		print("------------------------------------")
+	# --- END DEBUGGING BLOCK ---
 	
 	# Create a parallel tween to animate all nodes at once.
 	var tween: Tween = create_tween().set_parallel()
@@ -191,7 +181,9 @@ func replace_card_at_index(index: int, new_card_data: CardData) -> void:
 func clear_hand() -> void:
 	# Loop through all existing card nodes in the container.
 	for card_node in get_children():
-		# Remove the node from the scene and free it from memory.
+		# Immediately remove the node from the scene tree's list of children.
+		remove_child(card_node)
+		# Then, queue the node to be freed from memory at the end of the frame.
 		card_node.queue_free()
 
 
