@@ -110,10 +110,11 @@ func expand() -> void:
 
 func condense() -> void:
 	# Public method to start the condense animation.
-	# First, ensure all cards are in their non-hovered state.
+	# First, ensure all cards are in their non-hovered state by playing the
+	# instant RESET animation on them.
 	for card in _hand_container.get_children():
 		if card is Card:
-			card.play_hover_off_animation()
+			card.get_node("AnimationPlayer").play("RESET")
 
 	_toggle_cards(false)
 
