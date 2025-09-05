@@ -111,10 +111,10 @@ func expand() -> void:
 func condense() -> void:
 	# Public method to start the condense animation.
 	# First, ensure all cards are in their non-hovered state by manually
-	# setting their scale. This avoids all animation conflicts.
+	# resetting the scale on the ArtContainer node.
 	for card in _hand_container.get_children():
 		if card is Card:
-			card.scale = Vector2(1.0, 1.0)
+			card.art_container.scale = Vector2(1.0, 1.0)
 
 	_toggle_cards(false)
 

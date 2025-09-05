@@ -13,7 +13,7 @@ signal card_pressed(card: Card)
 # --- ONREADY VARIABLES ---
 
 ## A reference to the container that holds the card's artwork.
-@onready var _art_container: Control = $ArtContainer
+@onready var art_container: Control = $ArtContainer
 ## A reference to the node that displays the card's artwork.
 @onready var _card_art: TextureRect = $ArtContainer/CardArt
 ## A reference to the node that plays this card's animations.
@@ -65,9 +65,9 @@ func display(new_card_data: CardData) -> void:
 
 		# --- NEW LINES ---
 		# Set the ArtContainer's size to match the artwork.
-		_art_container.size = art_size
+		art_container.size = art_size
 		# Set the pivot to the center of the container for scaling effects.
-		_art_container.pivot_offset = art_size / 2.0
+		art_container.pivot_offset = art_size / 2.0
 
 
 # --- SIGNAL HANDLERS ---
