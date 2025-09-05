@@ -69,6 +69,16 @@ func display(new_card_data: CardData) -> void:
 		# Set the pivot to the center of the container for scaling effects.
 		_art_container.pivot_offset = art_size / 2.0
 
+
+func play_hover_off_animation() -> void:
+	# This function is responsible for the hover-off animation.
+	if not hover_enabled:
+		return
+
+	# Play the animation we created in the editor.
+	_animation_player.play("hover_off")
+
+
 # --- SIGNAL HANDLERS ---
 
 ## Called when the mouse cursor enters the control's rectangle.
@@ -84,8 +94,4 @@ func _on_mouse_entered() -> void:
 ## Called when the mouse cursor exits the control's rectangle.
 func _on_mouse_exited() -> void:
 	# This function is responsible for the hover-off animation.
-	if not hover_enabled:
-		return
-
-	# Play the animation we created in the editor.
-	_animation_player.play("hover_off")
+	play_hover_off_animation()
