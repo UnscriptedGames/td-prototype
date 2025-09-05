@@ -21,3 +21,13 @@ signal build_mode_entered
 ## The CardsHUD will listen for this to show the cards again.
 @warning_ignore("unused_signal")
 signal build_mode_exited
+
+## Emitted by a card-handling system (e.g., BuildManager) when the player
+## SUCCESSFULLY completes the card's action.
+@warning_ignore("unused_signal")
+signal card_effect_completed
+
+## Emitted by a card-handling system (e.g., BuildManager) when the player
+## ABORTS the card's action.
+@warning_ignore("unused_signal")
+signal card_effect_cancelled

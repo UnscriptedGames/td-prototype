@@ -8,7 +8,6 @@ extends Node
 # --- SIGNALS ---
 
 ## Emitted when the player's hand changes (e.g., a card is drawn or played).
-## The UI will listen to this to redraw the cards.
 ## @param new_hand: An array of CardData resources representing the new hand.
 signal hand_changed(new_hand: Array[CardData])
 
@@ -26,6 +25,7 @@ var _hand: Array[CardData] = []
 
 ## An array of CardData representing cards that have been played or discarded.
 var _discard_pile: Array[CardData] = []
+
 
 # --- PUBLIC METHODS ---
 
@@ -50,6 +50,9 @@ func initialise_deck(deck_data: DeckData, new_hand_size: int) -> void:
 	# Draw cards from the draw pile to fill the initial hand.
 	for i in range(_hand_size):
 		_draw_card()
+	
+	# CORRECTED: Emit the signal only ONCE after the entire hand is drawn.
+	hand_changed.emit(_hand)
 
 
 ## Plays a card from the hand, executes its effect, and draws a replacement.
@@ -73,6 +76,9 @@ func play_card(card_index: int, context: Dictionary) -> void:
 
 	# Draw a new card to replace the one that was played.
 	_draw_card()
+	
+	# CORRECTED: Emit the signal once after the hand has been modified.
+	hand_changed.emit(_hand)
 
 
 ## Discards a card from the hand without playing its effect.
@@ -92,6 +98,9 @@ func discard_card(card_index: int) -> void:
 	# Draw a new card to replace the one that was discarded.
 	_draw_card()
 
+	# CORRECTED: Emit the signal once after the hand has been modified.
+	hand_changed.emit(_hand)
+
 # --- PRIVATE METHODS ---
 
 ## Draws a single card from the draw pile and adds it to the hand.
@@ -106,5 +115,4 @@ func _draw_card() -> void:
 	# Add the card to the hand.
 	_hand.append(card_to_draw)
 	
-	# Emit a signal to notify the UI that the hand has changed.
-	hand_changed.emit(_hand)
+	# CORRECTED: The signal is now emitted by the public functions that call this.

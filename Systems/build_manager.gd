@@ -5,6 +5,7 @@ class_name BuildManager
 
 signal tower_selected
 signal tower_deselected
+# REMOVED old tower_placed signal
 
 enum State { VIEWING, BUILDING_TOWER, TOWER_SELECTED }
 
@@ -22,6 +23,7 @@ enum State { VIEWING, BUILDING_TOWER, TOWER_SELECTED }
 var state: State = State.VIEWING
 var _ghost_tower: Node2D
 var _selected_tower: TemplateTower
+var _is_placing: bool = false ## NEW: Prevents cancel signal on successful placement.
 
 ## Node References
 @onready var hud: LevelHUD = get_node("../LevelHUD")
@@ -64,6 +66,8 @@ func handle_build_input(event: InputEvent) -> bool:
 		var can_place: bool = is_buildable_at(path_layer, map_coords)
 
 		if can_place:
+			# Set a flag to indicate we are successfully placing the tower.
+			_is_placing = true
 			var tower_data: TowerData = _ghost_tower.data
 			var range_points: PackedVector2Array = _ghost_tower.get_range_points()
 			place_tower(tower_data, _ghost_tower.global_position, range_points)
@@ -160,6 +164,9 @@ func place_tower(tower_data: TowerData, build_position: Vector2, range_points: P
 
 	var build_cost: int = tower_data.levels[0].cost
 	GameManager.remove_currency(build_cost)
+	
+	# Announce that the card effect was successfully completed.
+	GlobalSignals.card_effect_completed.emit()
 
 
 func _select_tower(tower: TemplateTower) -> void:
@@ -198,6 +205,7 @@ func _get_tower_at_position(screen_position: Vector2) -> TemplateTower:
 func _enter_build_mode(tower_data: TowerData) -> void:
 	_deselect_current_tower()
 	state = State.BUILDING_TOWER
+	_is_placing = false ## Reset the placing flag.
 	InputManager.set_state(InputManager.State.BUILDING_TOWER) # Notify InputManager
 	GlobalSignals.build_mode_entered.emit()
 
@@ -218,8 +226,13 @@ func _enter_build_mode(tower_data: TowerData) -> void:
 
 func _exit_build_mode() -> void:
 	state = State.VIEWING
-	InputManager.set_state(InputManager.State.DEFAULT) # Notify InputManager
+	InputManager.set_state(InputManager.State.DEFAULT)
 	GlobalSignals.build_mode_exited.emit()
+	
+	# If we are NOT successfully placing a tower, it means this was a cancellation.
+	if not _is_placing:
+		GlobalSignals.card_effect_cancelled.emit()
+
 	if is_instance_valid(_ghost_tower):
 		_ghost_tower.queue_free()
 		_ghost_tower = null
