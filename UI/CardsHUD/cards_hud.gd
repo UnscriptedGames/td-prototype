@@ -49,6 +49,7 @@ func initialise(manager: CardManager) -> void:
 
 	# Connect to the manager's signal to know when the hand data changes.
 	_card_manager.hand_changed.connect(_on_card_manager_hand_changed)
+	_card_manager.card_replaced.connect(_on_card_replaced)
 	
 	# Connect to the hand controller's signals for user actions.
 	_hand_container.card_played.connect(_on_hand_container_card_played)
@@ -118,7 +119,7 @@ func _on_card_effect_completed() -> void:
 	if is_instance_valid(_card_in_play):
 		var card_index: int = _hand_container.get_children().find(_card_in_play)
 		if card_index != -1:
-			# This call will remove the card and trigger the 'hand_changed' signal.
+			# This call will now trigger either 'card_replaced' or 'hand_changed'.
 			_card_manager.play_card(card_index, {})
 		
 		# Clear the reference.
@@ -127,17 +128,26 @@ func _on_card_effect_completed() -> void:
 
 func _on_card_effect_cancelled() -> void:
 	# This is called on CANCELLATION.
-	# If a card was in play, this means we should simply show the hand again.
+	# We just need to make the hand visible again.
 	if is_instance_valid(_card_in_play):
 		_card_in_play = null
-		_show_cards()
+		_hand_container.visible = true
 
 
 func _on_card_manager_hand_changed(new_hand: Array[CardData]) -> void:
-	# When the card data changes, tell the HandController to update its card nodes.
+	# This is now only called for a FULL redraw:
+	# 1. On initial hand draw.
+	# 2. When the hand size changes (e.g., deck runs out).
 	_hand_container.display_hand(new_hand)
-	# After a successful play, the new hand is drawn; we must make it visible.
-	_show_cards()
+	_hand_container.visible = true
+
+
+func _on_card_replaced(card_index: int, new_card_data: CardData) -> void:
+	# This is called when a single card is replaced.
+	# We tell the hand controller to replace the card visual.
+	_hand_container.replace_card_at_index(card_index, new_card_data)
+	# And then we make the hand visible again.
+	_hand_container.visible = true
 
 
 func _on_hand_container_card_played(card: Card) -> void:
@@ -164,8 +174,8 @@ func _on_hand_container_card_played(card: Card) -> void:
 	# Set this card as the one "in play".
 	_card_in_play = card
 	
-	# Immediately hide the cards.
-	_hide_cards()
+	# Hide the entire hand container.
+	_hand_container.visible = false
 	
 	# Execute the card's effect (which will trigger build mode, etc.).
 	if card.card_data.effect:
@@ -173,19 +183,6 @@ func _on_hand_container_card_played(card: Card) -> void:
 
 
 # --- PRIVATE METHODS ---
-
-func _hide_cards() -> void:
-	# Loop through each card in the hand and make it invisible.
-	for card in _hand_container.get_children():
-		if card is Card:
-			card.visible = false
-
-
-func _show_cards() -> void:
-	# Loop through each card in the hand and make it visible again.
-	for card in _hand_container.get_children():
-		if card is Card:
-			card.visible = true
 
 
 func _toggle_cards(should_expand: bool, animate: bool = true) -> void:

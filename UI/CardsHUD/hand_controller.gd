@@ -29,7 +29,7 @@ const BASE_VIEWPORT_WIDTH: float = 1920.0
 
 func display_hand(new_hand: Array[CardData]) -> void:
 	# First, remove all the old card visuals.
-	_clear_hand()
+	clear_hand()
 
 	# Loop through each card in the new hand data.
 	for card_data in new_hand:
@@ -149,9 +149,36 @@ func update_card_positions(is_expanded: bool, animate: bool) -> Signal:
 	return tween.finished
 
 
-# --- PRIVATE METHODS ---
+func replace_card_at_index(index: int, new_card_data: CardData) -> void:
+	## Replaces a single card at a specific index without disturbing the others.
+	var card_nodes: Array[Node] = get_children()
 
-func _clear_hand() -> void:
+	# 1. Validate the index.
+	if index < 0 or index >= card_nodes.size():
+		push_error("Invalid index passed to replace_card_at_index().")
+		return
+
+	# 2. Get the old card and store its position.
+	var old_card: Card = card_nodes[index]
+	var old_position: Vector2 = old_card.position
+
+	# 3. Remove the old card.
+	old_card.queue_free()
+
+	# 4. Create and configure the new card.
+	var new_card: Card = CARD_SCENE.instantiate()
+	add_child(new_card)
+	new_card.card_pressed.connect(_on_card_pressed)
+	new_card.display(new_card_data) # Populate with data.
+
+	# 5. Position and order the new card.
+	new_card.position = old_position
+	move_child(new_card, index)
+
+
+# --- PUBLIC METHODS ---
+
+func clear_hand() -> void:
 	# Loop through all existing card nodes in the container.
 	for card_node in get_children():
 		# Remove the node from the scene and free it from memory.
