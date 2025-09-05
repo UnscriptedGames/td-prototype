@@ -70,10 +70,6 @@ func update_card_positions(is_expanded: bool, animate: bool) -> Signal:
 		print("------------------------------------")
 	# --- END DEBUGGING BLOCK ---
 	
-	# Create a parallel tween to animate all nodes at once.
-	var tween: Tween = create_tween().set_parallel()
-	var duration: float = TRANSITION_DURATION if animate else 0.0
-	
 	# Get required nodes and screen dimensions.
 	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
 
@@ -81,6 +77,10 @@ func update_card_positions(is_expanded: bool, animate: bool) -> Signal:
 	if cards.is_empty():
 		var timer := get_tree().create_timer(0.0)
 		return timer.timeout
+
+	# Create a parallel tween to animate all nodes at once.
+	var tween: Tween = create_tween().set_parallel()
+	var duration: float = TRANSITION_DURATION if animate else 0.0
 
 	# Get the base size of a card from its texture.
 	var card_original_size: Vector2 = cards[0].card_data.front_texture.get_size()
