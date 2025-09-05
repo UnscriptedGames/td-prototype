@@ -42,7 +42,7 @@ func initialise_deck(deck_data: DeckData, new_hand_size: int) -> void:
 	
 	# Clear any data from a previous level.
 	_draw_pile.clear()
-	_hand.clear()
+	hand.clear()
 	_discard_pile.clear()
 	
 	# Create a copy of the deck's cards to avoid modifying the original resource.
