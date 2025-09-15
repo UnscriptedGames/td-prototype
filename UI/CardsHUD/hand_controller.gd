@@ -121,16 +121,8 @@ func update_card_positions(is_expanded: bool, animate: bool) -> Signal:
 		var total_hand_width: float = (cards.size() - 1) * (final_card_size.x + target_separation) + final_card_size.x
 		var container_target_size := Vector2(total_hand_width, final_card_size.y)
 		
-		# 2. Calculate the container's position in the bottom-left corner.
-		var relative_margin: float = (CONDENSED_MARGIN / BASE_VIEWPORT_WIDTH) * viewport_size.x
-		var container_target_pos: Vector2 = Vector2(
-			relative_margin,
-			viewport_size.y - container_target_size.y - relative_margin
-		)
-		
-		# 3. Animate this container's size and local position.
+		# 2. Animate this container's size. Its position is now set by CardsHUD.
 		tween.tween_property(self, "size", container_target_size, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
-		tween.tween_property(self, "position", container_target_pos, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
 		
 		# 4. Loop through each card and position it locally.
 		for i in range(cards.size()):

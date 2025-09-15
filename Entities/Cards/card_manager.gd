@@ -122,6 +122,11 @@ func discard_card(card_index: int) -> void:
 	hand_changed.emit(hand)
 
 
+func get_draw_pile_count() -> int:
+	## Returns the number of cards currently in the draw pile.
+	return _draw_pile.size()
+
+
 # --- PRIVATE METHODS ---
 
 ## Draws a single card from the draw pile.

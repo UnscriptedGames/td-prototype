@@ -13,6 +13,8 @@ const BASE_VIEWPORT_WIDTH: float = 1920.0
 # --- ONREADY VARIABLES ---
 
 @onready var _hand_container: HandController = $HandContainer
+@onready var _deck_back: TextureRect = $DeckBack
+@onready var _deck_count_label: Label = $DeckBack/DeckCountLabel
 
 # --- VARIABLES ---
 
@@ -60,6 +62,8 @@ func initialise(manager: CardManager) -> void:
 		_card_manager.initialise_deck(GameManager.player_data.deck, GameManager.player_data.hand_size)
 	else:
 		push_error("GameManager player_data or deck not ready when CardsHUD initialised.")
+
+	_update_deck_count()
 
 
 func on_hand_changed() -> void:
@@ -148,6 +152,7 @@ func _on_card_manager_hand_changed(new_hand: Array[CardData]) -> void:
 	# 2. When the hand size changes (e.g., deck runs out).
 	_hand_container.display_hand(new_hand)
 	_hand_container.visible = true
+	_update_deck_count()
 
 
 func _on_card_replaced(card_index: int, new_card_data: CardData) -> void:
@@ -156,6 +161,7 @@ func _on_card_replaced(card_index: int, new_card_data: CardData) -> void:
 	_hand_container.replace_card_at_index(card_index, new_card_data)
 	# And then we make the hand visible again.
 	_hand_container.visible = true
+	_update_deck_count()
 
 
 func _on_hand_container_card_played(card: Card) -> void:
@@ -204,9 +210,46 @@ func _toggle_cards(should_expand: bool, animate: bool = true) -> void:
 	_is_expanded = should_expand
 	_is_transitioning = true
 	
+	if not should_expand:
+		_update_condensed_elements_layout()
+
 	# Tell the HandController to animate the cards to their new layout.
 	# We 'await' its completion signal before allowing another transition.
 	await _hand_container.update_card_positions(_is_expanded, animate)
 	
 	# The transition is complete.
 	_is_transitioning = false
+
+
+func _update_deck_count() -> void:
+	if not is_instance_valid(_card_manager):
+		return
+
+	var count: int = _card_manager.get_draw_pile_count()
+	_deck_count_label.text = str(count)
+
+
+func _update_condensed_elements_layout() -> void:
+	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
+
+	# Set scale for the deck back image
+	_deck_back.scale = CONDENSED_SCALE
+
+	# Get the final size of the deck back image after scaling
+	var deck_back_size: Vector2 = _deck_back.texture.get_size() * _deck_back.scale
+
+	# Position the deck back image in the bottom-left corner
+	var relative_margin: float = (CONDENSED_MARGIN / BASE_VIEWPORT_WIDTH) * viewport_size.x
+	_deck_back.position = Vector2(
+		relative_margin,
+		viewport_size.y - deck_back_size.y - relative_margin
+	)
+
+	# Get the size of the hand container (which will be calculated by HandController)
+	var hand_container_size: Vector2 = _hand_container.size
+
+	# Position the hand container to the right of the deck back image
+	_hand_container.position = Vector2(
+		_deck_back.position.x + deck_back_size.x + 25,
+		viewport_size.y - hand_container_size.y - relative_margin
+	)
