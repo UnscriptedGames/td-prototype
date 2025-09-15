@@ -15,8 +15,8 @@ var _highlight_range_source_id: int = -1
 
 ## Target Management
 var _enemies_in_range: Array[TemplateEnemy] = []
-var _current_target: TemplateEnemy
-var _target_last_known_position: Vector2
+var _current_targets: Array[TemplateEnemy] = []
+var _targets_last_known_positions: Array[Vector2] = []
 var _is_firing: bool = false
 
 ## Node References
@@ -37,16 +37,19 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	match state:
 		State.IDLE:
-			if not _enemies_in_range.is_empty():
-				_find_new_target()
+			# The _find_new_target function is now called by signals when enemies enter/exit range.
+			# We can add a timer here to periodically search for new targets as a fallback.
+			pass
 		State.ATTACKING:
-			# If the target is no longer valid, just update the state.
-			# Do NOT interrupt the animation here. Let it finish.
-			if not is_instance_valid(_current_target):
-				_current_target = null
-				state = State.IDLE
-				return
-			
+			var has_valid_target = _current_targets.any(func(t): return is_instance_valid(t))
+			if not has_valid_target:
+				_find_new_target()
+				return # _find_new_target will update the state to IDLE if needed
+
+			var current_level_data: TowerLevelData = data.levels[current_level - 1]
+			if _current_targets.size() < current_level_data.targets:
+				_find_new_target()
+
 			_attack()
 
 
@@ -87,6 +90,7 @@ func _on_range_area_entered(area: Area2D) -> void:
 	if not area is TemplateEnemy:
 		return
 	_enemies_in_range.append(area)
+	_find_new_target()
 
 
 func _on_range_area_exited(area: Area2D) -> void:
@@ -96,23 +100,36 @@ func _on_range_area_exited(area: Area2D) -> void:
 	var index = _enemies_in_range.find(area)
 	if index != -1:
 		_enemies_in_range.remove_at(index)
+
+	var target_index = _current_targets.find(area)
+	if target_index != -1:
+		_current_targets.remove_at(target_index)
 	
-	if area == _current_target:
-		_current_target = null
-		state = State.IDLE
+	_find_new_target()
 
 
 func _find_new_target() -> void:
-	_enemies_in_range = _enemies_in_range.filter(
+	var valid_targets = _enemies_in_range.filter(
 		func(enemy: TemplateEnemy) -> bool:
 			return is_instance_valid(enemy) and enemy.state == TemplateEnemy.State.MOVING
 	)
 	
-	if not _enemies_in_range.is_empty():
-		_current_target = _enemies_in_range[0]
+	if valid_targets.is_empty():
+		_current_targets.clear()
+		return
+
+	var current_level_data: TowerLevelData = data.levels[current_level - 1]
+	var num_targets_to_find = current_level_data.targets
+	
+	_current_targets.clear()
+	var enemies_to_add = valid_targets.slice(0, num_targets_to_find)
+	for enemy in enemies_to_add:
+		_current_targets.append(enemy)
+
+	if not _current_targets.is_empty():
 		state = State.ATTACKING
 	else:
-		_current_target = null
+		state = State.IDLE
 
 
 ## Private: Fires a projectile at the current target if the cooldown is ready.
@@ -122,12 +139,16 @@ func _attack() -> void:
 		return
 	
 	_is_firing = true
-	# Store the target's position the moment we decide to attack
-	var target_point_node = _current_target.find_child("TargetPoint")
-	if is_instance_valid(target_point_node):
-		_target_last_known_position = target_point_node.global_position
-	else:
-		_target_last_known_position = _current_target.global_position
+	# Store the targets' positions the moment we decide to attack
+	_targets_last_known_positions.clear()
+	print("Attack function: processing %d targets" % _current_targets.size())
+	for target in _current_targets:
+		if is_instance_valid(target):
+			var target_point_node = target.find_child("TargetPoint")
+			if is_instance_valid(target_point_node):
+				_targets_last_known_positions.append(target_point_node.global_position)
+			else:
+				_targets_last_known_positions.append(target.global_position)
 	
 	var anim_name: String = current_level_data.shoot_animation
 	
@@ -158,36 +179,47 @@ func _on_animation_finished(_anim_name: StringName) -> void:
 
 
 func _spawn_projectile() -> void:
+	_spawn_projectiles()
+
+
+func _spawn_projectiles() -> void:
 	var current_level_data: TowerLevelData = data.levels[current_level - 1]
-	var projectile: TemplateProjectile = ObjectPoolManager.get_object(current_level_data.projectile_scene) as TemplateProjectile
-	if not is_instance_valid(projectile):
-		push_error("ObjectPoolManager failed to provide a projectile.")
-		return
-	
-	projectile.visible = true
-	_projectiles_container.add_child(projectile)
-	projectile.global_position = muzzle.global_position
-	
-	# If the original target is still valid, initialize a normal shot.
-	if is_instance_valid(_current_target) and _current_target.state == TemplateEnemy.State.MOVING:
-		if OS.is_debug_build():
-			print("Tower: Firing NORMAL shot.")
-		projectile.initialize(
-			_current_target,
-			current_level_data.damage,
-			current_level_data.projectile_speed,
-			current_level_data.is_aoe
-		)
-	# Otherwise, initialize a "dud" shot to the last known position.
-	else:
-		if OS.is_debug_build():
-			print("Tower: Firing DUD shot to ", _target_last_known_position)
-		projectile.initialize_dud_shot(
-			_target_last_known_position,
-			current_level_data.damage,
-			current_level_data.projectile_speed,
-			current_level_data.is_aoe
-		)
+	print("Spawn projectiles function: iterating through %d targets" % _current_targets.size())
+	for i in range(_current_targets.size()):
+		print("Spawning projectile for target %d" % i)
+		var target = _current_targets[i]
+		var projectile: TemplateProjectile = ObjectPoolManager.get_object(current_level_data.projectile_scene) as TemplateProjectile
+		if not is_instance_valid(projectile):
+			push_error("ObjectPoolManager failed to provide a projectile.")
+			continue
+
+		projectile.visible = true
+		_projectiles_container.add_child(projectile)
+		projectile.global_position = muzzle.global_position
+
+		# If the original target is still valid, initialize a normal shot.
+		if is_instance_valid(target) and target.state == TemplateEnemy.State.MOVING:
+			if OS.is_debug_build():
+				print("Tower: Firing NORMAL shot.")
+			projectile.initialize(
+				target,
+				current_level_data.damage,
+				current_level_data.projectile_speed,
+				current_level_data.is_aoe
+			)
+		# Otherwise, initialize a "dud" shot to the last known position.
+		else:
+			# Ensure we have a last known position for this target index
+			if i < _targets_last_known_positions.size():
+				var last_known_pos = _targets_last_known_positions[i]
+				if OS.is_debug_build():
+					print("Tower: Firing DUD shot to ", last_known_pos)
+				projectile.initialize_dud_shot(
+					last_known_pos,
+					current_level_data.damage,
+					current_level_data.projectile_speed,
+					current_level_data.is_aoe
+				)
 
 
 func upgrade() -> void:
