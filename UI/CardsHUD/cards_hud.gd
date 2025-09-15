@@ -211,7 +211,8 @@ func _toggle_cards(should_expand: bool, animate: bool = true) -> void:
 	_is_transitioning = true
 	
 	if not should_expand:
-		_update_condensed_elements_layout()
+		var condensed_size: Vector2 = _hand_container.get_condensed_size()
+		_update_condensed_elements_layout(condensed_size)
 
 	# Tell the HandController to animate the cards to their new layout.
 	# We 'await' its completion signal before allowing another transition.
@@ -229,7 +230,7 @@ func _update_deck_count() -> void:
 	_deck_count_label.text = str(count)
 
 
-func _update_condensed_elements_layout() -> void:
+func _update_condensed_elements_layout(hand_container_size: Vector2) -> void:
 	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
 
 	# Set scale for the deck back image
@@ -245,10 +246,8 @@ func _update_condensed_elements_layout() -> void:
 		viewport_size.y - deck_back_size.y - relative_margin
 	)
 
-	# Get the size of the hand container (which will be calculated by HandController)
-	var hand_container_size: Vector2 = _hand_container.size
-
 	# Position the hand container to the right of the deck back image
+	# The y-position is aligned with the deck back's bottom edge.
 	_hand_container.position = Vector2(
 		_deck_back.position.x + deck_back_size.x + 25,
 		viewport_size.y - hand_container_size.y - relative_margin

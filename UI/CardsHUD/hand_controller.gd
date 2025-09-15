@@ -168,6 +168,20 @@ func replace_card_at_index(index: int, new_card_data: CardData) -> void:
 	move_child(new_card, index)
 
 
+func get_condensed_size() -> Vector2:
+	## Calculates and returns the target size of the container for the condensed layout.
+	var cards: Array[Node] = get_children()
+	if cards.is_empty():
+		return Vector2.ZERO
+
+	# This calculation must stay in sync with the one in update_card_positions().
+	var card_original_size: Vector2 = cards[0].card_data.front_texture.get_size()
+	var final_card_size: Vector2 = card_original_size * CONDENSED_SCALE
+	var target_separation: int = int(-final_card_size.x * 0.9)
+	var total_hand_width: float = (cards.size() - 1) * (final_card_size.x + target_separation) + final_card_size.x
+	return Vector2(total_hand_width, final_card_size.y)
+
+
 # --- PUBLIC METHODS ---
 
 func clear_hand() -> void:
