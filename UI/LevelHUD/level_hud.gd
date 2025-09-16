@@ -9,7 +9,7 @@ signal sell_tower_requested
 signal next_wave_requested
 
 ## Announces the player has changed the target priority.
-signal target_priority_changed(priority: TargetingPriority.Priority)
+signal target_priority_changed(priority: TargetPriority.Priority)
 
 @export var bomb_tower_data: TowerData
 @export var archer_tower_data: TowerData
@@ -150,18 +150,18 @@ func _on_target_priority_changed(toggled_on: bool) -> void:
 		# The ButtonGroup ensures another button will be toggled on, firing its own signal.
 		return
 
-	var priority: TargetingPriority.Priority
+	var priority: TargetPriority.Priority
 
 	if most_progress_check_button.button_pressed:
-		priority = TargetingPriority.Priority.MOST_PROGRESS
+		priority = TargetPriority.Priority.MOST_PROGRESS
 	elif least_progress_check_button.button_pressed:
-		priority = TargetingPriority.Priority.LEAST_PROGRESS
+		priority = TargetPriority.Priority.LEAST_PROGRESS
 	elif strongest_enemy_check_button.button_pressed:
-		priority = TargetingPriority.Priority.STRONGEST_ENEMY
+		priority = TargetPriority.Priority.STRONGEST_ENEMY
 	elif weakest_enemy_check_button.button_pressed:
-		priority = TargetingPriority.Priority.WEAKEST_ENEMY
+		priority = TargetPriority.Priority.WEAKEST_ENEMY
 	elif lowest_health_check_button.button_pressed:
-		priority = TargetingPriority.Priority.LOWEST_HEALTH
+		priority = TargetPriority.Priority.LOWEST_HEALTH
 
 	emit_signal("target_priority_changed", priority)
 
@@ -264,15 +264,15 @@ func _update_target_priority_display() -> void:
 	lowest_health_check_button.set_block_signals(true)
 
 	match priority:
-		TargetingPriority.Priority.MOST_PROGRESS:
+		TargetPriority.Priority.MOST_PROGRESS:
 			most_progress_check_button.button_pressed = true
-		TargetingPriority.Priority.LEAST_PROGRESS:
+		TargetPriority.Priority.LEAST_PROGRESS:
 			least_progress_check_button.button_pressed = true
-		TargetingPriority.Priority.STRONGEST_ENEMY:
+		TargetPriority.Priority.STRONGEST_ENEMY:
 			strongest_enemy_check_button.button_pressed = true
-		TargetingPriority.Priority.WEAKEST_ENEMY:
+		TargetPriority.Priority.WEAKEST_ENEMY:
 			weakest_enemy_check_button.button_pressed = true
-		TargetingPriority.Priority.LOWEST_HEALTH:
+		TargetPriority.Priority.LOWEST_HEALTH:
 			lowest_health_check_button.button_pressed = true
 
 	# Unblock signals so the user can interact with them again.

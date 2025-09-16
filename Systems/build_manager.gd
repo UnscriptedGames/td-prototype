@@ -144,7 +144,7 @@ func _on_sell_tower_requested() -> void:
 	tower_to_remove.queue_free()
 
 
-func _on_target_priority_changed(priority: TargetingPriority.Priority) -> void:
+func _on_target_priority_changed(priority: TargetPriority.Priority) -> void:
 	if is_instance_valid(_selected_tower):
 		_selected_tower.set_target_priority(priority)
 

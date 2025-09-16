@@ -8,7 +8,7 @@ enum State { IDLE, ATTACKING }
 @export var state: State = State.IDLE
 var data: TowerData
 var current_level: int = 1
-var target_priority: TargetingPriority.Priority = TargetingPriority.Priority.MOST_PROGRESS
+var target_priority: TargetPriority.Priority = TargetPriority.Priority.MOST_PROGRESS
 
 var _highlight_layer: TileMapLayer
 var _highlight_tower_source_id: int = -1
@@ -109,7 +109,7 @@ func _on_range_area_exited(area: Area2D) -> void:
 	_find_new_target()
 
 
-func set_target_priority(new_priority: TargetingPriority.Priority) -> void:
+func set_target_priority(new_priority: TargetPriority.Priority) -> void:
 	target_priority = new_priority
 	# When priority changes, immediately try to find a new target based on the new rules.
 	_find_new_target()
@@ -127,15 +127,15 @@ func _find_new_target() -> void:
 
 	# Sort the valid targets based on the current priority
 	match target_priority:
-		TargetingPriority.Priority.MOST_PROGRESS:
+		TargetPriority.Priority.MOST_PROGRESS:
 			valid_targets.sort_custom(func(a, b): return a.path_follow.progress > b.path_follow.progress)
-		TargetingPriority.Priority.LEAST_PROGRESS:
+		TargetPriority.Priority.LEAST_PROGRESS:
 			valid_targets.sort_custom(func(a, b): return a.path_follow.progress < b.path_follow.progress)
-		TargetingPriority.Priority.STRONGEST_ENEMY:
+		TargetPriority.Priority.STRONGEST_ENEMY:
 			valid_targets.sort_custom(func(a, b): return a.max_health > b.max_health)
-		TargetingPriority.Priority.WEAKEST_ENEMY:
+		TargetPriority.Priority.WEAKEST_ENEMY:
 			valid_targets.sort_custom(func(a, b): return a.max_health < b.max_health)
-		TargetingPriority.Priority.LOWEST_HEALTH:
+		TargetPriority.Priority.LOWEST_HEALTH:
 			valid_targets.sort_custom(func(a, b): return a.health < b.health)
 
 	var current_level_data: TowerLevelData = data.levels[current_level - 1]

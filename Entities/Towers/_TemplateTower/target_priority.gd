@@ -1,4 +1,4 @@
-class_name TargetingPriority
+class_name TargetPriority
 extends RefCounted
 
 enum Priority {
