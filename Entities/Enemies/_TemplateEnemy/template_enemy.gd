@@ -277,6 +277,6 @@ func _return_to_pool_and_cleanup() -> void:
 	# Return this enemy to the pool (which will reparent it)
 	ObjectPoolManager.return_object(self)
 	
-	# Now that the enemy has been reparented, we can safely free the old PathFollow2D
+	# Now that the enemy has been reparented, we can return the old PathFollow2D to its pool
 	if is_instance_valid(temp_path_follow):
-		temp_path_follow.queue_free()
+		ObjectPoolManager.return_node(temp_path_follow)

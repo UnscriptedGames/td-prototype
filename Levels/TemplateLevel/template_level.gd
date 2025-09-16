@@ -37,6 +37,9 @@ func _ready() -> void:
 	if level_data:
 		GameManager.set_level(level_number, level_data)
 
+	# --- Pool Initialisation ---
+	ObjectPoolManager.create_node_pool("PathFollow2D", 50)
+
 	# --- Card System Initialisation ---
 	# Initialise the CardsHUD with a reference to the CardManager.
 	_cards_hud.initialise(_card_manager)
@@ -125,7 +128,12 @@ func _spawn_enemy(enemy_scene: PackedScene, path_node: Path2D) -> void:
 
 	enemy.visible = true
 
-	var path_follow := PathFollow2D.new()
+	var path_follow := ObjectPoolManager.get_pooled_node("PathFollow2D") as PathFollow2D
+	if not is_instance_valid(path_follow):
+		push_error("Failed to get a PathFollow2D from the pool.")
+		# If pooling fails, we can fall back to creating a new one to prevent a crash.
+		path_follow = PathFollow2D.new()
+
 	path_follow.rotates = false
 	path_follow.loop = false
 	path_node.add_child(path_follow)
@@ -180,14 +188,18 @@ func _on_enemy_finished_path(enemy: TemplateEnemy) -> void:
 
 	enemy.prepare_for_new_path()
 
-	var new_path_follow := PathFollow2D.new()
+	var new_path_follow := ObjectPoolManager.get_pooled_node("PathFollow2D") as PathFollow2D
+	if not is_instance_valid(new_path_follow):
+		push_error("Failed to get a PathFollow2D from the pool.")
+		new_path_follow = PathFollow2D.new()
+
 	new_path_follow.rotates = false
 	new_path_follow.loop = false
 	next_path.add_child(new_path_follow)
 
 	enemy.path_follow = new_path_follow
 
-	path_follow.queue_free()
+	ObjectPoolManager.return_node(path_follow)
 
 
 func _on_next_wave_requested() -> void:

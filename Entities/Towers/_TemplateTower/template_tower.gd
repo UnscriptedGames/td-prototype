@@ -38,19 +38,8 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	match state:
 		State.IDLE:
-			# The _find_new_target function is now called by signals when enemies enter/exit range.
-			# We can add a timer here to periodically search for new targets as a fallback.
 			pass
 		State.ATTACKING:
-			var has_valid_target = _current_targets.any(func(t): return is_instance_valid(t))
-			if not has_valid_target:
-				_find_new_target()
-				return # _find_new_target will update the state to IDLE if needed
-
-			var current_level_data: TowerLevelData = data.levels[current_level - 1]
-			if _current_targets.size() < current_level_data.targets:
-				_find_new_target()
-
 			_attack()
 
 
@@ -90,36 +79,52 @@ func set_range_polygon(points: PackedVector2Array) -> void:
 func _on_range_area_entered(area: Area2D) -> void:
 	if not area is TemplateEnemy:
 		return
-	_enemies_in_range.append(area)
+	var enemy = area as TemplateEnemy
+	_enemies_in_range.append(enemy)
 	_find_new_target()
 
 
 func _on_range_area_exited(area: Area2D) -> void:
 	if not area is TemplateEnemy:
 		return
+	var enemy = area as TemplateEnemy
 	
-	var index = _enemies_in_range.find(area)
+	var index = _enemies_in_range.find(enemy)
 	if index != -1:
 		_enemies_in_range.remove_at(index)
 
-	var target_index = _current_targets.find(area)
-	if target_index != -1:
-		_current_targets.remove_at(target_index)
-	
-	_find_new_target()
+	if _current_targets.has(enemy):
+		_current_targets.erase(enemy)
+		if enemy.died.is_connected(_on_enemy_died):
+			enemy.died.disconnect(_on_enemy_died)
+		_find_new_target()
+
+
+func _on_enemy_died(enemy: TemplateEnemy, _reward: int) -> void:
+	if _current_targets.has(enemy):
+		_current_targets.erase(enemy)
+		if enemy.died.is_connected(_on_enemy_died):
+			enemy.died.disconnect(_on_enemy_died)
+		_find_new_target()
 
 
 func set_target_priority(new_priority: TargetPriority.Priority) -> void:
 	target_priority = new_priority
-	# When priority changes, immediately try to find a new target based on the new rules.
 	_find_new_target()
 
 
 func _find_new_target() -> void:
 	var current_level_data: TowerLevelData = data.levels[current_level - 1]
+
+	# Filter out invalid enemies
+	_enemies_in_range = _enemies_in_range.filter(
+		func(enemy: TemplateEnemy) -> bool:
+			return is_instance_valid(enemy)
+	)
+
 	var valid_targets = _enemies_in_range.filter(
 		func(enemy: TemplateEnemy) -> bool:
-			if not is_instance_valid(enemy) or not enemy.state == TemplateEnemy.State.MOVING:
+			if not enemy.state == TemplateEnemy.State.MOVING:
 				return false
 			if enemy.data.is_flying and not current_level_data.can_attack_flying:
 				return false
@@ -127,28 +132,16 @@ func _find_new_target() -> void:
 	)
 	
 	if valid_targets.is_empty():
-		_current_targets.clear()
+		_clear_targets()
+		state = State.IDLE
 		return
 
-	# Sort the valid targets based on the current priority
-	match target_priority:
-		TargetPriority.Priority.MOST_PROGRESS:
-			valid_targets.sort_custom(func(a, b): return a.path_follow.progress > b.path_follow.progress)
-		TargetPriority.Priority.LEAST_PROGRESS:
-			valid_targets.sort_custom(func(a, b): return a.path_follow.progress < b.path_follow.progress)
-		TargetPriority.Priority.STRONGEST_ENEMY:
-			valid_targets.sort_custom(func(a, b): return a.max_health > b.max_health)
-		TargetPriority.Priority.WEAKEST_ENEMY:
-			valid_targets.sort_custom(func(a, b): return a.max_health < b.max_health)
-		TargetPriority.Priority.LOWEST_HEALTH:
-			valid_targets.sort_custom(func(a, b): return a.health < b.health)
+	_sort_enemies(valid_targets)
 
 	var num_targets_to_find = current_level_data.targets
-	
-	_current_targets.clear()
-	var enemies_to_add = valid_targets.slice(0, num_targets_to_find)
-	for enemy in enemies_to_add:
-		_current_targets.append(enemy)
+	var new_targets = valid_targets.slice(0, num_targets_to_find)
+
+	_update_targets(new_targets)
 
 	if not _current_targets.is_empty():
 		state = State.ATTACKING
@@ -156,8 +149,50 @@ func _find_new_target() -> void:
 		state = State.IDLE
 
 
-## Private: Fires a projectile at the current target if the cooldown is ready.
+func _sort_enemies(enemies: Array) -> void:
+	match target_priority:
+		TargetPriority.Priority.MOST_PROGRESS:
+			enemies.sort_custom(func(a, b): return a.path_follow.progress > b.path_follow.progress)
+		TargetPriority.Priority.LEAST_PROGRESS:
+			enemies.sort_custom(func(a, b): return a.path_follow.progress < b.path_follow.progress)
+		TargetPriority.Priority.STRONGEST_ENEMY:
+			enemies.sort_custom(func(a, b): return a.max_health > b.max_health)
+		TargetPriority.Priority.WEAKEST_ENEMY:
+			enemies.sort_custom(func(a, b): return a.max_health < b.max_health)
+		TargetPriority.Priority.LOWEST_HEALTH:
+			enemies.sort_custom(func(a, b): return a.health < b.health)
+
+
+func _update_targets(new_targets: Array[TemplateEnemy]) -> void:
+	var old_targets = _current_targets.duplicate()
+
+	# Remove old targets that are not in the new list
+	for target in old_targets:
+		if not new_targets.has(target):
+			if target.died.is_connected(_on_enemy_died):
+				target.died.disconnect(_on_enemy_died)
+			_current_targets.erase(target)
+
+	# Add new targets that were not in the old list
+	for target in new_targets:
+		if not old_targets.has(target):
+			_current_targets.append(target)
+			if not target.died.is_connected(_on_enemy_died):
+				target.died.connect(_on_enemy_died)
+
+
+func _clear_targets() -> void:
+	for target in _current_targets:
+		if is_instance_valid(target) and target.died.is_connected(_on_enemy_died):
+			target.died.disconnect(_on_enemy_died)
+	_current_targets.clear()
+
+
 func _attack() -> void:
+	if _current_targets.is_empty():
+		state = State.IDLE
+		return
+
 	var current_level_data: TowerLevelData = data.levels[current_level - 1]
 	if not fire_rate_timer.is_stopped() or _is_firing or not current_level_data.projectile_scene:
 		return
@@ -165,7 +200,6 @@ func _attack() -> void:
 	_is_firing = true
 	# Store the targets' positions the moment we decide to attack
 	_targets_last_known_positions.clear()
-	print("Attack function: processing %d targets" % _current_targets.size())
 	for target in _current_targets:
 		if is_instance_valid(target):
 			var target_point_node = target.find_child("TargetPoint")
@@ -208,9 +242,7 @@ func _spawn_projectile() -> void:
 
 func _spawn_projectiles() -> void:
 	var current_level_data: TowerLevelData = data.levels[current_level - 1]
-	print("Spawn projectiles function: iterating through %d targets" % _current_targets.size())
-	for i in range(_current_targets.size()):
-		print("Spawning projectile for target %d" % i)
+	for i in range(min(_current_targets.size(), _targets_last_known_positions.size())):
 		var target = _current_targets[i]
 		var projectile: TemplateProjectile = ObjectPoolManager.get_object(current_level_data.projectile_scene) as TemplateProjectile
 		if not is_instance_valid(projectile):
@@ -223,8 +255,6 @@ func _spawn_projectiles() -> void:
 
 		# If the original target is still valid, initialize a normal shot.
 		if is_instance_valid(target) and target.state == TemplateEnemy.State.MOVING:
-			if OS.is_debug_build():
-				print("Tower: Firing NORMAL shot.")
 			projectile.initialize(
 				target,
 				current_level_data.damage,
@@ -233,17 +263,13 @@ func _spawn_projectiles() -> void:
 			)
 		# Otherwise, initialize a "dud" shot to the last known position.
 		else:
-			# Ensure we have a last known position for this target index
-			if i < _targets_last_known_positions.size():
-				var last_known_pos = _targets_last_known_positions[i]
-				if OS.is_debug_build():
-					print("Tower: Firing DUD shot to ", last_known_pos)
-				projectile.initialize_dud_shot(
-					last_known_pos,
-					current_level_data.damage,
-					current_level_data.projectile_speed,
-					current_level_data.is_aoe
-				)
+			var last_known_pos = _targets_last_known_positions[i]
+			projectile.initialize_dud_shot(
+				last_known_pos,
+				current_level_data.damage,
+				current_level_data.projectile_speed,
+				current_level_data.is_aoe
+			)
 
 
 func upgrade() -> void:
@@ -298,7 +324,3 @@ func _apply_level_stats() -> void:
 	# Play idle animation
 	if not current_level_data.idle_animation.is_empty():
 		animation_player.play(current_level_data.idle_animation)
-
-	# Note: Damage, projectile speed, etc., are read directly from the data
-	# when spawning projectiles, so they don't need to be stored in variables here.
-	# The tower's range is also read directly when needed for selection highlights.
