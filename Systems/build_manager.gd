@@ -3,6 +3,8 @@ extends Node2D
 ## Manages the tower building process, including ghost towers and placement validation.
 class_name BuildManager
 
+var TargetingPriority = preload("res://Core/targeting_priority.gd")
+
 signal tower_selected
 signal tower_deselected
 # REMOVED old tower_placed signal
@@ -36,6 +38,7 @@ func _ready() -> void:
 	# Connects to signals from the LevelHUD for legacy build buttons.
 	if is_instance_valid(hud):
 		hud.sell_tower_requested.connect(_on_sell_tower_requested)
+		hud.target_priority_changed.connect(_on_target_priority_changed)
 
 	# Connects to the new global signal for card-based building requests.
 	GlobalSignals.build_tower_requested.connect(_on_build_tower_requested)
@@ -141,6 +144,11 @@ func _on_sell_tower_requested() -> void:
 	var tower_to_remove = _selected_tower
 	_deselect_current_tower()
 	tower_to_remove.queue_free()
+
+
+func _on_target_priority_changed(priority: TargetingPriority.Priority) -> void:
+	if is_instance_valid(_selected_tower):
+		_selected_tower.set_target_priority(priority)
 
 
 # --- PRIVATE METHODS ---

@@ -1,10 +1,12 @@
-[gd_scene load_steps=6 format=3 uid="uid://qy230vei6n8p"]
+[gd_scene load_steps=7 format=3 uid="uid://qy230vei6n8p"]
 
-[ext_resource type="Script" uid="uid://jt41lox7ggvv" path="res://UI/LevelHUD/level_hud.gd" id="1_mal80"]
+[ext_resource type="Script" path="res://UI/LevelHUD/level_hud.gd" id="1_mal80"]
 [ext_resource type="Resource" uid="uid://dvgo1u4245bj4" path="res://Config/Towers/bomb_tower_data.tres" id="2_3otiq"]
 [ext_resource type="Resource" uid="uid://bojj6xdad27bq" path="res://Config/Towers/archer_tower_data.tres" id="3_ais3w"]
 [ext_resource type="Resource" uid="uid://c5v3s0n3fxli3" path="res://Config/Towers/magic_tower_data.tres" id="4_rorbr"]
 [ext_resource type="Theme" uid="uid://cva31h3i30ii7" path="res://Themes/hud_theme.tres" id="5_41t3o"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_m2k8s"]
 
 [node name="LevelHUD" type="CanvasLayer"]
 layer = 10
@@ -50,7 +52,7 @@ custom_minimum_size = Vector2(200, 0)
 offset_left = 25.0
 offset_top = 25.0
 offset_right = 225.0
-offset_bottom = 315.0
+offset_bottom = 351.0
 theme = ExtResource("5_41t3o")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="TowerDetailsContainer"]
@@ -102,6 +104,10 @@ text = "Max Targets:"
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
+[node name="TargetPriorityButton" type="Button" parent="TowerDetailsContainer/VBoxContainer"]
+layout_mode = 2
+text = "Target Priority"
+
 [node name="UpgradeButton" type="Button" parent="TowerDetailsContainer/VBoxContainer"]
 layout_mode = 2
 text = "Upgrade"
@@ -109,6 +115,51 @@ text = "Upgrade"
 [node name="SellTowerButton" type="Button" parent="TowerDetailsContainer/VBoxContainer"]
 layout_mode = 2
 text = "Sell Tower"
+
+[node name="TargetPriorityContainer" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(200, 0)
+offset_left = 250.0
+offset_top = 25.0
+offset_right = 450.0
+offset_bottom = 211.0
+theme = ExtResource("5_41t3o")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="TargetPriorityContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Label" type="Label" parent="TargetPriorityContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Target Priority"
+horizontal_alignment = 1
+
+[node name="MostProgressCheckButton" type="CheckButton" parent="TargetPriorityContainer/VBoxContainer"]
+layout_mode = 2
+button_pressed = true
+button_group = SubResource("ButtonGroup_m2k8s")
+text = "Most Progress"
+
+[node name="LeastProgressCheckButton" type="CheckButton" parent="TargetPriorityContainer/VBoxContainer"]
+layout_mode = 2
+button_group = SubResource("ButtonGroup_m2k8s")
+text = "Least Progress"
+
+[node name="StrongestEnemyCheckButton" type="CheckButton" parent="TargetPriorityContainer/VBoxContainer"]
+layout_mode = 2
+button_group = SubResource("ButtonGroup_m2k8s")
+text = "Strongest Enemy"
+
+[node name="WeakestEnemyCheckButton" type="CheckButton" parent="TargetPriorityContainer/VBoxContainer"]
+layout_mode = 2
+button_group = SubResource("ButtonGroup_m2k8s")
+text = "Weakest Enemy"
+
+[node name="LowestHealthCheckButton" type="CheckButton" parent="TargetPriorityContainer/VBoxContainer"]
+layout_mode = 2
+button_group = SubResource("ButtonGroup_m2k8s")
+text = "Lowest Health"
 
 [node name="BuildButtonsGroup" type="MarginContainer" parent="."]
 anchors_preset = 3

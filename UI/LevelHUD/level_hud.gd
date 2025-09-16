@@ -2,11 +2,16 @@
 class_name LevelHUD
 extends CanvasLayer
 
+var TargetingPriority = preload("res://Core/targeting_priority.gd")
+
 ## Announces the player wants to build or sell a tower.
 signal sell_tower_requested
 
 ## Announces the player has requested the next wave to start from the HUD.
 signal next_wave_requested
+
+## Announces the player has changed the target priority.
+signal target_priority_changed(priority: TargetingPriority.Priority)
 
 @export var bomb_tower_data: TowerData
 @export var archer_tower_data: TowerData
@@ -29,6 +34,14 @@ signal next_wave_requested
 @onready var max_targets_label := $TowerDetailsContainer/VBoxContainer/MaxTargetsLabel as Label
 @onready var upgrade_button := $TowerDetailsContainer/VBoxContainer/UpgradeButton as Button
 @onready var sell_tower_button := $TowerDetailsContainer/VBoxContainer/SellTowerButton as Button
+@onready var target_priority_button := $TowerDetailsContainer/VBoxContainer/TargetPriorityButton as Button
+
+@onready var target_priority_container := $TargetPriorityContainer as PanelContainer
+@onready var most_progress_check_button := $TargetPriorityContainer/VBoxContainer/MostProgressCheckButton as CheckButton
+@onready var least_progress_check_button := $TargetPriorityContainer/VBoxContainer/LeastProgressCheckButton as CheckButton
+@onready var strongest_enemy_check_button := $TargetPriorityContainer/VBoxContainer/StrongestEnemyCheckButton as CheckButton
+@onready var weakest_enemy_check_button := $TargetPriorityContainer/VBoxContainer/WeakestEnemyCheckButton as CheckButton
+@onready var lowest_health_check_button := $TargetPriorityContainer/VBoxContainer/LowestHealthCheckButton as CheckButton
 
 
 ## Called when this HUD enters the scene tree.
@@ -41,6 +54,13 @@ func _ready() -> void:
 	GameManager.health_changed.connect(_on_health_changed)
 	GameManager.currency_changed.connect(_on_currency_changed)
 	GameManager.wave_changed.connect(_on_wave_changed)
+
+	target_priority_button.pressed.connect(_on_target_priority_button_pressed)
+	most_progress_check_button.toggled.connect(_on_target_priority_changed)
+	least_progress_check_button.toggled.connect(_on_target_priority_changed)
+	strongest_enemy_check_button.toggled.connect(_on_target_priority_changed)
+	weakest_enemy_check_button.toggled.connect(_on_target_priority_changed)
+	lowest_health_check_button.toggled.connect(_on_target_priority_changed)
 
 	_on_health_changed(GameManager.player_data.health)
 	_on_currency_changed(GameManager.player_data.currency)
@@ -90,12 +110,40 @@ func handle_click(screen_position: Vector2) -> bool:
 
 func _on_tower_selected() -> void:
 	tower_details_container.visible = true
+	target_priority_container.visible = false
 	_update_tower_details()
 	GlobalSignals.hand_condense_requested.emit()
 
 
 func _on_tower_deselected() -> void:
 	tower_details_container.visible = false
+	target_priority_container.visible = false
+
+
+func _on_target_priority_button_pressed() -> void:
+	target_priority_container.visible = not target_priority_container.visible
+
+
+func _on_target_priority_changed(toggled_on: bool) -> void:
+	if not toggled_on:
+		# This prevents the signal from firing when a button is turned off.
+		# The ButtonGroup ensures another button will be toggled on, firing its own signal.
+		return
+
+	var priority: TargetingPriority.Priority
+
+	if most_progress_check_button.button_pressed:
+		priority = TargetingPriority.Priority.MOST_PROGRESS
+	elif least_progress_check_button.button_pressed:
+		priority = TargetingPriority.Priority.LEAST_PROGRESS
+	elif strongest_enemy_check_button.button_pressed:
+		priority = TargetingPriority.Priority.STRONGEST_ENEMY
+	elif weakest_enemy_check_button.button_pressed:
+		priority = TargetingPriority.Priority.WEAKEST_ENEMY
+	elif lowest_health_check_button.button_pressed:
+		priority = TargetingPriority.Priority.LOWEST_HEALTH
+
+	emit_signal("target_priority_changed", priority)
 
 
 func _update_tower_details() -> void:
