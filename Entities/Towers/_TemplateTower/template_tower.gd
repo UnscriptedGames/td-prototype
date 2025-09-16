@@ -143,7 +143,6 @@ func _find_new_target() -> void:
 		TargetPriority.Priority.LOWEST_HEALTH:
 			valid_targets.sort_custom(func(a, b): return a.health < b.health)
 
-	var current_level_data: TowerLevelData = data.levels[current_level - 1]
 	var num_targets_to_find = current_level_data.targets
 	
 	_current_targets.clear()
