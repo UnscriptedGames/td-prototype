@@ -44,6 +44,72 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Gold:"
 
+[node name="TowerDetailsContainer" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(200, 0)
+offset_left = 25.0
+offset_top = 25.0
+offset_right = 225.0
+offset_bottom = 315.0
+theme = ExtResource("5_41t3o")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="TowerDetailsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TowerNameLabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Tower Name"
+horizontal_alignment = 1
+
+[node name="TowerLevelLabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Level:"
+
+[node name="RangeLabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Range:"
+
+[node name="DamageLabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Damage:"
+
+[node name="FireRateLabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Fire Rate:"
+
+[node name="ProjectileSpeedLabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Projectile Speed:"
+
+[node name="AoELabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "AoE:"
+
+[node name="MaxTargetsLabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Max Targets:"
+
+[node name="Spacer" type="Control" parent="TowerDetailsContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="UpgradeButton" type="Button" parent="TowerDetailsContainer/VBoxContainer"]
+layout_mode = 2
+text = "Upgrade"
+
+[node name="SellTowerButton" type="Button" parent="TowerDetailsContainer/VBoxContainer"]
+layout_mode = 2
+text = "Sell Tower"
+
 [node name="BuildButtonsGroup" type="MarginContainer" parent="."]
 anchors_preset = 3
 anchor_left = 1.0
@@ -68,16 +134,6 @@ custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 2
-
-[node name="UpgradeButton" type="Button" parent="BuildButtonsGroup/Columns/MainButtons"]
-visible = false
-layout_mode = 2
-text = "Upgrade"
-
-[node name="SellTowerButton" type="Button" parent="BuildButtonsGroup/Columns/MainButtons"]
-visible = false
-layout_mode = 2
-text = "Sell Tower"
 
 [node name="NextWave" type="Button" parent="BuildButtonsGroup/Columns/MainButtons"]
 layout_mode = 2

@@ -35,7 +35,6 @@ var _is_placing: bool = false ## NEW: Prevents cancel signal on successful place
 func _ready() -> void:
 	# Connects to signals from the LevelHUD for legacy build buttons.
 	if is_instance_valid(hud):
-		hud.build_tower_requested.connect(_on_build_tower_requested)
 		hud.sell_tower_requested.connect(_on_sell_tower_requested)
 
 	# Connects to the new global signal for card-based building requests.

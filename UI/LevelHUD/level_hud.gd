@@ -3,7 +3,6 @@ class_name LevelHUD
 extends CanvasLayer
 
 ## Announces the player wants to build or sell a tower.
-signal build_tower_requested(tower_data: TowerData)
 signal sell_tower_requested
 
 ## Announces the player has requested the next wave to start from the HUD.
@@ -17,9 +16,19 @@ signal next_wave_requested
 @onready var health_label := $StatsContainer/LabelContainer/HealthLabel as Label
 @onready var currency_label := $StatsContainer/LabelContainer/CurrencyLabel as Label
 @onready var wave_label := $StatsContainer/LabelContainer/WaveLabel as Label
-@onready var sell_tower_button := $BuildButtonsGroup/Columns/MainButtons/SellTowerButton as Button
-@onready var upgrade_button := $BuildButtonsGroup/Columns/MainButtons/UpgradeButton as Button
 @onready var next_wave_button := $BuildButtonsGroup/Columns/MainButtons/NextWave as Button
+
+@onready var tower_details_container := $TowerDetailsContainer as PanelContainer
+@onready var tower_name_label := $TowerDetailsContainer/VBoxContainer/TowerNameLabel as Label
+@onready var tower_level_label := $TowerDetailsContainer/VBoxContainer/TowerLevelLabel as Label
+@onready var range_label := $TowerDetailsContainer/VBoxContainer/RangeLabel as Label
+@onready var damage_label := $TowerDetailsContainer/VBoxContainer/DamageLabel as Label
+@onready var fire_rate_label := $TowerDetailsContainer/VBoxContainer/FireRateLabel as Label
+@onready var projectile_speed_label := $TowerDetailsContainer/VBoxContainer/ProjectileSpeedLabel as Label
+@onready var aoe_label := $TowerDetailsContainer/VBoxContainer/AoELabel as Label
+@onready var max_targets_label := $TowerDetailsContainer/VBoxContainer/MaxTargetsLabel as Label
+@onready var upgrade_button := $TowerDetailsContainer/VBoxContainer/UpgradeButton as Button
+@onready var sell_tower_button := $TowerDetailsContainer/VBoxContainer/SellTowerButton as Button
 
 
 ## Called when this HUD enters the scene tree.
@@ -65,8 +74,7 @@ func handle_click(screen_position: Vector2) -> bool:
 		var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
 		if is_instance_valid(build_manager) and is_instance_valid(build_manager.get_selected_tower()):
 			build_manager.get_selected_tower().upgrade()
-			_update_upgrade_button()
-			_update_sell_button()
+			_update_tower_details()
 			GlobalSignals.hand_condense_requested.emit()
 		return true
 
@@ -81,17 +89,36 @@ func handle_click(screen_position: Vector2) -> bool:
 # --- PRIVATE SIGNAL HANDLERS & UPDATERS ---
 
 func _on_tower_selected() -> void:
-	sell_tower_button.visible = true
-	upgrade_button.visible = true
-	_update_upgrade_button()
-	_update_sell_button_state()
+	tower_details_container.visible = true
+	_update_tower_details()
 	GlobalSignals.hand_condense_requested.emit()
 
 
 func _on_tower_deselected() -> void:
-	sell_tower_button.visible = false
-	upgrade_button.visible = false
-	sell_tower_button.text = "Sell"
+	tower_details_container.visible = false
+
+
+func _update_tower_details() -> void:
+	var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
+	if not is_instance_valid(build_manager): return
+	var selected_tower: TemplateTower = build_manager.get_selected_tower()
+	if not is_instance_valid(selected_tower): return
+
+	var tower_data: TowerData = selected_tower.data
+	var current_level_index: int = selected_tower.current_level -1
+	var level_data: TowerLevelData = tower_data.levels[current_level_index]
+
+	tower_name_label.text = tower_data.tower_name
+	tower_level_label.text = "Level: %d" % selected_tower.current_level
+	range_label.text = "Range: %d" % level_data.tower_range
+	damage_label.text = "Damage: %d" % level_data.damage
+	fire_rate_label.text = "Fire Rate: %.2f" % level_data.fire_rate
+	projectile_speed_label.text = "Projectile Speed: %d" % level_data.projectile_speed
+	aoe_label.text = "AoE: %s" % ("Yes" if level_data.is_aoe else "No")
+	max_targets_label.text = "Max Targets: %d" % level_data.targets
+
+	_update_upgrade_button()
+	_update_sell_button_state()
 
 
 func _on_health_changed(new_health: int) -> void:
@@ -100,11 +127,12 @@ func _on_health_changed(new_health: int) -> void:
 
 func _on_currency_changed(new_currency: int) -> void:
 	currency_label.text = "Gold: %d" % new_currency
-	_update_upgrade_button()
+	if tower_details_container.visible:
+		_update_upgrade_button()
 
 
 func _update_upgrade_button() -> void:
-	if not upgrade_button.visible:
+	if not tower_details_container.visible:
 		return
 	var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
 	if not is_instance_valid(build_manager): return
@@ -123,7 +151,7 @@ func _update_upgrade_button() -> void:
 
 
 func _update_sell_button_state() -> void:
-	if not sell_tower_button.visible: return
+	if not tower_details_container.visible: return
 	var is_boss_wave := false
 	if GameManager.level_data and GameManager.current_wave > 0:
 		var wave_index := GameManager.current_wave - 1
@@ -147,7 +175,8 @@ func _update_sell_button() -> void:
 
 func _on_wave_changed(current_wave: int, total_waves: int) -> void:
 	wave_label.text = "Wave: %d / %d" % [current_wave, total_waves]
-	_update_sell_button_state()
+	if tower_details_container.visible:
+		_update_sell_button_state()
 
 
 func set_next_wave_enabled(is_enabled: bool) -> void:
