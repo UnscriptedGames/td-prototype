@@ -116,9 +116,14 @@ func set_target_priority(new_priority: TargetPriority.Priority) -> void:
 
 
 func _find_new_target() -> void:
+	var current_level_data: TowerLevelData = data.levels[current_level - 1]
 	var valid_targets = _enemies_in_range.filter(
 		func(enemy: TemplateEnemy) -> bool:
-			return is_instance_valid(enemy) and enemy.state == TemplateEnemy.State.MOVING
+			if not is_instance_valid(enemy) or not enemy.state == TemplateEnemy.State.MOVING:
+				return false
+			if enemy.data.is_flying and not current_level_data.can_attack_flying:
+				return false
+			return true
 	)
 	
 	if valid_targets.is_empty():
@@ -256,6 +261,7 @@ func upgrade() -> void:
 	_apply_level_stats()
 	_update_range_polygon()
 	select()
+	_find_new_target()
 
 
 func _update_range_polygon() -> void:
