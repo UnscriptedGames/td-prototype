@@ -3,8 +3,6 @@ extends Node2D
 ## Manages the tower building process, including ghost towers and placement validation.
 class_name BuildManager
 
-var TargetingPriority = preload("res://Core/targeting_priority.gd")
-
 signal tower_selected
 signal tower_deselected
 # REMOVED old tower_placed signal

@@ -3,8 +3,6 @@ class_name TemplateTower
 
 ## The base script for all towers.
 
-var TargetingPriority = preload("res://Core/targeting_priority.gd")
-
 enum State { IDLE, ATTACKING }
 
 @export var state: State = State.IDLE

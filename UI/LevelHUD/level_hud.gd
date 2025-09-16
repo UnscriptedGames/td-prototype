@@ -2,8 +2,6 @@
 class_name LevelHUD
 extends CanvasLayer
 
-var TargetingPriority = preload("res://Core/targeting_priority.gd")
-
 ## Announces the player wants to build or sell a tower.
 signal sell_tower_requested
 
