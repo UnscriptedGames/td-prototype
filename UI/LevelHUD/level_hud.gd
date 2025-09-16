@@ -131,6 +131,7 @@ func _on_tower_selected() -> void:
 	tower_details_container.visible = true
 	target_priority_container.visible = false
 	_update_tower_details()
+	_update_target_priority_display()
 	GlobalSignals.hand_condense_requested.emit()
 
 
@@ -244,6 +245,42 @@ func _on_wave_changed(current_wave: int, total_waves: int) -> void:
 	wave_label.text = "Wave: %d / %d" % [current_wave, total_waves]
 	if tower_details_container.visible:
 		_update_sell_button_state()
+
+
+func _update_target_priority_display() -> void:
+	var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
+	if not is_instance_valid(build_manager): return
+	var selected_tower: TemplateTower = build_manager.get_selected_tower()
+	if not is_instance_valid(selected_tower): return
+
+	var priority = selected_tower.target_priority
+
+	# Block signals to prevent `toggled` from firing and creating a loop
+	# when we programmatically change the button state.
+	most_progress_check_button.block_signals(true)
+	least_progress_check_button.block_signals(true)
+	strongest_enemy_check_button.block_signals(true)
+	weakest_enemy_check_button.block_signals(true)
+	lowest_health_check_button.block_signals(true)
+
+	match priority:
+		TargetingPriority.Priority.MOST_PROGRESS:
+			most_progress_check_button.button_pressed = true
+		TargetingPriority.Priority.LEAST_PROGRESS:
+			least_progress_check_button.button_pressed = true
+		TargetingPriority.Priority.STRONGEST_ENEMY:
+			strongest_enemy_check_button.button_pressed = true
+		TargetingPriority.Priority.WEAKEST_ENEMY:
+			weakest_enemy_check_button.button_pressed = true
+		TargetingPriority.Priority.LOWEST_HEALTH:
+			lowest_health_check_button.button_pressed = true
+
+	# Unblock signals so the user can interact with them again.
+	most_progress_check_button.block_signals(false)
+	least_progress_check_button.block_signals(false)
+	strongest_enemy_check_button.block_signals(false)
+	weakest_enemy_check_button.block_signals(false)
+	lowest_health_check_button.block_signals(false)
 
 
 func set_next_wave_enabled(is_enabled: bool) -> void:
