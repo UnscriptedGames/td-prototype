@@ -82,6 +82,12 @@ func _exit_tree() -> void:
 # --- PUBLIC INPUT HANDLER (Called by InputManager) ---
 
 func handle_click(screen_position: Vector2) -> bool:
+	# If the priority panel is visible, any click inside it should be consumed by the UI
+	if target_priority_container.visible and target_priority_container.get_global_rect().has_point(screen_position):
+		# The individual check buttons already handle their logic via signals,
+		# we just need to consume the input event here to prevent deselection.
+		return true
+
 	# Check buttons in reverse order of visibility/likelihood
 	if sell_tower_button.visible and sell_tower_button.get_global_rect().has_point(screen_position):
 		sell_tower_requested.emit()
@@ -94,6 +100,10 @@ func handle_click(screen_position: Vector2) -> bool:
 			build_manager.get_selected_tower().upgrade()
 			_update_tower_details()
 			GlobalSignals.hand_condense_requested.emit()
+		return true
+
+	if target_priority_button.visible and target_priority_button.get_global_rect().has_point(screen_position):
+		# The button's pressed signal will handle the logic. We just consume the event.
 		return true
 
 	if next_wave_button.get_global_rect().has_point(screen_position):
