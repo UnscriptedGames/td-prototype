@@ -47,7 +47,7 @@ idle_animation = "level_03_idle"
 
 [resource]
 script = ExtResource("1_bohe1")
-tower_name = "Tower"
+tower_name = "Bomb Tower"
 ghost_texture = ExtResource("1_5jr0x")
 visual_offset = Vector2(0, -20)
 placed_tower_scene = ExtResource("1_i3lkk")

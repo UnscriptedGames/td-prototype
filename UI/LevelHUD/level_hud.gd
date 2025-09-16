@@ -17,14 +17,9 @@ signal next_wave_requested
 @onready var health_label := $StatsContainer/LabelContainer/HealthLabel as Label
 @onready var currency_label := $StatsContainer/LabelContainer/CurrencyLabel as Label
 @onready var wave_label := $StatsContainer/LabelContainer/WaveLabel as Label
-@onready var build_tower_button := $BuildButtonsGroup/Columns/MainButtons/BuildTowerButton as Button
 @onready var sell_tower_button := $BuildButtonsGroup/Columns/MainButtons/SellTowerButton as Button
 @onready var upgrade_button := $BuildButtonsGroup/Columns/MainButtons/UpgradeButton as Button
-@onready var tower_build_menu := $BuildButtonsGroup/Columns/TowerBuildMenu as VBoxContainer
 @onready var next_wave_button := $BuildButtonsGroup/Columns/MainButtons/NextWave as Button
-@onready var build_bomb_tower_button := $BuildButtonsGroup/Columns/TowerBuildMenu/BuildBombTowerButton as Button
-@onready var build_archer_tower_button := $BuildButtonsGroup/Columns/TowerBuildMenu/BuildArcherTowerButton as Button
-@onready var build_magic_tower_button := $BuildButtonsGroup/Columns/TowerBuildMenu/BuildMagicTowerButton as Button
 
 
 ## Called when this HUD enters the scene tree.
@@ -42,7 +37,7 @@ func _ready() -> void:
 	_on_currency_changed(GameManager.player_data.currency)
 	_on_wave_changed(GameManager.current_wave, GameManager.total_waves)
 
-	_update_tower_build_buttons(GameManager.player_data.currency)
+
 
 
 ## Called when this HUD is about to leave the scene tree.
@@ -61,26 +56,9 @@ func _exit_tree() -> void:
 
 func handle_click(screen_position: Vector2) -> bool:
 	# Check buttons in reverse order of visibility/likelihood
-	if tower_build_menu.visible:
-		if build_bomb_tower_button.get_global_rect().has_point(screen_position):
-			if is_instance_valid(bomb_tower_data):
-				build_tower_requested.emit(bomb_tower_data)
-				tower_build_menu.visible = false
-			return true
-		if build_archer_tower_button.get_global_rect().has_point(screen_position):
-			if is_instance_valid(archer_tower_data):
-				build_tower_requested.emit(archer_tower_data)
-				tower_build_menu.visible = false
-			return true
-		if build_magic_tower_button.get_global_rect().has_point(screen_position):
-			if is_instance_valid(magic_tower_data):
-				build_tower_requested.emit(magic_tower_data)
-				tower_build_menu.visible = false
-			return true
-
 	if sell_tower_button.visible and sell_tower_button.get_global_rect().has_point(screen_position):
 		sell_tower_requested.emit()
-		tower_build_menu.visible = false
+		GlobalSignals.hand_condense_requested.emit()
 		return true
 
 	if upgrade_button.visible and upgrade_button.get_global_rect().has_point(screen_position):
@@ -89,14 +67,12 @@ func handle_click(screen_position: Vector2) -> bool:
 			build_manager.get_selected_tower().upgrade()
 			_update_upgrade_button()
 			_update_sell_button()
-		return true
-
-	if build_tower_button.get_global_rect().has_point(screen_position):
-		tower_build_menu.visible = not tower_build_menu.visible
+			GlobalSignals.hand_condense_requested.emit()
 		return true
 
 	if next_wave_button.get_global_rect().has_point(screen_position):
 		next_wave_requested.emit()
+		GlobalSignals.hand_condense_requested.emit()
 		return true
 
 	return false # No button was clicked
@@ -109,6 +85,7 @@ func _on_tower_selected() -> void:
 	upgrade_button.visible = true
 	_update_upgrade_button()
 	_update_sell_button_state()
+	GlobalSignals.hand_condense_requested.emit()
 
 
 func _on_tower_deselected() -> void:
@@ -123,7 +100,6 @@ func _on_health_changed(new_health: int) -> void:
 
 func _on_currency_changed(new_currency: int) -> void:
 	currency_label.text = "Gold: %d" % new_currency
-	_update_tower_build_buttons(new_currency)
 	_update_upgrade_button()
 
 
@@ -182,30 +158,3 @@ func set_next_wave_enabled(is_enabled: bool) -> void:
 func set_next_wave_text(text: String) -> void:
 	if is_instance_valid(next_wave_button):
 		next_wave_button.text = text
-
-
-func _update_tower_build_buttons(player_gold: int) -> void:
-	if is_instance_valid(bomb_tower_data) and is_instance_valid(build_bomb_tower_button):
-		if not bomb_tower_data.levels.is_empty():
-			var bomb_cost: int = bomb_tower_data.levels[0].cost
-			build_bomb_tower_button.text = "Bomb (%dg)" % bomb_cost
-			build_bomb_tower_button.disabled = player_gold < bomb_cost
-		else:
-			build_bomb_tower_button.text = "Bomb (N/A)"
-			build_bomb_tower_button.disabled = true
-	if is_instance_valid(archer_tower_data) and is_instance_valid(build_archer_tower_button):
-		if not archer_tower_data.levels.is_empty():
-			var archer_cost: int = archer_tower_data.levels[0].cost
-			build_archer_tower_button.text = "Archer (%dg)" % archer_cost
-			build_archer_tower_button.disabled = player_gold < archer_cost
-		else:
-			build_archer_tower_button.text = "Archer (N/A)"
-			build_archer_tower_button.disabled = true
-	if is_instance_valid(magic_tower_data) and is_instance_valid(build_magic_tower_button):
-		if not magic_tower_data.levels.is_empty():
-			var magic_cost: int = magic_tower_data.levels[0].cost
-			build_magic_tower_button.text = "Magic (%dg)" % magic_cost
-			build_magic_tower_button.disabled = player_gold < magic_cost
-		else:
-			build_magic_tower_button.text = "Magic (N/A)"
-			build_magic_tower_button.disabled = true

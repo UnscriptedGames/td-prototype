@@ -36,6 +36,7 @@ func _ready() -> void:
 	# Connect to the new generic signals for card effects.
 	GlobalSignals.card_effect_completed.connect(_on_card_effect_completed)
 	GlobalSignals.card_effect_cancelled.connect(_on_card_effect_cancelled)
+	GlobalSignals.hand_condense_requested.connect(condense)
 
 
 # --- PUBLIC METHODS ---

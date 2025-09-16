@@ -63,28 +63,6 @@ layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 2
 
-[node name="TowerBuildMenu" type="VBoxContainer" parent="BuildButtonsGroup/Columns"]
-visible = false
-custom_minimum_size = Vector2(200, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 12
-alignment = 2
-
-[node name="BuildBombTowerButton" type="Button" parent="BuildButtonsGroup/Columns/TowerBuildMenu"]
-layout_mode = 2
-text = "Bomb"
-
-[node name="BuildArcherTowerButton" type="Button" parent="BuildButtonsGroup/Columns/TowerBuildMenu"]
-layout_mode = 2
-text = "Archer
-"
-
-[node name="BuildMagicTowerButton" type="Button" parent="BuildButtonsGroup/Columns/TowerBuildMenu"]
-layout_mode = 2
-text = "Magic
-"
-
 [node name="MainButtons" type="VBoxContainer" parent="BuildButtonsGroup/Columns"]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
@@ -100,10 +78,6 @@ text = "Upgrade"
 visible = false
 layout_mode = 2
 text = "Sell Tower"
-
-[node name="BuildTowerButton" type="Button" parent="BuildButtonsGroup/Columns/MainButtons"]
-layout_mode = 2
-text = "Build Tower"
 
 [node name="NextWave" type="Button" parent="BuildButtonsGroup/Columns/MainButtons"]
 layout_mode = 2

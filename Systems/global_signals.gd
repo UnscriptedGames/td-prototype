@@ -22,6 +22,10 @@ signal build_mode_entered
 @warning_ignore("unused_signal")
 signal build_mode_exited
 
+## Emitted when an action occurs that should condense the hand.
+@warning_ignore("unused_signal")
+signal hand_condense_requested
+
 ## Emitted by a card-handling system (e.g., BuildManager) when the player
 ## SUCCESSFULLY completes the card's action.
 @warning_ignore("unused_signal")
