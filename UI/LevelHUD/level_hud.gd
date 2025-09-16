@@ -257,11 +257,11 @@ func _update_target_priority_display() -> void:
 
 	# Block signals to prevent `toggled` from firing and creating a loop
 	# when we programmatically change the button state.
-	most_progress_check_button.block_signals(true)
-	least_progress_check_button.block_signals(true)
-	strongest_enemy_check_button.block_signals(true)
-	weakest_enemy_check_button.block_signals(true)
-	lowest_health_check_button.block_signals(true)
+	most_progress_check_button.set_block_signals(true)
+	least_progress_check_button.set_block_signals(true)
+	strongest_enemy_check_button.set_block_signals(true)
+	weakest_enemy_check_button.set_block_signals(true)
+	lowest_health_check_button.set_block_signals(true)
 
 	match priority:
 		TargetingPriority.Priority.MOST_PROGRESS:
@@ -276,11 +276,11 @@ func _update_target_priority_display() -> void:
 			lowest_health_check_button.button_pressed = true
 
 	# Unblock signals so the user can interact with them again.
-	most_progress_check_button.block_signals(false)
-	least_progress_check_button.block_signals(false)
-	strongest_enemy_check_button.block_signals(false)
-	weakest_enemy_check_button.block_signals(false)
-	lowest_health_check_button.block_signals(false)
+	most_progress_check_button.set_block_signals(false)
+	least_progress_check_button.set_block_signals(false)
+	strongest_enemy_check_button.set_block_signals(false)
+	weakest_enemy_check_button.set_block_signals(false)
+	lowest_health_check_button.set_block_signals(false)
 
 
 func set_next_wave_enabled(is_enabled: bool) -> void:
