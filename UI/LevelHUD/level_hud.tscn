@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3 uid="uid://qy230vei6n8p"]
 
-[ext_resource type="Script" path="res://UI/LevelHUD/level_hud.gd" id="1_mal80"]
+[ext_resource type="Script" uid="uid://jt41lox7ggvv" path="res://UI/LevelHUD/level_hud.gd" id="1_mal80"]
 [ext_resource type="Resource" uid="uid://dvgo1u4245bj4" path="res://Config/Towers/bomb_tower_data.tres" id="2_3otiq"]
 [ext_resource type="Resource" uid="uid://bojj6xdad27bq" path="res://Config/Towers/archer_tower_data.tres" id="3_ais3w"]
 [ext_resource type="Resource" uid="uid://c5v3s0n3fxli3" path="res://Config/Towers/magic_tower_data.tres" id="4_rorbr"]
