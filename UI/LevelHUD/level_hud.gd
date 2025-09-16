@@ -82,13 +82,24 @@ func _exit_tree() -> void:
 # --- PUBLIC INPUT HANDLER (Called by InputManager) ---
 
 func handle_click(screen_position: Vector2) -> bool:
-	# If the priority panel is visible, any click inside it should be consumed by the UI
+	# If the priority panel is visible, we must handle its buttons manually.
 	if target_priority_container.visible and target_priority_container.get_global_rect().has_point(screen_position):
-		# The individual check buttons already handle their logic via signals,
-		# we just need to consume the input event here to prevent deselection.
+		# Manually check each check button and set its state.
+		# The ButtonGroup ensures others are turned off and the 'toggled' signal is emitted.
+		if most_progress_check_button.get_global_rect().has_point(screen_position):
+			most_progress_check_button.button_pressed = true
+		elif least_progress_check_button.get_global_rect().has_point(screen_position):
+			least_progress_check_button.button_pressed = true
+		elif strongest_enemy_check_button.get_global_rect().has_point(screen_position):
+			strongest_enemy_check_button.button_pressed = true
+		elif weakest_enemy_check_button.get_global_rect().has_point(screen_position):
+			weakest_enemy_check_button.button_pressed = true
+		elif lowest_health_check_button.get_global_rect().has_point(screen_position):
+			lowest_health_check_button.button_pressed = true
+		# Consume the event regardless of whether a button was hit, as long as the click was in the container.
 		return true
 
-	# Check buttons in reverse order of visibility/likelihood
+	# Check other buttons in reverse order of visibility/likelihood
 	if sell_tower_button.visible and sell_tower_button.get_global_rect().has_point(screen_position):
 		sell_tower_requested.emit()
 		GlobalSignals.hand_condense_requested.emit()
@@ -103,7 +114,7 @@ func handle_click(screen_position: Vector2) -> bool:
 		return true
 
 	if target_priority_button.visible and target_priority_button.get_global_rect().has_point(screen_position):
-		# The button's pressed signal will handle the logic. We just consume the event.
+		_on_target_priority_button_pressed() # Manually call the function
 		return true
 
 	if next_wave_button.get_global_rect().has_point(screen_position):
