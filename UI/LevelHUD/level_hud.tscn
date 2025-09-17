@@ -1,5 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://qy230vei6n8p"]
+[gd_scene load_steps=8 format=3 uid="uid://qy230vei6n8p"]
 
+[ext_resource type="Script" path="res://Addons/Tools/object_pool_monitor.gd" id="1_c2v1r"]
 [ext_resource type="Script" uid="uid://jt41lox7ggvv" path="res://UI/LevelHUD/level_hud.gd" id="1_mal80"]
 [ext_resource type="Resource" uid="uid://dvgo1u4245bj4" path="res://Config/Towers/bomb_tower_data.tres" id="2_3otiq"]
 [ext_resource type="Resource" uid="uid://bojj6xdad27bq" path="res://Config/Towers/archer_tower_data.tres" id="3_ais3w"]
@@ -189,3 +190,7 @@ alignment = 2
 [node name="NextWave" type="Button" parent="BuildButtonsGroup/Columns/MainButtons"]
 layout_mode = 2
 text = "Next Wave"
+
+[node name="ObjectPoolMonitorTool" type="Node" parent="."]
+script = ExtResource("1_c2v1r")
+enabled = true

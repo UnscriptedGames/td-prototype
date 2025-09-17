@@ -3,33 +3,33 @@ extends Node
 ## Manages all object pools for reusing nodes like enemies and projectiles.
 
 ## Internal State
-var _pools: Dictionary = {} # Stores pools as {scene_path: { "objects": [Array of objects], "batch_size": int }}
-var _node_pools: Dictionary = {} # Stores pools for nodes as {class_name: { "objects": [Array of objects], "batch_size": int }}
+var _pools: Dictionary = {} # Stores pools as {scene_path: { "objects": [Array], "batch_size": int, ... }}
+var _node_pools: Dictionary = {} # Stores pools for nodes as {class_name: { "objects": [Array], "batch_size": int, ... }}
 
 
 ## Creates and pre-populates a pool for a given scene.
 func create_pool(scene: PackedScene, initial_size: int, batch_size: int = 5) -> void:
-	# Don't create the same pool twice
 	if _pools.has(scene.resource_path):
 		return
 	
 	var scene_name := scene.resource_path.get_file().get_basename()
 	print("POOL MANAGER: Creating scene pool for '%s' with %d objects (batch size: %d)..." % [scene_name, initial_size, batch_size])
 
-	# Create a new dictionary to hold the pool data
 	_pools[scene.resource_path] = {
 		"objects": [],
 		"batch_size": batch_size,
-		"scene": scene
+		"scene": scene,
+		"total_size": initial_size,
+		"in_use": 0,
+		"peak_usage": 0,
+		"growth_count": 0,
 	}
 
-	# Create a container node to hold the objects for better organisation
 	var container := Node.new()
 	container.name = "%s_pool" % scene_name
 	add_child(container)
 	container.owner = self
 
-	# Instantiate the desired number of objects and add them to the pool
 	for i in range(initial_size):
 		var obj := scene.instantiate()
 		obj.set_process(false)
@@ -50,7 +50,11 @@ func create_node_pool(p_class_name: String, initial_size: int, batch_size: int =
 
 	_node_pools[p_class_name] = {
 		"objects": [],
-		"batch_size": batch_size
+		"batch_size": batch_size,
+		"total_size": initial_size,
+		"in_use": 0,
+		"peak_usage": 0,
+		"growth_count": 0,
 	}
 
 	var container := Node.new()
@@ -85,6 +89,9 @@ func get_object(scene: PackedScene) -> Node:
 	if is_instance_valid(obj.get_parent()):
 		obj.get_parent().remove_child(obj)
 
+	pool.in_use += 1
+	pool.peak_usage = max(pool.peak_usage, pool.in_use)
+
 	return obj
 
 
@@ -102,6 +109,9 @@ func get_pooled_node(p_class_name: String) -> Node:
 	if is_instance_valid(obj.get_parent()):
 		obj.get_parent().remove_child(obj)
 
+	pool.in_use += 1
+	pool.peak_usage = max(pool.peak_usage, pool.in_use)
+
 	return obj
 
 
@@ -113,6 +123,8 @@ func return_object(obj: Node) -> void:
 		obj.queue_free()
 		return
 	
+	_pools[scene_path].in_use -= 1
+
 	obj.set_process(false)
 	obj.set_physics_process(false)
 	obj.visible = false
@@ -142,6 +154,8 @@ func return_node(obj: Node) -> void:
 		obj.queue_free()
 		return
 
+	_node_pools[p_class_name].in_use -= 1
+
 	var container_name := "%s_pool" % p_class_name
 	var container := find_child(container_name, false)
 	if is_instance_valid(container):
@@ -157,6 +171,10 @@ func return_node(obj: Node) -> void:
 func _grow_pool(scene_path: String) -> void:
 	var pool = _pools[scene_path]
 	var scene = pool.scene
+
+	pool.growth_count += 1
+	pool.total_size += pool.batch_size
+
 	if OS.is_debug_build():
 		print("Object pool for '%s' was empty. Instantiating a new batch of %d." % [scene_path, pool.batch_size])
 
@@ -180,6 +198,10 @@ func _grow_pool(scene_path: String) -> void:
 
 func _grow_node_pool(p_class_name: String) -> void:
 	var pool = _node_pools[p_class_name]
+
+	pool.growth_count += 1
+	pool.total_size += pool.batch_size
+
 	if OS.is_debug_build():
 		print("Node pool for '%s' was empty. Instantiating a new batch of %d." % [p_class_name, pool.batch_size])
 
@@ -200,3 +222,30 @@ func _grow_node_pool(p_class_name: String) -> void:
 		new_obj.set_meta("pool_class_name", p_class_name)
 		pool["objects"].append(new_obj)
 		container.add_child(new_obj)
+
+
+## PUBLIC API for monitor tool
+func get_all_pool_stats() -> Dictionary:
+	var all_stats := {}
+
+	for pool_name in _pools:
+		var pool = _pools[pool_name]
+		all_stats[pool_name] = {
+			"total_size": pool.total_size,
+			"batch_size": pool.batch_size,
+			"in_use": pool.in_use,
+			"peak_usage": pool.peak_usage,
+			"growth_count": pool.growth_count,
+		}
+
+	for pool_name in _node_pools:
+		var pool = _node_pools[pool_name]
+		all_stats[pool_name] = {
+			"total_size": pool.total_size,
+			"batch_size": pool.batch_size,
+			"in_use": pool.in_use,
+			"peak_usage": pool.peak_usage,
+			"growth_count": pool.growth_count,
+		}
+
+	return all_stats
