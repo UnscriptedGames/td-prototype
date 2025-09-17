@@ -56,6 +56,12 @@ func _create_monitor_panel():
 	_monitor_panel.name = "ObjectPoolMonitor"
 	_monitor_panel.custom_minimum_size = Vector2(450, 100)
 
+	# Add padding to the panel
+	_monitor_panel.add_theme_constant_override("margin_left", 25)
+	_monitor_panel.add_theme_constant_override("margin_top", 25)
+	_monitor_panel.add_theme_constant_override("margin_right", 25)
+	_monitor_panel.add_theme_constant_override("margin_bottom", 25)
+
 	# Center the panel horizontally with a fixed y position.
 	var screen_size = get_viewport().get_visible_rect().size
 	_monitor_panel.position.x = (screen_size.x - _monitor_panel.custom_minimum_size.x) / 2.0

@@ -123,14 +123,21 @@ func return_object(obj: Node) -> void:
 		obj.queue_free()
 		return
 	
+	var container_name := "%s_pool" % scene_path.get_file().get_basename()
+	var container := find_child(container_name, false)
+
+	# Prevent object from being returned twice.
+	if is_instance_valid(container) and obj.get_parent() == container:
+		if OS.is_debug_build():
+			push_warning("Attempted to return an object that is already in the pool: %s" % obj.name)
+		return
+
 	_pools[scene_path].in_use -= 1
 
 	obj.set_process(false)
 	obj.set_physics_process(false)
 	obj.visible = false
 	
-	var container_name := "%s_pool" % scene_path.get_file().get_basename()
-	var container := find_child(container_name, false)
 	if is_instance_valid(container):
 		if obj.get_parent():
 			obj.get_parent().remove_child(obj)
@@ -154,10 +161,17 @@ func return_node(obj: Node) -> void:
 		obj.queue_free()
 		return
 
-	_node_pools[p_class_name].in_use -= 1
-
 	var container_name := "%s_pool" % p_class_name
 	var container := find_child(container_name, false)
+
+	# Prevent node from being returned twice.
+	if is_instance_valid(container) and obj.get_parent() == container:
+		if OS.is_debug_build():
+			push_warning("Attempted to return a node that is already in the pool: %s" % obj.name)
+		return
+
+	_node_pools[p_class_name].in_use -= 1
+
 	if is_instance_valid(container):
 		if obj.get_parent():
 			obj.get_parent().remove_child(obj)
