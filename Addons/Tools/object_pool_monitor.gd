@@ -1,4 +1,5 @@
 @tool
+class_name ObjectPoolMonitor
 extends Node
 
 ## Displays a real-time monitor of all object pools in the game.
@@ -56,20 +57,21 @@ func _create_monitor_panel():
 	_monitor_panel.name = "ObjectPoolMonitor"
 	_monitor_panel.custom_minimum_size = Vector2(450, 100)
 
-	# Add padding to the panel
-	_monitor_panel.add_theme_constant_override("margin_left", 25)
-	_monitor_panel.add_theme_constant_override("margin_top", 25)
-	_monitor_panel.add_theme_constant_override("margin_right", 25)
-	_monitor_panel.add_theme_constant_override("margin_bottom", 25)
-
 	# Center the panel horizontally with a fixed y position.
 	var screen_size = get_viewport().get_visible_rect().size
 	_monitor_panel.position.x = (screen_size.x - _monitor_panel.custom_minimum_size.x) / 2.0
 	_monitor_panel.position.y = 25
 
+	var margin_container = MarginContainer.new()
+	margin_container.add_theme_constant_override("margin_left", 25)
+	margin_container.add_theme_constant_override("margin_top", 25)
+	margin_container.add_theme_constant_override("margin_right", 25)
+	margin_container.add_theme_constant_override("margin_bottom", 25)
+	_monitor_panel.add_child(margin_container)
+
 	_label_container = VBoxContainer.new()
 	_label_container.name = "LabelContainer"
-	_monitor_panel.add_child(_label_container)
+	margin_container.add_child(_label_container)
 
 	var title_label = Label.new()
 	title_label.name = "Title"

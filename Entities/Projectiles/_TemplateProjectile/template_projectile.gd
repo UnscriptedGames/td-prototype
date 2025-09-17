@@ -13,6 +13,10 @@ var _is_returning: bool = false
 
 
 func _physics_process(delta: float) -> void:
+	# Guard clause: Do not run physics if the projectile has not been initialized.
+	if speed <= 0:
+		return
+
 	var target_position := _last_known_position
 	
 	# If the target is still valid and moving, update its last known position.

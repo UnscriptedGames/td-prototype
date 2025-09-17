@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TowerData" load_steps=9 format=3 uid="uid://c5v3s0n3fxli3"]
+[gd_resource type="Resource" script_class="TowerData" load_steps=12 format=3 uid="uid://c5v3s0n3fxli3"]
 
 [ext_resource type="Texture2D" uid="uid://c76ybfld4rufa" path="res://Entities/Towers/MagicTower/Assets/magic_tower_level01_01.png" id="1_5ig1c"]
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_rrhbf"]
@@ -48,11 +48,53 @@ projectile_scene = ExtResource("3_glcib")
 shoot_animation = "level_03_shoot"
 idle_animation = "level_03_idle"
 
+[sub_resource type="Resource" id="Resource_pj1ji"]
+script = ExtResource("2_vcqlg")
+cost = 10
+tower_range = 3
+damage = 2
+fire_rate = 1.0
+projectile_speed = 400.0
+is_aoe = false
+can_attack_flying = false
+targets = 1
+projectile_scene = ExtResource("3_glcib")
+shoot_animation = "level_03_shoot"
+idle_animation = "level_03_idle"
+
+[sub_resource type="Resource" id="Resource_shrup"]
+script = ExtResource("2_vcqlg")
+cost = 10
+tower_range = 3
+damage = 2
+fire_rate = 1.0
+projectile_speed = 400.0
+is_aoe = false
+can_attack_flying = false
+targets = 1
+projectile_scene = ExtResource("3_glcib")
+shoot_animation = "level_03_shoot"
+idle_animation = "level_03_idle"
+
+[sub_resource type="Resource" id="Resource_d2i6s"]
+script = ExtResource("2_vcqlg")
+cost = 10
+tower_range = 3
+damage = 2
+fire_rate = 1.0
+projectile_speed = 400.0
+is_aoe = false
+can_attack_flying = false
+targets = 1
+projectile_scene = ExtResource("3_glcib")
+shoot_animation = "level_03_shoot"
+idle_animation = "level_03_idle"
+
 [resource]
 script = ExtResource("1_rrhbf")
 tower_name = "Magic Tower"
 ghost_texture = ExtResource("1_5ig1c")
 visual_offset = Vector2(0, -30)
 placed_tower_scene = ExtResource("2_glcib")
-levels = Array[ExtResource("2_vcqlg")]([SubResource("Resource_vcqlg"), SubResource("Resource_c4xoo"), SubResource("Resource_pu0hc")])
+levels = Array[ExtResource("2_vcqlg")]([SubResource("Resource_vcqlg"), SubResource("Resource_c4xoo"), SubResource("Resource_pu0hc"), SubResource("Resource_pj1ji"), SubResource("Resource_shrup"), SubResource("Resource_d2i6s")])
 metadata/_custom_type_script = "uid://c8knfpcb8mutu"
