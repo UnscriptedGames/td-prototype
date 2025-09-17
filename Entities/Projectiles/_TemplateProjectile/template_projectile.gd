@@ -6,6 +6,7 @@ var damage: int = 0
 var _target: TemplateEnemy
 var _last_known_position: Vector2
 var _is_aoe: bool = false
+var _is_returning: bool = false
 
 ## Node References
 @onready var hitbox: CollisionShape2D = $HitboxShape
@@ -28,7 +29,7 @@ func _physics_process(delta: float) -> void:
 
 	# If we've reached the destination, return to the pool.
 	if global_position.is_equal_approx(_last_known_position):
-		ObjectPoolManager.return_object(self)
+		_return_to_pool()
 
 
 ## Called by the tower that fires the projectile.
@@ -63,6 +64,7 @@ func _initialize_common(damage_amount: int, projectile_speed: float, use_aoe_beh
 	damage = damage_amount
 	speed = projectile_speed
 	_is_aoe = use_aoe_behavior
+	_is_returning = false
 	
 	set_physics_process(true)
 	hitbox.disabled = false
@@ -77,6 +79,7 @@ func reset() -> void:
 	damage = 0
 	_last_known_position = Vector2.ZERO
 	_is_aoe = false
+	_is_returning = false
 	# Disable physics until the projectile is initialized again.
 	set_physics_process(false)
 	hitbox.disabled = true
@@ -84,14 +87,14 @@ func reset() -> void:
 
 ## Called when the projectile collides with another area. Only used for homing projectiles.
 func _on_area_entered(area: Area2D) -> void:
-	if _is_aoe:
+	if _is_aoe or _is_returning:
 		return
 
 	var enemy := area.get_parent() as TemplateEnemy
 	if enemy == _target:
 		hitbox.set_deferred("disabled", true)
 		enemy.health -= damage
-		ObjectPoolManager.call_deferred("return_object", self)
+		_return_to_pool()
 
 
 ## Private: Finds all enemies in the blast radius and deals damage.
@@ -102,3 +105,11 @@ func _detonate_aoe() -> void:
 		var enemy := area.get_parent() as TemplateEnemy
 		if is_instance_valid(enemy):
 			enemy.health -= damage
+
+func _return_to_pool() -> void:
+	if _is_returning:
+		return
+
+	_is_returning = true
+	set_physics_process(false)
+	ObjectPoolManager.call_deferred("return_object", self)

@@ -76,7 +76,7 @@ func _create_monitor_panel():
 	title_label.text = "--- Object Pool Monitor ---"
 	_label_container.add_child(title_label)
 
-	get_parent().add_child(_monitor_panel)
+	get_parent().add_child.call_deferred(_monitor_panel)
 
 
 func _destroy_monitor_panel():
