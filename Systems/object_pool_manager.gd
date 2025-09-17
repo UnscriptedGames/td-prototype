@@ -42,7 +42,7 @@ func create_pool(scene: PackedScene, initial_size: int, batch_size: int = 5) -> 
 
 
 ## Creates and pre-populates a pool for a given node type.
-func create_node_pool(class_name, initial_size, batch_size = 10):
+func create_node_pool(class_name: String, initial_size: int, batch_size: int = 10) -> void:
 	if _node_pools.has(class_name):
 		return
 
@@ -89,7 +89,7 @@ func get_object(scene: PackedScene) -> Node:
 
 
 ## Retrieves a node from the specified node pool.
-func get_pooled_node(class_name):
+func get_pooled_node(class_name: String) -> Node:
 	if not _node_pools.has(class_name):
 		push_error("This node pool does not exist: %s" % class_name)
 		return null
@@ -130,7 +130,7 @@ func return_object(obj: Node) -> void:
 
 
 ## Returns a node to its corresponding node pool.
-func return_node(obj):
+func return_node(obj: Node) -> void:
 	if not obj.has_meta("pool_class_name"):
 		push_error("Cannot return node. It was not created by the pool manager.")
 		obj.queue_free()
@@ -178,7 +178,7 @@ func _grow_pool(scene_path: String) -> void:
 		container.add_child(new_obj)
 
 
-func _grow_node_pool(class_name):
+func _grow_node_pool(class_name: String) -> void:
 	var pool = _node_pools[class_name]
 	if OS.is_debug_build():
 		print("Node pool for '%s' was empty. Instantiating a new batch of %d." % [class_name, pool.batch_size])
