@@ -3,6 +3,8 @@ class_name TemplateTower
 
 ## The base script for all towers.
 
+signal upgraded
+
 enum State { IDLE, ATTACKING }
 
 @export var state: State = State.IDLE
@@ -292,6 +294,7 @@ func upgrade_path(level_index: int) -> void:
 	_update_range_polygon()
 	select()
 	_find_new_target()
+	upgraded.emit()
 
 
 func _update_range_polygon() -> void:

@@ -48,6 +48,8 @@ signal target_priority_changed(priority: TargetPriority.Priority)
 @onready var weakest_enemy_check_button := $TowerDetails/TargetPriorityContainer/VBoxContainer/WeakestEnemyCheckButton as CheckButton
 @onready var lowest_health_check_button := $TowerDetails/TargetPriorityContainer/VBoxContainer/LowestHealthCheckButton as CheckButton
 
+var _selected_tower: TemplateTower
+
 
 ## Called when this HUD enters the scene tree.
 func _ready() -> void:
@@ -121,7 +123,6 @@ func handle_click(screen_position: Vector2) -> bool:
 					var level_index = i + 1
 					button.self_modulate = Color.from_string("#286643", Color.WHITE)
 					build_manager.get_selected_tower().upgrade_path(level_index)
-					_update_tower_details()
 					GlobalSignals.hand_condense_requested.emit()
 				return true
 
@@ -144,6 +145,12 @@ func handle_click(screen_position: Vector2) -> bool:
 # --- PRIVATE SIGNAL HANDLERS & UPDATERS ---
 
 func _on_tower_selected() -> void:
+	var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
+	if is_instance_valid(build_manager):
+		_selected_tower = build_manager.get_selected_tower()
+		if is_instance_valid(_selected_tower) and not _selected_tower.upgraded.is_connected(_update_tower_details):
+			_selected_tower.upgraded.connect(_update_tower_details)
+
 	tower_details_container.visible = true
 	target_priority_container.visible = false
 	_update_tower_details()
@@ -152,6 +159,10 @@ func _on_tower_selected() -> void:
 
 
 func _on_tower_deselected() -> void:
+	if is_instance_valid(_selected_tower) and _selected_tower.upgraded.is_connected(_update_tower_details):
+		_selected_tower.upgraded.disconnect(_update_tower_details)
+	_selected_tower = null
+
 	tower_details_container.visible = false
 	target_priority_container.visible = false
 
