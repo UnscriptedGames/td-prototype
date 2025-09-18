@@ -7,7 +7,8 @@ enum State { IDLE, ATTACKING }
 
 @export var state: State = State.IDLE
 var data: TowerData
-var current_level: int = 1
+var current_level: int = 0
+var upgrade_tier: int = 0
 var target_priority: TargetPriority.Priority = TargetPriority.Priority.MOST_PROGRESS
 
 var _highlight_layer: TileMapLayer
@@ -58,7 +59,7 @@ func initialize(new_tower_data: TowerData, new_highlight_layer: TileMapLayer, to
 
 func select() -> void:
 	var center_coords := _highlight_layer.local_to_map(global_position)
-	var current_level_data: TowerLevelData = data.levels[current_level - 1]
+	var current_level_data: TowerLevelData = data.levels[current_level]
 	HighlightManager.show_selection_highlights(
 		_highlight_layer,
 		center_coords,
@@ -114,7 +115,7 @@ func set_target_priority(new_priority: TargetPriority.Priority) -> void:
 
 
 func _find_new_target() -> void:
-	var current_level_data: TowerLevelData = data.levels[current_level - 1]
+	var current_level_data: TowerLevelData = data.levels[current_level]
 
 	# Filter out invalid enemies
 	_enemies_in_range = _enemies_in_range.filter(
@@ -193,7 +194,7 @@ func _attack() -> void:
 		state = State.IDLE
 		return
 
-	var current_level_data: TowerLevelData = data.levels[current_level - 1]
+	var current_level_data: TowerLevelData = data.levels[current_level]
 	if not fire_rate_timer.is_stopped() or _is_firing or not current_level_data.projectile_scene:
 		return
 	
@@ -229,7 +230,7 @@ func _attack() -> void:
 
 
 func _on_animation_finished(_anim_name: StringName) -> void:
-	var current_level_data: TowerLevelData = data.levels[current_level - 1]
+	var current_level_data: TowerLevelData = data.levels[current_level]
 	if animation_player.get_assigned_animation() == current_level_data.shoot_animation:
 		animation_player.play(current_level_data.idle_animation)
 		animation_player.speed_scale = 1.0
@@ -241,7 +242,7 @@ func _spawn_projectile() -> void:
 
 
 func _spawn_projectiles() -> void:
-	var current_level_data: TowerLevelData = data.levels[current_level - 1]
+	var current_level_data: TowerLevelData = data.levels[current_level]
 	for i in range(min(_current_targets.size(), _targets_last_known_positions.size())):
 		var target = _current_targets[i]
 		var projectile: TemplateProjectile = ObjectPoolManager.get_object(current_level_data.projectile_scene) as TemplateProjectile
@@ -272,16 +273,18 @@ func _spawn_projectiles() -> void:
 			)
 
 
-func upgrade() -> void:
-	if current_level >= data.levels.size():
-		return # Already at max level
+func upgrade_path(level_index: int) -> void:
+	if level_index >= data.levels.size():
+		push_error("Invalid level index passed to upgrade_path.")
+		return
 
-	var next_level_data: TowerLevelData = data.levels[current_level]
+	var next_level_data: TowerLevelData = data.levels[level_index]
 	if not GameManager.player_data.can_afford(next_level_data.cost):
 		return # Cannot afford upgrade
 
 	GameManager.remove_currency(next_level_data.cost)
-	current_level += 1
+	current_level = level_index
+	upgrade_tier += 1
 	_is_firing = false
 	_apply_level_stats()
 	_update_range_polygon()
@@ -292,7 +295,7 @@ func upgrade() -> void:
 func _update_range_polygon() -> void:
 	var points: PackedVector2Array = []
 	var full_tile_size := Vector2(192, 96)
-	var tower_range: int = data.levels[current_level - 1].tower_range
+	var tower_range: int = data.levels[current_level].tower_range
 	var range_multiplier: float = tower_range + 0.5
 
 	points.append(Vector2(0, -full_tile_size.y * range_multiplier))
@@ -308,11 +311,11 @@ func _apply_level_stats() -> void:
 		push_error("Tower data is invalid or has no levels defined.")
 		return
 
-	if current_level > data.levels.size():
+	if current_level >= data.levels.size():
 		push_error("Attempted to apply stats for a level that does not exist.")
 		return
 
-	var current_level_data: TowerLevelData = data.levels[current_level - 1]
+	var current_level_data: TowerLevelData = data.levels[current_level]
 
 	# Apply fire rate
 	if current_level_data.fire_rate > 0:

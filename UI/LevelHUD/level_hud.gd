@@ -30,7 +30,14 @@ signal target_priority_changed(priority: TargetPriority.Priority)
 @onready var projectile_speed_label := $TowerDetailsContainer/VBoxContainer/ProjectileSpeedLabel as Label
 @onready var aoe_label := $TowerDetailsContainer/VBoxContainer/AoELabel as Label
 @onready var max_targets_label := $TowerDetailsContainer/VBoxContainer/MaxTargetsLabel as Label
-@onready var upgrade_button := $TowerDetailsContainer/VBoxContainer/UpgradeButton as Button
+@onready var upgrade_buttons: Array[Button] = [
+	$TowerDetailsContainer/VBoxContainer/UpgradeGrid/UpgradeButton1,
+	$TowerDetailsContainer/VBoxContainer/UpgradeGrid/UpgradeButton2,
+	$TowerDetailsContainer/VBoxContainer/UpgradeGrid/UpgradeButton3,
+	$TowerDetailsContainer/VBoxContainer/UpgradeGrid/UpgradeButton4,
+	$TowerDetailsContainer/VBoxContainer/UpgradeGrid/UpgradeButton5,
+	$TowerDetailsContainer/VBoxContainer/UpgradeGrid/UpgradeButton6
+]
 @onready var sell_tower_button := $TowerDetailsContainer/VBoxContainer/SellTowerButton as Button
 @onready var target_priority_button := $TowerDetailsContainer/VBoxContainer/TargetPriorityButton as Button
 
@@ -105,13 +112,16 @@ func handle_click(screen_position: Vector2) -> bool:
 		GlobalSignals.hand_condense_requested.emit()
 		return true
 
-	if upgrade_button.visible and upgrade_button.get_global_rect().has_point(screen_position):
-		var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
-		if is_instance_valid(build_manager) and is_instance_valid(build_manager.get_selected_tower()):
-			build_manager.get_selected_tower().upgrade()
-			_update_tower_details()
-			GlobalSignals.hand_condense_requested.emit()
-		return true
+	for i in range(upgrade_buttons.size()):
+		var button = upgrade_buttons[i]
+		if button.visible and button.get_global_rect().has_point(screen_position):
+			var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
+			if is_instance_valid(build_manager) and is_instance_valid(build_manager.get_selected_tower()):
+				var level_index = i + 1
+				build_manager.get_selected_tower().upgrade_path(level_index)
+				_update_tower_details()
+				GlobalSignals.hand_condense_requested.emit()
+			return true
 
 	if target_priority_button.visible and target_priority_button.get_global_rect().has_point(screen_position):
 		_on_target_priority_button_pressed() # Manually call the function
@@ -173,11 +183,10 @@ func _update_tower_details() -> void:
 	if not is_instance_valid(selected_tower): return
 
 	var tower_data: TowerData = selected_tower.data
-	var current_level_index: int = selected_tower.current_level -1
-	var level_data: TowerLevelData = tower_data.levels[current_level_index]
+	var level_data: TowerLevelData = tower_data.levels[selected_tower.current_level]
 
 	tower_name_label.text = tower_data.tower_name
-	tower_level_label.text = "Level: %d" % selected_tower.current_level
+	tower_level_label.text = "Tier: %d" % selected_tower.upgrade_tier
 	range_label.text = "Range: %d" % level_data.tower_range
 	damage_label.text = "Damage: %d" % level_data.damage
 	fire_rate_label.text = "Fire Rate: %.2f" % level_data.fire_rate
@@ -185,7 +194,7 @@ func _update_tower_details() -> void:
 	aoe_label.text = "AoE: %s" % ("Yes" if level_data.is_aoe else "No")
 	max_targets_label.text = "Max Targets: %d" % level_data.targets
 
-	_update_upgrade_button()
+	_update_upgrade_buttons()
 	_update_sell_button_state()
 
 
@@ -196,26 +205,47 @@ func _on_health_changed(new_health: int) -> void:
 func _on_currency_changed(new_currency: int) -> void:
 	currency_label.text = "Gold: %d" % new_currency
 	if tower_details_container.visible:
-		_update_upgrade_button()
+		_update_upgrade_buttons()
 
 
-func _update_upgrade_button() -> void:
+func _update_upgrade_buttons() -> void:
 	if not tower_details_container.visible:
 		return
+
 	var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
 	if not is_instance_valid(build_manager): return
 	var selected_tower: TemplateTower = build_manager.get_selected_tower()
 	if not is_instance_valid(selected_tower): return
+
 	var tower_data: TowerData = selected_tower.data
-	var current_level: int = selected_tower.current_level
-	if current_level >= tower_data.levels.size():
-		upgrade_button.text = "Max Level"
-		upgrade_button.disabled = true
-	else:
-		var next_level_data: TowerLevelData = tower_data.levels[current_level]
-		var cost: int = next_level_data.cost
-		upgrade_button.text = "Upgrade (%dg)" % cost
-		upgrade_button.disabled = not GameManager.player_data.can_afford(cost)
+	var current_upgrade_tier: int = selected_tower.upgrade_tier
+
+	for i in range(upgrade_buttons.size()):
+		var button = upgrade_buttons[i]
+		var button_tier = i / 2
+
+		if button_tier < current_upgrade_tier:
+			# This is a past upgrade, show it as disabled
+			button.visible = true
+			button.disabled = true
+		elif button_tier == current_upgrade_tier:
+			# This is the current tier of upgrades
+			var level_index = i + 1
+			if level_index < tower_data.levels.size():
+				var level_data = tower_data.levels[level_index]
+				var cost = level_data.cost
+				button.text = "Upgrade (%dg)" % cost
+				button.disabled = not GameManager.player_data.can_afford(cost)
+				button.visible = true
+			else:
+				# Should not happen if data is set up correctly
+				button.visible = false
+		else:
+			# This is a future upgrade, hide it
+			button.visible = false
+
+	if current_upgrade_tier >= 3:
+		tower_level_label.text = "Tier: Max"
 
 
 func _update_sell_button_state() -> void:
