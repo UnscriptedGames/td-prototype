@@ -222,28 +222,22 @@ func _update_upgrade_buttons() -> void:
 
 	for i in range(upgrade_buttons.size()):
 		var button = upgrade_buttons[i]
-		var button_tier = int(i / 2) # Explicitly cast to int to remove warning
+		var button_tier = i // 2
 		var level_index = i + 1
 
-		button.visible = true # All buttons are now visible
+		button.visible = true
 
-		if button_tier == current_upgrade_tier:
-			# This is the current tier, enable it if affordable and data exists
-			if level_index < tower_data.levels.size():
-				var level_data = tower_data.levels[level_index]
-				var cost = level_data.cost
-				button.text = "Upgrade (%dg)" % cost
+		if level_index < tower_data.levels.size():
+			var level_data = tower_data.levels[level_index]
+			var cost = level_data.cost
+			button.text = "Upgrade (%dg)" % cost
+			if button_tier == current_upgrade_tier:
 				button.disabled = not GameManager.player_data.can_afford(cost)
 			else:
-				# Data for this level doesn't exist, so disable button
-				button.text = "N/A"
 				button.disabled = true
 		else:
-			# This is a past or future tier, so disable it
+			button.text = "N/A"
 			button.disabled = true
-			# Also clear text for future tiers for clarity
-			if button_tier > current_upgrade_tier:
-				button.text = "???"
 
 	if current_upgrade_tier >= 3:
 		tower_level_label.text = "Tier: Max"
