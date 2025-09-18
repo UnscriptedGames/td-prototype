@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TowerData" load_steps=12 format=3 uid="uid://bojj6xdad27bq"]
+[gd_resource type="Resource" script_class="TowerData" load_steps=13 format=3 uid="uid://bojj6xdad27bq"]
 
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_njmit"]
 [ext_resource type="Texture2D" uid="uid://bi5vo1w8ytlun" path="res://Entities/Towers/ArcherTower/Assets/archer_tower_level01_01.png" id="1_olgkv"]
@@ -50,7 +50,7 @@ idle_animation = "level_03_idle"
 
 [sub_resource type="Resource" id="Resource_b6eam"]
 script = ExtResource("2_pcqh6")
-cost = 12
+cost = 13
 tower_range = 2
 damage = 1
 fire_rate = 2.0
@@ -64,7 +64,7 @@ idle_animation = "level_03_idle"
 
 [sub_resource type="Resource" id="Resource_qg77t"]
 script = ExtResource("2_pcqh6")
-cost = 12
+cost = 14
 tower_range = 2
 damage = 1
 fire_rate = 2.0
@@ -78,7 +78,21 @@ idle_animation = "level_03_idle"
 
 [sub_resource type="Resource" id="Resource_euqsa"]
 script = ExtResource("2_pcqh6")
-cost = 12
+cost = 15
+tower_range = 2
+damage = 1
+fire_rate = 2.0
+projectile_speed = 400.0
+is_aoe = false
+can_attack_flying = true
+targets = 2
+projectile_scene = ExtResource("3_2d21g")
+shoot_animation = "level_03_shoot"
+idle_animation = "level_03_idle"
+
+[sub_resource type="Resource" id="Resource_hbdv3"]
+script = ExtResource("2_pcqh6")
+cost = 16
 tower_range = 2
 damage = 1
 fire_rate = 2.0
@@ -96,5 +110,5 @@ tower_name = "Archer Tower"
 ghost_texture = ExtResource("1_olgkv")
 visual_offset = Vector2(0, -30)
 placed_tower_scene = ExtResource("2_2d21g")
-levels = Array[ExtResource("2_pcqh6")]([SubResource("Resource_pcqh6"), SubResource("Resource_ew8f0"), SubResource("Resource_slpxk"), SubResource("Resource_b6eam"), SubResource("Resource_qg77t"), SubResource("Resource_euqsa")])
+levels = Array[ExtResource("2_pcqh6")]([SubResource("Resource_pcqh6"), SubResource("Resource_ew8f0"), SubResource("Resource_slpxk"), SubResource("Resource_b6eam"), SubResource("Resource_qg77t"), SubResource("Resource_euqsa"), SubResource("Resource_hbdv3")])
 metadata/_custom_type_script = "uid://c8knfpcb8mutu"
