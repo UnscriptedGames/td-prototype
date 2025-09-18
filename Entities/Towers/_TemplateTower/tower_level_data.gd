@@ -3,6 +3,7 @@ class_name TowerLevelData
 
 ## Stats for a single tower level.
 
+@export var upgrade_name: String = "Upgrade"
 @export var cost: int = 10
 @export var tower_range: int = 1
 @export var damage: int = 1

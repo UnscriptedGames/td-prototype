@@ -47,116 +47,141 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Gold:"
 
-[node name="TowerDetailsContainer" type="PanelContainer" parent="."]
-custom_minimum_size = Vector2(200, 0)
+[node name="TowerDetails" type="HBoxContainer" parent="."]
 offset_left = 25.0
 offset_top = 25.0
-offset_right = 225.0
-offset_bottom = 351.0
+offset_right = 519.0
+offset_bottom = 587.0
+
+[node name="TowerDetailsContainer" type="PanelContainer" parent="TowerDetails"]
+visible = false
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
 theme = ExtResource("5_41t3o")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="TowerDetailsContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="TowerDetails/TowerDetailsContainer"]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="TowerNameLabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+[node name="TowerNameLabel" type="Label" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Tower Name"
 horizontal_alignment = 1
 
-[node name="TowerLevelLabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+[node name="TowerLevelLabel" type="Label" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Level:"
 
-[node name="RangeLabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+[node name="RangeLabel" type="Label" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Range:"
 
-[node name="DamageLabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+[node name="DamageLabel" type="Label" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Damage:"
 
-[node name="FireRateLabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+[node name="FireRateLabel" type="Label" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Fire Rate:"
 
-[node name="ProjectileSpeedLabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+[node name="ProjectileSpeedLabel" type="Label" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Projectile Speed:"
 
-[node name="AoELabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+[node name="AoELabel" type="Label" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "AoE:"
 
-[node name="MaxTargetsLabel" type="Label" parent="TowerDetailsContainer/VBoxContainer"]
+[node name="MaxTargetsLabel" type="Label" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Max Targets:"
 
-[node name="Spacer" type="Control" parent="TowerDetailsContainer/VBoxContainer"]
+[node name="Spacer" type="Control" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
-[node name="TargetPriorityButton" type="Button" parent="TowerDetailsContainer/VBoxContainer"]
+[node name="TargetPriorityButton" type="Button" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
 layout_mode = 2
 text = "Target Priority"
 
-[node name="UpgradeButton" type="Button" parent="TowerDetailsContainer/VBoxContainer"]
+[node name="UpgradeGrid" type="GridContainer" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
+layout_mode = 2
+columns = 2
+
+[node name="UpgradeButton1" type="Button" parent="TowerDetails/TowerDetailsContainer/VBoxContainer/UpgradeGrid"]
 layout_mode = 2
 text = "Upgrade"
 
-[node name="SellTowerButton" type="Button" parent="TowerDetailsContainer/VBoxContainer"]
+[node name="UpgradeButton2" type="Button" parent="TowerDetails/TowerDetailsContainer/VBoxContainer/UpgradeGrid"]
+layout_mode = 2
+text = "Upgrade"
+
+[node name="UpgradeButton3" type="Button" parent="TowerDetails/TowerDetailsContainer/VBoxContainer/UpgradeGrid"]
+layout_mode = 2
+text = "Upgrade"
+
+[node name="UpgradeButton4" type="Button" parent="TowerDetails/TowerDetailsContainer/VBoxContainer/UpgradeGrid"]
+layout_mode = 2
+text = "Upgrade"
+
+[node name="UpgradeButton5" type="Button" parent="TowerDetails/TowerDetailsContainer/VBoxContainer/UpgradeGrid"]
+layout_mode = 2
+text = "Upgrade"
+
+[node name="UpgradeButton6" type="Button" parent="TowerDetails/TowerDetailsContainer/VBoxContainer/UpgradeGrid"]
+layout_mode = 2
+text = "Upgrade"
+
+[node name="SellTowerButton" type="Button" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
 layout_mode = 2
 text = "Sell Tower"
 
-[node name="TargetPriorityContainer" type="PanelContainer" parent="."]
+[node name="TargetPriorityContainer" type="PanelContainer" parent="TowerDetails"]
 visible = false
 custom_minimum_size = Vector2(200, 0)
-offset_left = 250.0
-offset_top = 25.0
-offset_right = 450.0
-offset_bottom = 211.0
+layout_mode = 2
 theme = ExtResource("5_41t3o")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="TargetPriorityContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="TowerDetails/TargetPriorityContainer"]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="Label" type="Label" parent="TargetPriorityContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="TowerDetails/TargetPriorityContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Target Priority"
 horizontal_alignment = 1
 
-[node name="MostProgressCheckButton" type="CheckButton" parent="TargetPriorityContainer/VBoxContainer"]
+[node name="MostProgressCheckButton" type="CheckButton" parent="TowerDetails/TargetPriorityContainer/VBoxContainer"]
 layout_mode = 2
 button_pressed = true
 button_group = SubResource("ButtonGroup_m2k8s")
 text = "Most Progress"
 
-[node name="LeastProgressCheckButton" type="CheckButton" parent="TargetPriorityContainer/VBoxContainer"]
+[node name="LeastProgressCheckButton" type="CheckButton" parent="TowerDetails/TargetPriorityContainer/VBoxContainer"]
 layout_mode = 2
 button_group = SubResource("ButtonGroup_m2k8s")
 text = "Least Progress"
 
-[node name="StrongestEnemyCheckButton" type="CheckButton" parent="TargetPriorityContainer/VBoxContainer"]
+[node name="StrongestEnemyCheckButton" type="CheckButton" parent="TowerDetails/TargetPriorityContainer/VBoxContainer"]
 layout_mode = 2
 button_group = SubResource("ButtonGroup_m2k8s")
 text = "Strongest Enemy"
 
-[node name="WeakestEnemyCheckButton" type="CheckButton" parent="TargetPriorityContainer/VBoxContainer"]
+[node name="WeakestEnemyCheckButton" type="CheckButton" parent="TowerDetails/TargetPriorityContainer/VBoxContainer"]
 layout_mode = 2
 button_group = SubResource("ButtonGroup_m2k8s")
 text = "Weakest Enemy"
 
-[node name="LowestHealthCheckButton" type="CheckButton" parent="TargetPriorityContainer/VBoxContainer"]
+[node name="LowestHealthCheckButton" type="CheckButton" parent="TowerDetails/TargetPriorityContainer/VBoxContainer"]
 layout_mode = 2
 button_group = SubResource("ButtonGroup_m2k8s")
 text = "Lowest Health"

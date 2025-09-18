@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TowerData" load_steps=12 format=3 uid="uid://dvgo1u4245bj4"]
+[gd_resource type="Resource" script_class="TowerData" load_steps=13 format=3 uid="uid://dvgo1u4245bj4"]
 
 [ext_resource type="Texture2D" uid="uid://dskepbmtd6tld" path="res://Entities/Towers/BombTower/Assets/bomb_tower_level01_01.png" id="1_5jr0x"]
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_bohe1"]
@@ -8,6 +8,7 @@
 
 [sub_resource type="Resource" id="Resource_ettj2"]
 script = ExtResource("2_ettj2")
+upgrade_name = "Upgrade"
 cost = 5
 tower_range = 1
 damage = 2
@@ -22,6 +23,7 @@ idle_animation = "level_01_idle"
 
 [sub_resource type="Resource" id="Resource_v3ouq"]
 script = ExtResource("2_ettj2")
+upgrade_name = "Upgrade"
 cost = 6
 tower_range = 1
 damage = 3
@@ -36,6 +38,7 @@ idle_animation = "level_02_idle"
 
 [sub_resource type="Resource" id="Resource_l7lkc"]
 script = ExtResource("2_ettj2")
+upgrade_name = "Upgrade"
 cost = 7
 tower_range = 2
 damage = 4
@@ -50,7 +53,8 @@ idle_animation = "level_03_idle"
 
 [sub_resource type="Resource" id="Resource_l3175"]
 script = ExtResource("2_ettj2")
-cost = 7
+upgrade_name = "Upgrade"
+cost = 8
 tower_range = 2
 damage = 4
 fire_rate = 0.8
@@ -64,7 +68,8 @@ idle_animation = "level_03_idle"
 
 [sub_resource type="Resource" id="Resource_tqkyf"]
 script = ExtResource("2_ettj2")
-cost = 7
+upgrade_name = "Upgrade"
+cost = 9
 tower_range = 2
 damage = 4
 fire_rate = 0.8
@@ -78,7 +83,23 @@ idle_animation = "level_03_idle"
 
 [sub_resource type="Resource" id="Resource_84jm7"]
 script = ExtResource("2_ettj2")
-cost = 7
+upgrade_name = "Upgrade"
+cost = 10
+tower_range = 2
+damage = 4
+fire_rate = 0.8
+projectile_speed = 150.0
+is_aoe = true
+can_attack_flying = false
+targets = 2
+projectile_scene = ExtResource("3_5jr0x")
+shoot_animation = "level_03_shoot"
+idle_animation = "level_03_idle"
+
+[sub_resource type="Resource" id="Resource_te6lm"]
+script = ExtResource("2_ettj2")
+upgrade_name = "Upgrade"
+cost = 11
 tower_range = 2
 damage = 4
 fire_rate = 0.8
@@ -96,5 +117,5 @@ tower_name = "Bomb Tower"
 ghost_texture = ExtResource("1_5jr0x")
 visual_offset = Vector2(0, -20)
 placed_tower_scene = ExtResource("1_i3lkk")
-levels = Array[ExtResource("2_ettj2")]([SubResource("Resource_ettj2"), SubResource("Resource_v3ouq"), SubResource("Resource_l7lkc"), SubResource("Resource_l3175"), SubResource("Resource_tqkyf"), SubResource("Resource_84jm7")])
+levels = Array[ExtResource("2_ettj2")]([SubResource("Resource_ettj2"), SubResource("Resource_v3ouq"), SubResource("Resource_l7lkc"), SubResource("Resource_l3175"), SubResource("Resource_tqkyf"), SubResource("Resource_84jm7"), SubResource("Resource_te6lm")])
 metadata/_custom_type_script = "uid://c8knfpcb8mutu"
