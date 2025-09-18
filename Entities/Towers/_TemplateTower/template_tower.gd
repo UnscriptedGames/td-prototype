@@ -9,6 +9,7 @@ enum State { IDLE, ATTACKING }
 var data: TowerData
 var current_level: int = 0
 var upgrade_tier: int = 0
+var upgrade_path_indices: Array[int] = []
 var target_priority: TargetPriority.Priority = TargetPriority.Priority.MOST_PROGRESS
 
 var _highlight_layer: TileMapLayer
@@ -283,6 +284,7 @@ func upgrade_path(level_index: int) -> void:
 		return # Cannot afford upgrade
 
 	GameManager.remove_currency(next_level_data.cost)
+	upgrade_path_indices.append(level_index)
 	current_level = level_index
 	upgrade_tier += 1
 	_is_firing = false

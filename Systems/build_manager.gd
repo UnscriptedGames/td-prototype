@@ -116,11 +116,11 @@ func get_selected_tower_sell_value() -> int:
 		push_error("TowerData for '%s' has no levels defined; cannot determine refund amount." % tower_data.tower_name)
 		return 0
 
-	var total_cost := 0
-	for i in range(_selected_tower.current_level + 1):
-		total_cost += _selected_tower.data.levels[i].cost
+	var total_cost: int = tower_data.levels[0].cost
+	for level_index in _selected_tower.upgrade_path_indices:
+		total_cost += tower_data.levels[level_index].cost
 	
-	return int(total_cost * 0.80)
+	return int(ceil(total_cost * 0.80))
 
 
 # --- PRIVATE SIGNAL HANDLERS ---

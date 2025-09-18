@@ -106,26 +106,31 @@ func handle_click(screen_position: Vector2) -> bool:
 		# Consume the event regardless of whether a button was hit, as long as the click was in the container.
 		return true
 
-	# Check other buttons in reverse order of visibility/likelihood
-	if sell_tower_button.visible and sell_tower_button.get_global_rect().has_point(screen_position):
-		sell_tower_requested.emit()
-		GlobalSignals.hand_condense_requested.emit()
-		return true
-
-	for i in range(upgrade_buttons.size()):
-		var button = upgrade_buttons[i]
-		if button.visible and not button.disabled and button.get_global_rect().has_point(screen_position):
-			var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
-			if is_instance_valid(build_manager) and is_instance_valid(build_manager.get_selected_tower()):
-				var level_index = i + 1
-				build_manager.get_selected_tower().upgrade_path(level_index)
-				_update_tower_details()
-				GlobalSignals.hand_condense_requested.emit()
+	# If the tower details panel is visible, handle its buttons and consume clicks within its bounds.
+	if tower_details_container.visible and tower_details_container.get_global_rect().has_point(screen_position):
+		if sell_tower_button.visible and not sell_tower_button.disabled and sell_tower_button.get_global_rect().has_point(screen_position):
+			sell_tower_requested.emit()
+			GlobalSignals.hand_condense_requested.emit()
 			return true
 
-	if target_priority_button.visible and target_priority_button.get_global_rect().has_point(screen_position):
-		_on_target_priority_button_pressed() # Manually call the function
+		for i in range(upgrade_buttons.size()):
+			var button = upgrade_buttons[i]
+			if button.visible and not button.disabled and button.get_global_rect().has_point(screen_position):
+				var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
+				if is_instance_valid(build_manager) and is_instance_valid(build_manager.get_selected_tower()):
+					var level_index = i + 1
+					build_manager.get_selected_tower().upgrade_path(level_index)
+					_update_tower_details()
+					GlobalSignals.hand_condense_requested.emit()
+				return true
+
+		if target_priority_button.visible and not target_priority_button.disabled and target_priority_button.get_global_rect().has_point(screen_position):
+			_on_target_priority_button_pressed()
+			return true
+
+		# If the click was inside the container but not on a button, consume it.
 		return true
+
 
 	if next_wave_button.get_global_rect().has_point(screen_position):
 		next_wave_requested.emit()
