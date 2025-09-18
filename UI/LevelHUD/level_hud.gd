@@ -114,7 +114,7 @@ func handle_click(screen_position: Vector2) -> bool:
 
 	for i in range(upgrade_buttons.size()):
 		var button = upgrade_buttons[i]
-		if button.visible and button.get_global_rect().has_point(screen_position):
+		if button.visible and not button.disabled and button.get_global_rect().has_point(screen_position):
 			var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
 			if is_instance_valid(build_manager) and is_instance_valid(build_manager.get_selected_tower()):
 				var level_index = i + 1
@@ -222,7 +222,7 @@ func _update_upgrade_buttons() -> void:
 
 	for i in range(upgrade_buttons.size()):
 		var button = upgrade_buttons[i]
-		var button_tier = i // 2
+		var button_tier = int(i / 2.0)
 		var level_index = i + 1
 
 		button.visible = true
