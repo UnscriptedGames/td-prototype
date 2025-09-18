@@ -192,7 +192,7 @@ func _update_tower_details() -> void:
 	var level_data: TowerLevelData = tower_data.levels[selected_tower.current_level]
 
 	tower_name_label.text = tower_data.tower_name
-	tower_level_label.text = "Tier: %d" % selected_tower.upgrade_tier
+	tower_level_label.text = "Level: %s" % level_data.tower_level
 	range_label.text = "Range: %d" % level_data.tower_range
 	damage_label.text = "Damage: %d" % level_data.damage
 	fire_rate_label.text = "Fire Rate: %.2f" % level_data.fire_rate
@@ -246,7 +246,6 @@ func _update_upgrade_buttons() -> void:
 			button.disabled = true
 
 	if current_upgrade_tier >= 3:
-		tower_level_label.text = "Tier: Max"
 		for button in upgrade_buttons:
 			button.disabled = true
 
