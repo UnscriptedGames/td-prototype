@@ -8,6 +8,7 @@
 
 [sub_resource type="Resource" id="Resource_pcqh6"]
 script = ExtResource("2_pcqh6")
+upgrade_name = "Base"
 cost = 10
 tower_range = 1
 damage = 1
@@ -22,6 +23,7 @@ idle_animation = "level_01_idle"
 
 [sub_resource type="Resource" id="Resource_ew8f0"]
 script = ExtResource("2_pcqh6")
+upgrade_name = "Test1"
 cost = 11
 tower_range = 1
 damage = 1
@@ -36,6 +38,7 @@ idle_animation = "level_02_idle"
 
 [sub_resource type="Resource" id="Resource_slpxk"]
 script = ExtResource("2_pcqh6")
+upgrade_name = "Test2"
 cost = 12
 tower_range = 2
 damage = 1
@@ -50,6 +53,7 @@ idle_animation = "level_03_idle"
 
 [sub_resource type="Resource" id="Resource_b6eam"]
 script = ExtResource("2_pcqh6")
+upgrade_name = "Test3"
 cost = 13
 tower_range = 2
 damage = 1
@@ -64,6 +68,7 @@ idle_animation = "level_03_idle"
 
 [sub_resource type="Resource" id="Resource_qg77t"]
 script = ExtResource("2_pcqh6")
+upgrade_name = "Test4"
 cost = 14
 tower_range = 2
 damage = 1
@@ -78,6 +83,7 @@ idle_animation = "level_03_idle"
 
 [sub_resource type="Resource" id="Resource_euqsa"]
 script = ExtResource("2_pcqh6")
+upgrade_name = "Test5"
 cost = 15
 tower_range = 2
 damage = 1
@@ -92,6 +98,7 @@ idle_animation = "level_03_idle"
 
 [sub_resource type="Resource" id="Resource_hbdv3"]
 script = ExtResource("2_pcqh6")
+upgrade_name = "Test6"
 cost = 16
 tower_range = 2
 damage = 1

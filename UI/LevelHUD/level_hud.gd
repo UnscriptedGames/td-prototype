@@ -119,6 +119,7 @@ func handle_click(screen_position: Vector2) -> bool:
 				var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
 				if is_instance_valid(build_manager) and is_instance_valid(build_manager.get_selected_tower()):
 					var level_index = i + 1
+					button.self_modulate = Color.from_string("#286643", Color.WHITE)
 					build_manager.get_selected_tower().upgrade_path(level_index)
 					_update_tower_details()
 					GlobalSignals.hand_condense_requested.emit()
@@ -235,7 +236,7 @@ func _update_upgrade_buttons() -> void:
 		if level_index < tower_data.levels.size():
 			var level_data = tower_data.levels[level_index]
 			var cost = level_data.cost
-			button.text = "Upgrade (%dg)" % cost
+			button.text = "%s - %dg" % [level_data.upgrade_name, cost]
 			if button_tier == current_upgrade_tier:
 				button.disabled = not GameManager.player_data.can_afford(cost)
 			else:
