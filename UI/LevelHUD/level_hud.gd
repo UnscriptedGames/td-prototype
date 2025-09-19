@@ -28,7 +28,7 @@ signal target_priority_changed(priority: TargetPriority.Priority)
 @onready var damage_label := $TowerDetails/TowerDetailsContainer/VBoxContainer/DamageLabel as Label
 @onready var fire_rate_label := $TowerDetails/TowerDetailsContainer/VBoxContainer/FireRateLabel as Label
 @onready var projectile_speed_label := $TowerDetails/TowerDetailsContainer/VBoxContainer/ProjectileSpeedLabel as Label
-@onready var aoe_label := $TowerDetails/TowerDetailsContainer/VBoxContainer/AoELabel as Label
+@onready var attack_modifier_label := $TowerDetails/TowerDetailsContainer/VBoxContainer/AttackModifierLabel as Label
 @onready var max_targets_label := $TowerDetails/TowerDetailsContainer/VBoxContainer/MaxTargetsLabel as Label
 @onready var upgrade_buttons: Array[Button] = [
 	$TowerDetails/TowerDetailsContainer/VBoxContainer/UpgradeGrid/UpgradeButton1,
@@ -204,7 +204,19 @@ func _update_tower_details() -> void:
 	damage_label.text = "Damage: %d" % selected_tower.damage
 	fire_rate_label.text = "Fire Rate: %.2f" % selected_tower.fire_rate
 	projectile_speed_label.text = "Projectile Speed: %d" % selected_tower.projectile_speed
-	aoe_label.text = "AoE: %s" % ("Yes" if selected_tower.has_attack_modifier("is_aoe") else "No")
+
+	var modifiers = []
+	if selected_tower.has_attack_modifier("aoe_projectile"):
+		modifiers.append("AoE")
+	if selected_tower.has_attack_modifier("attack_flying"):
+		modifiers.append("Flying")
+
+	if not modifiers.is_empty():
+		attack_modifier_label.text = "Attack Modifiers: " + ", ".join(modifiers)
+		attack_modifier_label.visible = true
+	else:
+		attack_modifier_label.visible = false
+
 	max_targets_label.text = "Max Targets: %d" % selected_tower.targets
 
 	_update_upgrade_buttons()

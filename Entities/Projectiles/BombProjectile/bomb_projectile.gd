@@ -23,7 +23,7 @@ func initialize_dud_shot(destination: Vector2, damage_amount: int, projectile_sp
 ## Overrides the base physics process to calculate an arc instead of a straight line.
 func _physics_process(_delta: float) -> void:
 	# For homing (non-AOE) projectiles, continuously update the destination.
-	if not _is_aoe and is_instance_valid(_target) and _target.state == TemplateEnemy.State.MOVING:
+	if not _aoe_projectile and is_instance_valid(_target) and _target.state == TemplateEnemy.State.MOVING:
 		var target_point_node = _target.find_child("TargetPoint")
 		if is_instance_valid(target_point_node):
 			_last_known_position = target_point_node.global_position
@@ -38,7 +38,7 @@ func _physics_process(_delta: float) -> void:
 	
 	# Check if the tween has finished and the projectile has arrived.
 	if _progress >= 1.0:
-		if _is_aoe:
+		if _aoe_projectile:
 			_detonate_aoe()
 		
 		ObjectPoolManager.return_object(self)

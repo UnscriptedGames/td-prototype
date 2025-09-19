@@ -5,7 +5,7 @@ var speed: float
 var damage: int = 0
 var _target: TemplateEnemy
 var _last_known_position: Vector2
-var _is_aoe: bool = false
+var _aoe_projectile: bool = false
 var _is_returning: bool = false
 
 ## Node References
@@ -67,7 +67,7 @@ func initialize_dud_shot(destination: Vector2, damage_amount: int, projectile_sp
 func _initialize_common(damage_amount: int, projectile_speed: float, use_aoe_behavior: bool) -> void:
 	damage = damage_amount
 	speed = projectile_speed
-	_is_aoe = use_aoe_behavior
+	_aoe_projectile = use_aoe_behavior
 	_is_returning = false
 	
 	set_physics_process(true)
@@ -82,7 +82,7 @@ func reset() -> void:
 	_target = null
 	damage = 0
 	_last_known_position = Vector2.ZERO
-	_is_aoe = false
+	_aoe_projectile = false
 	_is_returning = false
 	# Disable physics until the projectile is initialized again.
 	set_physics_process(false)
@@ -91,7 +91,7 @@ func reset() -> void:
 
 ## Called when the projectile collides with another area. Only used for homing projectiles.
 func _on_area_entered(area: Area2D) -> void:
-	if _is_aoe or _is_returning:
+	if _aoe_projectile or _is_returning:
 		return
 
 	var enemy := area.get_parent() as TemplateEnemy

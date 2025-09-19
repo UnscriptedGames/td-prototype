@@ -94,10 +94,10 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Projectile Speed:"
 
-[node name="AoELabel" type="Label" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
+[node name="AttackModifierLabel" type="Label" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
-text = "AoE:"
+text = "Attack Modifiers:"
 
 [node name="MaxTargetsLabel" type="Label" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
 layout_mode = 2

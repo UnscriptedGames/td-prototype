@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://cajll6x5mfyy4" path="res://Entities/Towers/_TemplateTower/tower_level_data.gd" id="2_vcqlg"]
 [ext_resource type="Script" uid="uid://bvwum7tqhcpwg" path="res://Core/Data/AttackModifiers/attack_modifier_data.gd" id="3_d2i6s"]
 [ext_resource type="PackedScene" uid="uid://cbjoufki8jid4" path="res://Entities/Projectiles/BoneProjectile/bone_projectile.tscn" id="3_glcib"]
-[ext_resource type="Resource" path="res://Core/Data/AttackModifiers/can_attack_flying_modifier.tres" id="4_vkn5g"]
+[ext_resource type="Resource" path="res://Core/Data/AttackModifiers/attack_flying_modifier.tres" id="4_vkn5g"]
 
 [sub_resource type="Resource" id="Resource_vcqlg"]
 script = ExtResource("2_vcqlg")

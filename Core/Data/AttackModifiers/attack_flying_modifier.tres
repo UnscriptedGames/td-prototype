@@ -4,5 +4,5 @@
 
 [resource]
 script = ExtResource("1_v2y3h")
-is_aoe = false
-can_attack_flying = true
+aoe_projectile = false
+attack_flying = true

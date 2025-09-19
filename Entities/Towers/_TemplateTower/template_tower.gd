@@ -48,11 +48,11 @@ var _projectiles_container: Node2D
 
 func has_attack_modifier(property_name: String) -> bool:
 	for modifier in attack_modifiers:
-		if property_name == "is_aoe":
-			if modifier.is_aoe:
+		if property_name == "aoe_projectile":
+			if modifier.aoe_projectile:
 				return true
-		elif property_name == "can_attack_flying":
-			if modifier.can_attack_flying:
+		elif property_name == "attack_flying":
+			if modifier.attack_flying:
 				return true
 	return false
 
@@ -163,7 +163,7 @@ func _find_new_target() -> void:
 		func(enemy: TemplateEnemy) -> bool:
 			if not enemy.state == TemplateEnemy.State.MOVING:
 				return false
-			if enemy.data.is_flying and not has_attack_modifier("can_attack_flying"):
+			if enemy.data.is_flying and not has_attack_modifier("attack_flying"):
 				return false
 			return true
 	)
@@ -293,7 +293,7 @@ func _spawn_projectiles() -> void:
 				target,
 				damage,
 				projectile_speed,
-				has_attack_modifier("is_aoe")
+				has_attack_modifier("aoe_projectile")
 			)
 		# Otherwise, initialize a "dud" shot to the last known position.
 		else:
@@ -302,7 +302,7 @@ func _spawn_projectiles() -> void:
 				last_known_pos,
 				damage,
 				projectile_speed,
-				has_attack_modifier("is_aoe")
+				has_attack_modifier("aoe_projectile")
 			)
 
 
