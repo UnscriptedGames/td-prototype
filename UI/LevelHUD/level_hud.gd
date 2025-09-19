@@ -204,7 +204,7 @@ func _update_tower_details() -> void:
 	damage_label.text = "Damage: %d" % selected_tower.damage
 	fire_rate_label.text = "Fire Rate: %.2f" % selected_tower.fire_rate
 	projectile_speed_label.text = "Projectile Speed: %d" % selected_tower.projectile_speed
-	aoe_label.text = "AoE: %s" % ("Yes" if selected_tower.is_aoe else "No")
+	aoe_label.text = "AoE: %s" % ("Yes" if selected_tower.has_attack_modifier("is_aoe") else "No")
 	max_targets_label.text = "Max Targets: %d" % selected_tower.targets
 
 	_update_upgrade_buttons()
