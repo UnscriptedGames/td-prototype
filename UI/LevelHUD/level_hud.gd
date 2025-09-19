@@ -121,7 +121,6 @@ func handle_click(screen_position: Vector2) -> bool:
 				var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
 				if is_instance_valid(build_manager) and is_instance_valid(build_manager.get_selected_tower()):
 					var level_index = i + 1
-					button.self_modulate = Color.from_string("#286643", Color.WHITE)
 					build_manager.get_selected_tower().upgrade_path(level_index)
 					GlobalSignals.hand_condense_requested.emit()
 				return true
@@ -233,20 +232,31 @@ func _update_upgrade_buttons() -> void:
 
 	var tower_data: TowerData = selected_tower.data
 	var current_upgrade_tier: int = selected_tower.upgrade_tier
+	var purchased_upgrades: Array[int] = selected_tower.upgrade_path_indices
 
 	for i in range(upgrade_buttons.size()):
-		var button = upgrade_buttons[i]
-		var button_tier = int(i / 2.0)
-		var level_index = i + 1
+		var button: Button = upgrade_buttons[i]
+		var button_tier: int = int(i / 2.0)
+		var level_index: int = i + 1
 
+		# Reset modulation color at the start of each update.
+		button.self_modulate = Color.WHITE
 		button.visible = true
 
 		if level_index < tower_data.levels.size():
-			var level_data = tower_data.levels[level_index]
-			var cost = level_data.cost
+			var level_data: TowerLevelData = tower_data.levels[level_index]
+			var cost: int = level_data.cost
 			button.text = "%s (%dg)" % [level_data.upgrade_name, cost]
-			if button_tier == current_upgrade_tier:
-				button.disabled = not GameManager.player_data.can_afford(cost)
+
+			var is_purchased: bool = level_index in purchased_upgrades
+			var is_current_tier: bool = button_tier == current_upgrade_tier
+			var can_afford: bool = GameManager.player_data.can_afford(cost)
+
+			if is_purchased:
+				button.self_modulate = Color.from_string("#286643", Color.WHITE)
+				button.disabled = true
+			elif is_current_tier:
+				button.disabled = not can_afford
 			else:
 				button.disabled = true
 		else:
@@ -254,8 +264,12 @@ func _update_upgrade_buttons() -> void:
 			button.disabled = true
 
 	if current_upgrade_tier >= 3:
-		for button in upgrade_buttons:
-			button.disabled = true
+		for i in range(upgrade_buttons.size()):
+			var button: Button = upgrade_buttons[i]
+			var level_index: int = i + 1
+			# Keep purchased buttons green, disable the rest.
+			if not level_index in purchased_upgrades:
+				button.disabled = true
 
 
 func _update_sell_button_state() -> void:
