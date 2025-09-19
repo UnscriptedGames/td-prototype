@@ -199,17 +199,14 @@ func _update_tower_details() -> void:
 	var selected_tower: TemplateTower = build_manager.get_selected_tower()
 	if not is_instance_valid(selected_tower): return
 
-	var tower_data: TowerData = selected_tower.data
-	var level_data: TowerLevelData = tower_data.levels[selected_tower.current_level]
-
-	tower_name_label.text = tower_data.tower_name
-	tower_level_label.text = "Level: %s" % level_data.tower_level
-	range_label.text = "Range: %d" % level_data.tower_range
-	damage_label.text = "Damage: %d" % level_data.damage
-	fire_rate_label.text = "Fire Rate: %.2f" % level_data.fire_rate
-	projectile_speed_label.text = "Projectile Speed: %d" % level_data.projectile_speed
-	aoe_label.text = "AoE: %s" % ("Yes" if level_data.is_aoe else "No")
-	max_targets_label.text = "Max Targets: %d" % level_data.targets
+	tower_name_label.text = selected_tower.data.tower_name
+	tower_level_label.text = "Level: %s" % selected_tower.tower_level
+	range_label.text = "Range: %d" % selected_tower.tower_range
+	damage_label.text = "Damage: %d" % selected_tower.damage
+	fire_rate_label.text = "Fire Rate: %.2f" % selected_tower.fire_rate
+	projectile_speed_label.text = "Projectile Speed: %d" % selected_tower.projectile_speed
+	aoe_label.text = "AoE: %s" % ("Yes" if selected_tower.is_aoe else "No")
+	max_targets_label.text = "Max Targets: %d" % selected_tower.targets
 
 	_update_upgrade_buttons()
 	_update_sell_button_state()

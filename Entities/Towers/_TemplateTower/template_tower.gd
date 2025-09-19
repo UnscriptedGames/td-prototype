@@ -311,6 +311,13 @@ func upgrade_path(level_index: int) -> void:
 	upgrade_tier += 1
 	_is_firing = false
 
+	# Debug: Log current stats
+	print("--- Tower Upgrade ---")
+	print("Before - Range: %d, Damage: %d, Fire Rate: %.2f, Proj. Speed: %d, Targets: %d" % [tower_range, damage, fire_rate, projectile_speed, targets])
+
+	# Debug: Log upgrade stats
+	print("Upgrade - Range: %d, Damage: %d, Fire Rate: %.2f, Proj. Speed: %d, Targets: %d" % [upgrade_data.tower_range, upgrade_data.damage, upgrade_data.fire_rate, upgrade_data.projectile_speed, upgrade_data.targets])
+
 	# Apply upgrade stats
 	tower_level = upgrade_data.tower_level
 	tower_range += upgrade_data.tower_range
@@ -327,6 +334,10 @@ func upgrade_path(level_index: int) -> void:
 	projectile_scene = upgrade_data.projectile_scene
 	shoot_animation = upgrade_data.shoot_animation
 	idle_animation = upgrade_data.idle_animation
+
+	# Debug: Log new stats
+	print("After - Range: %d, Damage: %d, Fire Rate: %.2f, Proj. Speed: %d, Targets: %d" % [tower_range, damage, fire_rate, projectile_speed, targets])
+	print("--------------------")
 
 	_apply_level_stats()
 	_update_range_polygon()
