@@ -22,6 +22,7 @@ var fire_rate: float
 var projectile_speed: float
 var targets: int
 var attack_modifiers: Array[AttackModifierData] = []
+var status_effects: Array[StatusEffectData] = []
 var projectile_scene: PackedScene
 var shoot_animation: String
 var idle_animation: String
@@ -88,6 +89,8 @@ func initialize(new_tower_data: TowerData, new_highlight_layer: TileMapLayer, to
 	projectile_speed = initial_level_data.projectile_speed
 	if initial_level_data.attack_modifiers:
 		attack_modifiers = initial_level_data.attack_modifiers.duplicate()
+	if initial_level_data.status_effects:
+		status_effects = initial_level_data.status_effects.duplicate()
 	targets = initial_level_data.targets
 	projectile_scene = initial_level_data.projectile_scene
 	shoot_animation = initial_level_data.shoot_animation
@@ -293,7 +296,8 @@ func _spawn_projectiles() -> void:
 				target,
 				damage,
 				projectile_speed,
-				has_attack_modifier("aoe_projectile")
+				has_attack_modifier("aoe_projectile"),
+				status_effects
 			)
 		# Otherwise, initialize a "dud" shot to the last known position.
 		else:
@@ -302,7 +306,8 @@ func _spawn_projectiles() -> void:
 				last_known_pos,
 				damage,
 				projectile_speed,
-				has_attack_modifier("aoe_projectile")
+				has_attack_modifier("aoe_projectile"),
+				status_effects
 			)
 
 
@@ -340,6 +345,22 @@ func upgrade_path(level_index: int) -> void:
 		for modifier in upgrade_data.attack_modifiers:
 			if not attack_modifiers.has(modifier):
 				attack_modifiers.append(modifier)
+
+	if upgrade_data.status_effects:
+		for effect in upgrade_data.status_effects:
+			# This logic assumes we replace effects of the same type,
+			# and add new ones. A more sophisticated system could
+			# merge or stack effects. For now, we'll just add.
+			var existing_effect_index = -1
+			for i in range(status_effects.size()):
+				if status_effects[i].effect_type == effect.effect_type:
+					existing_effect_index = i
+					break
+
+			if existing_effect_index != -1:
+				status_effects[existing_effect_index] = effect
+			else:
+				status_effects.append(effect)
 
 	projectile_scene = upgrade_data.projectile_scene
 	shoot_animation = upgrade_data.shoot_animation

@@ -53,6 +53,12 @@ var _last_flip_h: bool = false	# Last horizontal flip state
 var _has_reached_end: bool = false	# True if enemy reached end of path
 
 
+## Status Effect State
+var _active_status_effects: Dictionary = {} # Key: EffectType, Value: Dictionary of effect data
+var _speed_modifier: float = 1.0 # Multiplier for the enemy's speed
+var _is_stunned: bool = false # Is the enemy currently stunned?
+
+
 ## Node References
 @onready var animation := $Animation as AnimatedSprite2D	# Animation node
 @onready var hitbox := $PositionShape as CollisionShape2D	# Hitbox node
@@ -160,9 +166,16 @@ func reached_goal() -> void:
 
 ## Handles movement and animation each frame
 func _process(delta: float) -> void:
+	_process_status_effects(delta)
+
+	if _is_stunned:
+		# If stunned, do nothing else this frame.
+		# We might want to play a "stunned" animation here in the future.
+		return
+
 	if path_follow and is_instance_valid(path_follow.get_parent()):
 		# Move the follower along the path
-		path_follow.progress += speed * delta
+		path_follow.progress += speed * _speed_modifier * delta
 		
 		# Smooth the perpendicular vector to create nice arcs around corners
 		_smoothed_right_vector = _smoothed_right_vector.lerp(path_follow.transform.x, CORNER_SMOOTHING * delta)
@@ -246,6 +259,11 @@ func reset() -> void:
 		path_follow.progress = 0.0
 	_smoothed_right_vector = Vector2.RIGHT # Reset the smoothed vector
 
+	# Reset status effects
+	_active_status_effects.clear()
+	_speed_modifier = 1.0
+	_is_stunned = false
+
 	# Assign a random path offset when the enemy is reset (i.e. spawned)
 	if data:
 		_path_offset = randf_range(-data.max_path_offset, data.max_path_offset)
@@ -269,6 +287,112 @@ func prepare_for_new_path() -> void:
 ## Returns true if the enemy is dying
 func is_dying() -> bool:
 	return state == State.DYING
+
+
+## Status Effect Handling ##
+
+func apply_status_effect(effect: StatusEffectData) -> void:
+	if not is_instance_valid(effect):
+		return
+
+	var effect_type = effect.effect_type
+
+	# If the effect is not already active, add it.
+	if not _active_status_effects.has(effect_type):
+		var new_effect_data = {
+			"data": effect,
+			"duration": effect.duration,
+			"tick_timer": 0.0
+		}
+		_active_status_effects[effect_type] = new_effect_data
+
+		# Handle initial application for certain effects
+		match effect_type:
+			StatusEffectData.EffectType.SLOW:
+				_recalculate_speed()
+			StatusEffectData.EffectType.STUN:
+				_is_stunned = true
+		return
+
+	# --- Stacking Logic for existing effects ---
+	var existing_effect = _active_status_effects[effect_type]
+
+	match effect_type:
+		StatusEffectData.EffectType.DOT:
+			# Refresh duration to the greater of the two
+			existing_effect.duration = max(existing_effect.duration, effect.duration)
+			# Update damage only if the new effect is stronger
+			if effect.damage_per_tick > existing_effect.data.damage_per_tick:
+				existing_effect.data.damage_per_tick = effect.damage_per_tick
+			# Update tick rate only if the new one is faster
+			if effect.tick_rate < existing_effect.data.tick_rate:
+				existing_effect.data.tick_rate = effect.tick_rate
+
+		StatusEffectData.EffectType.SLOW:
+			# Refresh duration
+			existing_effect.duration = max(existing_effect.duration, effect.duration)
+			# Update magnitude only if the new slow is stronger
+			if effect.magnitude > existing_effect.data.magnitude:
+				existing_effect.data.magnitude = effect.magnitude
+				_recalculate_speed()
+
+		StatusEffectData.EffectType.STUN:
+			# Stun does not stack or refresh. Ignore new stuns if already stunned.
+			pass
+
+
+func _process_status_effects(delta: float) -> void:
+	if _active_status_effects.is_empty():
+		return
+
+	var effects_to_remove = []
+	for effect_type in _active_status_effects:
+		var effect = _active_status_effects[effect_type]
+		effect.duration -= delta
+
+		if effect.duration <= 0:
+			effects_to_remove.append(effect_type)
+		else:
+			match effect_type:
+				StatusEffectData.EffectType.DOT:
+					_handle_dot_effect(effect, delta)
+				StatusEffectData.EffectType.SLOW:
+					_handle_slow_effect(effect, delta)
+				StatusEffectData.EffectType.STUN:
+					_handle_stun_effect(effect, delta)
+
+	for effect_type in effects_to_remove:
+		_active_status_effects.erase(effect_type)
+		# Handle effect removal
+		match effect_type:
+			StatusEffectData.EffectType.SLOW:
+				_recalculate_speed()
+			StatusEffectData.EffectType.STUN:
+				_is_stunned = false
+
+
+func _handle_dot_effect(effect_data, delta) -> void:
+	effect_data.tick_timer += delta
+	if effect_data.tick_timer >= effect_data.data.tick_rate:
+		effect_data.tick_timer -= effect_data.data.tick_rate
+		health -= effect_data.data.damage_per_tick
+
+
+func _handle_slow_effect(_effect_data, _delta) -> void:
+	# The effect is applied on addition/removal, so nothing to do here per frame.
+	pass
+
+
+func _handle_stun_effect(_effect_data, _delta) -> void:
+	# The effect is handled by checking _is_stunned in _process.
+	pass
+
+
+func _recalculate_speed() -> void:
+	_speed_modifier = 1.0
+	if _active_status_effects.has(StatusEffectData.EffectType.SLOW):
+		var slow_effect = _active_status_effects[StatusEffectData.EffectType.SLOW]
+		_speed_modifier -= slow_effect.data.magnitude
 
 
 ## Handles returning the object to the pool and cleaning up its temporary parent

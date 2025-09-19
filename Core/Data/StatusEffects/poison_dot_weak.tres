@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="StatusEffectData" load_steps=2 format=3 uid="uid://p01s0nd0tju13s"]
+
+[ext_resource type="Script" uid="uid://d1g1t4lju13s1" path="res://Core/Data/StatusEffects/status_effect_data.gd" id="1_fghij"]
+
+[resource]
+script = ExtResource("1_fghij")
+effect_type = 0
+duration = 5.0
+magnitude = 0.0
+damage_per_tick = 2
+tick_rate = 1.0

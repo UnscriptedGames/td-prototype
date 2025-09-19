@@ -12,6 +12,7 @@ class_name TowerLevelData
 @export var projectile_speed: float = 500.0
 @export var targets: int = 1
 @export var attack_modifiers: Array[AttackModifierData]
+@export var status_effects: Array[StatusEffectData]
 @export var projectile_scene: PackedScene
 @export var shoot_animation: String = "level_01_shoot"
 @export var idle_animation: String = "level_01_idle"

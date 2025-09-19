@@ -6,6 +6,7 @@ var damage: int = 0
 var _target: TemplateEnemy
 var _last_known_position: Vector2
 var _aoe_projectile: bool = false
+var _status_effects: Array[StatusEffectData] = []
 var _is_returning: bool = false
 
 ## Node References
@@ -37,10 +38,10 @@ func _physics_process(delta: float) -> void:
 
 
 ## Called by the tower that fires the projectile.
-func initialize(target_enemy: TemplateEnemy, damage_amount: int, projectile_speed: float, use_aoe_behavior: bool) -> void:
+func initialize(target_enemy: TemplateEnemy, damage_amount: int, projectile_speed: float, use_aoe_behavior: bool, status_effects: Array[StatusEffectData] = []) -> void:
 	_target = target_enemy
 	# Call the helper function to set up common properties.
-	_initialize_common(damage_amount, projectile_speed, use_aoe_behavior)
+	_initialize_common(damage_amount, projectile_speed, use_aoe_behavior, status_effects)
 	
 	# Set the initial destination from the target enemy.
 	var target_point_node = _target.find_child("TargetPoint")
@@ -55,19 +56,20 @@ func initialize(target_enemy: TemplateEnemy, damage_amount: int, projectile_spee
 
 
 ## Called by the tower for a "dud" shot when the target is already dead.
-func initialize_dud_shot(destination: Vector2, damage_amount: int, projectile_speed: float, use_aoe_behavior: bool) -> void:
+func initialize_dud_shot(destination: Vector2, damage_amount: int, projectile_speed: float, use_aoe_behavior: bool, status_effects: Array[StatusEffectData] = []) -> void:
 	_target = null
 	# Call the helper function to set up common properties.
-	_initialize_common(damage_amount, projectile_speed, use_aoe_behavior)
+	_initialize_common(damage_amount, projectile_speed, use_aoe_behavior, status_effects)
 	# Set the destination directly.
 	_last_known_position = destination
 
 
 ## Private: Handles setup tasks common to both initialize functions.
-func _initialize_common(damage_amount: int, projectile_speed: float, use_aoe_behavior: bool) -> void:
+func _initialize_common(damage_amount: int, projectile_speed: float, use_aoe_behavior: bool, status_effects: Array[StatusEffectData] = []) -> void:
 	damage = damage_amount
 	speed = projectile_speed
 	_aoe_projectile = use_aoe_behavior
+	_status_effects = status_effects
 	_is_returning = false
 	
 	set_physics_process(true)
@@ -83,6 +85,7 @@ func reset() -> void:
 	damage = 0
 	_last_known_position = Vector2.ZERO
 	_aoe_projectile = false
+	_status_effects.clear()
 	_is_returning = false
 	# Disable physics until the projectile is initialized again.
 	set_physics_process(false)
@@ -98,6 +101,8 @@ func _on_area_entered(area: Area2D) -> void:
 	if enemy == _target:
 		hitbox.set_deferred("disabled", true)
 		enemy.health -= damage
+		for effect in _status_effects:
+			enemy.apply_status_effect(effect)
 		_return_to_pool()
 
 
