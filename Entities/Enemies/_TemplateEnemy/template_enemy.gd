@@ -242,6 +242,8 @@ func reset() -> void:
 	_update_health_bar()
 	state = State.MOVING
 	_has_reached_end = false
+	if is_instance_valid(path_follow):
+		path_follow.progress = 0.0
 	_smoothed_right_vector = Vector2.RIGHT # Reset the smoothed vector
 
 	# Assign a random path offset when the enemy is reset (i.e. spawned)

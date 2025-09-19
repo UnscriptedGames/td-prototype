@@ -92,6 +92,9 @@ func get_object(scene: PackedScene) -> Node:
 	pool.in_use += 1
 	pool.peak_usage = max(pool.peak_usage, pool.in_use)
 
+	if obj.has_method("reset"):
+		obj.reset()
+
 	return obj
 
 
@@ -111,6 +114,9 @@ func get_pooled_node(p_class_name: String) -> Node:
 
 	pool.in_use += 1
 	pool.peak_usage = max(pool.peak_usage, pool.in_use)
+
+	if obj.has_method("reset"):
+		obj.reset()
 
 	return obj
 
