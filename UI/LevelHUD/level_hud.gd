@@ -213,9 +213,8 @@ func _update_tower_details() -> void:
 
 	if not modifiers.is_empty():
 		attack_modifier_label.text = "Attack Modifiers: " + ", ".join(modifiers)
-		attack_modifier_label.visible = true
 	else:
-		attack_modifier_label.visible = false
+		attack_modifier_label.text = "Attack Modifiers: None"
 
 	max_targets_label.text = "Max Targets: %d" % selected_tower.targets
 
