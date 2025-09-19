@@ -48,8 +48,12 @@ var _projectiles_container: Node2D
 
 func has_attack_modifier(property_name: String) -> bool:
 	for modifier in attack_modifiers:
-		if modifier.has(property_name) and modifier.get(property_name) == true:
-			return true
+		if property_name == "is_aoe":
+			if modifier.is_aoe:
+				return true
+		elif property_name == "can_attack_flying":
+			if modifier.can_attack_flying:
+				return true
 	return false
 
 

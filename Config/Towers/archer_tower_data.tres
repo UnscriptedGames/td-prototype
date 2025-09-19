@@ -1,10 +1,11 @@
-[gd_resource type="Resource" script_class="TowerData" load_steps=13 format=3 uid="uid://bojj6xdad27bq"]
+[gd_resource type="Resource" script_class="TowerData" load_steps=15 format=3 uid="uid://bojj6xdad27bq"]
 
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_njmit"]
 [ext_resource type="Texture2D" uid="uid://bi5vo1w8ytlun" path="res://Entities/Towers/ArcherTower/Assets/archer_tower_level01_01.png" id="1_olgkv"]
 [ext_resource type="PackedScene" uid="uid://bgedhv3rnitf0" path="res://Entities/Towers/ArcherTower/archer_tower.tscn" id="2_2d21g"]
 [ext_resource type="Script" uid="uid://cajll6x5mfyy4" path="res://Entities/Towers/_TemplateTower/tower_level_data.gd" id="2_pcqh6"]
 [ext_resource type="PackedScene" uid="uid://d1b6de67vc5gr" path="res://Entities/Projectiles/ArrowProjectile/arrow_projectile.tscn" id="3_2d21g"]
+[ext_resource type="Script" uid="uid://bvwum7tqhcpwg" path="res://Core/Data/AttackModifiers/attack_modifier_data.gd" id="3_euqsa"]
 [ext_resource type="Resource" path="res://Core/Data/AttackModifiers/can_attack_flying_modifier.tres" id="4_pxfuf"]
 
 [sub_resource type="Resource" id="Resource_pcqh6"]
@@ -17,7 +18,7 @@ damage = 1
 fire_rate = 1.5
 projectile_speed = 300.0
 targets = 1
-attack_modifiers = [ExtResource("4_pxfuf")]
+attack_modifiers = Array[ExtResource("3_euqsa")]([ExtResource("4_pxfuf")])
 projectile_scene = ExtResource("3_2d21g")
 shoot_animation = "level_01_shoot"
 idle_animation = "level_01_idle"
@@ -32,7 +33,7 @@ damage = 1
 fire_rate = 0.0
 projectile_speed = 0.0
 targets = 0
-attack_modifiers = [ExtResource("4_pxfuf")]
+attack_modifiers = Array[ExtResource("3_euqsa")]([ExtResource("4_pxfuf")])
 projectile_scene = ExtResource("3_2d21g")
 shoot_animation = "level_02_shoot"
 idle_animation = "level_02_idle"
@@ -47,7 +48,7 @@ damage = 0
 fire_rate = 1.0
 projectile_speed = 0.0
 targets = 0
-attack_modifiers = [ExtResource("4_pxfuf")]
+attack_modifiers = Array[ExtResource("3_euqsa")]([ExtResource("4_pxfuf")])
 projectile_scene = ExtResource("3_2d21g")
 shoot_animation = "level_02_shoot"
 idle_animation = "level_02_idle"
@@ -62,7 +63,7 @@ damage = 0
 fire_rate = 0.0
 projectile_speed = 0.0
 targets = 1
-attack_modifiers = [ExtResource("4_pxfuf")]
+attack_modifiers = Array[ExtResource("3_euqsa")]([ExtResource("4_pxfuf")])
 projectile_scene = ExtResource("3_2d21g")
 shoot_animation = "level_03_shoot"
 idle_animation = "level_03_idle"
@@ -77,7 +78,7 @@ damage = 0
 fire_rate = 0.0
 projectile_speed = 0.0
 targets = 0
-attack_modifiers = [ExtResource("4_pxfuf")]
+attack_modifiers = Array[ExtResource("3_euqsa")]([ExtResource("4_pxfuf")])
 projectile_scene = ExtResource("3_2d21g")
 shoot_animation = "level_03_shoot"
 idle_animation = "level_03_idle"
@@ -92,7 +93,7 @@ damage = 0
 fire_rate = 0.0
 projectile_speed = 0.0
 targets = 0
-attack_modifiers = [ExtResource("4_pxfuf")]
+attack_modifiers = Array[ExtResource("3_euqsa")]([ExtResource("4_pxfuf")])
 projectile_scene = ExtResource("3_2d21g")
 shoot_animation = "level_03_shoot"
 idle_animation = "level_03_idle"
@@ -107,7 +108,7 @@ damage = 2
 fire_rate = 0.0
 projectile_speed = 0.0
 targets = 0
-attack_modifiers = [ExtResource("4_pxfuf")]
+attack_modifiers = Array[ExtResource("3_euqsa")]([ExtResource("4_pxfuf")])
 projectile_scene = ExtResource("3_2d21g")
 shoot_animation = "level_03_shoot"
 idle_animation = "level_03_idle"
