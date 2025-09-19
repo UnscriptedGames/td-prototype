@@ -20,9 +20,8 @@ var tower_range: int
 var damage: int
 var fire_rate: float
 var projectile_speed: float
-var is_aoe: bool
-var can_attack_flying: bool
 var targets: int
+var attack_modifiers: Array[AttackModifierData] = []
 var projectile_scene: PackedScene
 var shoot_animation: String
 var idle_animation: String
@@ -45,6 +44,13 @@ var _is_firing: bool = false
 @onready var fire_rate_timer: Timer = $FireRateTimer
 @onready var muzzle: Marker2D = $Muzzle
 var _projectiles_container: Node2D
+
+
+func _has_attack_modifier(property_name: String) -> bool:
+	for modifier in attack_modifiers:
+		if modifier.has(property_name) and modifier.get(property_name) == true:
+			return true
+	return false
 
 
 func _ready() -> void:
@@ -76,8 +82,8 @@ func initialize(new_tower_data: TowerData, new_highlight_layer: TileMapLayer, to
 	damage = initial_level_data.damage
 	fire_rate = initial_level_data.fire_rate
 	projectile_speed = initial_level_data.projectile_speed
-	is_aoe = initial_level_data.is_aoe
-	can_attack_flying = initial_level_data.can_attack_flying
+	if initial_level_data.attack_modifiers:
+		attack_modifiers = initial_level_data.attack_modifiers.duplicate()
 	targets = initial_level_data.targets
 	projectile_scene = initial_level_data.projectile_scene
 	shoot_animation = initial_level_data.shoot_animation
@@ -153,7 +159,7 @@ func _find_new_target() -> void:
 		func(enemy: TemplateEnemy) -> bool:
 			if not enemy.state == TemplateEnemy.State.MOVING:
 				return false
-			if enemy.data.is_flying and not can_attack_flying:
+			if enemy.data.is_flying and not _has_attack_modifier("can_attack_flying"):
 				return false
 			return true
 	)
@@ -283,7 +289,7 @@ func _spawn_projectiles() -> void:
 				target,
 				damage,
 				projectile_speed,
-				is_aoe
+				_has_attack_modifier("is_aoe")
 			)
 		# Otherwise, initialize a "dud" shot to the last known position.
 		else:
@@ -292,7 +298,7 @@ func _spawn_projectiles() -> void:
 				last_known_pos,
 				damage,
 				projectile_speed,
-				is_aoe
+				_has_attack_modifier("is_aoe")
 			)
 
 
@@ -326,10 +332,10 @@ func upgrade_path(level_index: int) -> void:
 	projectile_speed += upgrade_data.projectile_speed
 	targets += upgrade_data.targets
 
-	if upgrade_data.is_aoe:
-		is_aoe = true
-	if upgrade_data.can_attack_flying:
-		can_attack_flying = true
+	if upgrade_data.attack_modifiers:
+		for modifier in upgrade_data.attack_modifiers:
+			if not attack_modifiers.has(modifier):
+				attack_modifiers.append(modifier)
 
 	projectile_scene = upgrade_data.projectile_scene
 	shoot_animation = upgrade_data.shoot_animation
