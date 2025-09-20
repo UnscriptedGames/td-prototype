@@ -87,6 +87,11 @@ func is_position_on_a_card(screen_position: Vector2) -> bool:
 	return false
 
 
+func is_expanded() -> bool:
+	# Returns true if the hand is currently in its expanded state.
+	return _is_expanded
+
+
 func handle_global_click(event: InputEventMouseButton) -> bool:
 	# Handles clicks that were not on other UI elements.
 	if _is_transitioning:

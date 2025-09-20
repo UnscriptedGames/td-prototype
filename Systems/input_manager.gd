@@ -28,6 +28,10 @@ func _input(event: InputEvent) -> void:
 	match current_state:
 		State.DEFAULT:
 			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+				# If the click is on an expanded card, let the card handle it and stop further processing.
+				if _cards_hud and _cards_hud.is_expanded() and _cards_hud.is_position_on_a_card(event.position):
+					return
+
 				# In default state, tower selection has priority over background clicks
 				if _build_manager:
 					handled = _build_manager.handle_selection_input(event)
