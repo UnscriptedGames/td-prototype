@@ -69,7 +69,12 @@ func _initialize_common(damage_amount: int, projectile_speed: float, use_aoe_beh
 	damage = damage_amount
 	speed = projectile_speed
 	_aoe_projectile = use_aoe_behavior
-	_status_effects = status_effects
+	# We must duplicate the array to prevent modifying the tower's original array
+	# when this projectile is reset in the object pool.
+	if status_effects:
+		_status_effects = status_effects.duplicate()
+	else:
+		_status_effects = []
 	_is_returning = false
 	
 	set_physics_process(true)
