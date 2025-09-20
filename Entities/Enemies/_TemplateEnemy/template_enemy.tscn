@@ -1,9 +1,12 @@
-[gd_scene load_steps=5 format=3 uid="uid://br1v6v0da2v1n"]
+[gd_scene load_steps=8 format=3 uid="uid://br1v6v0da2v1n"]
 
 [ext_resource type="Texture2D" uid="uid://cw6payn2hyg8m" path="res://Entities/Enemies/_TemplateEnemy/Assets/bar_shadow_round_outline_small.png" id="1_ejg2d"]
 [ext_resource type="Script" uid="uid://cou6jej7wqrx2" path="res://Entities/Enemies/_TemplateEnemy/template_enemy.gd" id="1_pa3af"]
 [ext_resource type="Texture2D" uid="uid://efm7vnhsuk84" path="res://Entities/Enemies/_TemplateEnemy/Assets/bar_round_small.png" id="2_pa3af"]
 [ext_resource type="SpriteFrames" uid="uid://br8obf1poanq3" path="res://Entities/Enemies/_TemplateEnemy/template_enemy_animations.tres" id="2_u23yv"]
+[ext_resource type="StyleBox" uid="uid://6m1q8jw2p6hi" path="res://Themes/Styleboxes/new_style_stun_flat.tres" id="3_e31ia"]
+[ext_resource type="StyleBox" uid="uid://c1kyee8pg41dh" path="res://Themes/Styleboxes/stylebox_dot_bar.tres" id="3_htrcs"]
+[ext_resource type="StyleBox" uid="uid://djt88h8lsiqgx" path="res://Themes/Styleboxes/stylebox_slow_bar.tres" id="4_wklvk"]
 
 [node name="TemplateEnemy" type="Area2D"]
 collision_layer = 2
@@ -30,35 +33,36 @@ position = Vector2(-1, -44)
 
 [node name="ProgressBarContainer" type="VBoxContainer" parent="."]
 offset_left = -48.0
-offset_top = -161.0
+offset_top = -185.0
 offset_right = 48.0
-offset_bottom = -121.0
+offset_bottom = -127.0
+theme_override_constants/separation = 6
 alignment = 2
 
 [node name="StunBar" type="ProgressBar" parent="ProgressBarContainer"]
-self_modulate = Color(0.705882, 0.580392, 0.945098, 1)
-layout_mode = 2
 custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/fill = ExtResource("3_e31ia")
 value = 50.0
 show_percentage = false
 
 [node name="SlowBar" type="ProgressBar" parent="ProgressBarContainer"]
-self_modulate = Color(0.235294, 0.635294, 0.827451, 1)
-layout_mode = 2
 custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/fill = ExtResource("4_wklvk")
 value = 50.0
 show_percentage = false
 
 [node name="DotBar" type="ProgressBar" parent="ProgressBarContainer"]
-self_modulate = Color(0.168627, 0.760784, 0.407843, 1)
-layout_mode = 2
 custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/fill = ExtResource("3_htrcs")
 value = 50.0
 show_percentage = false
 
 [node name="HealthBar" type="TextureProgressBar" parent="ProgressBarContainer"]
-layout_mode = 2
 custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
 value = 50.0
 texture_under = ExtResource("1_ejg2d")
 texture_progress = ExtResource("2_pa3af")

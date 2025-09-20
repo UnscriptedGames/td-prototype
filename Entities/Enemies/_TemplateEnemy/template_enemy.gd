@@ -62,6 +62,7 @@ var _is_stunned: bool = false # Is the enemy currently stunned?
 ## Node References
 @onready var animation := $Animation as AnimatedSprite2D	# Animation node
 @onready var hitbox := $PositionShape as CollisionShape2D	# Hitbox node
+@onready var progress_bar_container := $ProgressBarContainer as VBoxContainer
 @onready var health_bar := $ProgressBarContainer/HealthBar as TextureProgressBar	# Health bar node
 @onready var dot_bar := $ProgressBarContainer/DotBar as ProgressBar
 @onready var slow_bar := $ProgressBarContainer/SlowBar as ProgressBar
@@ -89,6 +90,15 @@ func _ready() -> void:
 		StatusEffectData.EffectType.SLOW: slow_bar,
 		StatusEffectData.EffectType.STUN: stun_bar
 	}
+
+	# Hide all bars by default on spawn to guarantee a clean initial state.
+	# This is important even though reset() also hides the container,
+	# as reset() is also used for object pooling.
+	progress_bar_container.visible = false
+	health_bar.visible = false
+	for bar in _effect_bars.values():
+		if is_instance_valid(bar):
+			bar.visible = false
 
 	# Configure stats
 	max_health = data.max_health
@@ -251,8 +261,8 @@ func _play_death_sequence(action_name: String) -> void:
 	set_process(false)
 	
 	hitbox.set_deferred("disabled", true)
-	if health_bar:
-		health_bar.visible = false
+	if progress_bar_container:
+		progress_bar_container.visible = false
 	
 	# Play the death animation based on the last known direction
 	var animation_name: String = "%s_%s_%s" % [_variant, action_name, _last_direction]
@@ -268,23 +278,16 @@ func _play_death_sequence(action_name: String) -> void:
 func _update_health_bar() -> void:
 	if not health_bar:
 		return
-
-	# Once the health bar is visible (due to damage or effects), it stays visible.
-	if not health_bar.visible:
-		health_bar.visible = true
-
+	_ensure_bar_is_visible(health_bar)
 	health_bar.value = float(_health) / float(max_health) * 100.0
 
 
 ## Resets the enemy to its initial state
 func reset() -> void:
-	# Reset health and hide all bars
+	# Reset health and hide the progress bar container
 	_health = max_health
-	if health_bar:
-		health_bar.visible = false
-	for bar in _effect_bars.values():
-		if bar:
-			bar.visible = false
+	if progress_bar_container:
+		progress_bar_container.visible = false
 
 	# Reset state and pathing
 	state = State.MOVING
@@ -320,6 +323,14 @@ func is_dying() -> bool:
 
 ## Status Effect Handling ##
 
+func _ensure_bar_is_visible(bar: Control) -> void:
+	# Helper to ensure the container and the specific bar are visible.
+	if not progress_bar_container.visible:
+		progress_bar_container.visible = true
+	if not bar.visible:
+		bar.visible = true
+
+
 func apply_status_effect(effect: StatusEffectData) -> void:
 	if not is_instance_valid(effect) or not _effect_bars.has(effect.effect_type):
 		return
@@ -327,11 +338,9 @@ func apply_status_effect(effect: StatusEffectData) -> void:
 	var effect_type = effect.effect_type
 	var effect_bar = _effect_bars[effect_type]
 
-	# Make the health bar and effect bar visible
-	if health_bar and not health_bar.visible:
-		health_bar.visible = true
-	if effect_bar:
-		effect_bar.visible = true
+	# Ensure the health bar and the specific effect bar are visible.
+	_ensure_bar_is_visible(health_bar)
+	_ensure_bar_is_visible(effect_bar)
 
 	# If the effect is not already active, add it.
 	if not _active_status_effects.has(effect_type):
@@ -350,14 +359,12 @@ func apply_status_effect(effect: StatusEffectData) -> void:
 	# --- Stacking Logic for existing effects ---
 	var existing_effect = _active_status_effects[effect_type]
 
-	# For all stackable effects, refresh duration if the new one is longer
-	existing_effect.duration = max(existing_effect.duration, effect.duration)
-
-	# If we refreshed the duration, we also need to update the initial_duration
-	# to ensure the progress bar is rendered correctly.
-	if existing_effect.duration == effect.duration:
+	# If the new effect has a longer duration, reset the timer and initial duration.
+	if effect.duration > existing_effect.duration:
+		existing_effect.duration = effect.duration
 		existing_effect.initial_duration = effect.duration
 
+	# For some effects, we might want to stack properties even if the duration isn't longer.
 	match effect_type:
 		StatusEffectData.EffectType.DOT:
 			if effect.damage_per_tick > existing_effect.data.damage_per_tick:
