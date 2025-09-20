@@ -35,8 +35,12 @@ var health: int:
 		if state == State.DYING:
 			return
 		_health = max(0, value)
+		# DEBUG:
+		print("DEBUG: Enemy health set to: %d" % _health)
 		_update_health_bar()
 		if _health == 0:
+			# DEBUG:
+			print("DEBUG: Health is 0, calling die()")
 			die()
 
 
@@ -137,7 +141,11 @@ func _validate_and_cache_variants() -> Array:
 ## Handles enemy death, gives a reward, and plays death animation
 func die() -> void:
 	if state == State.DYING:
+		# DEBUG:
+		print("DEBUG: Already dying, exiting die()")
 		return
+	# DEBUG:
+	print("DEBUG: die() called, setting state to DYING")
 	state = State.DYING
 
 	# If the enemy is a flying type, make it "fall" to the ground for its death animation
@@ -147,7 +155,12 @@ func die() -> void:
 	emit_signal("died", self, reward)
 
 	if not animation.animation_finished.is_connected(_on_death_animation_finished):
+		# DEBUG:
+		print("DEBUG: Connecting _on_death_animation_finished signal")
 		animation.animation_finished.connect(_on_death_animation_finished)
+	else:
+		# DEBUG:
+		print("DEBUG: _on_death_animation_finished signal already connected")
 
 	_play_death_sequence("die")
 
@@ -236,11 +249,16 @@ func _play_death_sequence(action_name: String) -> void:
 	
 	# Play the death animation based on the last known direction
 	var animation_name: String = "%s_%s_%s" % [_variant, action_name, _last_direction]
+	# DEBUG:
+	print("DEBUG: Attempting to play death animation: %s" % animation_name)
 	if animation and animation.sprite_frames.has_animation(animation_name):
 		animation.play(animation_name)
 		animation.flip_h = _last_flip_h
+		# DEBUG:
+		print("DEBUG: Animation command sent.")
 	else:
-		# If no animation is found, cleanup immediately.
+		# DEBUG:
+		print("DEBUG: No death animation found, cleaning up immediately.")
 		_return_to_pool_and_cleanup()
 
 
@@ -398,15 +416,26 @@ func _recalculate_speed() -> void:
 
 
 func _on_death_animation_finished(anim_name: StringName) -> void:
+	# DEBUG:
+	print("DEBUG: Animation finished signal received for: %s" % anim_name)
 	var die_anim_prefix = _variant + "_die"
+	# DEBUG:
+	print("DEBUG: Checking against prefix: %s" % die_anim_prefix)
 	if String(anim_name).begins_with(die_anim_prefix):
+		# DEBUG:
+		print("DEBUG: Prefix matches, proceeding with cleanup.")
 		if animation.animation_finished.is_connected(_on_death_animation_finished):
 			animation.animation_finished.disconnect(_on_death_animation_finished)
 		_return_to_pool_and_cleanup()
+	else:
+		# DEBUG:
+		print("DEBUG: Prefix does not match. Ignoring signal.")
 
 
 ## Handles returning the object to the pool and cleaning up its temporary parent
 func _return_to_pool_and_cleanup() -> void:
+	# DEBUG:
+	print("DEBUG: Cleaning up and returning to object pool.")
 	# Store a reference to the temporary PathFollow2D parent
 	var temp_path_follow := path_follow
 	
