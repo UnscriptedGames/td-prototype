@@ -30,34 +30,35 @@ position = Vector2(-1, -44)
 
 [node name="ProgressBarContainer" type="VBoxContainer" parent="."]
 offset_left = -48.0
-offset_top = -195.0
+offset_top = -161.0
 offset_right = 48.0
-offset_bottom = -119.0
+offset_bottom = -121.0
 alignment = 2
 
 [node name="StunBar" type="ProgressBar" parent="ProgressBarContainer"]
-self_modulate = Color(0.707243, 0.578834, 0.944471, 1)
-custom_minimum_size = Vector2(0, 10)
+self_modulate = Color(0.705882, 0.580392, 0.945098, 1)
 layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
 value = 50.0
 show_percentage = false
 
 [node name="SlowBar" type="ProgressBar" parent="ProgressBarContainer"]
-self_modulate = Color(0.23636, 0.635804, 0.828243, 1)
-custom_minimum_size = Vector2(0, 10)
+self_modulate = Color(0.235294, 0.635294, 0.827451, 1)
 layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
 value = 50.0
 show_percentage = false
 
 [node name="DotBar" type="ProgressBar" parent="ProgressBarContainer"]
-self_modulate = Color(0.16824, 0.760649, 0.408569, 1)
-custom_minimum_size = Vector2(0, 10)
+self_modulate = Color(0.168627, 0.760784, 0.407843, 1)
 layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
 value = 50.0
 show_percentage = false
 
 [node name="HealthBar" type="TextureProgressBar" parent="ProgressBarContainer"]
 layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
 value = 50.0
 texture_under = ExtResource("1_ejg2d")
 texture_progress = ExtResource("2_pa3af")

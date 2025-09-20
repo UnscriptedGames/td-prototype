@@ -63,9 +63,9 @@ var _is_stunned: bool = false # Is the enemy currently stunned?
 @onready var animation := $Animation as AnimatedSprite2D	# Animation node
 @onready var hitbox := $PositionShape as CollisionShape2D	# Hitbox node
 @onready var health_bar := $ProgressBarContainer/HealthBar as TextureProgressBar	# Health bar node
-@onready var dot_bar := $ProgressBarContainer/DotBar as TextureProgressBar
-@onready var slow_bar := $ProgressBarContainer/SlowBar as TextureProgressBar
-@onready var stun_bar := $ProgressBarContainer/StunBar as TextureProgressBar
+@onready var dot_bar := $ProgressBarContainer/DotBar as ProgressBar
+@onready var slow_bar := $ProgressBarContainer/SlowBar as ProgressBar
+@onready var stun_bar := $ProgressBarContainer/StunBar as ProgressBar
 
 
 ## Private Properties
