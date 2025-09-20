@@ -177,6 +177,9 @@ func reached_goal() -> void:
 func _process(delta: float) -> void:
 	_process_status_effects(delta)
 
+	if state == State.DYING:
+		return
+
 	if _is_stunned:
 		# If stunned, do nothing else this frame.
 		# We might want to play a "stunned" animation here in the future.
@@ -382,8 +385,6 @@ func _handle_dot_effect(effect_data, delta) -> void:
 	if effect_data.tick_timer >= effect_data.data.tick_rate:
 		effect_data.tick_timer -= effect_data.data.tick_rate
 		health -= effect_data.data.damage_per_tick
-		if health <= 0:
-			die()
 
 
 func _handle_slow_effect(_effect_data, _delta) -> void:
