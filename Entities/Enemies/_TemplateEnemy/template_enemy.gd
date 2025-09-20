@@ -144,6 +144,11 @@ func die() -> void:
 		return
 	state = State.DYING
 
+	# Clear all active status effects immediately upon death
+	_active_status_effects.clear()
+	_speed_modifier = 1.0
+	_is_stunned = false
+
 	# If the enemy is a flying type, make it "fall" to the ground for its death animation
 	if data and data.is_flying:
 		z_index = 0
