@@ -60,7 +60,6 @@ func handle_build_input(event: InputEvent) -> bool:
 		return true
 
 	if (event is InputEventMouseButton) and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		var path_layer: TileMapLayer = get_node("../TileMaps/PathLayer") as TileMapLayer
 		if (not is_instance_valid(path_layer)) or (not is_instance_valid(_ghost_tower)):
 			return true
 
