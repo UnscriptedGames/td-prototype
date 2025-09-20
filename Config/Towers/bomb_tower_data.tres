@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TowerData" load_steps=15 format=3 uid="uid://dvgo1u4245bj4"]
+[gd_resource type="Resource" script_class="TowerData" load_steps=16 format=3 uid="uid://dvgo1u4245bj4"]
 
 [ext_resource type="Texture2D" uid="uid://dskepbmtd6tld" path="res://Entities/Towers/BombTower/Assets/bomb_tower_level01_01.png" id="1_5jr0x"]
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_bohe1"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://dqtf52tasrqvr" path="res://Entities/Projectiles/BombProjectile/bomb_projectile.tscn" id="3_5jr0x"]
 [ext_resource type="Script" uid="uid://bvwum7tqhcpwg" path="res://Core/Data/AttackModifiers/attack_modifier_data.gd" id="3_84jm7"]
 [ext_resource type="Resource" uid="uid://tunc1lawbsui" path="res://Core/Data/AttackModifiers/aoe_modifier.tres" id="4_askc2"]
+[ext_resource type="Script" uid="uid://d1g1t4lju13s1" path="res://Core/Data/StatusEffects/status_effect_data.gd" id="5_te6lm"]
 
 [sub_resource type="Resource" id="Resource_ettj2"]
 script = ExtResource("2_ettj2")
@@ -19,6 +20,7 @@ fire_rate = 0.5
 projectile_speed = 150.0
 targets = 1
 attack_modifiers = Array[ExtResource("3_84jm7")]([])
+status_effects = Array[ExtResource("5_te6lm")]([])
 projectile_scene = ExtResource("3_5jr0x")
 shoot_animation = "level_01_shoot"
 idle_animation = "level_01_idle"
@@ -34,6 +36,7 @@ fire_rate = 0.0
 projectile_speed = 0.0
 targets = 0
 attack_modifiers = Array[ExtResource("3_84jm7")]([])
+status_effects = Array[ExtResource("5_te6lm")]([])
 projectile_scene = ExtResource("3_5jr0x")
 shoot_animation = "level_02_shoot"
 idle_animation = "level_02_idle"
@@ -49,6 +52,7 @@ fire_rate = 0.0
 projectile_speed = 0.0
 targets = 0
 attack_modifiers = Array[ExtResource("3_84jm7")]([])
+status_effects = Array[ExtResource("5_te6lm")]([])
 projectile_scene = ExtResource("3_5jr0x")
 shoot_animation = "level_02_shoot"
 idle_animation = "level_02_idle"
@@ -64,6 +68,7 @@ fire_rate = 0.0
 projectile_speed = 0.0
 targets = 0
 attack_modifiers = Array[ExtResource("3_84jm7")]([ExtResource("4_askc2")])
+status_effects = Array[ExtResource("5_te6lm")]([])
 projectile_scene = ExtResource("3_5jr0x")
 shoot_animation = "level_03_shoot"
 idle_animation = "level_03_idle"
@@ -79,6 +84,7 @@ fire_rate = 0.0
 projectile_speed = 0.0
 targets = 2
 attack_modifiers = Array[ExtResource("3_84jm7")]([])
+status_effects = Array[ExtResource("5_te6lm")]([])
 projectile_scene = ExtResource("3_5jr0x")
 shoot_animation = "level_03_shoot"
 idle_animation = "level_03_idle"
@@ -94,6 +100,7 @@ fire_rate = 1.0
 projectile_speed = 0.0
 targets = 0
 attack_modifiers = Array[ExtResource("3_84jm7")]([])
+status_effects = Array[ExtResource("5_te6lm")]([])
 projectile_scene = ExtResource("3_5jr0x")
 shoot_animation = "level_03_shoot"
 idle_animation = "level_03_idle"
@@ -109,6 +116,7 @@ fire_rate = 0.0
 projectile_speed = 0.0
 targets = 0
 attack_modifiers = Array[ExtResource("3_84jm7")]([])
+status_effects = Array[ExtResource("5_te6lm")]([])
 projectile_scene = ExtResource("3_5jr0x")
 shoot_animation = "level_03_shoot"
 idle_animation = "level_03_idle"

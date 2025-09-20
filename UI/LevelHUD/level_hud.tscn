@@ -217,4 +217,3 @@ text = "Next Wave"
 
 [node name="ObjectPoolMonitorTool" type="Node" parent="."]
 script = ExtResource("1_c2v1r")
-enabled = true

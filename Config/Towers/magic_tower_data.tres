@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TowerData" load_steps=15 format=3 uid="uid://c5v3s0n3fxli3"]
+[gd_resource type="Resource" script_class="TowerData" load_steps=17 format=3 uid="uid://c5v3s0n3fxli3"]
 
 [ext_resource type="Texture2D" uid="uid://c76ybfld4rufa" path="res://Entities/Towers/MagicTower/Assets/magic_tower_level01_01.png" id="1_5ig1c"]
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_rrhbf"]
@@ -7,6 +7,8 @@
 [ext_resource type="Script" uid="uid://bvwum7tqhcpwg" path="res://Core/Data/AttackModifiers/attack_modifier_data.gd" id="3_d2i6s"]
 [ext_resource type="PackedScene" uid="uid://cbjoufki8jid4" path="res://Entities/Projectiles/BoneProjectile/bone_projectile.tscn" id="3_glcib"]
 [ext_resource type="Resource" uid="uid://c81o6267g47gh" path="res://Core/Data/AttackModifiers/attack_flying_modifier.tres" id="4_vkn5g"]
+[ext_resource type="Script" uid="uid://d1g1t4lju13s1" path="res://Core/Data/StatusEffects/status_effect_data.gd" id="5_ceg5e"]
+[ext_resource type="Resource" uid="uid://coiv8k52lyaja" path="res://Core/Data/StatusEffects/poison_dot_weak.tres" id="6_2qyna"]
 
 [sub_resource type="Resource" id="Resource_vcqlg"]
 script = ExtResource("2_vcqlg")
@@ -14,11 +16,12 @@ upgrade_name = "Base"
 tower_level = "Basic"
 cost = 8
 tower_range = 1
-damage = 2
-fire_rate = 1.0
+damage = 0
+fire_rate = 0.5
 projectile_speed = 400.0
 targets = 1
 attack_modifiers = Array[ExtResource("3_d2i6s")]([])
+status_effects = Array[ExtResource("5_ceg5e")]([ExtResource("6_2qyna")])
 projectile_scene = ExtResource("3_glcib")
 shoot_animation = "level_01_shoot"
 idle_animation = "level_01_idle"
@@ -34,6 +37,7 @@ fire_rate = 0.0
 projectile_speed = 0.0
 targets = 0
 attack_modifiers = Array[ExtResource("3_d2i6s")]([])
+status_effects = Array[ExtResource("5_ceg5e")]([])
 projectile_scene = ExtResource("3_glcib")
 shoot_animation = "level_02_shoot"
 idle_animation = "level_02_idle"
@@ -49,6 +53,7 @@ fire_rate = 1.0
 projectile_speed = 0.0
 targets = 0
 attack_modifiers = Array[ExtResource("3_d2i6s")]([])
+status_effects = Array[ExtResource("5_ceg5e")]([])
 projectile_scene = ExtResource("3_glcib")
 shoot_animation = "level_02_shoot"
 idle_animation = "level_02_idle"
@@ -64,6 +69,7 @@ fire_rate = 0.0
 projectile_speed = 0.0
 targets = 0
 attack_modifiers = Array[ExtResource("3_d2i6s")]([ExtResource("4_vkn5g")])
+status_effects = Array[ExtResource("5_ceg5e")]([])
 projectile_scene = ExtResource("3_glcib")
 shoot_animation = "level_03_shoot"
 idle_animation = "level_03_idle"
@@ -79,6 +85,7 @@ fire_rate = 0.0
 projectile_speed = 0.0
 targets = 0
 attack_modifiers = Array[ExtResource("3_d2i6s")]([])
+status_effects = Array[ExtResource("5_ceg5e")]([])
 projectile_scene = ExtResource("3_glcib")
 shoot_animation = "level_03_shoot"
 idle_animation = "level_03_idle"
@@ -94,6 +101,7 @@ fire_rate = 0.0
 projectile_speed = 0.0
 targets = 2
 attack_modifiers = Array[ExtResource("3_d2i6s")]([])
+status_effects = Array[ExtResource("5_ceg5e")]([])
 projectile_scene = ExtResource("3_glcib")
 shoot_animation = "level_03_shoot"
 idle_animation = "level_03_idle"
@@ -109,6 +117,7 @@ fire_rate = 0.0
 projectile_speed = 0.0
 targets = 0
 attack_modifiers = Array[ExtResource("3_d2i6s")]([])
+status_effects = Array[ExtResource("5_ceg5e")]([])
 projectile_scene = ExtResource("3_glcib")
 shoot_animation = "level_03_shoot"
 idle_animation = "level_03_idle"
