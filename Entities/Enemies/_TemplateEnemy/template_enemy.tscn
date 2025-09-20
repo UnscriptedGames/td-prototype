@@ -30,10 +30,31 @@ position = Vector2(-1, -44)
 
 [node name="ProgressBarContainer" type="VBoxContainer" parent="."]
 offset_left = -48.0
-offset_top = -161.0
+offset_top = -195.0
 offset_right = 48.0
-offset_bottom = -121.0
+offset_bottom = -119.0
 alignment = 2
+
+[node name="StunBar" type="ProgressBar" parent="ProgressBarContainer"]
+self_modulate = Color(0.707243, 0.578834, 0.944471, 1)
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+value = 50.0
+show_percentage = false
+
+[node name="SlowBar" type="ProgressBar" parent="ProgressBarContainer"]
+self_modulate = Color(0.23636, 0.635804, 0.828243, 1)
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+value = 50.0
+show_percentage = false
+
+[node name="DotBar" type="ProgressBar" parent="ProgressBarContainer"]
+self_modulate = Color(0.16824, 0.760649, 0.408569, 1)
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+value = 50.0
+show_percentage = false
 
 [node name="HealthBar" type="TextureProgressBar" parent="ProgressBarContainer"]
 layout_mode = 2
