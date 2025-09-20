@@ -404,12 +404,10 @@ func _recalculate_speed() -> void:
 		_speed_modifier -= slow_effect.data.magnitude
 
 
-func _on_death_animation_finished(anim_name: StringName) -> void:
-	var die_anim_prefix = _variant + "_die"
-	if String(anim_name).begins_with(die_anim_prefix):
-		if animation.animation_finished.is_connected(_on_death_animation_finished):
-			animation.animation_finished.disconnect(_on_death_animation_finished)
-		_return_to_pool_and_cleanup()
+func _on_death_animation_finished() -> void:
+	if animation.animation_finished.is_connected(_on_death_animation_finished):
+		animation.animation_finished.disconnect(_on_death_animation_finished)
+	_return_to_pool_and_cleanup()
 
 
 ## Handles returning the object to the pool and cleaning up its temporary parent
