@@ -9,14 +9,14 @@ var _progress: float = 0.0
 
 
 ## Overrides the base initialize function to start the arc tween.
-func initialize(target_enemy: TemplateEnemy, damage_amount: int, projectile_speed: float, use_aoe_behavior: bool) -> void:
-	super.initialize(target_enemy, damage_amount, projectile_speed, use_aoe_behavior)
+func initialize(target_enemy: TemplateEnemy, damage_amount: int, projectile_speed: float, use_aoe_behavior: bool, status_effects: Array[StatusEffectData] = []) -> void:
+	super.initialize(target_enemy, damage_amount, projectile_speed, use_aoe_behavior, status_effects)
 	_start_arc_tween()
 
 
 ## Overrides the base initialize_dud_shot function to start the arc tween.
-func initialize_dud_shot(destination: Vector2, damage_amount: int, projectile_speed: float, use_aoe_behavior: bool) -> void:
-	super.initialize_dud_shot(destination, damage_amount, projectile_speed, use_aoe_behavior)
+func initialize_dud_shot(destination: Vector2, damage_amount: int, projectile_speed: float, use_aoe_behavior: bool, status_effects: Array[StatusEffectData] = []) -> void:
+	super.initialize_dud_shot(destination, damage_amount, projectile_speed, use_aoe_behavior, status_effects)
 	_start_arc_tween()
 
 
