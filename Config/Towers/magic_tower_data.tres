@@ -8,7 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://cbjoufki8jid4" path="res://Entities/Projectiles/BoneProjectile/bone_projectile.tscn" id="3_glcib"]
 [ext_resource type="Resource" uid="uid://c81o6267g47gh" path="res://Core/Data/AttackModifiers/attack_flying_modifier.tres" id="4_vkn5g"]
 [ext_resource type="Script" uid="uid://d1g1t4lju13s1" path="res://Core/Data/StatusEffects/status_effect_data.gd" id="5_ceg5e"]
-[ext_resource type="Resource" uid="uid://coiv8k52lyaja" path="res://Core/Data/StatusEffects/poison_dot_weak.tres" id="6_2qyna"]
+[ext_resource type="Resource" uid="uid://bfrgw36m618jw" path="res://Core/Data/StatusEffects/stun.tres" id="6_2qyna"]
 
 [sub_resource type="Resource" id="Resource_vcqlg"]
 script = ExtResource("2_vcqlg")

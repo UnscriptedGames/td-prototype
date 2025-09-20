@@ -62,7 +62,15 @@ var _is_stunned: bool = false # Is the enemy currently stunned?
 ## Node References
 @onready var animation := $Animation as AnimatedSprite2D	# Animation node
 @onready var hitbox := $PositionShape as CollisionShape2D	# Hitbox node
+@onready var progress_bar_container := $ProgressBarContainer as VBoxContainer
 @onready var health_bar := $ProgressBarContainer/HealthBar as TextureProgressBar	# Health bar node
+@onready var dot_bar := $ProgressBarContainer/DotBar as ProgressBar
+@onready var slow_bar := $ProgressBarContainer/SlowBar as ProgressBar
+@onready var stun_bar := $ProgressBarContainer/StunBar as ProgressBar
+
+
+## Private Properties
+var _effect_bars: Dictionary = {} # Maps EffectType to its ProgressBar
 
 
 ## Public Properties
@@ -71,11 +79,28 @@ var path_follow: PathFollow2D	# PathFollow2D node for movement
 
 ## Called when the enemy enters the scene tree
 func _ready() -> void:
+	# Initial setup
 	if not data:
 		push_error("EnemyData is not assigned!")
 		return
 
-	# Configure the enemy's stats from the data resource
+	# Map effect types to their progress bars
+	_effect_bars = {
+		StatusEffectData.EffectType.DOT: dot_bar,
+		StatusEffectData.EffectType.SLOW: slow_bar,
+		StatusEffectData.EffectType.STUN: stun_bar
+	}
+
+	# Hide all bars by default on spawn to guarantee a clean initial state.
+	# This is important even though reset() also hides the container,
+	# as reset() is also used for object pooling.
+	progress_bar_container.visible = false
+	health_bar.visible = false
+	for bar in _effect_bars.values():
+		if is_instance_valid(bar):
+			bar.visible = false
+
+	# Configure stats
 	max_health = data.max_health
 	speed = data.speed
 	reward = data.reward
@@ -83,7 +108,6 @@ func _ready() -> void:
 	# Validate and select a variant
 	var data_key: String = data.resource_path
 	var valid_variants: Array = []
-
 	if _valid_variants_cache.has(data_key):
 		valid_variants = _valid_variants_cache[data_key]
 	else:
@@ -96,8 +120,7 @@ func _ready() -> void:
 		set_process(false)
 		visible = false
 
-	# Set the animation to always process, even if the parent is paused.
-	# This ensures death animations can play after set_process(false) is called.
+	# Animation always processes so death animations can play
 	animation.process_mode = Node.PROCESS_MODE_ALWAYS
 
 	# Set the initial state
@@ -238,8 +261,8 @@ func _play_death_sequence(action_name: String) -> void:
 	set_process(false)
 	
 	hitbox.set_deferred("disabled", true)
-	if health_bar:
-		health_bar.visible = false
+	if progress_bar_container:
+		progress_bar_container.visible = false
 	
 	# Play the death animation based on the last known direction
 	var animation_name: String = "%s_%s_%s" % [_variant, action_name, _last_direction]
@@ -253,35 +276,35 @@ func _play_death_sequence(action_name: String) -> void:
 
 ## Updates the health bar display
 func _update_health_bar() -> void:
-	if health_bar:
-		health_bar.value = float(_health) / float(max_health) * 100.0
-		health_bar.visible = _health < max_health
+	if not health_bar:
+		return
+	_ensure_bar_is_visible(health_bar)
+	health_bar.value = float(_health) / float(max_health) * 100.0
 
 
 ## Resets the enemy to its initial state
 func reset() -> void:
+	# Reset health and hide the progress bar container
 	_health = max_health
-	_update_health_bar()
+	if progress_bar_container:
+		progress_bar_container.visible = false
+
+	# Reset state and pathing
 	state = State.MOVING
 	_has_reached_end = false
 	if is_instance_valid(path_follow):
 		path_follow.progress = 0.0
-	_smoothed_right_vector = Vector2.RIGHT # Reset the smoothed vector
+	_smoothed_right_vector = Vector2.RIGHT
 
 	# Reset status effects
 	_active_status_effects.clear()
 	_speed_modifier = 1.0
 	_is_stunned = false
 
-	# Assign a random path offset when the enemy is reset (i.e. spawned)
+	# Assign a random path offset
 	if data:
 		_path_offset = randf_range(-data.max_path_offset, data.max_path_offset)
-
-		# Handle flying enemies
-		if data.is_flying:
-			z_index = 10
-		else:
-			z_index = 0
+		z_index = 10 if data.is_flying else 0
 
 	# Process is enabled by the spawner when ready
 	set_process(false)
@@ -300,53 +323,63 @@ func is_dying() -> bool:
 
 ## Status Effect Handling ##
 
+func _ensure_bar_is_visible(bar: Control) -> void:
+	# Helper to ensure the container and the specific bar are visible.
+	if not progress_bar_container.visible:
+		progress_bar_container.visible = true
+	if not bar.visible:
+		bar.visible = true
+
+
 func apply_status_effect(effect: StatusEffectData) -> void:
-	if not is_instance_valid(effect):
+	if not is_instance_valid(effect) or not _effect_bars.has(effect.effect_type):
 		return
 
 	var effect_type = effect.effect_type
+	var effect_bar = _effect_bars[effect_type]
+
+	# Ensure the health bar and the specific effect bar are visible.
+	_ensure_bar_is_visible(health_bar)
+	_ensure_bar_is_visible(effect_bar)
 
 	# If the effect is not already active, add it.
 	if not _active_status_effects.has(effect_type):
-		var new_effect_data = {
+		_active_status_effects[effect_type] = {
 			"data": effect,
 			"duration": effect.duration,
+			"initial_duration": effect.duration, # Store for progress bar calculation
 			"tick_timer": 0.0
 		}
-		_active_status_effects[effect_type] = new_effect_data
-
 		# Handle initial application for certain effects
 		match effect_type:
-			StatusEffectData.EffectType.SLOW:
-				_recalculate_speed()
-			StatusEffectData.EffectType.STUN:
-				_is_stunned = true
+			StatusEffectData.EffectType.SLOW: _recalculate_speed()
+			StatusEffectData.EffectType.STUN: _is_stunned = true
 		return
 
 	# --- Stacking Logic for existing effects ---
 	var existing_effect = _active_status_effects[effect_type]
 
+	# If the new effect has a longer duration, reset the timer and initial duration.
+	if effect.duration > existing_effect.duration:
+		existing_effect.duration = effect.duration
+		existing_effect.initial_duration = effect.duration
+
+	# For some effects, we might want to stack properties even if the duration isn't longer.
 	match effect_type:
 		StatusEffectData.EffectType.DOT:
-			# Refresh duration to the greater of the two
-			existing_effect.duration = max(existing_effect.duration, effect.duration)
-			# Update damage only if the new effect is stronger
 			if effect.damage_per_tick > existing_effect.data.damage_per_tick:
 				existing_effect.data.damage_per_tick = effect.damage_per_tick
-			# Update tick rate only if the new one is faster
 			if effect.tick_rate < existing_effect.data.tick_rate:
 				existing_effect.data.tick_rate = effect.tick_rate
 
 		StatusEffectData.EffectType.SLOW:
-			# Refresh duration
-			existing_effect.duration = max(existing_effect.duration, effect.duration)
-			# Update magnitude only if the new slow is stronger
 			if effect.magnitude > existing_effect.data.magnitude:
 				existing_effect.data.magnitude = effect.magnitude
 				_recalculate_speed()
 
 		StatusEffectData.EffectType.STUN:
-			# Stun does not stack or refresh. Ignore new stuns if already stunned.
+			# Stun duration is refreshed by the logic above. No other properties to stack.
+			_is_stunned = true # Re-apply stun state in case it wore off on the same frame
 			pass
 
 
@@ -357,27 +390,34 @@ func _process_status_effects(delta: float) -> void:
 	var effects_to_remove = []
 	for effect_type in _active_status_effects:
 		var effect = _active_status_effects[effect_type]
+		var effect_bar = _effect_bars[effect_type]
+
 		effect.duration -= delta
 
 		if effect.duration <= 0:
 			effects_to_remove.append(effect_type)
 		else:
-			match effect_type:
-				StatusEffectData.EffectType.DOT:
-					_handle_dot_effect(effect, delta)
-				StatusEffectData.EffectType.SLOW:
-					_handle_slow_effect(effect, delta)
-				StatusEffectData.EffectType.STUN:
-					_handle_stun_effect(effect, delta)
+			# Update progress bar
+			if effect_bar:
+				effect_bar.value = (effect.duration / effect.initial_duration) * 100.0
 
+			# Process effect logic
+			match effect_type:
+				StatusEffectData.EffectType.DOT: _handle_dot_effect(effect, delta)
+				StatusEffectData.EffectType.SLOW: _handle_slow_effect(effect, delta)
+				StatusEffectData.EffectType.STUN: _handle_stun_effect(effect, delta)
+
+	# Remove expired effects
 	for effect_type in effects_to_remove:
+		if _effect_bars.has(effect_type) and _effect_bars[effect_type]:
+			_effect_bars[effect_type].visible = false
+
 		_active_status_effects.erase(effect_type)
-		# Handle effect removal
+
+		# Handle effect removal logic
 		match effect_type:
-			StatusEffectData.EffectType.SLOW:
-				_recalculate_speed()
-			StatusEffectData.EffectType.STUN:
-				_is_stunned = false
+			StatusEffectData.EffectType.SLOW: _recalculate_speed()
+			StatusEffectData.EffectType.STUN: _is_stunned = false
 
 
 func _handle_dot_effect(effect_data, delta) -> void:
