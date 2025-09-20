@@ -99,6 +99,11 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Attack Modifiers:"
 
+[node name="StatusEffectsLabel" type="Label" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Status Effects:"
+
 [node name="MaxTargetsLabel" type="Label" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20

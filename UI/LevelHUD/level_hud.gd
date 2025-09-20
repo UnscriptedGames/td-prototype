@@ -29,6 +29,7 @@ signal target_priority_changed(priority: TargetPriority.Priority)
 @onready var fire_rate_label := $TowerDetails/TowerDetailsContainer/VBoxContainer/FireRateLabel as Label
 @onready var projectile_speed_label := $TowerDetails/TowerDetailsContainer/VBoxContainer/ProjectileSpeedLabel as Label
 @onready var attack_modifier_label := $TowerDetails/TowerDetailsContainer/VBoxContainer/AttackModifierLabel as Label
+@onready var status_effects_label := $TowerDetails/TowerDetailsContainer/VBoxContainer/StatusEffectsLabel as Label
 @onready var max_targets_label := $TowerDetails/TowerDetailsContainer/VBoxContainer/MaxTargetsLabel as Label
 @onready var upgrade_buttons: Array[Button] = [
 	$TowerDetails/TowerDetailsContainer/VBoxContainer/UpgradeGrid/UpgradeButton1,
@@ -215,6 +216,15 @@ func _update_tower_details() -> void:
 		attack_modifier_label.text = "Attack Modifiers: " + ", ".join(modifiers)
 	else:
 		attack_modifier_label.text = "Attack Modifiers: None"
+
+	var status_effects_text = []
+	for effect in selected_tower.status_effects:
+		status_effects_text.append(StatusEffectData.EffectType.keys()[effect.effect_type])
+
+	if not status_effects_text.is_empty():
+		status_effects_label.text = "Status Effects: " + ", ".join(status_effects_text)
+	else:
+		status_effects_label.text = "Status Effects: None"
 
 	max_targets_label.text = "Max Targets: %d" % selected_tower.targets
 
