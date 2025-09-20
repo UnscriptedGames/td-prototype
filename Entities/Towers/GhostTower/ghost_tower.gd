@@ -3,6 +3,7 @@ extends Node2D
 ## A visual representation of a tower being placed. Follows the mouse and shows placement validity.
 
 # These will be set by the BuildManager when the ghost is created.
+var build_manager: BuildManager
 var data: TowerData
 var path_layer: TileMapLayer
 var highlight_layer: TileMapLayer
@@ -25,11 +26,13 @@ func _exit_tree() -> void:
 
 # Initialises the ghost with tower data and the required layers (no ObjectLayer parameter).
 func initialize(
+		bm: BuildManager,
 		tower_data: TowerData,                 # Data that defines visuals and behaviour for this ghost.
 		path_layer_node: TileMapLayer,         # Path layer used to read the 'buildable' custom data.
 		highlight_layer_node: TileMapLayer,    # Layer used for valid/invalid highlight tiles.
 		highlight_ids_map: Dictionary          # Mapping of highlight tile IDs for quick lookups.
 	) -> void:
+	build_manager = bm
 	data = tower_data                         # Store tower data for sprite/range setup.
 	path_layer = path_layer_node              # Cache the path layer reference for validity checks.
 	highlight_layer = highlight_layer_node    # Cache the highlight layer for preview feedback.
@@ -74,7 +77,7 @@ func _update_placement_validity(map_coords: Vector2i) -> void:
 		return
 
 	# Single source of truth.
-	is_placement_valid = BuildManager.is_buildable_at(path_layer, map_coords)
+	is_placement_valid = build_manager.is_buildable_at(map_coords)
 
 
 ## Returns the calculated points for the range polygon.

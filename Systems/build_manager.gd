@@ -24,11 +24,13 @@ var state: State = State.VIEWING
 var _ghost_tower: Node2D
 var _selected_tower: TemplateTower
 var _is_placing: bool = false ## NEW: Prevents cancel signal on successful placement.
+var _occupied_build_tiles: Dictionary = {}
 
 ## Node References
 @onready var hud: LevelHUD = get_node("../LevelHUD")
 @onready var towers_container: Node2D = get_node("../Entities/Towers")
 @onready var highlight_layer: TileMapLayer = get_node("../TileMaps/HighlightLayer")
+@onready var path_layer: TileMapLayer = get_node("../TileMaps/PathLayer")
 
 
 ## Called when the node enters the scene tree.
@@ -63,7 +65,7 @@ func handle_build_input(event: InputEvent) -> bool:
 			return true
 
 		var map_coords: Vector2i = path_layer.local_to_map(path_layer.to_local(_ghost_tower.global_position))
-		var can_place: bool = is_buildable_at(path_layer, map_coords)
+		var can_place: bool = is_buildable_at(map_coords)
 
 		if can_place:
 			# Set a flag to indicate we are successfully placing the tower.
@@ -135,10 +137,14 @@ func _on_build_tower_requested(tower_data: TowerData) -> void:
 func _on_sell_tower_requested() -> void:
 	if not is_instance_valid(_selected_tower):
 		return
-	
+
+	var map_coords: Vector2i = path_layer.local_to_map(_selected_tower.global_position)
+	if _occupied_build_tiles.has(map_coords):
+		_occupied_build_tiles.erase(map_coords)
+
 	var refund_amount := get_selected_tower_sell_value()
 	GameManager.add_currency(refund_amount)
-	
+
 	var tower_to_remove = _selected_tower
 	_deselect_current_tower()
 	tower_to_remove.queue_free()
@@ -160,16 +166,19 @@ func place_tower(tower_data: TowerData, build_position: Vector2, range_points: P
 	new_tower.global_position = build_position
 	towers_container.add_child(new_tower)
 
+	var map_coords: Vector2i = path_layer.local_to_map(build_position)
+	_occupied_build_tiles[map_coords] = new_tower
+
 	new_tower.initialize(tower_data, highlight_layer, selected_tower_id, selected_range_id)
 	new_tower.set_range_polygon(range_points)
-	
+
 	if tower_data.levels.is_empty():
 		push_error("TowerData for '%s' has no levels defined; cannot deduct build cost." % tower_data.tower_name)
 		return
 
 	var build_cost: int = tower_data.levels[0].cost
 	GameManager.remove_currency(build_cost)
-	
+
 	# Announce that the card effect was successfully completed.
 	GlobalSignals.card_effect_completed.emit()
 
@@ -223,9 +232,8 @@ func _enter_build_mode(tower_data: TowerData) -> void:
 			"valid_range": valid_range_id, "invalid_range": invalid_range_id,
 		}
 
-		var path_layer := get_node("../TileMaps/PathLayer") as TileMapLayer
 		_ghost_tower.initialize(
-			tower_data, path_layer, highlight_layer, highlight_ids
+			self, tower_data, path_layer, highlight_layer, highlight_ids
 		)
 
 
@@ -243,8 +251,10 @@ func _exit_build_mode() -> void:
 		_ghost_tower = null
 
 
-static func is_buildable_at(path_layer: TileMapLayer, map_coords: Vector2i) -> bool:
-	if path_layer == null or not is_instance_valid(path_layer):
+func is_buildable_at(map_coords: Vector2i) -> bool:
+	if not is_instance_valid(path_layer):
+		return false
+	if _occupied_build_tiles.has(map_coords):
 		return false
 	var tile_data: TileData = path_layer.get_cell_tile_data(map_coords)
 	if tile_data == null:
