@@ -145,8 +145,11 @@ func die() -> void:
 		z_index = 0
 
 	emit_signal("died", self, reward)
-	await _play_death_sequence("die")
-	_return_to_pool_and_cleanup()
+
+	if not animation.animation_finished.is_connected(_on_death_animation_finished):
+		animation.animation_finished.connect(_on_death_animation_finished)
+
+	_play_death_sequence("die")
 
 
 ## Handles the enemy reaching the goal without giving a reward
@@ -159,9 +162,11 @@ func reached_goal() -> void:
 	if data and data.is_flying:
 		z_index = 0
 		
+	if not animation.animation_finished.is_connected(_on_death_animation_finished):
+		animation.animation_finished.connect(_on_death_animation_finished)
+
 	# For now, we reuse the "die" animation. This can be changed to "goal" later.
-	await _play_death_sequence("die")
-	_return_to_pool_and_cleanup()
+	_play_death_sequence("die")
 
 
 ## Handles movement and animation each frame
@@ -221,10 +226,9 @@ func _play_animation(action: String, direction: String, flip_h: bool = false) ->
 		animation.flip_h = flip_h
 
 
-## Plays the common death sequence and returns a signal for when it's finished.
-func _play_death_sequence(action_name: String) -> Signal:
+## Plays the common death sequence.
+func _play_death_sequence(action_name: String) -> void:
 	set_process(false)
-	# We don't stop processing here, as it needs to finish the animation
 	
 	hitbox.set_deferred("disabled", true)
 	if health_bar:
@@ -235,11 +239,9 @@ func _play_death_sequence(action_name: String) -> Signal:
 	if animation and animation.sprite_frames.has_animation(animation_name):
 		animation.play(animation_name)
 		animation.flip_h = _last_flip_h
-		return animation.animation_finished
-	
-	# If no animation is found, return a signal that finishes instantly
-	var timer := get_tree().create_timer(0.0)
-	return timer.timeout
+	else:
+		# If no animation is found, cleanup immediately.
+		_return_to_pool_and_cleanup()
 
 
 ## Updates the health bar display
@@ -393,6 +395,14 @@ func _recalculate_speed() -> void:
 	if _active_status_effects.has(StatusEffectData.EffectType.SLOW):
 		var slow_effect = _active_status_effects[StatusEffectData.EffectType.SLOW]
 		_speed_modifier -= slow_effect.data.magnitude
+
+
+func _on_death_animation_finished(anim_name: StringName) -> void:
+	var die_anim_prefix = _variant + "_die"
+	if String(anim_name).begins_with(die_anim_prefix):
+		if animation.animation_finished.is_connected(_on_death_animation_finished):
+			animation.animation_finished.disconnect(_on_death_animation_finished)
+		_return_to_pool_and_cleanup()
 
 
 ## Handles returning the object to the pool and cleaning up its temporary parent
