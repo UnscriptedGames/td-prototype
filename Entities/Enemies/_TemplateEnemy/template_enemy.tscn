@@ -35,6 +35,33 @@ offset_right = 48.0
 offset_bottom = -121.0
 alignment = 2
 
+[node name="STUNBar" type="ProgressBar" parent="ProgressBarContainer"]
+modulate = Color(0.668302, 0.398731, 0.858971, 1)
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+max_value = 5.0
+step = 1.0
+value = 2.0
+show_percentage = false
+
+[node name="SLOWBar" type="ProgressBar" parent="ProgressBarContainer"]
+modulate = Color(0.0483297, 0.583555, 0.823583, 1)
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+max_value = 5.0
+step = 1.0
+value = 2.0
+show_percentage = false
+
+[node name="DOTBar" type="ProgressBar" parent="ProgressBarContainer"]
+modulate = Color(0, 0.6482, 0.35858, 1)
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+max_value = 5.0
+step = 1.0
+value = 2.0
+show_percentage = false
+
 [node name="HealthBar" type="TextureProgressBar" parent="ProgressBarContainer"]
 layout_mode = 2
 value = 50.0

@@ -32,7 +32,7 @@ position = Vector2(0, -58.185)
 rotation = 1.5708
 shape = SubResource("CapsuleShape2D_an7jk")
 
-[node name="HealthBar" parent="." index="3"]
+[node name="HealthBar" parent="ProgressBarContainer" index="0"]
 offset_left = -34.0
 offset_top = -111.55
 offset_right = 62.0
