@@ -63,6 +63,7 @@ var _is_stunned: bool = false # Is the enemy currently stunned?
 @onready var animation := $Animation as AnimatedSprite2D	# Animation node
 @onready var hitbox := $PositionShape as CollisionShape2D	# Hitbox node
 @onready var health_bar := $HealthBar as TextureProgressBar	# Health bar node
+var _hitbox_disable_timer: Timer
 
 
 ## Public Properties
@@ -71,6 +72,15 @@ var path_follow: PathFollow2D	# PathFollow2D node for movement
 
 ## Called when the enemy enters the scene tree
 func _ready() -> void:
+	# Create and configure a one-shot timer for disabling the hitbox on death.
+	_hitbox_disable_timer = Timer.new()
+	_hitbox_disable_timer.name = "HitboxDisableTimer"
+	_hitbox_disable_timer.wait_time = 0.1
+	_hitbox_disable_timer.one_shot = true
+	if not _hitbox_disable_timer.timeout.is_connected(_on_hitbox_disable_timer_timeout):
+		_hitbox_disable_timer.timeout.connect(_on_hitbox_disable_timer_timeout)
+	add_child(_hitbox_disable_timer)
+
 	if not data:
 		push_error("EnemyData is not assigned!")
 		return
@@ -143,11 +153,6 @@ func die() -> void:
 	if state == State.DYING:
 		return
 	state = State.DYING
-
-	# Clear all active status effects immediately upon death
-	_active_status_effects.clear()
-	_speed_modifier = 1.0
-	_is_stunned = false
 
 	# If the enemy is a flying type, make it "fall" to the ground for its death animation
 	if data and data.is_flying:
@@ -242,7 +247,7 @@ func _play_animation(action: String, direction: String, flip_h: bool = false) ->
 func _play_death_sequence(action_name: String) -> void:
 	set_process(false)
 	
-	hitbox.set_deferred("disabled", true)
+	_hitbox_disable_timer.start()
 	if health_bar:
 		health_bar.visible = false
 	
@@ -254,6 +259,10 @@ func _play_death_sequence(action_name: String) -> void:
 	else:
 		# If no animation is found, cleanup immediately.
 		_return_to_pool_and_cleanup()
+
+
+func _on_hitbox_disable_timer_timeout() -> void:
+	hitbox.set_deferred("disabled", true)
 
 
 ## Updates the health bar display
@@ -291,6 +300,7 @@ func reset() -> void:
 	# Process is enabled by the spawner when ready
 	set_process(false)
 	hitbox.set_deferred("disabled", false)
+	_hitbox_disable_timer.stop()
 
 
 ## Prepares the enemy for a new path
