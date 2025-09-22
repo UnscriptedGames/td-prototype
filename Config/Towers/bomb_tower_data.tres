@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TowerData" load_steps=16 format=3 uid="uid://dvgo1u4245bj4"]
+[gd_resource type="Resource" script_class="TowerData" load_steps=17 format=3 uid="uid://dvgo1u4245bj4"]
 
 [ext_resource type="Texture2D" uid="uid://dskepbmtd6tld" path="res://Entities/Towers/BombTower/Assets/bomb_tower_level01_01.png" id="1_5jr0x"]
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_bohe1"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://bvwum7tqhcpwg" path="res://Core/Data/AttackModifiers/attack_modifier_data.gd" id="3_84jm7"]
 [ext_resource type="Resource" uid="uid://tunc1lawbsui" path="res://Core/Data/AttackModifiers/aoe_modifier.tres" id="4_askc2"]
 [ext_resource type="Script" uid="uid://d1g1t4lju13s1" path="res://Core/Data/StatusEffects/status_effect_data.gd" id="5_te6lm"]
+[ext_resource type="Resource" uid="uid://bfrgw36m618jw" path="res://Core/Data/StatusEffects/stun.tres" id="6_fmtiq"]
 
 [sub_resource type="Resource" id="Resource_ettj2"]
 script = ExtResource("2_ettj2")
@@ -20,7 +21,7 @@ fire_rate = 0.5
 projectile_speed = 150.0
 targets = 1
 attack_modifiers = Array[ExtResource("3_84jm7")]([])
-status_effects = Array[ExtResource("5_te6lm")]([])
+status_effects = Array[ExtResource("5_te6lm")]([ExtResource("6_fmtiq")])
 projectile_scene = ExtResource("3_5jr0x")
 shoot_animation = "level_01_shoot"
 idle_animation = "level_01_idle"

@@ -111,6 +111,13 @@ func _on_area_entered(area: Area2D) -> void:
 
 		hitbox.set_deferred("disabled", true)
 		enemy.health -= damage
+
+		# If the damage just dealt killed the enemy, its state will now be DYING.
+		# We must not apply status effects to a dying enemy, as this can interrupt
+		# and pause their death animation.
+		if enemy.state == TemplateEnemy.State.DYING:
+			return
+
 		for effect in _status_effects:
 			enemy.apply_status_effect(effect)
 		_return_to_pool()

@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_fhf5f")
 effect_type = 2
-duration = 3.0
+duration = 2.0
 magnitude = 0.0
 damage_per_tick = 0
 tick_rate = 0.0
