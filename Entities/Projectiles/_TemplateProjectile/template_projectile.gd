@@ -129,8 +129,24 @@ func _detonate_aoe() -> void:
 	
 	for area in overlapping_areas:
 		var enemy := area.get_parent() as TemplateEnemy
-		if is_instance_valid(enemy):
-			enemy.health -= damage
+		if not is_instance_valid(enemy):
+			continue
+
+		# Do not apply effects or damage to enemies that are not in the MOVING state.
+		# This prevents hitting enemies that are already dying or have reached the goal.
+		if enemy.state != TemplateEnemy.State.MOVING:
+			continue
+
+		enemy.health -= damage
+
+		# If the damage just dealt killed the enemy, its state will now be DYING.
+		# We must not apply status effects to a dying enemy, as this can interrupt
+		# and pause their death animation.
+		if enemy.state == TemplateEnemy.State.DYING:
+			continue
+
+		for effect in _status_effects:
+			enemy.apply_status_effect(effect)
 
 func _return_to_pool() -> void:
 	if _is_returning:
