@@ -167,6 +167,12 @@ func die() -> void:
 		return
 	state = State.DYING
 
+	# If stunned, the animation will be paused. We need to unpause it so the
+	# death animation can play. Calling play() without arguments resumes the
+	# current animation, which is what we want before switching to the death animation.
+	if animation.is_paused():
+		animation.play()
+
 	# If the enemy is a flying type, make it "fall" to the ground for its death animation
 	if data and data.is_flying:
 		z_index = 0
@@ -353,11 +359,17 @@ func apply_status_effect(effect: StatusEffectData) -> void:
 		# Handle initial application for certain effects
 		match effect_type:
 			StatusEffectData.EffectType.SLOW: _recalculate_speed()
-			StatusEffectData.EffectType.STUN: _is_stunned = true
+			StatusEffectData.EffectType.STUN:
+				_is_stunned = true
+				animation.pause()
 		return
 
 	# --- Stacking Logic for existing effects ---
 	var existing_effect = _active_status_effects[effect_type]
+
+	# For STUN, if already stunned, do nothing.
+	if effect_type == StatusEffectData.EffectType.STUN and _is_stunned:
+		return
 
 	# If the new effect has a longer duration, reset the timer and initial duration.
 	if effect.duration > existing_effect.duration:
@@ -380,6 +392,7 @@ func apply_status_effect(effect: StatusEffectData) -> void:
 		StatusEffectData.EffectType.STUN:
 			# Stun duration is refreshed by the logic above. No other properties to stack.
 			_is_stunned = true # Re-apply stun state in case it wore off on the same frame
+			animation.pause()
 			pass
 
 
@@ -417,7 +430,9 @@ func _process_status_effects(delta: float) -> void:
 		# Handle effect removal logic
 		match effect_type:
 			StatusEffectData.EffectType.SLOW: _recalculate_speed()
-			StatusEffectData.EffectType.STUN: _is_stunned = false
+			StatusEffectData.EffectType.STUN:
+				_is_stunned = false
+				animation.play()
 
 
 func _handle_dot_effect(effect_data, delta) -> void:
