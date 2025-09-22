@@ -167,10 +167,9 @@ func die() -> void:
 		return
 	state = State.DYING
 
-	# If stunned, the animation will be paused. We need to unpause it so the
-	# death animation can play. Calling play() without arguments resumes the
-	# current animation, which is what we want before switching to the death animation.
-	if animation.is_paused():
+	# If stunned, the animation will be paused (i.e., not playing). We need to
+	# resume it so the subsequent call to play the death animation is not ignored.
+	if not animation.playing:
 		animation.play()
 
 	# If the enemy is a flying type, make it "fall" to the ground for its death animation
