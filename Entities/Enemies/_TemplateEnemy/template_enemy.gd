@@ -167,14 +167,6 @@ func die() -> void:
 		return
 	state = State.DYING
 
-	# If the enemy is stunned, its animation player will be paused. We need to
-	# un-pause it before playing the death animation. We use our internal
-	# _is_stunned flag to check this, as it's more reliable than API calls
-	# that were causing errors.
-	if _is_stunned:
-		_is_stunned = false
-		animation.play()
-
 	# If the enemy is a flying type, make it "fall" to the ground for its death animation
 	if data and data.is_flying:
 		z_index = 0
@@ -392,9 +384,9 @@ func apply_status_effect(effect: StatusEffectData) -> void:
 				_recalculate_speed()
 
 		StatusEffectData.EffectType.STUN:
-			# Stun duration is refreshed by the logic above. No other properties to stack.
-			_is_stunned = true # Re-apply stun state in case it wore off on the same frame
-			animation.pause()
+			# This block is now unreachable for STUN effects due to the guard clause above,
+			# but we leave the structure in case of future changes.
+			# The stun is now applied only when it's a new effect.
 			pass
 
 

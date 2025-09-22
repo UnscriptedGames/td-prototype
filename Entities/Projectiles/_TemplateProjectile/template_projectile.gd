@@ -104,6 +104,11 @@ func _on_area_entered(area: Area2D) -> void:
 
 	var enemy := area.get_parent() as TemplateEnemy
 	if enemy == _target:
+		# Do not apply effects or damage to enemies that are not in the MOVING state.
+		# This prevents hitting enemies that are already dying or have reached the goal.
+		if enemy.state != TemplateEnemy.State.MOVING:
+			return
+
 		hitbox.set_deferred("disabled", true)
 		enemy.health -= damage
 		for effect in _status_effects:
