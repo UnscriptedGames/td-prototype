@@ -28,16 +28,23 @@ func _input(event: InputEvent) -> void:
 	match current_state:
 		State.DEFAULT:
 			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-				# If the click is on an expanded card, let the card handle it and stop further processing.
-				if _cards_hud and _cards_hud.is_expanded() and _cards_hud.is_position_on_a_card(event.position):
+				# --- INPUT PRIORITY FIX ---
+				# Priority 1: Check for click on CONDENSED hand to expand it.
+				# This must happen BEFORE tower selection check to prevent deselection.
+				if _cards_hud and _cards_hud.is_click_on_condensed_hand(event.position):
+					_cards_hud.expand()
+					handled = true
+
+				# Priority 2: Check for clicks on an EXPANDED card.
+				# We just return, as the card's own _gui_input will handle it.
+				elif _cards_hud and _cards_hud.is_expanded() and _cards_hud.is_position_on_a_card(event.position):
 					return
 
-				# In default state, tower selection has priority over background clicks
-				if _build_manager:
+				# Priority 3: Check for tower selection/deselection.
+				elif _build_manager:
 					handled = _build_manager.handle_selection_input(event)
 
-				# Note: handle_selection_input returns false for empty space clicks,
-				# allowing the global click to be processed by the CardsHUD.
+				# Priority 4: If nothing else was clicked, process background clicks (e.g., to condense hand).
 				if not handled and _cards_hud:
 					handled = _cards_hud.handle_global_click(event)
 
@@ -57,6 +64,15 @@ func register_build_manager(manager: BuildManager) -> void:
 
 func register_level_hud(hud: LevelHUD) -> void:
 	_level_hud = hud
+
+
+func get_build_manager() -> BuildManager:
+	return _build_manager
+
+
+func get_level_hud() -> LevelHUD:
+	return _level_hud
+
 
 func set_state(new_state: State) -> void:
 	current_state = new_state

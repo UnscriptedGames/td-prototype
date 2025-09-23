@@ -184,6 +184,17 @@ func get_condensed_size() -> Vector2:
 
 # --- PUBLIC METHODS ---
 
+func update_buff_cards_state(tower_is_selected: bool) -> void:
+	for card in get_children():
+		if not card is Card:
+			continue
+
+		if card.card_data and card.card_data.effect is BuffTowerEffect:
+			card.set_playable(tower_is_selected)
+		else:
+			card.set_playable(true)
+
+
 func clear_hand() -> void:
 	# Loop through all existing card nodes in the container.
 	for card_node in get_children():

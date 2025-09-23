@@ -37,7 +37,10 @@ var _current_targets: Array[TemplateEnemy] = []
 var _targets_last_known_positions: Array[Vector2] = []
 var _is_firing: bool = false
 
+var _is_selected: bool = false
+
 ## Node References
+@onready var buff_manager: BuffManager = $BuffManager
 @onready var sprite: Sprite2D = $Sprite
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var range_shape: CollisionPolygon2D = $Range/RangeShape
@@ -100,6 +103,7 @@ func initialize(new_tower_data: TowerData, new_highlight_layer: TileMapLayer, to
 
 
 func select() -> void:
+	_is_selected = true
 	var center_coords := _highlight_layer.local_to_map(global_position)
 	HighlightManager.show_selection_highlights(
 		_highlight_layer,
@@ -111,7 +115,16 @@ func select() -> void:
 
 
 func deselect() -> void:
+	_is_selected = false
 	HighlightManager.hide_highlights(_highlight_layer)
+
+
+func is_selected() -> bool:
+	return _is_selected
+
+
+func apply_buff(buff_effect: BuffTowerEffect) -> void:
+	buff_manager.apply_buff(buff_effect)
 
 
 func set_range_polygon(points: PackedVector2Array) -> void:

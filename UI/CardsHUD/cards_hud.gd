@@ -19,6 +19,8 @@ const BASE_VIEWPORT_WIDTH: float = 1920.0
 # --- VARIABLES ---
 
 var _card_manager: CardManager
+var _build_manager: BuildManager
+var _level_hud: LevelHUD
 var _is_expanded: bool = true
 var _is_transitioning: bool = false
 var _card_in_play: Card = null ## Stores a reference to the card being used.
@@ -32,6 +34,14 @@ func _ready() -> void:
 	
 	# Register with the InputManager for handling clicks.
 	InputManager.register_cards_hud(self)
+	_build_manager = InputManager.get_build_manager()
+	_level_hud = InputManager.get_level_hud()
+
+	if is_instance_valid(_build_manager):
+		_build_manager.tower_selected.connect(_on_tower_selected)
+		_build_manager.tower_deselected.connect(_on_tower_deselected)
+	else:
+		push_error("CardsHUD could not get a valid BuildManager from InputManager.")
 	
 	# Connect to the new generic signals for card effects.
 	GlobalSignals.card_effect_completed.connect(_on_card_effect_completed)
@@ -92,6 +102,13 @@ func is_expanded() -> bool:
 	return _is_expanded
 
 
+func is_click_on_condensed_hand(screen_position: Vector2) -> bool:
+	# Returns true if the hand is condensed and the click is on it.
+	if _is_expanded or _is_transitioning:
+		return false
+	return _hand_container.get_global_rect().has_point(screen_position)
+
+
 func handle_global_click(event: InputEventMouseButton) -> bool:
 	# Handles clicks that were not on other UI elements.
 	if _is_transitioning:
@@ -131,6 +148,14 @@ func condense() -> void:
 
 # --- SIGNAL HANDLERS ---
 
+func _on_tower_selected() -> void:
+	_hand_container.update_buff_cards_state(true)
+
+
+func _on_tower_deselected() -> void:
+	_hand_container.update_buff_cards_state(false)
+
+
 func _on_card_effect_completed() -> void:
 	# This is called on SUCCESS (e.g., tower placed).
 	# If a card was in play, we now tell the CardManager to officially play it.
@@ -159,6 +184,8 @@ func _on_card_manager_hand_changed(new_hand: Array[CardData]) -> void:
 	_hand_container.display_hand(new_hand)
 	_hand_container.visible = true
 	_update_deck_count()
+	var is_tower_selected = is_instance_valid(_build_manager) and is_instance_valid(_build_manager.get_selected_tower())
+	_hand_container.update_buff_cards_state(is_tower_selected)
 
 
 func _on_card_replaced(card_index: int, new_card_data: CardData) -> void:
@@ -168,11 +195,21 @@ func _on_card_replaced(card_index: int, new_card_data: CardData) -> void:
 	# And then we make the hand visible again.
 	_hand_container.visible = true
 	_update_deck_count()
+	var is_tower_selected = is_instance_valid(_build_manager) and is_instance_valid(_build_manager.get_selected_tower())
+	_hand_container.update_buff_cards_state(is_tower_selected)
 
 
 func _on_hand_container_card_played(card: Card) -> void:
 	# This function now only INITIATES an action.
 	
+	# --- Check if card is playable ---
+	if not card.is_playable:
+		if card.card_data and card.card_data.effect is BuffTowerEffect:
+			if is_instance_valid(_level_hud):
+				_level_hud.show_warning_message("Select a tower before applying buffs")
+		# Potentially add other checks for other non-playable card types here.
+		return # Stop processing the click.
+
 	# Prevent starting a new action if one is already in progress.
 	if is_instance_valid(_card_in_play):
 		return
@@ -194,12 +231,25 @@ func _on_hand_container_card_played(card: Card) -> void:
 	# Set this card as the one "in play".
 	_card_in_play = card
 	
+	# --- CONTEXT-SENSITIVE EXECUTION ---
+	var context: Dictionary = {}
+	var effect: CardEffect = card.card_data.effect
+
+	# If it's a buff effect, we need to provide the target tower.
+	if effect is BuffTowerEffect:
+		var selected_tower: TemplateTower = _build_manager.get_selected_tower()
+		if not is_instance_valid(selected_tower):
+			# This should not happen if the UI is working correctly, but as a safeguard:
+			push_warning("Attempted to play a buff card with no tower selected.")
+			return # Do not proceed.
+
+		context["target_tower"] = selected_tower
+
 	# Hide the entire hand container.
 	_hand_container.visible = false
 	
 	# Execute the card's effect (which will trigger build mode, etc.).
-	if card.card_data.effect:
-		card.card_data.effect.execute({})
+	effect.execute(context)
 
 
 # --- PRIVATE METHODS ---

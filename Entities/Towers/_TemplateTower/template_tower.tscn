@@ -1,10 +1,14 @@
-[gd_scene load_steps=2 format=3 uid="uid://dijji12gvss7h"]
+[gd_scene load_steps=3 format=3 uid="uid://dijji12gvss7h"]
 
 [ext_resource type="Script" uid="uid://dh0knpc7tu3b0" path="res://Entities/Towers/_TemplateTower/template_tower.gd" id="1_kihhs"]
+[ext_resource type="Script" uid="uid://cxv8nopqo05b7" path="res://Entities/Towers/_TemplateTower/buff_manager.gd" id="2_5sk8p"]
 
 [node name="TemplateTower" type="Node2D"]
 y_sort_enabled = true
 script = ExtResource("1_kihhs")
+
+[node name="BuffManager" type="Node" parent="."]
+script = ExtResource("2_5sk8p")
 
 [node name="Sprite" type="Sprite2D" parent="."]
 

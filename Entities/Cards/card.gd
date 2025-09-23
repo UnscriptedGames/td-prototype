@@ -27,6 +27,9 @@ var card_data: CardData
 ## Determines if the hover animation should play.
 var hover_enabled: bool = true
 
+## Determines if the card can be played.
+var is_playable: bool = true
+
 
 # --- BUILT-IN METHODS ---
 
@@ -41,12 +44,22 @@ func _gui_input(event: InputEvent) -> void:
 	# Check if the input event was a left mouse button press.
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		# If so, emit our custom signal with a reference to this card.
+		# The receiver (CardsHUD) will be responsible for checking if it's playable.
 		card_pressed.emit(self)
 		# Mark the input as handled so other controls don't receive it.
 		get_viewport().set_input_as_handled()
 
 
 # --- PUBLIC METHODS ---
+
+func set_playable(can_be_played: bool) -> void:
+	is_playable = can_be_played
+	if is_playable:
+		modulate = Color.WHITE
+		mouse_filter = Control.MOUSE_FILTER_STOP
+	else:
+		modulate = Color(0.5, 0.5, 0.5, 0.8)
+		mouse_filter = Control.MOUSE_FILTER_PASS
 
 ## Populates the card's visual elements based on a CardData resource.
 ## @param new_card_data: The resource containing the data to display.

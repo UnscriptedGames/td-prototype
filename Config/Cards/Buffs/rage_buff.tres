@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BuffTowerEffect" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Entities/Cards/Effects/buff_tower_effect.gd" id="1_abcde"]
+
+[resource]
+script = ExtResource("1_abcde")
+cost = 50
+duration = 10.0
+range_increase = 0.0
+damage_increase = 5
+fire_rate_increase = 0.5
+extra_targets = 0
+status_effects = Array[Object]([])

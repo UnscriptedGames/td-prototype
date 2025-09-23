@@ -49,6 +49,9 @@ signal target_priority_changed(priority: TargetPriority.Priority)
 @onready var weakest_enemy_check_button := $TowerDetails/TargetPriorityContainer/VBoxContainer/WeakestEnemyCheckButton as CheckButton
 @onready var lowest_health_check_button := $TowerDetails/TargetPriorityContainer/VBoxContainer/LowestHealthCheckButton as CheckButton
 
+@onready var warning_message_label: Label = $WarningMessageLabel
+@onready var warning_message_timer: Timer = $WarningMessageTimer
+
 var _selected_tower: TemplateTower
 
 
@@ -74,7 +77,16 @@ func _ready() -> void:
 	_on_currency_changed(GameManager.player_data.currency)
 	_on_wave_changed(GameManager.current_wave, GameManager.total_waves)
 
+	warning_message_timer.timeout.connect(_on_warning_message_timer_timeout)
 
+
+# --- PUBLIC METHODS ---
+
+func show_warning_message(message: String, duration: float = 2.0) -> void:
+	warning_message_label.text = message
+	warning_message_label.visible = true
+	warning_message_timer.wait_time = duration
+	warning_message_timer.start()
 
 
 ## Called when this HUD is about to leave the scene tree.
@@ -143,6 +155,10 @@ func handle_click(screen_position: Vector2) -> bool:
 
 
 # --- PRIVATE SIGNAL HANDLERS & UPDATERS ---
+
+func _on_warning_message_timer_timeout() -> void:
+	warning_message_label.visible = false
+
 
 func _on_tower_selected() -> void:
 	var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
