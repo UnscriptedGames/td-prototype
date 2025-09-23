@@ -164,8 +164,11 @@ func _on_tower_selected() -> void:
 	var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
 	if is_instance_valid(build_manager):
 		_selected_tower = build_manager.get_selected_tower()
-		if is_instance_valid(_selected_tower) and not _selected_tower.upgraded.is_connected(_update_tower_details):
-			_selected_tower.upgraded.connect(_update_tower_details)
+		if is_instance_valid(_selected_tower):
+			if not _selected_tower.upgraded.is_connected(_update_tower_details):
+				_selected_tower.upgraded.connect(_update_tower_details)
+			if not _selected_tower.stats_changed.is_connected(_update_tower_details):
+				_selected_tower.stats_changed.connect(_update_tower_details)
 
 	tower_details_container.visible = true
 	target_priority_container.visible = false
@@ -175,8 +178,11 @@ func _on_tower_selected() -> void:
 
 
 func _on_tower_deselected() -> void:
-	if is_instance_valid(_selected_tower) and _selected_tower.upgraded.is_connected(_update_tower_details):
-		_selected_tower.upgraded.disconnect(_update_tower_details)
+	if is_instance_valid(_selected_tower):
+		if _selected_tower.upgraded.is_connected(_update_tower_details):
+			_selected_tower.upgraded.disconnect(_update_tower_details)
+		if _selected_tower.stats_changed.is_connected(_update_tower_details):
+			_selected_tower.stats_changed.disconnect(_update_tower_details)
 	_selected_tower = null
 
 	tower_details_container.visible = false

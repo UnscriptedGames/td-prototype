@@ -4,6 +4,7 @@ class_name TemplateTower
 ## The base script for all towers.
 
 signal upgraded
+signal stats_changed
 
 enum State { IDLE, ATTACKING }
 

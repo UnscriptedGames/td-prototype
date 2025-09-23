@@ -46,6 +46,7 @@ func apply_buff(buff_effect: BuffTowerEffect) -> void:
 
 	# The tower needs to re-evaluate its stats (like fire rate timer)
 	tower._apply_level_stats()
+	tower.stats_changed.emit()
 	# The tower range display needs to be updated
 	if tower.is_selected():
 		tower.select()
@@ -107,6 +108,7 @@ func _on_buff_expired(buff_effect: BuffTowerEffect) -> void:
 
 	# Re-apply tower stats and update range display
 	tower._apply_level_stats()
+	tower.stats_changed.emit()
 	if tower.is_selected():
 		tower.select()
 
