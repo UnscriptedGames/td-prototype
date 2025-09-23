@@ -4,6 +4,7 @@ class_name TemplateTower
 ## The base script for all towers.
 
 signal upgraded
+@warning_ignore("unused_signal")
 signal stats_changed
 
 enum State { IDLE, ATTACKING }
