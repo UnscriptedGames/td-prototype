@@ -5,7 +5,7 @@
 [ext_resource type="Resource" uid="uid://b8ab3b01oeqpu" path="res://Config/Cards/build_archer_tower.tres" id="2_vvy8r"]
 [ext_resource type="Resource" uid="uid://b5c73syjytbge" path="res://Config/Cards/build_bomb_tower.tres" id="3_854pc"]
 [ext_resource type="Resource" uid="uid://qxptfp6t08y4" path="res://Config/Cards/build_magic_tower.tres" id="4_wncbb"]
-[ext_resource type="Resource" uid="uid://earhg57u63kk" path="res://Config/Cards/attack_speed.tres" id="6_854pc"]
+[ext_resource type="Resource" path="res://Config/Cards/attack_speed.tres" id="6_854pc"]
 [ext_resource type="Script" uid="uid://brvxhg6y1rh68" path="res://Entities/Cards/deck_data.gd" id="6_e0s2j"]
 
 [resource]

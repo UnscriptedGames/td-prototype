@@ -4,6 +4,8 @@ class_name BuffManager
 ## @description Manages the application, tracking, and removal of temporary
 ## buffs on a tower.
 
+@onready var _buff_bar: ProgressBar = get_node("../BuffBar")
+
 # A dictionary to keep track of active buffs and their associated timers.
 # The key is the BuffTowerEffect resource instance, and the value is the Timer node.
 var _active_buffs: Dictionary = {}
@@ -11,6 +13,19 @@ var _active_buffs: Dictionary = {}
 # A dictionary to store the original status effects that were replaced by a buff.
 # The key is the BuffTowerEffect, and the value is the original StatusEffectData.
 var _stashed_status_effects: Dictionary = {}
+
+
+func _ready() -> void:
+	_buff_bar.visible = false
+
+
+func _process(_delta: float) -> void:
+	if not _active_buffs.is_empty():
+		# Get the timer of the most recently added buff.
+		var latest_buff_effect = _active_buffs.keys()[_active_buffs.size() - 1]
+		var timer = _active_buffs[latest_buff_effect]
+		if is_instance_valid(timer):
+			_buff_bar.value = timer.time_left
 
 
 ## Applies a buff to the parent tower.
@@ -62,6 +77,11 @@ func apply_buff(buff_effect: BuffTowerEffect) -> void:
 
 	# Track the active buff and its timer
 	_active_buffs[buff_effect] = timer
+
+	# Update the buff bar
+	_buff_bar.visible = true
+	_buff_bar.max_value = buff_effect.duration
+	_buff_bar.value = buff_effect.duration
 
 
 ## Called when a buff's timer runs out.
@@ -122,3 +142,6 @@ func _cleanup_buff(buff_effect: BuffTowerEffect) -> void:
 		if is_instance_valid(timer):
 			timer.queue_free()
 		_active_buffs.erase(buff_effect)
+
+	if _active_buffs.is_empty():
+		_buff_bar.visible = false

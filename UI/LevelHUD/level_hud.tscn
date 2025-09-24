@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://qy230vei6n8p"]
+[gd_scene load_steps=9 format=3 uid="uid://qy230vei6n8p"]
 
 [ext_resource type="Script" uid="uid://bxos0oe4oyj2u" path="res://Addons/Tools/object_pool_monitor.gd" id="1_c2v1r"]
 [ext_resource type="Script" uid="uid://jt41lox7ggvv" path="res://UI/LevelHUD/level_hud.gd" id="1_mal80"]
@@ -6,6 +6,7 @@
 [ext_resource type="Resource" uid="uid://bojj6xdad27bq" path="res://Config/Towers/archer_tower_data.tres" id="3_ais3w"]
 [ext_resource type="Resource" uid="uid://c5v3s0n3fxli3" path="res://Config/Towers/magic_tower_data.tres" id="4_rorbr"]
 [ext_resource type="Theme" uid="uid://cva31h3i30ii7" path="res://Themes/hud_theme.tres" id="5_41t3o"]
+[ext_resource type="StyleBox" uid="uid://6m1q8jw2p6hi" path="res://Themes/Styleboxes/new_style_stun_flat.tres" id="6_13woj"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_m2k8s"]
 
@@ -110,7 +111,18 @@ theme_override_font_sizes/font_size = 20
 text = "Max Targets:"
 
 [node name="Spacer" type="Control" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 20)
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="BuffBar" type="ProgressBar" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/fill = ExtResource("6_13woj")
+value = 50.0
+show_percentage = false
+
+[node name="Spacer2" type="Control" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
 [node name="TargetPriorityButton" type="Button" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]

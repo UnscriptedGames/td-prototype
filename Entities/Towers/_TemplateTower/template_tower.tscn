@@ -1,8 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://dijji12gvss7h"]
+[gd_scene load_steps=3 format=3 uid="uid://dijji12gvss7h"]
 
 [ext_resource type="Script" uid="uid://dh0knpc7tu3b0" path="res://Entities/Towers/_TemplateTower/template_tower.gd" id="1_kihhs"]
 [ext_resource type="Script" uid="uid://cxv8nopqo05b7" path="res://Entities/Towers/_TemplateTower/buff_manager.gd" id="2_5sk8p"]
-[ext_resource type="StyleBox" uid="uid://6m1q8jw2p6hi" path="res://Themes/Styleboxes/new_style_stun_flat.tres" id="3_13woj"]
 
 [node name="TemplateTower" type="Node2D"]
 y_sort_enabled = true
@@ -30,12 +29,6 @@ one_shot = true
 [node name="Muzzle" type="Marker2D" parent="."]
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-
-[node name="BuffBar" type="ProgressBar" parent="."]
-custom_minimum_size = Vector2(0, 10)
-theme_override_styles/fill = ExtResource("3_13woj")
-value = 50.0
-show_percentage = false
 
 [connection signal="area_entered" from="Range" to="." method="_on_range_area_entered"]
 [connection signal="area_exited" from="Range" to="." method="_on_range_area_exited"]
