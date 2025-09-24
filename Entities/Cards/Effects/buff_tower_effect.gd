@@ -48,3 +48,6 @@ func execute(context: Dictionary) -> void:
 	# The BuffManager on the tower will be responsible for applying the buff.
 	# We pass 'self' which is the resource instance of this effect.
 	target_tower.apply_buff(self)
+
+	# Since this effect is instantaneous, we immediately signal its completion.
+	GlobalSignals.card_effect_completed.emit()
