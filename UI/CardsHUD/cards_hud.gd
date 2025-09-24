@@ -160,6 +160,10 @@ func _on_card_effect_completed() -> void:
 	# This is called on SUCCESS (e.g., tower placed).
 	# If a card was in play, we now tell the CardManager to officially play it.
 	if is_instance_valid(_card_in_play):
+		# First, deduct the cost of the card that was successfully played.
+		var card_cost: int = _card_in_play.card_data.effect.get_cost()
+		GameManager.player_data.spend_currency(card_cost)
+
 		var card_index: int = _hand_container.get_children().find(_card_in_play)
 		if card_index != -1:
 			# This call will now trigger either 'card_replaced' or 'hand_changed'.
@@ -241,9 +245,21 @@ func _on_hand_container_card_played(card: Card) -> void:
 		if not is_instance_valid(selected_tower):
 			# This should not happen if the UI is working correctly, but as a safeguard:
 			push_warning("Attempted to play a buff card with no tower selected.")
+			_card_in_play = null # Clear the card in play reference
 			return # Do not proceed.
 
 		context["target_tower"] = selected_tower
+
+		# Buffs are instant. Spend currency, execute, and play the card immediately.
+		GameManager.player_data.spend_currency(card_cost)
+		effect.execute(context)
+
+		var card_index: int = _hand_container.get_children().find(card)
+		if card_index != -1:
+			_card_manager.play_card(card_index, {})
+
+		_card_in_play = null
+		return
 
 	# Hide the entire hand container.
 	_hand_container.visible = false

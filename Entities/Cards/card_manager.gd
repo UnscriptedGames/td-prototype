@@ -76,10 +76,6 @@ func play_card(card_index: int, context: Dictionary) -> void:
 	# Remove the card from the hand array. Note we don't need the object yet.
 	var card_to_play: CardData = hand[card_index]
 
-	# Execute the card's effect with the provided context.
-	if card_to_play.effect:
-		card_to_play.effect.execute(context)
-
 	# Move the played card to the discard pile.
 	_discard_pile.append(card_to_play)
 
