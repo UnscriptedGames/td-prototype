@@ -66,8 +66,8 @@ func initialise_deck(deck_data: DeckData, new_hand_size: int) -> void:
 
 ## Plays a card from the hand, executes its effect, and draws a replacement.
 ## @param card_index: The index of the card to play in the hand array.
-## @param context: A dictionary of contextual data for the card's effect.
-func play_card(card_index: int, context: Dictionary) -> void:
+## @param _context: A dictionary of contextual data (unused in this function).
+func play_card(card_index: int, _context: Dictionary) -> void:
 	# Check if the card_index is valid to prevent crashes.
 	if card_index < 0 or card_index >= hand.size():
 		push_error("Invalid card index provided to play_card().")
