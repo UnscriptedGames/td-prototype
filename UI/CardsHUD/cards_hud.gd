@@ -162,7 +162,7 @@ func _on_card_effect_completed() -> void:
 	if is_instance_valid(_card_in_play):
 		# First, deduct the cost of the card that was successfully played.
 		var card_cost: int = _card_in_play.card_data.effect.get_cost()
-		GameManager.player_data.spend_currency(card_cost)
+		GameManager.remove_currency(card_cost)
 
 		var card_index: int = _hand_container.get_children().find(_card_in_play)
 		if card_index != -1:
@@ -251,7 +251,7 @@ func _on_hand_container_card_played(card: Card) -> void:
 		context["target_tower"] = selected_tower
 
 		# Buffs are instant. Spend currency, execute, and play the card immediately.
-		GameManager.player_data.spend_currency(card_cost)
+		GameManager.remove_currency(card_cost)
 		effect.execute(context)
 
 		var card_index: int = _hand_container.get_children().find(card)

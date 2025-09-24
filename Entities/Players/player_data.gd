@@ -9,6 +9,3 @@ class_name PlayerData
 
 func can_afford(cost: int) -> bool:
 	return currency >= cost
-
-func spend_currency(amount: int) -> void:
-	currency -= amount
