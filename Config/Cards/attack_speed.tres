@@ -9,7 +9,7 @@
 script = ExtResource("1_h4kn8")
 cost = 5
 duration = 10.0
-range_increase = 0.0
+range_increase = 0
 damage_increase = 0
 fire_rate_increase = 5.0
 extra_targets = 0

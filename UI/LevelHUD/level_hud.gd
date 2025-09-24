@@ -22,6 +22,7 @@ signal target_priority_changed(priority: TargetPriority.Priority)
 @onready var next_wave_button := $BuildButtonsGroup/Columns/MainButtons/NextWave as Button
 
 @onready var tower_details_container := $TowerDetails/TowerDetailsContainer as PanelContainer
+@onready var buff_bar: ProgressBar = $TowerDetails/TowerDetailsContainer/VBoxContainer/BuffBar
 @onready var tower_name_label := $TowerDetails/TowerDetailsContainer/VBoxContainer/TowerNameLabel as Label
 @onready var tower_level_label := $TowerDetails/TowerDetailsContainer/VBoxContainer/TowerLevelLabel as Label
 @onready var range_label := $TowerDetails/TowerDetailsContainer/VBoxContainer/RangeLabel as Label
@@ -78,6 +79,8 @@ func _ready() -> void:
 	_on_wave_changed(GameManager.current_wave, GameManager.total_waves)
 
 	warning_message_timer.timeout.connect(_on_warning_message_timer_timeout)
+
+	buff_bar.visible = false
 
 
 # --- PUBLIC METHODS ---
@@ -170,6 +173,13 @@ func _on_tower_selected() -> void:
 			if not _selected_tower.stats_changed.is_connected(_update_tower_details):
 				_selected_tower.stats_changed.connect(_update_tower_details)
 
+			var buff_manager: BuffManager = _selected_tower.get_node_or_null("BuffManager")
+			if is_instance_valid(buff_manager):
+				buff_manager.buff_started.connect(_on_buff_started)
+				buff_manager.buff_progress.connect(_on_buff_progress)
+				buff_manager.buff_ended.connect(_on_buff_ended)
+				buff_manager.resend_state()
+
 	tower_details_container.visible = true
 	target_priority_container.visible = false
 	_update_tower_details()
@@ -183,9 +193,17 @@ func _on_tower_deselected() -> void:
 			_selected_tower.upgraded.disconnect(_update_tower_details)
 		if _selected_tower.stats_changed.is_connected(_update_tower_details):
 			_selected_tower.stats_changed.disconnect(_update_tower_details)
+
+		var buff_manager: BuffManager = _selected_tower.get_node_or_null("BuffManager")
+		if is_instance_valid(buff_manager):
+			buff_manager.buff_started.disconnect(_on_buff_started)
+			buff_manager.buff_progress.disconnect(_on_buff_progress)
+			buff_manager.buff_ended.disconnect(_on_buff_ended)
+
 	_selected_tower = null
 
 	tower_details_container.visible = false
+	buff_bar.visible = false
 	target_priority_container.visible = false
 
 
@@ -388,3 +406,17 @@ func set_next_wave_enabled(is_enabled: bool) -> void:
 func set_next_wave_text(text: String) -> void:
 	if is_instance_valid(next_wave_button):
 		next_wave_button.text = text
+
+
+func _on_buff_started(duration: float) -> void:
+	buff_bar.max_value = duration
+	buff_bar.value = duration
+	buff_bar.visible = true
+
+
+func _on_buff_progress(time_left: float) -> void:
+	buff_bar.value = time_left
+
+
+func _on_buff_ended() -> void:
+	buff_bar.visible = false

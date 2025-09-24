@@ -275,9 +275,3 @@ position = Vector2(1, -53)
 libraries = {
 &"": SubResource("AnimationLibrary_t7s1i")
 }
-
-[node name="BuffBar" parent="." index="7"]
-offset_left = -50.0
-offset_top = -99.0
-offset_right = 50.0
-offset_bottom = -89.0
