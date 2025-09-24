@@ -46,6 +46,12 @@ func _gui_input(event: InputEvent) -> void:
 		# If so, emit our custom signal with a reference to this card.
 		# The receiver (CardsHUD) will be responsible for checking if it's playable.
 		card_pressed.emit(self)
+
+		# If the card was immediately freed by the logic that handles the
+		# 'card_pressed' signal, it won't be in the tree anymore.
+		if not is_inside_tree():
+			return
+
 		# Mark the input as handled so other controls don't receive it.
 		get_viewport().set_input_as_handled()
 

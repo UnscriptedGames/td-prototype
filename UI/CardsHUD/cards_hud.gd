@@ -165,7 +165,6 @@ func _on_card_effect_completed() -> void:
 		var card_cost: int = _card_in_play.card_data.effect.get_cost()
 		GameManager.remove_currency(card_cost)
 
-		# Then, tell the card manager to process the card.
 		var card_index: int = _hand_container.get_children().find(_card_in_play)
 		if card_index != -1:
 			# This call will now trigger either 'card_replaced' or 'hand_changed'.
@@ -250,6 +249,10 @@ func _on_hand_container_card_played(card: Card) -> void:
 			return # Do not proceed.
 
 		context["target_tower"] = selected_tower
+
+	# For build cards, hide the hand while the player is placing the tower.
+	if effect is BuildTowerEffect:
+		_hand_container.visible = false
 
 	# Execute the card's effect (which will trigger build mode, etc.).
 	effect.execute(context)
