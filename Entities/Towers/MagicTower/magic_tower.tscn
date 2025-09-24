@@ -268,7 +268,7 @@ _data = {
 
 [node name="MagicTower" instance=ExtResource("1_t6hxg")]
 
-[node name="Sprite" parent="." index="0"]
+[node name="Sprite" parent="." index="1"]
 texture = ExtResource("2_b16vo")
 offset = Vector2(0, -30)
 hframes = 4
@@ -277,10 +277,16 @@ hframes = 4
 position = Vector2(0, -38)
 shape = SubResource("CapsuleShape2D_vtecl")
 
-[node name="Muzzle" parent="." index="4"]
+[node name="Muzzle" parent="." index="5"]
 position = Vector2(2, -81)
 
-[node name="AnimationPlayer" parent="." index="5"]
+[node name="AnimationPlayer" parent="." index="6"]
 libraries = {
 &"": SubResource("AnimationLibrary_ce7gd")
 }
+
+[node name="BuffBar" parent="." index="7"]
+offset_left = -50.0
+offset_top = -129.0
+offset_right = 50.0
+offset_bottom = -119.0

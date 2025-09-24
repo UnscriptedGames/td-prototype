@@ -179,7 +179,7 @@ func _on_card_effect_cancelled() -> void:
 	# We just need to make the hand visible again.
 	if is_instance_valid(_card_in_play):
 		_card_in_play = null
-		_hand_container.visible = true
+		expand()
 
 
 func _on_card_manager_hand_changed(new_hand: Array[CardData]) -> void:
@@ -250,9 +250,9 @@ func _on_hand_container_card_played(card: Card) -> void:
 
 		context["target_tower"] = selected_tower
 
-	# For build cards, hide the hand while the player is placing the tower.
-	if effect is BuildTowerEffect:
-		_hand_container.visible = false
+	# For build or buff cards, condense the hand.
+	if effect is BuildTowerEffect or effect is BuffTowerEffect:
+		condense()
 
 	# Execute the card's effect (which will trigger build mode, etc.).
 	effect.execute(context)
