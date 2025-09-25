@@ -189,7 +189,7 @@ func _select_tower(tower: TemplateTower) -> void:
 	_selected_tower = tower
 	_selected_tower.select()
 	state = State.TOWER_SELECTED
-	emit_signal("tower_selected")
+	emit_signal("tower_selected", tower)
 
 
 func _deselect_current_tower() -> void:
