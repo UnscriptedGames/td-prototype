@@ -152,3 +152,8 @@ func resend_state() -> void:
 			buff_progress.emit(timer.time_left)
 	else:
 		buff_ended.emit()
+
+
+func has_active_buffs() -> bool:
+	## Returns true if the tower has at least one active buff.
+	return not _active_buffs.is_empty()

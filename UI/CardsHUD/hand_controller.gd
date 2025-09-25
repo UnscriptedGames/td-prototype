@@ -184,13 +184,19 @@ func get_condensed_size() -> Vector2:
 
 # --- PUBLIC METHODS ---
 
-func update_buff_cards_state(tower_is_selected: bool) -> void:
+func update_buff_cards_state(selected_tower: TemplateTower) -> void:
+	var can_buff: bool = false
+	if is_instance_valid(selected_tower):
+		var buff_manager: BuffManager = selected_tower.get_node_or_null("BuffManager")
+		if is_instance_valid(buff_manager) and not buff_manager.has_active_buffs():
+			can_buff = true
+
 	for card in get_children():
 		if not card is Card:
 			continue
 
 		if card.card_data and card.card_data.effect is BuffTowerEffect:
-			card.set_playable(tower_is_selected)
+			card.set_playable(can_buff)
 		else:
 			card.set_playable(true)
 

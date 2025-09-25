@@ -148,12 +148,12 @@ func condense() -> void:
 
 # --- SIGNAL HANDLERS ---
 
-func _on_tower_selected() -> void:
-	_hand_container.update_buff_cards_state(true)
+func _on_tower_selected(tower: TemplateTower) -> void:
+	_hand_container.update_buff_cards_state(tower)
 
 
 func _on_tower_deselected() -> void:
-	_hand_container.update_buff_cards_state(false)
+	_hand_container.update_buff_cards_state(null)
 
 
 func _on_card_effect_completed() -> void:
@@ -189,8 +189,8 @@ func _on_card_manager_hand_changed(new_hand: Array[CardData]) -> void:
 	_hand_container.display_hand(new_hand)
 	_hand_container.visible = true
 	_update_deck_count()
-	var is_tower_selected = is_instance_valid(_build_manager) and is_instance_valid(_build_manager.get_selected_tower())
-	_hand_container.update_buff_cards_state(is_tower_selected)
+	var selected_tower: TemplateTower = _build_manager.get_selected_tower()
+	_hand_container.update_buff_cards_state(selected_tower)
 
 
 func _on_card_replaced(card_index: int, new_card_data: CardData) -> void:
@@ -200,8 +200,8 @@ func _on_card_replaced(card_index: int, new_card_data: CardData) -> void:
 	# And then we make the hand visible again.
 	_hand_container.visible = true
 	_update_deck_count()
-	var is_tower_selected = is_instance_valid(_build_manager) and is_instance_valid(_build_manager.get_selected_tower())
-	_hand_container.update_buff_cards_state(is_tower_selected)
+	var selected_tower: TemplateTower = _build_manager.get_selected_tower()
+	_hand_container.update_buff_cards_state(selected_tower)
 
 
 func _on_hand_container_card_played(card: Card) -> void:
@@ -211,7 +211,13 @@ func _on_hand_container_card_played(card: Card) -> void:
 	if not card.is_playable:
 		if card.card_data and card.card_data.effect is BuffTowerEffect:
 			if is_instance_valid(_level_hud):
-				_level_hud.show_warning_message("Select a tower before applying buffs")
+				var selected_tower: TemplateTower = _build_manager.get_selected_tower()
+				if not is_instance_valid(selected_tower):
+					_level_hud.show_warning_message("Select a tower before applying buffs")
+				else:
+					var buff_manager: BuffManager = selected_tower.get_node_or_null("BuffManager")
+					if is_instance_valid(buff_manager) and buff_manager.has_active_buffs():
+						_level_hud.show_warning_message("Only 1 active buff allowed at a time")
 		# Potentially add other checks for other non-playable card types here.
 		return # Stop processing the click.
 
