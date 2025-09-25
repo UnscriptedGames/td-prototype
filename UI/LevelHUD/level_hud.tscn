@@ -6,7 +6,15 @@
 [ext_resource type="Resource" uid="uid://bojj6xdad27bq" path="res://Config/Towers/archer_tower_data.tres" id="3_ais3w"]
 [ext_resource type="Resource" uid="uid://c5v3s0n3fxli3" path="res://Config/Towers/magic_tower_data.tres" id="4_rorbr"]
 [ext_resource type="Theme" uid="uid://cva31h3i30ii7" path="res://Themes/hud_theme.tres" id="5_41t3o"]
-[ext_resource type="StyleBox" uid="uid://6m1q8jw2p6hi" path="res://Themes/Styleboxes/new_style_stun_flat.tres" id="6_13woj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ma07q"]
+bg_color = Color(0.917069, 0.908246, 0.896221, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+shadow_color = Color(1, 1, 1, 1)
+shadow_size = 2
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_m2k8s"]
 
@@ -115,9 +123,9 @@ custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
 [node name="BuffBar" type="ProgressBar" parent="TowerDetails/TowerDetailsContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 10)
+custom_minimum_size = Vector2(0, 15)
 layout_mode = 2
-theme_override_styles/fill = ExtResource("6_13woj")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ma07q")
 value = 50.0
 show_percentage = false
 
