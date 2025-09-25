@@ -163,7 +163,7 @@ func _on_warning_message_timer_timeout() -> void:
 	warning_message_label.visible = false
 
 
-func _on_tower_selected() -> void:
+func _on_tower_selected(tower: TemplateTower) -> void:
 	# If a tower was previously selected, disconnect its signals first to prevent errors
 	# and to stop listening to buffs from the old tower.
 	if is_instance_valid(_selected_tower):
@@ -177,24 +177,22 @@ func _on_tower_selected() -> void:
 			old_buff_manager.buff_progress.disconnect(_on_buff_progress)
 			old_buff_manager.buff_ended.disconnect(_on_buff_ended)
 
-	var build_manager: BuildManager = get_tree().get_first_node_in_group("build_manager")
-	if is_instance_valid(build_manager):
-		_selected_tower = build_manager.get_selected_tower()
-		if is_instance_valid(_selected_tower):
-			# Connect to the new tower's signals
-			_selected_tower.upgraded.connect(_update_tower_details)
-			_selected_tower.stats_changed.connect(_update_tower_details)
+	_selected_tower = tower
+	if is_instance_valid(_selected_tower):
+		# Connect to the new tower's signals
+		_selected_tower.upgraded.connect(_update_tower_details)
+		_selected_tower.stats_changed.connect(_update_tower_details)
 
-			var buff_manager: BuffManager = _selected_tower.get_node_or_null("BuffManager")
-			if is_instance_valid(buff_manager):
-				buff_manager.buff_started.connect(_on_buff_started)
-				buff_manager.buff_progress.connect(_on_buff_progress)
-				buff_manager.buff_ended.connect(_on_buff_ended)
-				# Immediately sync the buff bar with the current state of the new tower.
-				buff_manager.resend_state()
-			else:
-				# If there's no buff manager, ensure the bar is hidden.
-				buff_bar.visible = false
+		var buff_manager: BuffManager = _selected_tower.get_node_or_null("BuffManager")
+		if is_instance_valid(buff_manager):
+			buff_manager.buff_started.connect(_on_buff_started)
+			buff_manager.buff_progress.connect(_on_buff_progress)
+			buff_manager.buff_ended.connect(_on_buff_ended)
+			# Immediately sync the buff bar with the current state of the new tower.
+			buff_manager.resend_state()
+		else:
+			# If there's no buff manager, ensure the bar is hidden.
+			buff_bar.visible = false
 
 	tower_details_container.visible = true
 	target_priority_container.visible = false
