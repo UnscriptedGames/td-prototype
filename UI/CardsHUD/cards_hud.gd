@@ -189,7 +189,9 @@ func _on_card_manager_hand_changed(new_hand: Array[CardData]) -> void:
 	_hand_container.display_hand(new_hand)
 	_hand_container.visible = true
 	_update_deck_count()
-	var selected_tower: TemplateTower = _build_manager.get_selected_tower()
+	var selected_tower: TemplateTower = null
+	if is_instance_valid(_build_manager):
+		selected_tower = _build_manager.get_selected_tower()
 	_hand_container.update_buff_cards_state(selected_tower)
 
 
@@ -200,7 +202,9 @@ func _on_card_replaced(card_index: int, new_card_data: CardData) -> void:
 	# And then we make the hand visible again.
 	_hand_container.visible = true
 	_update_deck_count()
-	var selected_tower: TemplateTower = _build_manager.get_selected_tower()
+	var selected_tower: TemplateTower = null
+	if is_instance_valid(_build_manager):
+		selected_tower = _build_manager.get_selected_tower()
 	_hand_container.update_buff_cards_state(selected_tower)
 
 
