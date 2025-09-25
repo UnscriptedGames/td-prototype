@@ -259,9 +259,9 @@ func _on_hand_container_card_played(card: Card) -> void:
 	# Executing the effect immediately fires a signal that causes the card
 	# to be freed, which aborts the tween before it can start.
 	if effect is BuffTowerEffect:
-		yield(get_tree(), "process_frame")
+		await get_tree().process_frame
 
-	# Ensure the card wasn't invalidated during the yield.
+	# Ensure the card wasn't invalidated during the await.
 	if not is_instance_valid(_card_in_play):
 		return
 
