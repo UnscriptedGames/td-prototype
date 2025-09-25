@@ -34,6 +34,10 @@ func apply_buff(buff_effect: BuffTowerEffect) -> void:
 		push_error("BuffManager cannot find a valid parent tower.")
 		return
 
+	# If the tower is in the middle of an attack, reset it to ensure a clean state.
+	if tower.is_currently_firing():
+		tower.reset_attack()
+
 	# Apply stat increases
 	tower.damage += buff_effect.damage_increase
 	tower.tower_range += buff_effect.range_increase
@@ -79,6 +83,9 @@ func apply_buff(buff_effect: BuffTowerEffect) -> void:
 	# Update the buff bar
 	buff_started.emit(buff_effect.duration)
 
+	# After applying the buff, the tower should immediately find a new target.
+	tower._find_new_target()
+
 
 ## Called when a buff's timer runs out.
 ## @param buff_effect: The BuffTowerEffect resource that has expired.
@@ -88,6 +95,10 @@ func _on_buff_expired(buff_effect: BuffTowerEffect) -> void:
 		# Tower might have been destroyed, so just clean up.
 		_cleanup_buff(buff_effect)
 		return
+
+	# If the tower is in the middle of an attack, reset it to ensure a clean state.
+	if tower.is_currently_firing():
+		tower.reset_attack()
 
 	# Revert stat increases
 	tower.damage -= buff_effect.damage_increase
@@ -129,6 +140,9 @@ func _on_buff_expired(buff_effect: BuffTowerEffect) -> void:
 		tower.select()
 
 	_cleanup_buff(buff_effect)
+
+	# After the buff expires, the tower should immediately find a new target.
+	tower._find_new_target()
 
 
 ## Cleans up the buff from the tracking dictionaries and frees the timer.

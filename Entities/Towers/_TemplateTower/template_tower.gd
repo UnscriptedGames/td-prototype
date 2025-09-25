@@ -125,6 +125,22 @@ func is_selected() -> bool:
 	return _is_selected
 
 
+func is_currently_firing() -> bool:
+	return _is_firing
+
+
+func reset_attack() -> void:
+	# Reset the firing flag and stop any ongoing attack animations/timers
+	_is_firing = false
+	if animation_player.is_playing():
+		animation_player.stop()
+	if not fire_rate_timer.is_stopped():
+		fire_rate_timer.stop()
+	# Immediately try to play the idle animation to prevent the tower from looking frozen
+	if not idle_animation.is_empty():
+		animation_player.play(idle_animation)
+
+
 func apply_buff(buff_effect: BuffTowerEffect) -> void:
 	buff_manager.apply_buff(buff_effect)
 
