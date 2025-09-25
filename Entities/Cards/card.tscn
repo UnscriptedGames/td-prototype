@@ -107,7 +107,7 @@ mouse_filter = 2
 
 [node name="CardArt" type="TextureRect" parent="ArtContainer"]
 layout_mode = 0
-offset_right = 261.0
+offset_right = 221.0
 offset_bottom = 360.0
 texture = ExtResource("2_tf1i7")
 

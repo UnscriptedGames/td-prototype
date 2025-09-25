@@ -24,6 +24,7 @@ var _level_hud: LevelHUD
 var _is_expanded: bool = true
 var _is_transitioning: bool = false
 var _card_in_play: Card = null ## Stores a reference to the card being used.
+var _selected_tower: TemplateTower = null
 
 
 # --- BUILT-IN METHODS ---
@@ -149,11 +150,36 @@ func condense() -> void:
 # --- SIGNAL HANDLERS ---
 
 func _on_tower_selected(tower: TemplateTower) -> void:
-	_hand_container.update_buff_cards_state(tower)
+	# If a tower was already selected, disconnect its signal first.
+	if is_instance_valid(_selected_tower):
+		var old_buff_manager: BuffManager = _selected_tower.get_node_or_null("BuffManager")
+		if is_instance_valid(old_buff_manager):
+			old_buff_manager.buff_ended.disconnect(_on_selected_tower_buff_ended)
+
+	_selected_tower = tower
+	var buff_manager: BuffManager = _selected_tower.get_node_or_null("BuffManager")
+	if is_instance_valid(buff_manager):
+		buff_manager.buff_ended.connect(_on_selected_tower_buff_ended)
+
+	_hand_container.update_buff_cards_state(_selected_tower)
 
 
 func _on_tower_deselected() -> void:
+	if is_instance_valid(_selected_tower):
+		var buff_manager: BuffManager = _selected_tower.get_node_or_null("BuffManager")
+		if is_instance_valid(buff_manager):
+			if buff_manager.buff_ended.is_connected(_on_selected_tower_buff_ended):
+				buff_manager.buff_ended.disconnect(_on_selected_tower_buff_ended)
+
+	_selected_tower = null
 	_hand_container.update_buff_cards_state(null)
+
+
+func _on_selected_tower_buff_ended() -> void:
+	# A buff expired on the currently selected tower.
+	# We need to re-evaluate the state of the cards in hand.
+	if is_instance_valid(_selected_tower):
+		_hand_container.update_buff_cards_state(_selected_tower)
 
 
 func _on_card_effect_completed() -> void:

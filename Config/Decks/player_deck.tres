@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="DeckData" load_steps=8 format=3 uid="uid://bn71y3nnwjlyq"]
+[gd_resource type="Resource" script_class="DeckData" load_steps=9 format=3 uid="uid://bn71y3nnwjlyq"]
 
 [ext_resource type="Script" uid="uid://drvh5madwcotk" path="res://Entities/Cards/card_data.gd" id="1_7bjyb"]
 [ext_resource type="Texture2D" uid="uid://dhjtaxvcetq6" path="res://Entities/Cards/Assets/deck.png" id="1_vvy8r"]
@@ -7,9 +7,10 @@
 [ext_resource type="Resource" uid="uid://qxptfp6t08y4" path="res://Config/Cards/build_magic_tower.tres" id="4_wncbb"]
 [ext_resource type="Resource" uid="uid://earhg57u63kk" path="res://Config/Cards/attack_speed.tres" id="6_854pc"]
 [ext_resource type="Script" uid="uid://brvxhg6y1rh68" path="res://Entities/Cards/deck_data.gd" id="6_e0s2j"]
+[ext_resource type="Resource" uid="uid://cmisfewa516ij" path="res://Config/Cards/buff_slow.tres" id="7_wncbb"]
 
 [resource]
 script = ExtResource("6_e0s2j")
-cards = Array[ExtResource("1_7bjyb")]([ExtResource("2_vvy8r"), ExtResource("3_854pc"), ExtResource("4_wncbb"), ExtResource("6_854pc"), ExtResource("6_854pc")])
+cards = Array[ExtResource("1_7bjyb")]([ExtResource("2_vvy8r"), ExtResource("3_854pc"), ExtResource("4_wncbb"), ExtResource("6_854pc"), ExtResource("6_854pc"), ExtResource("7_wncbb"), ExtResource("7_wncbb"), ExtResource("2_vvy8r"), ExtResource("2_vvy8r"), ExtResource("3_854pc"), ExtResource("3_854pc"), ExtResource("4_wncbb"), ExtResource("4_wncbb")])
 card_back_texture = ExtResource("1_vvy8r")
 metadata/_custom_type_script = "uid://brvxhg6y1rh68"
