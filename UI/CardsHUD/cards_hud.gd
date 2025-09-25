@@ -204,7 +204,7 @@ func _on_card_replaced(card_index: int, new_card_data: CardData) -> void:
 	_hand_container.update_buff_cards_state(is_tower_selected)
 
 
-async func _on_hand_container_card_played(card: Card) -> void:
+func _on_hand_container_card_played(card: Card) -> void:
 	# This function now only INITIATES an action.
 	
 	# --- Check if card is playable ---
@@ -259,9 +259,9 @@ async func _on_hand_container_card_played(card: Card) -> void:
 	# Executing the effect immediately fires a signal that causes the card
 	# to be freed, which aborts the tween before it can start.
 	if effect is BuffTowerEffect:
-		await get_tree().process_frame
+		yield(get_tree(), "process_frame")
 
-	# Ensure the card wasn't invalidated during the await.
+	# Ensure the card wasn't invalidated during the yield.
 	if not is_instance_valid(_card_in_play):
 		return
 
