@@ -150,9 +150,10 @@ func replace_card_at_index(index: int, new_card_data: CardData) -> void:
 		push_error("Invalid index passed to replace_card_at_index().")
 		return
 
-	# 2. Get the old card and store its position.
+	# 2. Get the old card and store its position and scale.
 	var old_card: Card = card_nodes[index]
 	var old_position: Vector2 = old_card.position
+	var old_scale: Vector2 = old_card.scale
 
 	# 3. Remove the old card.
 	old_card.queue_free()
@@ -163,8 +164,9 @@ func replace_card_at_index(index: int, new_card_data: CardData) -> void:
 	new_card.card_pressed.connect(_on_card_pressed)
 	new_card.display(new_card_data) # Populate with data.
 
-	# 5. Position and order the new card.
+	# 5. Position, scale, and order the new card.
 	new_card.position = old_position
+	new_card.scale = old_scale
 	move_child(new_card, index)
 
 
