@@ -25,6 +25,11 @@ const CARD_SPACING: int = 20
 const BASE_VIEWPORT_WIDTH: float = 1920.0
 
 
+# --- VARIABLES ---
+
+var _hand_tween: Tween
+
+
 # --- PUBLIC METHODS ---
 
 func display_hand(new_hand: Array[CardData]) -> void:
@@ -78,8 +83,12 @@ func update_card_positions(is_expanded: bool, animate: bool) -> Signal:
 		var timer := get_tree().create_timer(0.0)
 		return timer.timeout
 
+	# If there's an existing tween, stop it.
+	if is_instance_valid(_hand_tween):
+		_hand_tween.kill()
+
 	# Create a parallel tween to animate all nodes at once.
-	var tween: Tween = create_tween().set_parallel()
+	_hand_tween = create_tween().set_parallel()
 	var duration: float = TRANSITION_DURATION if animate else 0.0
 
 	# Get the base size of a card from its texture.
@@ -98,8 +107,8 @@ func update_card_positions(is_expanded: bool, animate: bool) -> Signal:
 		)
 		
 		# 3. Animate this container's size and local position.
-		tween.tween_property(self, "size", container_target_size, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
-		tween.tween_property(self, "position", container_target_pos, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+		_hand_tween.tween_property(self, "size", container_target_size, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+		_hand_tween.tween_property(self, "position", container_target_pos, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
 
 		# 4. Loop through each card and position it locally within this container.
 		for i in range(cards.size()):
@@ -111,8 +120,8 @@ func update_card_positions(is_expanded: bool, animate: bool) -> Signal:
 			# Card's local position starts at (0, 0) for the first card.
 			var card_target_pos := Vector2(i * (card_original_size.x + CARD_SPACING), 0)
 			
-			tween.tween_property(card, "position", card_target_pos, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
-			tween.tween_property(card, "scale", EXPANDED_SCALE, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+			_hand_tween.tween_property(card, "position", card_target_pos, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+			_hand_tween.tween_property(card, "scale", EXPANDED_SCALE, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
 			card.get_node("AnimationPlayer").play("expand")
 	else: # Condense
 		# 1. Calculate the required size for the condensed pile.
@@ -122,7 +131,7 @@ func update_card_positions(is_expanded: bool, animate: bool) -> Signal:
 		var container_target_size := Vector2(total_hand_width, final_card_size.y)
 		
 		# 2. Animate this container's size. Its position is now set by CardsHUD.
-		tween.tween_property(self, "size", container_target_size, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+		_hand_tween.tween_property(self, "size", container_target_size, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
 		
 		# 4. Loop through each card and position it locally.
 		for i in range(cards.size()):
@@ -133,12 +142,12 @@ func update_card_positions(is_expanded: bool, animate: bool) -> Signal:
 			
 			var card_target_pos := Vector2(i * (final_card_size.x + target_separation), 0)
 			
-			tween.tween_property(card, "position", card_target_pos, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
-			tween.tween_property(card, "scale", CONDENSED_SCALE, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+			_hand_tween.tween_property(card, "position", card_target_pos, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+			_hand_tween.tween_property(card, "scale", CONDENSED_SCALE, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
 			card.get_node("AnimationPlayer").play("condense")
 
 	# Return the 'finished' signal from the tween for CardsHUD to await.
-	return tween.finished
+	return _hand_tween.finished
 
 
 func replace_card_at_index(index: int, new_card_data: CardData) -> void:

@@ -225,13 +225,23 @@ func _on_card_replaced(card_index: int, new_card_data: CardData) -> void:
 	# This is called when a single card is replaced.
 	# We tell the hand controller to replace the card visual.
 	_hand_container.replace_card_at_index(card_index, new_card_data)
+
 	# And then we make the hand visible again.
 	_hand_container.visible = true
 	_update_deck_count()
+
 	var selected_tower: TemplateTower = null
 	if is_instance_valid(_build_manager):
 		selected_tower = _build_manager.get_selected_tower()
 	_hand_container.update_buff_cards_state(selected_tower)
+
+	# If the hand is condensed, we need to restart the animation
+	# to include the new card.
+	if not _is_expanded:
+		# We must wait for the next frame for the old card node to be
+		# fully removed.
+		await get_tree().process_frame
+		condense()
 
 
 func _on_hand_container_card_played(card: Card) -> void:
@@ -311,10 +321,6 @@ func _on_hand_container_card_played(card: Card) -> void:
 func _toggle_cards(should_expand: bool, animate: bool = true) -> void:
 	# This function is a simple wrapper that delegates the work.
 	
-	# Don't start a new transition if one is already in progress.
-	if _is_transitioning:
-		return
-
 	# Update the state immediately.
 	_is_expanded = should_expand
 	_is_transitioning = true
@@ -324,11 +330,9 @@ func _toggle_cards(should_expand: bool, animate: bool = true) -> void:
 		_update_condensed_elements_layout(condensed_size)
 
 	# Tell the HandController to animate the cards to their new layout.
-	# We 'await' its completion signal before allowing another transition.
-	await _hand_container.update_card_positions(_is_expanded, animate)
-	
-	# The transition is complete.
-	_is_transitioning = false
+	# When the animation is finished, we update the transition state.
+	var tween_finished: Signal = _hand_container.update_card_positions(_is_expanded, animate)
+	tween_finished.connect(func(): _is_transitioning = false)
 
 
 func _update_deck_count() -> void:
