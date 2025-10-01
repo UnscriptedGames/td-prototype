@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=6 format=3 uid="uid://earhg57u63kk"]
+
+[ext_resource type="Script" uid="uid://clgj0ibwjjwrv" path="res://Entities/Cards/Effects/buff_tower_effect.gd" id="1_fgppg"]
+[ext_resource type="Script" uid="uid://d1g1t4lju13s1" path="res://Core/Data/StatusEffects/status_effect_data.gd" id="2_1liy0"]
+[ext_resource type="Texture2D" uid="uid://bwmpo1666w12k" path="res://Entities/Cards/Assets/attack_buff.png" id="3_55fmx"]
+[ext_resource type="Script" uid="uid://drvh5madwcotk" path="res://Entities/Cards/card_data.gd" id="4_kvu2o"]
+
+[sub_resource type="Resource" id="Resource_un1fe"]
+script = ExtResource("1_fgppg")
+cost = 5
+duration = 10.0
+range_increase = 0
+damage_increase = 0
+fire_rate_increase = 5.0
+extra_targets = 0
+status_effects = Array[ExtResource("2_1liy0")]([])
+metadata/_custom_type_script = "uid://clgj0ibwjjwrv"
+
+[resource]
+script = ExtResource("4_kvu2o")
+front_texture = ExtResource("3_55fmx")
+effect = SubResource("Resource_un1fe")
+metadata/_custom_type_script = "uid://drvh5madwcotk"

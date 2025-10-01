@@ -165,7 +165,9 @@ func replace_card_at_index(index: int, new_card_data: CardData) -> void:
 	var old_scale: Vector2 = old_card.scale
 	var old_z_index: int = old_card.z_index
 
-	# 3. Remove the old card.
+	# 3. Remove the old card from the container immediately so that layout
+	# calculations are correct. Then, queue it to be freed from memory.
+	remove_child(old_card)
 	old_card.queue_free()
 
 	# 4. Create and configure the new card.

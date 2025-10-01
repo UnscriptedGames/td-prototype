@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=7 format=3 uid="uid://cmisfewa516ij"]
+
+[ext_resource type="Script" uid="uid://clgj0ibwjjwrv" path="res://Entities/Cards/Effects/buff_tower_effect.gd" id="1_exgba"]
+[ext_resource type="Script" uid="uid://d1g1t4lju13s1" path="res://Core/Data/StatusEffects/status_effect_data.gd" id="2_s3cpb"]
+[ext_resource type="Resource" uid="uid://dlegj6gka2j2q" path="res://Core/Data/StatusEffects/slow.tres" id="3_y1cid"]
+[ext_resource type="Texture2D" uid="uid://dw4wgcdpl3jav" path="res://Entities/Cards/Assets/slow_buff.png" id="4_xmhv4"]
+[ext_resource type="Script" uid="uid://drvh5madwcotk" path="res://Entities/Cards/card_data.gd" id="5_a2lf7"]
+
+[sub_resource type="Resource" id="Resource_je665"]
+script = ExtResource("1_exgba")
+cost = 10
+duration = 20.0
+range_increase = 0
+damage_increase = 0
+fire_rate_increase = 0.0
+extra_targets = 0
+status_effects = Array[ExtResource("2_s3cpb")]([ExtResource("3_y1cid")])
+metadata/_custom_type_script = "uid://clgj0ibwjjwrv"
+
+[resource]
+script = ExtResource("5_a2lf7")
+front_texture = ExtResource("4_xmhv4")
+effect = SubResource("Resource_je665")
+metadata/_custom_type_script = "uid://drvh5madwcotk"

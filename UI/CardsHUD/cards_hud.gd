@@ -236,11 +236,9 @@ func _on_card_replaced(card_index: int, new_card_data: CardData) -> void:
 	_hand_container.update_buff_cards_state(selected_tower)
 
 	# If the hand is condensed, we need to restart the animation
-	# to include the new card.
+	# to include the new card. Because the old card is now removed from the
+	# container immediately, we can call condense() in the same frame.
 	if not _is_expanded:
-		# We must wait for the next frame for the old card node to be
-		# fully removed.
-		await get_tree().process_frame
 		condense()
 
 
