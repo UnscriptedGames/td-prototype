@@ -11,7 +11,6 @@ enemy_scene = ExtResource("3_ecju3")
 path = NodePath("Paths/Spawn01")
 count = 3
 enemy_delay = 1.5
-start_delay = 0.0
 metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
 
 [sub_resource type="Resource" id="Resource_ta7fp"]
@@ -19,14 +18,10 @@ script = ExtResource("2_mc1b4")
 enemy_scene = ExtResource("4_mc1b4")
 path = NodePath("Paths/Spawn02")
 count = 3
-enemy_delay = 1.0
 start_delay = 2.0
 metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
 
 [resource]
 script = ExtResource("1_ecju3")
-start_delay = 0.0
-reward_multiplier = 1.0
-is_boss_wave = false
 spawns = Array[ExtResource("2_mc1b4")]([SubResource("Resource_do1ii"), SubResource("Resource_ta7fp")])
 metadata/_custom_type_script = "uid://yqynaikbh4b2"

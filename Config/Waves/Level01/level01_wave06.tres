@@ -8,15 +8,11 @@
 script = ExtResource("2_s5wb5")
 enemy_scene = ExtResource("3_x3r2h")
 path = NodePath("Paths/Spawn02")
-count = 1
 enemy_delay = 0.0
-start_delay = 0.0
 metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
 
 [resource]
 script = ExtResource("1_x3r2h")
-start_delay = 0.0
-reward_multiplier = 1.0
 is_boss_wave = true
 spawns = Array[ExtResource("2_s5wb5")]([SubResource("Resource_s5wb5")])
 metadata/_custom_type_script = "uid://yqynaikbh4b2"

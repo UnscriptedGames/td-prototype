@@ -11,7 +11,6 @@ script = ExtResource("2_3ycn3")
 enemy_scene = ExtResource("3_uensy")
 path = NodePath("Paths/Spawn02")
 count = 4
-enemy_delay = 1.0
 start_delay = 1.0
 metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
 
@@ -21,7 +20,6 @@ enemy_scene = ExtResource("4_8bmg0")
 path = NodePath("Paths/Spawn02")
 count = 6
 enemy_delay = 1.5
-start_delay = 0.0
 metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
 
 [sub_resource type="Resource" id="Resource_2vnm0"]
@@ -39,13 +37,9 @@ enemy_scene = ExtResource("5_3ycn3")
 path = NodePath("Paths/Fly01")
 count = 4
 enemy_delay = 2.0
-start_delay = 0.0
 metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
 
 [resource]
 script = ExtResource("1_8bmg0")
-start_delay = 0.0
-reward_multiplier = 1.0
-is_boss_wave = false
 spawns = Array[ExtResource("2_3ycn3")]([SubResource("Resource_hdlly"), SubResource("Resource_ko20d"), SubResource("Resource_2vnm0"), SubResource("Resource_gpgdr")])
 metadata/_custom_type_script = "uid://yqynaikbh4b2"
