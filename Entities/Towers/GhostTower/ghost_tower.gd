@@ -27,25 +27,25 @@ func _exit_tree() -> void:
 # Initialises the ghost with tower data and the required layers (no ObjectLayer parameter).
 func initialize(
 		bm: BuildManager,
-		tower_data: TowerData,                 # Data that defines visuals and behaviour for this ghost.
-		path_layer_node: TileMapLayer,         # Path layer used to read the 'buildable' custom data.
-		highlight_layer_node: TileMapLayer,    # Layer used for valid/invalid highlight tiles.
-		highlight_ids_map: Dictionary          # Mapping of highlight tile IDs for quick lookups.
+		tower_data: TowerData, # Data that defines visuals and behaviour for this ghost.
+		path_layer_node: TileMapLayer, # Path layer used to read the 'buildable' custom data.
+		highlight_layer_node: TileMapLayer, # Layer used for valid/invalid highlight tiles.
+		highlight_ids_map: Dictionary # Mapping of highlight tile IDs for quick lookups.
 	) -> void:
 	build_manager = bm
-	data = tower_data                         # Store tower data for sprite/range setup.
-	path_layer = path_layer_node              # Cache the path layer reference for validity checks.
-	highlight_layer = highlight_layer_node    # Cache the highlight layer for preview feedback.
-	highlight_ids = highlight_ids_map         # Cache the highlight tile IDs dictionary.
+	data = tower_data # Store tower data for sprite/range setup.
+	path_layer = path_layer_node # Cache the path layer reference for validity checks.
+	highlight_layer = highlight_layer_node # Cache the highlight layer for preview feedback.
+	highlight_ids = highlight_ids_map # Cache the highlight tile IDs dictionary.
 
-	if not is_instance_valid(data):           # Fail fast if the tower data is missing/invalid.
+	if not is_instance_valid(data): # Fail fast if the tower data is missing/invalid.
 		push_error("GhostTower is missing its TowerData!")
 		queue_free()
 		return
 
-	sprite.texture = data.ghost_texture       # Apply the ghost sprite texture.
-	sprite.position = data.visual_offset      # Apply any visual offset to line up with the tile centre.
-	_generate_range_polygon()                 # Precompute the range polygon so preview renders immediately.
+	sprite.texture = data.ghost_texture # Apply the ghost sprite texture.
+	sprite.position = data.visual_offset # Apply any visual offset to line up with the tile centre.
+	_generate_range_polygon() # Precompute the range polygon so preview renders immediately.
 
 
 ## Called every frame. Updates position and validity.
@@ -86,18 +86,22 @@ func get_range_points() -> PackedVector2Array:
 
 
 ## Calculates and sets the points for the range polygon.
+## Calculates and sets the points for the range polygon.
 func _generate_range_polygon() -> void:
 	var points: PackedVector2Array = []
-	var full_tile_size := Vector2(192, 96)
+	var full_tile_size := Vector2(64, 64)
 	var tower_range = 0
 	if not data.levels.is_empty():
 		tower_range = data.levels[0].tower_range
 	var range_multiplier: float = tower_range + 0.5
 
-	points.append(Vector2(0, -full_tile_size.y * range_multiplier))
-	points.append(Vector2(full_tile_size.x * range_multiplier, 0))
-	points.append(Vector2(0, full_tile_size.y * range_multiplier))
-	points.append(Vector2(-full_tile_size.x * range_multiplier, 0))
+	# Generate a square polygon for top-down grid
+	var extent = full_tile_size * range_multiplier
+	
+	points.append(Vector2(-extent.x, -extent.y)) # Top Left
+	points.append(Vector2(extent.x, -extent.y)) # Top Right
+	points.append(Vector2(extent.x, extent.y)) # Bottom Right
+	points.append(Vector2(-extent.x, extent.y)) # Bottom Left
 
 	_range_points = points
 	range_shape.polygon = _range_points

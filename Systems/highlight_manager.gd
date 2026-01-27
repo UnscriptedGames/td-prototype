@@ -43,46 +43,14 @@ func show_ghost_highlights(layer: TileMapLayer, center: Vector2i, tower_range: i
 			layer.set_cell(tile_pos, range_id, _HIGHLIGHT_ATLAS_COORDS)
 
 
-## Uses a Breadth-First Search to find all tiles within a given range.
+## Returns all tiles within a square range (Chebyshev distance).
 func _get_tiles_in_range(start_pos: Vector2i, p_range: int) -> Array[Vector2i]:
-	var queue: Array[Vector2i] = [start_pos]
-	var visited: Dictionary = {start_pos: 0} # Stores tile -> distance
 	var tiles_in_range: Array[Vector2i] = []
 	
-	var head: int = 0
-	while head < queue.size():
-		var current_tile: Vector2i = queue[head]
-		head += 1
-		
-		var current_distance: int = visited[current_tile]
-		
-		if current_distance >= p_range:
-			continue
+	for x in range(-p_range, p_range + 1):
+		for y in range(-p_range, p_range + 1):
+			# Determine the tile position relative to the center
+			var tile_pos := start_pos + Vector2i(x, y)
+			tiles_in_range.append(tile_pos)
 			
-		var is_even_row: bool = current_tile.y % 2 == 0
-		var neighbor_offsets := _get_neighbor_offsets(is_even_row)
-		
-		for offset in neighbor_offsets:
-			var neighbor: Vector2i = current_tile + offset
-			if not visited.has(neighbor):
-				visited[neighbor] = current_distance + 1
-				queue.append(neighbor)
-				tiles_in_range.append(neighbor)
-				
 	return tiles_in_range
-
-
-## Returns the correct 8 neighbor offsets based on row parity.
-func _get_neighbor_offsets(is_even_row: bool) -> Array[Vector2i]:
-	if is_even_row: # EVEN rows
-		return [
-			Vector2i(0, -2), Vector2i(-1, -1), Vector2i(0, -1),
-			Vector2i(1, 0), Vector2i(-1, 0),
-			Vector2i(-1, 1), Vector2i(0, 1), Vector2i(0, 2)
-		]
-	else: # ODD rows
-		return [
-			Vector2i(0, -2), Vector2i(0, -1), Vector2i(-1, 0),
-			Vector2i(0, 1), Vector2i(0, 2), Vector2i(1, 1),
-			Vector2i(1, 0), Vector2i(1, -1)
-		]

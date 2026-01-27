@@ -7,7 +7,7 @@ signal upgraded
 @warning_ignore("unused_signal")
 signal stats_changed
 
-enum State { IDLE, ATTACKING }
+enum State {IDLE, ATTACKING}
 
 @export var state: State = State.IDLE
 var data: TowerData
@@ -349,7 +349,7 @@ func upgrade_path(level_index: int) -> void:
 
 	var upgrade_data: TowerLevelData = data.levels[level_index]
 	if not GameManager.player_data.can_afford(upgrade_data.cost):
-		return  # Cannot afford upgrade
+		return # Cannot afford upgrade
 
 	GameManager.remove_currency(upgrade_data.cost)
 	upgrade_path_indices.append(level_index)
@@ -410,13 +410,16 @@ func upgrade_path(level_index: int) -> void:
 
 func _update_range_polygon() -> void:
 	var points: PackedVector2Array = []
-	var full_tile_size := Vector2(192, 96)
+	var full_tile_size := Vector2(64, 64)
 	var range_multiplier: float = tower_range + 0.5
-
-	points.append(Vector2(0, -full_tile_size.y * range_multiplier))
-	points.append(Vector2(full_tile_size.x * range_multiplier, 0))
-	points.append(Vector2(0, full_tile_size.y * range_multiplier))
-	points.append(Vector2(-full_tile_size.x * range_multiplier, 0))
+	
+	# Generate a square polygon for top-down grid
+	var extent = full_tile_size * range_multiplier
+	
+	points.append(Vector2(-extent.x, -extent.y)) # Top Left
+	points.append(Vector2(extent.x, -extent.y)) # Top Right
+	points.append(Vector2(extent.x, extent.y)) # Bottom Right
+	points.append(Vector2(-extent.x, extent.y)) # Bottom Left
 
 	range_shape.polygon = points
 
