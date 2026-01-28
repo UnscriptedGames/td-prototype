@@ -10,6 +10,9 @@ extends CardEffect
 ## The data for the tower that this effect will build.
 @export var tower_data: TowerData
 
+## The scene for the tower that this effect will build.
+@export var tower_scene: PackedScene
+
 
 # --- VIRTUAL METHOD OVERRIDES ---
 
@@ -37,5 +40,5 @@ func execute(_context: Dictionary) -> void:
 		# Stop the function to prevent further errors.
 		return
 
-	# Emit the global signal, passing along the specific tower data.
-	GlobalSignals.build_tower_requested.emit(tower_data)
+	# Emit the global signal, passing along both the data and the scene.
+	GlobalSignals.build_tower_requested.emit(tower_data, tower_scene)

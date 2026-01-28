@@ -10,10 +10,6 @@
 script = ExtResource("1_exgba")
 cost = 10
 duration = 20.0
-range_increase = 0
-damage_increase = 0
-fire_rate_increase = 0.0
-extra_targets = 0
 status_effects = Array[ExtResource("2_s3cpb")]([ExtResource("3_y1cid")])
 metadata/_custom_type_script = "uid://clgj0ibwjjwrv"
 

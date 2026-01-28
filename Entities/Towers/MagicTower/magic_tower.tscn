@@ -1,7 +1,8 @@
-[gd_scene load_steps=14 format=3 uid="uid://pfn6g0trbvuw"]
+[gd_scene load_steps=15 format=3 uid="uid://pfn6g0trbvuw"]
 
 [ext_resource type="PackedScene" uid="uid://dijji12gvss7h" path="res://Entities/Towers/_TemplateTower/template_tower.tscn" id="1_t6hxg"]
 [ext_resource type="Texture2D" uid="uid://crlwe4egelijv" path="res://Entities/Towers/MagicTower/Assets/magic_tower_level02_spritesheet.png" id="2_b16vo"]
+[ext_resource type="Resource" uid="uid://c5v3s0n3fxli3" path="res://Config/Towers/magic_tower_data.tres" id="2_jei30"]
 [ext_resource type="Texture2D" uid="uid://bums8ndyri21v" path="res://Entities/Towers/MagicTower/Assets/magic_tower_level01_spritesheet.png" id="2_vtecl"]
 [ext_resource type="Texture2D" uid="uid://bx44p1ts28sc2" path="res://Entities/Towers/MagicTower/Assets/magic_tower_level03_spritesheet.png" id="4_ce7gd"]
 
@@ -267,6 +268,7 @@ _data = {
 }
 
 [node name="MagicTower" instance=ExtResource("1_t6hxg")]
+data = ExtResource("2_jei30")
 
 [node name="Sprite" parent="." index="1"]
 texture = ExtResource("2_b16vo")

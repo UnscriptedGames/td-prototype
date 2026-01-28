@@ -1,13 +1,15 @@
-[gd_resource type="Resource" script_class="CardData" load_steps=6 format=3 uid="uid://b8ab3b01oeqpu"]
+[gd_resource type="Resource" script_class="CardData" load_steps=7 format=3 uid="uid://b8ab3b01oeqpu"]
 
 [ext_resource type="Script" uid="uid://1pgmy4c6yckj" path="res://Entities/Cards/Effects/build_tower_effect.gd" id="1_bssmu"]
 [ext_resource type="Resource" uid="uid://bojj6xdad27bq" path="res://Config/Towers/archer_tower_data.tres" id="2_2fwjp"]
 [ext_resource type="Texture2D" uid="uid://dbg0iecj244sa" path="res://Entities/Cards/Assets/card_archer_tower.png" id="3_p8w8c"]
 [ext_resource type="Script" uid="uid://drvh5madwcotk" path="res://Entities/Cards/card_data.gd" id="4_6owso"]
+[ext_resource type="PackedScene" uid="uid://bgedhv3rnitf0" path="res://Entities/Towers/ArcherTower/archer_tower.tscn" id="4_scene"]
 
 [sub_resource type="Resource" id="Resource_ocjl4"]
 script = ExtResource("1_bssmu")
 tower_data = ExtResource("2_2fwjp")
+tower_scene = ExtResource("4_scene")
 metadata/_custom_type_script = "uid://1pgmy4c6yckj"
 
 [resource]

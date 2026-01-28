@@ -7,7 +7,7 @@ signal tower_selected
 signal tower_deselected
 # REMOVED old tower_placed signal
 
-enum State { VIEWING, BUILDING_TOWER, TOWER_SELECTED }
+enum State {VIEWING, BUILDING_TOWER, TOWER_SELECTED}
 
 @export var ghost_tower_scene: PackedScene ## Set this in the Inspector!
 # IDs for the selected tower's permanent highlights
@@ -25,12 +25,13 @@ var _ghost_tower: Node2D
 var _selected_tower: TemplateTower
 var _is_placing: bool = false ## NEW: Prevents cancel signal on successful placement.
 var _occupied_build_tiles: Dictionary = {}
+var _pending_tower_scene: PackedScene ## Coupelled from TowerData to avoid circular dependencies.
 
 ## Node References
 @onready var hud: LevelHUD = get_node("../LevelHUD")
 @onready var towers_container: Node2D = get_node("../Entities/Towers")
 @onready var highlight_layer: TileMapLayer = get_node("../TileMaps/HighlightLayer")
-@onready var path_layer: TileMapLayer = get_node("../TileMaps/PathLayer")
+@onready var path_layer: TileMapLayer = get_node("../TileMaps/MapLayer")
 
 
 ## Called when the node enters the scene tree.
@@ -126,11 +127,11 @@ func get_selected_tower_sell_value() -> int:
 
 # --- PRIVATE SIGNAL HANDLERS ---
 
-func _on_build_tower_requested(tower_data: TowerData) -> void:
+func _on_build_tower_requested(tower_data: TowerData, tower_scene: PackedScene) -> void:
 	if state == State.BUILDING_TOWER:
 		_exit_build_mode()
 	else:
-		_enter_build_mode(tower_data)
+		_enter_build_mode(tower_data, tower_scene)
 
 
 func _on_sell_tower_requested() -> void:
@@ -157,11 +158,11 @@ func _on_target_priority_changed(priority: TargetPriority.Priority) -> void:
 # --- PRIVATE METHODS ---
 
 func place_tower(tower_data: TowerData, build_position: Vector2, range_points: PackedVector2Array) -> void:
-	if not tower_data.placed_tower_scene:
-		push_error("Attempted to place an invalid tower scene. Check the TowerData resource.")
+	if not _pending_tower_scene:
+		push_error("Attempted to place an invalid tower scene. _pending_tower_scene is null.")
 		return
 
-	var new_tower := tower_data.placed_tower_scene.instantiate() as TemplateTower
+	var new_tower := _pending_tower_scene.instantiate() as TemplateTower
 	new_tower.global_position = build_position
 	towers_container.add_child(new_tower)
 
@@ -215,9 +216,10 @@ func _get_tower_at_position(screen_position: Vector2) -> TemplateTower:
 	return null
 
 
-func _enter_build_mode(tower_data: TowerData) -> void:
+func _enter_build_mode(tower_data: TowerData, tower_scene: PackedScene) -> void:
 	_deselect_current_tower()
 	state = State.BUILDING_TOWER
+	_pending_tower_scene = tower_scene
 	_is_placing = false ## Reset the placing flag.
 	InputManager.set_state(InputManager.State.BUILDING_TOWER) # Notify InputManager
 	GlobalSignals.build_mode_entered.emit()

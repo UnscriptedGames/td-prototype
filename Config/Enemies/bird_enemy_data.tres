@@ -7,10 +7,7 @@
 script = ExtResource("2_opnw5")
 max_health = 3
 speed = 80.0
-reward = 1
-damage = 1
 is_flying = true
-max_path_offset = 32.0
 variants = Array[String](["grey"])
 required_actions = Array[String](["move", "die"])
 animations = ExtResource("1_npjyg")

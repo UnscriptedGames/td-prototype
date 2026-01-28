@@ -10,7 +10,7 @@ extends Node
 ## The BuildManager will listen for this.
 ## @param tower_data: The TowerData resource for the tower to be built.
 @warning_ignore("unused_signal")
-signal build_tower_requested(tower_data: TowerData)
+signal build_tower_requested(tower_data: TowerData, tower_scene: PackedScene)
 
 ## Emitted by the BuildManager when it enters build mode.
 ## The CardsHUD will listen for this to hide the cards.

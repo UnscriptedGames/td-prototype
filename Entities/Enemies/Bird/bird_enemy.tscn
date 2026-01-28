@@ -32,12 +32,5 @@ position = Vector2(0, -58.185)
 rotation = 1.5708
 shape = SubResource("CapsuleShape2D_an7jk")
 
-[node name="HealthBar" parent="ProgressBarContainer" index="0"]
-offset_left = -34.0
-offset_top = -111.55
-offset_right = 62.0
-offset_bottom = -95.55
-scale = Vector2(0.7, 0.7)
-
 [node name="TargetPoint" parent="." index="4"]
 position = Vector2(0, -55.91)

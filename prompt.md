@@ -5,3 +5,5 @@ Confirm once you are familiar with the documents and ready to begin with the nex
 ---------------------------------------------
 
 We are finishing this session. Please perform the Handover Protocol as per @architecture.md
+
+There is nothing that needs to be handed over from this session so please clear the handover file.

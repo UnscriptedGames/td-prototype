@@ -1,8 +1,9 @@
-[gd_scene load_steps=14 format=3 uid="uid://tm8k7ow23cuu"]
+[gd_scene load_steps=15 format=3 uid="uid://tm8k7ow23cuu"]
 
 [ext_resource type="PackedScene" uid="uid://dijji12gvss7h" path="res://Entities/Towers/_TemplateTower/template_tower.tscn" id="1_l7y83"]
 [ext_resource type="Texture2D" uid="uid://cui84rt2runhh" path="res://Entities/Towers/BombTower/Assets/bomb_tower_level02_spritesheet.png" id="2_t7s1i"]
 [ext_resource type="Texture2D" uid="uid://xlfmca8a8kpw" path="res://Entities/Towers/BombTower/Assets/bomb_tower_level01_spritesheet.png" id="2_usouf"]
+[ext_resource type="Resource" uid="uid://dvgo1u4245bj4" path="res://Config/Towers/bomb_tower_data.tres" id="2_yrhkj"]
 [ext_resource type="Texture2D" uid="uid://c3e8r43xakout" path="res://Entities/Towers/BombTower/Assets/bomb_tower_level03_spritesheet.png" id="4_bp527"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_usouf"]
@@ -257,6 +258,7 @@ _data = {
 }
 
 [node name="BombTower" instance=ExtResource("1_l7y83")]
+data = ExtResource("2_yrhkj")
 
 [node name="Sprite" parent="." index="1"]
 texture = ExtResource("2_t7s1i")

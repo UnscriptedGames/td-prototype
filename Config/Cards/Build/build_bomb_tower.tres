@@ -1,13 +1,15 @@
-[gd_resource type="Resource" script_class="CardData" load_steps=6 format=3 uid="uid://b5c73syjytbge"]
+[gd_resource type="Resource" script_class="CardData" load_steps=7 format=3 uid="uid://b5c73syjytbge"]
 
 [ext_resource type="Script" uid="uid://1pgmy4c6yckj" path="res://Entities/Cards/Effects/build_tower_effect.gd" id="1_mh3rs"]
 [ext_resource type="Resource" uid="uid://dvgo1u4245bj4" path="res://Config/Towers/bomb_tower_data.tres" id="2_tglry"]
 [ext_resource type="Texture2D" uid="uid://cua2ntrndji3f" path="res://Entities/Cards/Assets/card_bomb_tower.png" id="3_54jmh"]
 [ext_resource type="Script" uid="uid://drvh5madwcotk" path="res://Entities/Cards/card_data.gd" id="4_6hywa"]
+[ext_resource type="PackedScene" uid="uid://tm8k7ow23cuu" path="res://Entities/Towers/BombTower/bomb_tower.tscn" id="4_scene"]
 
 [sub_resource type="Resource" id="Resource_ocjl4"]
 script = ExtResource("1_mh3rs")
 tower_data = ExtResource("2_tglry")
+tower_scene = ExtResource("4_scene")
 metadata/_custom_type_script = "uid://1pgmy4c6yckj"
 
 [resource]

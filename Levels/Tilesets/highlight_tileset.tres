@@ -1,56 +1,54 @@
-[gd_resource type="TileSet" load_steps=10 format=3 uid="uid://dq71bx8v7hske"]
+[gd_resource type="TileSet" load_steps=9 format=3 uid="uid://dq71bx8v7hske"]
 
-[ext_resource type="Texture2D" uid="uid://7nx0rvq4r0by" path="res://Levels/Tilesets/Assets/highlight_tower.png" id="1_46002"]
-[ext_resource type="Texture2D" uid="uid://dq0v84xqse3gk" path="res://Levels/Tilesets/Assets/highlight_range.png" id="2_p28e7"]
-[ext_resource type="Texture2D" uid="uid://damq8hnhef4p" path="res://Levels/Tilesets/Test Assets/towerDefense_tile042.png" id="3_p28e7"]
+[ext_resource type="Texture2D" uid="uid://qgnxmmqex1en" path="res://Levels/Tilesets/Assets/Highlight Tower.png" id="1_3sq48"]
+[ext_resource type="Texture2D" uid="uid://ctsmm8i2fop7l" path="res://Levels/Tilesets/Assets/Highlight Range.png" id="2_7ekro"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_3sq48"]
 resource_name = "Highlight Tower"
-texture = ExtResource("1_46002")
-texture_region_size = Vector2i(192, 192)
+texture = ExtResource("1_3sq48")
+texture_region_size = Vector2i(64, 64)
 0:0/0 = 0
 0:0/0/texture_origin = Vector2i(0, 3)
 0:0/0/modulate = Color(1, 1, 1, 0.5)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_7ekro"]
 resource_name = "Highlight Range"
-texture = ExtResource("2_p28e7")
-texture_region_size = Vector2i(192, 192)
+texture = ExtResource("2_7ekro")
+texture_region_size = Vector2i(64, 64)
 0:0/0 = 0
 0:0/0/texture_origin = Vector2i(0, 3)
 0:0/0/modulate = Color(1, 1, 1, 0.5)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_i10uu"]
 resource_name = "Valid Tower"
-texture = ExtResource("1_46002")
-texture_region_size = Vector2i(192, 192)
+texture = ExtResource("1_3sq48")
+texture_region_size = Vector2i(64, 64)
 0:0/0 = 0
 0:0/0/texture_origin = Vector2i(0, 3)
 0:0/0/modulate = Color(0.227451, 0.956863, 0.529412, 0.407843)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_66h0c"]
 resource_name = "Valid Range"
-texture = ExtResource("2_p28e7")
-texture_region_size = Vector2i(192, 192)
+texture = ExtResource("2_7ekro")
+texture_region_size = Vector2i(64, 64)
 0:0/0 = 0
 0:0/0/texture_origin = Vector2i(0, 3)
 0:0/0/modulate = Color(0.227451, 0.956863, 0.529412, 0.407843)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_x7jhd"]
 resource_name = "Invalid Tower"
-texture = ExtResource("1_46002")
-texture_region_size = Vector2i(192, 192)
+texture = ExtResource("1_3sq48")
+texture_region_size = Vector2i(64, 64)
 0:0/0 = 0
 0:0/0/texture_origin = Vector2i(0, 3)
 0:0/0/modulate = Color(0.933333, 0.368627, 0.298039, 0.466667)
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0owdd"]
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_46002"]
 resource_name = "Invalid Range"
-texture = ExtResource("3_p28e7")
+texture = ExtResource("2_7ekro")
 texture_region_size = Vector2i(64, 64)
 0:0/0 = 0
-0:0/0/texture_origin = Vector2i(0, 3)
-0:0/0/modulate = Color(0.06100855, 0, 0, 0.934)
+0:0/0/modulate = Color(0.93333334, 0.36862746, 0.29803923, 0.46666667)
 
 [resource]
 tile_size = Vector2i(64, 64)
@@ -59,4 +57,4 @@ sources/1 = SubResource("TileSetAtlasSource_7ekro")
 sources/2 = SubResource("TileSetAtlasSource_i10uu")
 sources/3 = SubResource("TileSetAtlasSource_66h0c")
 sources/4 = SubResource("TileSetAtlasSource_x7jhd")
-sources/5 = SubResource("TileSetAtlasSource_0owdd")
+sources/6 = SubResource("TileSetAtlasSource_46002")

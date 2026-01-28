@@ -1,6 +1,7 @@
-[gd_scene load_steps=14 format=3 uid="uid://bgedhv3rnitf0"]
+[gd_scene load_steps=15 format=3 uid="uid://bgedhv3rnitf0"]
 
 [ext_resource type="PackedScene" uid="uid://dijji12gvss7h" path="res://Entities/Towers/_TemplateTower/template_tower.tscn" id="1_8gvhp"]
+[ext_resource type="Resource" uid="uid://bojj6xdad27bq" path="res://Config/Towers/archer_tower_data.tres" id="2_4ns4d"]
 [ext_resource type="Texture2D" uid="uid://bhim1nyfagr1n" path="res://Entities/Towers/ArcherTower/Assets/archer_tower_level01_spritesheet.png" id="2_cmcjc"]
 [ext_resource type="Texture2D" uid="uid://6r5314msfpmd" path="res://Entities/Towers/ArcherTower/Assets/archer_tower_level02_spritesheet.png" id="2_kc3mf"]
 [ext_resource type="Texture2D" uid="uid://crwmeqjybguqd" path="res://Entities/Towers/ArcherTower/Assets/archer_tower_level03_spritesheet.png" id="4_1bov1"]
@@ -255,6 +256,7 @@ _data = {
 }
 
 [node name="ArcherTower" instance=ExtResource("1_8gvhp")]
+data = ExtResource("2_4ns4d")
 
 [node name="Sprite" parent="." index="1"]
 texture = ExtResource("2_kc3mf")

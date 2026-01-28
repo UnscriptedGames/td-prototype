@@ -10,7 +10,7 @@ signal stats_changed
 enum State {IDLE, ATTACKING}
 
 @export var state: State = State.IDLE
-var data: TowerData
+@export var data: TowerData
 var current_level: int = 0
 var upgrade_tier: int = 0
 var upgrade_path_indices: Array[int] = []
