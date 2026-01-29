@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://tarbqwe3cnru"
-path="res://.godot/imported/towerDefense_tile250.png-37df1a28ea2b953c9483b1b2990aa83f.ctex"
+uid="uid://33xtf4vk8y5k"
+path="res://.godot/imported/tile_maze.png-a55c17f0b059d19d57f23e2e6d30acf2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Levels/Tilesets/Assets/towerDefense_tile250.png"
-dest_files=["res://.godot/imported/towerDefense_tile250.png-37df1a28ea2b953c9483b1b2990aa83f.ctex"]
+source_file="res://Levels/Tilesets/Assets/tile_maze.png"
+dest_files=["res://.godot/imported/tile_maze.png-a55c17f0b059d19d57f23e2e6d30acf2.ctex"]
 
 [params]
 

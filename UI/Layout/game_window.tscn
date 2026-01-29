@@ -1,0 +1,103 @@
+[gd_scene load_steps=3 format=3 uid="uid://d3x1y204a5b6c"]
+
+[ext_resource type="Script" uid="uid://dtscqhcaqtreq" path="res://UI/Layout/game_window.gd" id="1_layout"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.12, 0.12, 0.12, 1)
+
+[node name="GameWindow" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_layout")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="MainLayout" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="TopBar" type="PanelContainer" parent="MainLayout"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+
+[node name="Content" type="HBoxContainer" parent="MainLayout/TopBar"]
+layout_mode = 2
+
+[node name="MenuPlaceholder" type="Label" parent="MainLayout/TopBar/Content"]
+layout_mode = 2
+text = "  File   Edit   Settings   Help"
+
+[node name="Spacer" type="Control" parent="MainLayout/TopBar/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TransportControls" type="HBoxContainer" parent="MainLayout/TopBar/Content"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="PlayButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls"]
+layout_mode = 2
+text = " ▶ Play "
+
+[node name="PauseButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls"]
+layout_mode = 2
+text = " ⏸ Pause "
+
+[node name="Spacer2" type="Control" parent="MainLayout/TopBar/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="WorkspaceSplit" type="HBoxContainer" parent="MainLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="GameViewContainer" type="SubViewportContainer" parent="MainLayout/WorkspaceSplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+stretch = true
+clip_contents = true
+
+[node name="SubViewport" type="SubViewport" parent="MainLayout/WorkspaceSplit/GameViewContainer"]
+handle_input_locally = false
+size = Vector2i(1536, 1024)
+render_target_update_mode = 4
+
+[node name="RightSidebar" type="PanelContainer" parent="MainLayout/WorkspaceSplit"]
+custom_minimum_size = Vector2(384, 0)
+layout_mode = 2
+
+[node name="SidebarContent" type="VBoxContainer" parent="MainLayout/WorkspaceSplit/RightSidebar"]
+layout_mode = 2
+
+[node name="Header" type="Label" parent="MainLayout/WorkspaceSplit/RightSidebar/SidebarContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Effects Rack"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MainLayout/WorkspaceSplit/RightSidebar/SidebarContent"]
+layout_mode = 2
+
+[node name="CardsPlaceholder" type="Label" parent="MainLayout/WorkspaceSplit/RightSidebar/SidebarContent"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "[Card Deck Placeholder]"
+horizontal_alignment = 1
+vertical_alignment = 1

@@ -28,7 +28,8 @@ var _occupied_build_tiles: Dictionary = {}
 var _pending_tower_scene: PackedScene ## Coupelled from TowerData to avoid circular dependencies.
 
 ## Node References
-@onready var hud: LevelHUD = get_node("../LevelHUD")
+## Node References
+var hud: LevelHUD # Dynamically resolved or passed via signals in future
 @onready var towers_container: Node2D = get_node("../Entities/Towers")
 @onready var highlight_layer: TileMapLayer = get_node("../TileMaps/HighlightLayer")
 @onready var path_layer: TileMapLayer = get_node("../TileMaps/MapLayer")
@@ -36,8 +37,11 @@ var _pending_tower_scene: PackedScene ## Coupelled from TowerData to avoid circu
 
 ## Called when the node enters the scene tree.
 func _ready() -> void:
-	# Connects to signals from the LevelHUD for legacy build buttons.
-	if is_instance_valid(hud):
+	# Try to find the HUD if it exists (legacy support), otherwise skip.
+	# In the new layout, BuildManager shouldn't talk to HUD directly anyway.
+	var hud_node = get_node_or_null("../LevelHUD")
+	if is_instance_valid(hud_node):
+		hud = hud_node
 		hud.sell_tower_requested.connect(_on_sell_tower_requested)
 		hud.target_priority_changed.connect(_on_target_priority_changed)
 

@@ -1,37 +1,29 @@
-[gd_scene load_steps=11 format=3 uid="uid://bir7iuxfukxsb"]
+[gd_scene load_steps=7 format=3 uid="uid://bir7iuxfukxsb"]
 
 [ext_resource type="Script" uid="uid://6irywbbrglw3" path="res://Levels/TemplateLevel/template_level.gd" id="1_f16nf"]
 [ext_resource type="TileSet" uid="uid://deanuyo4c5m1j" path="res://Levels/Tilesets/path_tileset.tres" id="1_ser8i"]
-[ext_resource type="PackedScene" uid="uid://qy230vei6n8p" path="res://UI/LevelHUD/level_hud.tscn" id="3_sv07c"]
 [ext_resource type="Script" uid="uid://cyy8netls8x7r" path="res://Systems/build_manager.gd" id="3_x6qrl"]
 [ext_resource type="Script" uid="uid://yny7h3dispg0" path="res://Addons/Tools/tilemap_buildable_overlay.gd" id="3_ylfxi"]
 [ext_resource type="PackedScene" uid="uid://d3ilyyujh1y78" path="res://Entities/Towers/GhostTower/ghost_tower.tscn" id="4_gxwin"]
 [ext_resource type="PackedScene" uid="uid://bofddehla75b3" path="res://Entities/Cards/card_manager.tscn" id="7_3pnw0"]
-[ext_resource type="PackedScene" uid="uid://cwisj0cf6hqqu" path="res://UI/CardsHUD/cards_hud.tscn" id="8_85qtr"]
-
-[sub_resource type="Gradient" id="Gradient_85qtr"]
-offsets = PackedFloat32Array(0, 0.51079136, 1)
-colors = PackedColorArray(0.21176471, 0.23921569, 0.2901961, 1, 0.21176471, 0.23921569, 0.2901961, 1, 0.21176471, 0.23921569, 0.2901961, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_pbnvl"]
-gradient = SubResource("Gradient_85qtr")
 
 [node name="TemplateLevel" type="Node2D"]
 y_sort_enabled = true
 script = ExtResource("1_f16nf")
 
-[node name="BackgroundLayer" type="CanvasLayer" parent="."]
-layer = -100
-
-[node name="Background" type="TextureRect" parent="BackgroundLayer"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="Background" type="TextureRect" parent="."]
+offset_right = 1570.0
+offset_bottom = 1012.0
 mouse_filter = 2
-texture = SubResource("GradientTexture2D_pbnvl")
 expand_mode = 1
+
+[node name="DesignGuide" type="ReferenceRect" parent="."]
+offset_right = 1536.0
+offset_bottom = 1024.0
+mouse_filter = 2
+border_color = Color(1, 0, 0, 0.5)
+border_width = 2.0
+editor_only = true
 
 [node name="TileMaps" type="Node2D" parent="."]
 y_sort_enabled = true
@@ -75,20 +67,16 @@ ghost_tower_scene = ExtResource("4_gxwin")
 selected_tower_id = 0
 selected_range_id = 1
 valid_tower_id = 2
-valid_range_id = 3
 invalid_tower_id = 4
+valid_range_id = 3
 invalid_range_id = 6
 
 [node name="CardManager" parent="." instance=ExtResource("7_3pnw0")]
 
 [node name="LevelCamera" type="Camera2D" parent="."]
-position = Vector2(960, 540)
+position = Vector2(768, 512)
 limit_left = 0
 limit_top = 0
-limit_right = 1920
-limit_bottom = 1080
+limit_right = 1536
+limit_bottom = 1024
 position_smoothing_enabled = true
-
-[node name="LevelHUD" parent="." instance=ExtResource("3_sv07c")]
-
-[node name="CardsHUD" parent="." instance=ExtResource("8_85qtr")]

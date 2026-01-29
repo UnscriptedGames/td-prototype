@@ -19,9 +19,6 @@ var _paths: Dictionary = {}
 ## Onready Variables
 
 @onready var entities: Node2D = $Entities
-@onready var _level_hud: LevelHUD = $LevelHUD as LevelHUD
-@onready var _card_manager: CardManager = $CardManager
-@onready var _cards_hud: CardsHUD = $CardsHUD as CardsHUD
 
 ## Built-in Methods
 
@@ -41,33 +38,12 @@ func _ready() -> void:
 	ObjectPoolManager.create_node_pool("PathFollow2D", 50)
 
 	# --- Card System Initialisation ---
-	# Initialise the CardsHUD with a reference to the CardManager.
-	_cards_hud.initialise(_card_manager)
-
-	# Register the LevelHUD with the InputManager
-	if is_instance_valid(_level_hud):
-		InputManager.register_level_hud(_level_hud)
-		
-	# Prepare HUD button state and connect the wave request signal.
-	if is_instance_valid(_level_hud):
-		if level_data and _current_wave_index < level_data.waves.size():
-			_level_hud.set_next_wave_enabled(true)
-			_level_hud.set_next_wave_text("Begin")
-		else:
-			_level_hud.set_next_wave_enabled(false)
-			_level_hud.set_next_wave_text("Final Wave")
-
-		_level_hud.next_wave_requested.connect(_on_next_wave_requested)
-	else:
-		if OS.is_debug_build():
-			push_warning("LevelHUD not found in TemplateLevel.")
+	# TODO: Card Manager initialization will move to the new GameWindow controller/UI later.
+	# For now, it runs but doesn't have a HUD to talk to directly here.
 
 	
 func _exit_tree() -> void:
-	# Disconnect HUD signals to avoid leaks in recycled scenes.
-	if is_instance_valid(_level_hud):
-		if _level_hud.next_wave_requested.is_connected(_on_next_wave_requested):
-			_level_hud.next_wave_requested.disconnect(_on_next_wave_requested)
+	pass
 
 
 ## Custom Public Methods
@@ -208,15 +184,9 @@ func _on_next_wave_requested() -> void:
 		return
 
 	if level_data and _current_wave_index >= level_data.waves.size():
-		if is_instance_valid(_level_hud):
-			_level_hud.set_next_wave_enabled(false)
-			_level_hud.set_next_wave_text("Final Wave")
 		return
 
 	_spawning = true
-	if is_instance_valid(_level_hud):
-		_level_hud.set_next_wave_enabled(false)
-		_level_hud.set_next_wave_text("Spawning")
 
 	_start_wave(_current_wave_index)
 	_current_wave_index += 1
@@ -232,14 +202,4 @@ func _on_group_spawn_finished() -> void:
 func _on_wave_spawn_finished() -> void:
 	# Ends the spawning phase and updates HUD controls.
 	_spawning = false
-	if not is_instance_valid(_level_hud):
-		return
-
-	var has_more := level_data and _current_wave_index < level_data.waves.size()
-	if not has_more:
-		_level_hud.set_next_wave_enabled(false)
-		_level_hud.set_next_wave_text("Final Wave")
-		return
-
-	_level_hud.set_next_wave_enabled(true)
-	_level_hud.set_next_wave_text("Next Wave")
+	pass

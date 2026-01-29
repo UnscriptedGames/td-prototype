@@ -1,3 +1,4 @@
-# TD-Prototype: Handover Notes
+<!-- id: handover -->
+# Handover
 
-*Session finished. No active tasks or pending items to hand over.*
+No active tasks or pending items. Project is clean.

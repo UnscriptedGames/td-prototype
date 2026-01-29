@@ -2,6 +2,8 @@ extends Node
 
 ## The scene that will be displayed during loading.
 var loading_screen_scene: PackedScene = preload("res://UI/LoadingScreen/loading_screen.tscn")
+## The shell window that contains the UI and the SubViewport for the level.
+var game_window_scene: PackedScene = preload("res://UI/Layout/game_window.tscn")
 
 
 func load_scene(scene_path: String) -> void:
@@ -11,14 +13,17 @@ func load_scene(scene_path: String) -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 
-	# 2. Load the scene resource and create an instance, but DO NOT add it to the tree yet.
-	var new_scene_resource: PackedScene = load(scene_path)
-	var new_scene_instance := new_scene_resource.instantiate() as TemplateLevel
+	# 2. Instantiate the GameWindow shell.
+	var game_window_instance := game_window_scene.instantiate() as GameWindow
+	
+	# 3. Load the ACTUAL Level scene.
+	var level_resource: PackedScene = load(scene_path)
+	var level_instance := level_resource.instantiate() as TemplateLevel
 
-	# 3. Get the level data from the instance and create all the necessary object pools.
+	# 4. Get the level data from the instance and create all the necessary object pools.
 	#    This is the heavy, synchronous work that will freeze the game on the loading screen.
-	if is_instance_valid(new_scene_instance.level_data):
-		var level_data := new_scene_instance.level_data
+	if is_instance_valid(level_instance.level_data):
+		var level_data := level_instance.level_data
 		
 		# Create enemy pools
 		var unique_enemies: Array[PackedScene] = []
@@ -40,11 +45,19 @@ func load_scene(scene_path: String) -> void:
 		for projectile_scene in unique_projectiles:
 			ObjectPoolManager.create_pool(projectile_scene, 50)
 	
-	# 4. Now that all work is done, free the old scene.
-	get_tree().current_scene.queue_free()
+	# 5. Add the GameWindow (containing the level) to the root.
+	get_tree().root.add_child(game_window_instance)
+	
+	# 6. Inject the prepared Level into the GameWindow.
+	#    We do this AFTER adding to tree so GameWindow._ready() has run and nodes are valid.
+	game_window_instance.load_level_instance(level_instance)
 
-	# 5. Add the fully prepared new scene to the game.
-	get_tree().root.add_child(new_scene_instance)
+	# 7. Access and free the OLD current scene (e.g. MainMenu).
+	if is_instance_valid(get_tree().current_scene):
+		get_tree().current_scene.queue_free()
+	
+	# 8. Set the new scene as the current scene.
+	get_tree().current_scene = game_window_instance
 
-	# 6. Remove the loading screen.
+	# 8. Remove the loading screen.
 	loading_screen_instance.queue_free()

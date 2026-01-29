@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ddawptxcu8bvt"
-path="res://.godot/imported/magic_tower_level03_01.png-d4483ba1fbe2282f8020287d7a3fe1a9.ctex"
+uid="uid://cfgkfmj7qei3"
+path="res://.godot/imported/Screenshot 2026-01-29 143142.png-4c9576289747197474596c9114c4a542.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Levels/Tilesets/Assets/magic_tower_level03_01.png"
-dest_files=["res://.godot/imported/magic_tower_level03_01.png-d4483ba1fbe2282f8020287d7a3fe1a9.ctex"]
+source_file="res://Levels/Level01/Screenshot 2026-01-29 143142.png"
+dest_files=["res://.godot/imported/Screenshot 2026-01-29 143142.png-4c9576289747197474596c9114c4a542.ctex"]
 
 [params]
 
