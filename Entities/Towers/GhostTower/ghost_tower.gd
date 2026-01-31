@@ -17,11 +17,15 @@ var highlight_ids: Dictionary
 var is_placement_valid: bool = false
 var _last_tile_pos: Vector2i = Vector2i(-1, -1)
 var _range_points: PackedVector2Array
+var _manual_update_mode: bool = false
 
 
 func _exit_tree() -> void:
 	# Ensure highlights are cleared when the ghost is destroyed
 	HighlightManager.hide_highlights(highlight_layer)
+	
+func set_manual_update_mode(enabled: bool) -> void:
+	_manual_update_mode = enabled
 
 
 # Initialises the ghost with tower data and the required layers (no ObjectLayer parameter).
@@ -48,17 +52,42 @@ func initialize(
 	_generate_range_polygon() # Precompute the range polygon so preview renders immediately.
 
 
+	sprite.texture = data.ghost_texture # Apply the ghost sprite texture.
+	sprite.position = data.visual_offset # Apply any visual offset to line up with the tile centre.
+	_generate_range_polygon() # Precompute the range polygon so preview renders immediately.
+
+
 ## Called every frame. Updates position and validity.
 func _process(_delta: float) -> void:
+	if _manual_update_mode:
+		return
+		
 	if not is_instance_valid(path_layer):
 		return
 
+	# Only use internal mouse tracking if we are NOT in drag mode (implied by lack of manual calls)
+	# However, since we don't have a state flag, we'll just check if the mouse is moving?
+	# Better: Just prefer manual updates. If manual update happens, it overrides this frame.
+	# Standard clicking build mode relies on this.
+	
 	var mouse_pos := get_global_mouse_position()
-	var map_coords := path_layer.local_to_map(path_layer.to_local(mouse_pos))
+	_snap_and_update(mouse_pos)
 
+
+## Manually updates the ghost position (used during Drag-to-Build).
+func update_position_manually(local_viewport_pos: Vector2) -> void:
+	if not is_instance_valid(path_layer):
+		return
+	_snap_and_update(local_viewport_pos)
+
+
+func _snap_and_update(target_pos: Vector2) -> void:
+	var map_coords := path_layer.local_to_map(path_layer.to_local(target_pos))
 	var snapped_local_pos := path_layer.map_to_local(map_coords)
-	global_position = path_layer.to_global(snapped_local_pos)
-
+	var final_pos = path_layer.to_global(snapped_local_pos)
+	
+	global_position = final_pos
+	
 	_update_placement_validity(map_coords)
 
 	if map_coords != _last_tile_pos:

@@ -1,9 +1,9 @@
 extends Node
 
 enum State {
-	DEFAULT,        # Default gameplay state, interacting with cards and UI.
+	DEFAULT, # Default gameplay state, interacting with cards and UI.
 	BUILDING_TOWER, # The player is currently placing a tower.
-	UI_INTERACTION  # A UI panel is open, gameplay input is blocked.
+	UI_INTERACTION # A UI panel is open, gameplay input is blocked.
 }
 
 var current_state: State = State.DEFAULT
@@ -76,4 +76,3 @@ func get_level_hud() -> LevelHUD:
 
 func set_state(new_state: State) -> void:
 	current_state = new_state
-	print("InputManager state changed to: ", State.keys()[new_state])

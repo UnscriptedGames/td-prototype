@@ -1,9 +1,13 @@
-[gd_scene load_steps=3 format=3 uid="uid://d3x1y204a5b6c"]
+[gd_scene load_steps=7 format=3 uid="uid://d3x1y204a5b6c"]
 
 [ext_resource type="Script" uid="uid://dtscqhcaqtreq" path="res://UI/Layout/game_window.gd" id="1_layout"]
+[ext_resource type="Theme" uid="uid://dpov18qpoqhlb" path="res://UI/Themes/daw_theme.tres" id="2_theme"]
+[ext_resource type="Texture2D" uid="uid://bcwomx5iudjvu" path="res://UI/Icons/play.png" id="3_play"]
+[ext_resource type="Texture2D" uid="uid://sbbemathd2vd" path="res://UI/Icons/skip.png" id="4_skip"]
+[ext_resource type="Texture2D" uid="uid://jtjdtu4at84y" path="res://UI/Icons/volume.png" id="5_volume"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
-bg_color = Color(0.12, 0.12, 0.12, 1)
+bg_color = Color(0.262745, 0.301961, 0.333333, 1)
 
 [node name="GameWindow" type="Control"]
 layout_mode = 3
@@ -12,6 +16,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
 script = ExtResource("1_layout")
 
 [node name="Background" type="Panel" parent="."]
@@ -39,9 +44,21 @@ layout_mode = 2
 [node name="Content" type="HBoxContainer" parent="MainLayout/TopBar"]
 layout_mode = 2
 
-[node name="MenuPlaceholder" type="Label" parent="MainLayout/TopBar/Content"]
+[node name="MenuButton" type="MenuButton" parent="MainLayout/TopBar/Content"]
 layout_mode = 2
-text = "  File   Edit   Settings   Help"
+text = " Menu "
+
+[node name="SettingsButton" type="Button" parent="MainLayout/TopBar/Content"]
+layout_mode = 2
+focus_mode = 0
+text = " Settings "
+flat = true
+
+[node name="HelpButton" type="Button" parent="MainLayout/TopBar/Content"]
+layout_mode = 2
+focus_mode = 0
+text = " Help "
+flat = true
 
 [node name="Spacer" type="Control" parent="MainLayout/TopBar/Content"]
 layout_mode = 2
@@ -52,52 +69,103 @@ layout_mode = 2
 theme_override_constants/separation = 15
 
 [node name="PlayButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls"]
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
-text = " ▶ Play "
+size_flags_vertical = 4
+focus_mode = 0
+icon = ExtResource("3_play")
+flat = true
+expand_icon = true
 
-[node name="PauseButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls"]
+[node name="NextWaveButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls"]
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
-text = " ⏸ Pause "
+size_flags_vertical = 4
+focus_mode = 0
+icon = ExtResource("4_skip")
+flat = true
+expand_icon = true
+
+[node name="VolumeIcon" type="TextureRect" parent="MainLayout/TopBar/Content/TransportControls"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("5_volume")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VolumeSlider" type="HSlider" parent="MainLayout/TopBar/Content/TransportControls"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+value = 80.0
 
 [node name="Spacer2" type="Control" parent="MainLayout/TopBar/Content"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="PerformanceGauge" type="ProgressBar" parent="MainLayout/TopBar/Content"]
+custom_minimum_size = Vector2(150, 20)
+layout_mode = 2
+size_flags_vertical = 4
+show_percentage = false
 
 [node name="WorkspaceSplit" type="HBoxContainer" parent="MainLayout"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 0
 
-[node name="GameViewContainer" type="SubViewportContainer" parent="MainLayout/WorkspaceSplit"]
-layout_mode = 2
-size_flags_horizontal = 3
-stretch = true
-clip_contents = true
-
-[node name="SubViewport" type="SubViewport" parent="MainLayout/WorkspaceSplit/GameViewContainer"]
-handle_input_locally = false
-size = Vector2i(1536, 1024)
-render_target_update_mode = 4
-
-[node name="RightSidebar" type="PanelContainer" parent="MainLayout/WorkspaceSplit"]
+[node name="LeftSidebar" type="PanelContainer" parent="MainLayout/WorkspaceSplit"]
 custom_minimum_size = Vector2(384, 0)
 layout_mode = 2
 
-[node name="SidebarContent" type="VBoxContainer" parent="MainLayout/WorkspaceSplit/RightSidebar"]
+[node name="SidebarContent" type="VBoxContainer" parent="MainLayout/WorkspaceSplit/LeftSidebar"]
 layout_mode = 2
 
-[node name="Header" type="Label" parent="MainLayout/WorkspaceSplit/RightSidebar/SidebarContent"]
+[node name="Header" type="Label" parent="MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Effects Rack"
 horizontal_alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="MainLayout/WorkspaceSplit/RightSidebar/SidebarContent"]
+[node name="HSeparator" type="HSeparator" parent="MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent"]
 layout_mode = 2
 
-[node name="CardsPlaceholder" type="Label" parent="MainLayout/WorkspaceSplit/RightSidebar/SidebarContent"]
+[node name="CardMarginContainer" type="MarginContainer" parent="MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent"]
 layout_mode = 2
 size_flags_vertical = 3
-text = "[Card Deck Placeholder]"
-horizontal_alignment = 1
-vertical_alignment = 1
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="CardGrid" type="GridContainer" parent="MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent/CardMarginContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 2
+
+[node name="GameViewContainer" type="SubViewportContainer" parent="MainLayout/WorkspaceSplit"]
+clip_contents = true
+layout_mode = 2
+size_flags_horizontal = 3
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="MainLayout/WorkspaceSplit/GameViewContainer"]
+handle_input_locally = false
+size = Vector2i(1536, 1020)
+render_target_update_mode = 4
+
+[node name="MainMenuConfirmation" type="ConfirmationDialog" parent="."]
+title = "Confirm"
+initial_position = 2
+size = Vector2i(350, 100)
+dialog_text = "Quit game and return to main menu?"
+
+[node name="QuitConfirmation" type="ConfirmationDialog" parent="."]
+title = "Confirm"
+initial_position = 2
+size = Vector2i(300, 100)
+dialog_text = "Quit to desktop?"

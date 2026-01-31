@@ -23,7 +23,6 @@ offset_bottom = 1024.0
 mouse_filter = 2
 border_color = Color(1, 0, 0, 0.5)
 border_width = 2.0
-editor_only = true
 
 [node name="TileMaps" type="Node2D" parent="."]
 y_sort_enabled = true

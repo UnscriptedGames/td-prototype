@@ -95,6 +95,29 @@ func play_card(card_index: int, _context: Dictionary) -> void:
 		hand_changed.emit(hand)
 
 
+## Plays a card, removes it, shifts remaining cards, and draws a new one at the end.
+## @param card_index: The index of the card to play.
+## @param _context: Dictionary of context data (unused here).
+func play_card_shift(card_index: int, _context: Dictionary) -> void:
+	if card_index < 0 or card_index >= hand.size():
+		push_error("Invalid card index provided to play_card_shift().")
+		return
+
+	# 1. Remove the played card from the hand
+	var card_to_play: CardData = hand.pop_at(card_index)
+	_discard_pile.append(card_to_play)
+	
+	# 2. Draw a new card
+	var new_card: CardData = _draw_card()
+	
+	# 3. Add new card to the END of the hand (if exists)
+	if new_card:
+		hand.append(new_card)
+		
+	# 4. Emit signal that hand layout has changed (triggering full redraw)
+	hand_changed.emit(hand)
+
+
 ## Discards a card from the hand without playing its effect.
 ## @param card_index: The index of the card to discard in the hand array.
 func discard_card(card_index: int) -> void:
