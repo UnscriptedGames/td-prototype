@@ -13,7 +13,7 @@ var _build_manager: BuildManager = null
 var _level_hud: LevelHUD = null
 
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
 	var handled: bool = false
 
 	# Priority 1: Always check for UI button clicks first.

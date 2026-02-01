@@ -9,6 +9,12 @@ extends Control
 # Transport Controls
 @onready var play_button: Button = $MainLayout/TopBar/Content/TransportControls/PlayButton
 
+@onready var gauge_l: TextureProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer/GaugeL
+@onready var gauge_r: TextureProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer/GaugeR
+
+
+@onready var wave_label: Label = $MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/WaveLabel
+
 # Card Grid
 @onready var card_grid: GridContainer = $MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent/CardMarginContainer/CardGrid
 @export var player_deck: Resource # Loaded as DeckData
@@ -26,6 +32,13 @@ var _card_manager: CardManager
 var _build_manager: BuildManager
 var _active_card: Card # Track the card currently being played/previewed
 var _selected_tower: TemplateTower = null
+var _tower_inspector: PanelContainer # Type is TowerInspector, loose coupling to avoid cyclic ref/lag
+
+# Meter Animation State
+var _target_damage_value: float = 0.0
+var _meter_noise_offset_l: float = 0.0
+var _meter_noise_offset_r: float = 0.0
+
 
 # Path to the default level
 const DEFAULT_LEVEL_PATH: String = "res://Levels/TemplateLevel/template_level.tscn"
@@ -64,6 +77,36 @@ func _ready() -> void:
 	add_child(_card_manager)
 	_card_manager.hand_changed.connect(_on_hand_changed)
 	
+	# --- Player Health Integration ---
+	if GameManager.has_signal("health_changed"):
+		GameManager.health_changed.connect(_on_health_changed)
+		
+	# Initialize Gauge
+	# Initialize Gauge
+	if GameManager.player_data:
+		gauge_l.max_value = GameManager.player_data.max_health
+		gauge_r.max_value = GameManager.player_data.max_health
+		_target_damage_value = float(GameManager.player_data.max_health - GameManager.player_data.health)
+		gauge_l.value = (gauge_l.max_value * 0.10) + _target_damage_value
+		gauge_r.value = (gauge_r.max_value * 0.10) + _target_damage_value
+		
+
+	# --- Wave Counter Integration ---
+	if GameManager.has_signal("wave_changed"):
+		GameManager.wave_changed.connect(_on_wave_changed)
+		# Init
+		_on_wave_changed(GameManager.current_wave, GameManager.total_waves)
+
+	# --- Input Propagation Fix ---
+	# Ensure the root controls do not swallow mouse events, allowing them to reach InputManager._unhandled_input
+	mouse_filter = Control.MOUSE_FILTER_PASS
+	if has_node("Background"):
+		$Background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
+	var viewport_container = $MainLayout/WorkspaceSplit/GameViewContainer
+	if viewport_container:
+		viewport_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
 	# --- UI Cursor Fix ---
 	# Allow drag data to fall through these containers to the root
 	# This prevents the "Forbidden" cursor when hovering empty sidebar/topbar areas
@@ -99,6 +142,20 @@ func _ready() -> void:
 		# Use 8 as the hand size for the grid
 		_card_manager.initialise_deck(player_deck, 8)
 		
+	# Instantiating Inspector
+	var inspector_scene = load("res://UI/Inspector/tower_inspector.tscn")
+	if inspector_scene:
+		_tower_inspector = inspector_scene.instantiate()
+		game_view_container.add_child(_tower_inspector)
+		# Ensure it's above the drop overlay (z-index or order)
+		_tower_inspector.move_to_front()
+		
+		# Connect to BuildManager actions
+		if _build_manager:
+			_tower_inspector.sell_tower_requested.connect(_build_manager._on_sell_tower_requested)
+			_tower_inspector.target_priority_changed.connect(_build_manager._on_target_priority_changed)
+
+
 	# Ensure a level is loaded for testing
 	if game_viewport.get_child_count() > 0:
 		# Level already exists (from Editor or previous state), just wire it up
@@ -106,6 +163,46 @@ func _ready() -> void:
 	else:
 		# No level, load default
 		_load_level(DEFAULT_LEVEL_PATH)
+
+func _process(delta: float) -> void:
+	if not is_instance_valid(gauge_l) or not is_instance_valid(gauge_r): return
+
+	# 1. Update Noise (Simulate live signal jitter)
+	# User Request: "Jitter moves up and down by 2%"
+	var max_v = gauge_l.max_value
+	var noise_amplitude = max_v * 0.02
+	
+	# Stereo Separation: Randomize L and R independently
+	_meter_noise_offset_l = randf_range(-1.0, 1.0) * noise_amplitude
+	_meter_noise_offset_r = randf_range(-1.0, 1.0) * noise_amplitude
+	
+	# Slight offset between channels (decorrelation)
+	# User Request: "Around 1% difference"
+	# We bias one channel slightly within 1% range
+	var separation_bias = randf_range(-0.005, 0.005) * max_v
+	_meter_noise_offset_r += separation_bias
+
+	# 2. Lerp towards target value
+	# User Request: "Starts at 10% of bars".
+	# Logic: Display Value = (10% Base) + (Damage)
+	var base_fill = max_v * 0.10
+	var final_target = base_fill + _target_damage_value
+	
+	# Slower smooth speed (30% slower than 10.0 -> ~7.0)
+	var smooth_speed = 7.0 * delta
+	
+	# L Channel
+	var smoothed_l = lerp(gauge_l.value, final_target, smooth_speed)
+	# Add noise to the smoothed value
+	var final_l = smoothed_l + _meter_noise_offset_l
+	gauge_l.value = clamp(final_l, 0.0, max_v)
+	
+
+	# R Channel
+	var smoothed_r = lerp(gauge_r.value, final_target, smooth_speed)
+	var final_r = smoothed_r + _meter_noise_offset_r
+	gauge_r.value = clamp(final_r, 0.0, max_v)
+
 
 func _setup_transport() -> void:
 	# Load icons at runtime to avoid compile-time import errors
@@ -250,13 +347,50 @@ func _on_tower_selected(tower: TemplateTower) -> void:
 	_selected_tower = tower
 	
 	# Connect new
-	# (Logic related to buff_ended UI updates is removed as buffs are now drag-drop)
+	if _tower_inspector and _tower_inspector.has_method("set_tower"):
+		_tower_inspector.set_tower(tower)
+		
+		# Update Anchor based on tower position
+		if is_instance_valid(tower):
+			var viewport_size = game_viewport.size
+			# Note: Tower position is global, but viewport might be offset? 
+			# In this setup, the viewport covers the whole game area.
+			# Tower global position corresponds to viewport pixels if no camera zoom/pan.
+			# If there is a camera, we need screen position.
+			# CRITICAL FIX: The tower is inside a SubViewport.
+			# get_global_transform_with_canvas().origin returns coordinates relative to that SubViewport (0,0 is Top-Left of Game View).
+			# But the TowerInspector is in the Main Screen Space (0,0 is Top-Left of Monitor).
+			# We must ADD the offset of the SubViewportContainer to convert to Screen Space.
+			var viewport_local_pos = tower.get_global_transform_with_canvas().origin
+			var container_offset = Vector2.ZERO
+			
+			var container = $MainLayout/WorkspaceSplit/GameViewContainer
+			if container:
+				container_offset = container.global_position
+				
+			var final_screen_pos = viewport_local_pos + container_offset
+			
+			# Calculate Map Coordinates for Grid Logic
+			var map_coords = Vector2i(-1, -1)
+			if _build_manager and is_instance_valid(_build_manager.path_layer):
+				# Tower Global Position is in Viewport Space (same as path_layer local if layer at 0,0)
+				# PathLayer is likely a child of the Viewport.
+				# We can use path_layer.local_to_map() on the tower's position relative to the layer.
+				var layer = _build_manager.path_layer
+				var tower_local_to_layer = layer.to_local(tower.global_position)
+				map_coords = layer.local_to_map(tower_local_to_layer)
+			
+			_tower_inspector.update_anchor(viewport_size, final_screen_pos, map_coords)
+
 
 func _on_tower_deselected() -> void:
 	# _on_tower_selected(null) # Simplified
 	if is_instance_valid(_selected_tower):
 		_selected_tower.deselect()
 		_selected_tower = null
+		
+	if _tower_inspector and _tower_inspector.has_method("set_tower"):
+		_tower_inspector.set_tower(null)
 		
 func _on_selected_tower_buff_ended() -> void:
 	pass # No longer needed
@@ -354,3 +488,14 @@ func _notification(what: int) -> void:
 		# Ensure buff/drag state is cleaned up
 		if _build_manager:
 			_build_manager.cancel_drag_buff()
+
+func _on_health_changed(new_health: int) -> void:
+	if is_instance_valid(gauge_l) and GameManager.player_data:
+		# Inverted Logic: Gauge shows "Damage" (Max - Current)
+		# Low Health = High Gauge (Red)
+		_target_damage_value = float(GameManager.player_data.max_health - new_health)
+
+
+func _on_wave_changed(current_wave: int, total_waves: int) -> void:
+	if is_instance_valid(wave_label):
+		wave_label.text = "Track: %d / %d" % [current_wave, total_waves]

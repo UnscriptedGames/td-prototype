@@ -1,0 +1,61 @@
+[gd_scene load_steps=4 format=3 uid="uid://b2n3m4k5j6l7"]
+
+[ext_resource type="Script" path="res://UI/Inspector/target_priority_inspector.gd" id="1_script"]
+[ext_resource type="Theme" uid="uid://dpov18qpoqhlb" path="res://UI/Themes/daw_theme.tres" id="2_theme"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_priority"]
+
+[node name="TargetPriorityInspector" type="PanelContainer"]
+custom_minimum_size = Vector2(200, 0)
+offset_right = 200.0
+offset_bottom = 240.0
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="Content" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Label" type="Label" parent="Content/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Target Priority"
+horizontal_alignment = 1
+
+[node name="MostProgress" type="CheckButton" parent="Content/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+button_pressed = true
+button_group = SubResource("ButtonGroup_priority")
+text = "Most Progress"
+
+[node name="LeastProgress" type="CheckButton" parent="Content/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+button_group = SubResource("ButtonGroup_priority")
+text = "Least Progress"
+
+[node name="Strongest" type="CheckButton" parent="Content/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+button_group = SubResource("ButtonGroup_priority")
+text = "Strongest Enemy"
+
+[node name="Weakest" type="CheckButton" parent="Content/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+button_group = SubResource("ButtonGroup_priority")
+text = "Weakest Enemy"
+
+[node name="LowestHealth" type="CheckButton" parent="Content/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+button_group = SubResource("ButtonGroup_priority")
+text = "Lowest Health"
