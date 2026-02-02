@@ -1,9 +1,8 @@
-[gd_scene load_steps=14 format=4 uid="uid://da4wggnk44ip2"]
+[gd_scene load_steps=8 format=4 uid="uid://da4wggnk44ip2"]
 
 [ext_resource type="PackedScene" uid="uid://bir7iuxfukxsb" path="res://Levels/TemplateLevel/template_level.tscn" id="1_sm372"]
 [ext_resource type="Resource" uid="uid://sct6jvx6tm1y" path="res://Config/Levels/level_01_data.tres" id="2_5muv1"]
 [ext_resource type="TileSet" uid="uid://deanuyo4c5m1j" path="res://Levels/Tilesets/path_tileset.tres" id="3_vkb5y"]
-[ext_resource type="Script" uid="uid://dql3pw67f5uhe" path="res://Levels/TemplateLevel/path_data.gd" id="4_2nk17"]
 [ext_resource type="TileSet" uid="uid://dq71bx8v7hske" path="res://Levels/Tilesets/highlight_tileset.tres" id="4_5muv1"]
 [ext_resource type="SpriteFrames" uid="uid://bkwi0pcvvdulg" path="res://Levels/Level01/level_1_animations.tres" id="5_fgavm"]
 
@@ -11,37 +10,7 @@
 
 [sub_resource type="Curve2D" id="Curve2D_h4a6w"]
 _data = {
-"points": PackedVector2Array(0, 0, 0, 0, 475, 233, 0, 0, 0, 0, 1376, 232, 0, 0, 0, 0, 1379, 871, 0, 0, 0, 0, 553, 871)
-}
-point_count = 4
-
-[sub_resource type="Curve2D" id="Curve2D_vbwyf"]
-_data = {
-"points": PackedVector2Array(0, 0, 0, 0, 468, 233, 0, 0, 0, 0, 1380, 232, 0, 0, 0, 0, 1380, 873, 0, 0, 0, 0, 552, 874)
-}
-point_count = 4
-
-[sub_resource type="Curve2D" id="Curve2D_1n5yv"]
-_data = {
-"points": PackedVector2Array(0, 0, 0, 0, 552, 871, 0, 0, 0, 0, 546, 361, 0, 0, 0, 0, 1248, 361, 0, 0, 0, 0, 1245, 742, 0, 0, 0, 0, 678, 742, 0, 0, 0, 0, 678, 496, 0, 0, 0, 0, 1121, 494, 0, 0, 0, 0, 1122, 612, 0, 0, 0, 0, 793, 612)
-}
-point_count = 9
-
-[sub_resource type="Curve2D" id="Curve2D_oql6h"]
-_data = {
-"points": PackedVector2Array(0, 0, 0, 0, 550, 876, 0, 0, 0, 0, 548, 361, 0, 0, 0, 0, 1245, 361, 0, 0, 0, 0, 1245, 739, 0, 0, 0, 0, 681, 743, 0, 0, 0, 0, 678, 497, 0, 0, 0, 0, 1117, 495, 0, 0, 0, 0, 1122, 610, 0, 0, 0, 0, 795, 612)
-}
-point_count = 9
-
-[sub_resource type="Curve2D" id="Curve2D_vkb5y"]
-_data = {
-"points": PackedVector2Array(0, 0, 0, 0, 455, 232, 0, 0, 0, 0, 802, 615)
-}
-point_count = 2
-
-[sub_resource type="Curve2D" id="Curve2D_2nk17"]
-_data = {
-"points": PackedVector2Array(0, 0, 0, 0, 459, 228, 0, 0, 0, 0, 801, 616)
+"points": PackedVector2Array(0, 0, 0, 0, 157, -15, 0, 0, 0, 0, 162, 444)
 }
 point_count = 2
 
@@ -69,32 +38,8 @@ tile_set = ExtResource("4_5muv1")
 [node name="Enemies" parent="Entities" index="2"]
 y_sort_enabled = true
 
-[node name="Paths" parent="." index="4"]
-visible = false
-
 [node name="Spawn01" type="Path2D" parent="Paths" index="0"]
 curve = SubResource("Curve2D_h4a6w")
-script = ExtResource("4_2nk17")
-branches = Array[NodePath]([NodePath("../End01"), NodePath("../End02")])
-
-[node name="Spawn02" type="Path2D" parent="Paths" index="1"]
-curve = SubResource("Curve2D_vbwyf")
-script = ExtResource("4_2nk17")
-branches = Array[NodePath]([NodePath("../End01"), NodePath("../End02")])
-
-[node name="End01" type="Path2D" parent="Paths" index="2"]
-curve = SubResource("Curve2D_1n5yv")
-
-[node name="End02" type="Path2D" parent="Paths" index="3"]
-curve = SubResource("Curve2D_oql6h")
-
-[node name="Fly01" type="Path2D" parent="Paths" index="4"]
-z_index = 10
-curve = SubResource("Curve2D_vkb5y")
-
-[node name="Fly02" type="Path2D" parent="Paths" index="5"]
-z_index = 10
-curve = SubResource("Curve2D_2nk17")
 
 [node name="Animations" parent="." index="5"]
 visible = false

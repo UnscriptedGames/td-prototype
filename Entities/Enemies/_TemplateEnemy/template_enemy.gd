@@ -4,8 +4,8 @@ extends Area2D
 class_name TemplateEnemy
 
 ## Signals
-signal died(enemy, reward_amount)	# Emitted when the enemy dies
-signal reached_end_of_path(enemy)	# Emitted when the enemy reaches the end of a path
+signal died(enemy, reward_amount) # Emitted when the enemy dies
+signal reached_end_of_path(enemy) # Emitted when the enemy reaches the end of a path
 
 
 ## Enums
@@ -17,17 +17,17 @@ enum State {
 
 
 ## Static Caches
-static var _valid_variants_cache: Dictionary = {}	# Cache for valid variants per enemy type
+static var _valid_variants_cache: Dictionary = {} # Cache for valid variants per enemy type
 
 
 ## Exported Data
-@export var data: EnemyData	# Enemy data resource
+@export var data: EnemyData # Enemy data resource
 
 
 ## Enemy Stats
-var max_health: int = 10	# Maximum health
-var speed: float = 60.0	# Movement speed
-var reward: int = 1	# Reward for defeating this enemy
+var max_health: int = 10 # Maximum health
+var speed: float = 60.0 # Movement speed
+var reward: int = 1 # Reward for defeating this enemy
 var health: int:
 	get:
 		return _health
@@ -43,14 +43,14 @@ var health: int:
 ## Internal State
 const CORNER_SMOOTHING: float = 5.0 # How quickly the enemy turns at corners. Higher is sharper.
 
-var state: State = State.MOVING	# Current state
-var _health: int	# Current health
-var _variant: String = ""	# Current variant name
-var _path_offset: float = 0.0	# Personal offset from the path center
+var state: State = State.MOVING # Current state
+var _health: int # Current health
+var _variant: String = "" # Current variant name
+var _path_offset: float = 0.0 # Personal offset from the path center
 var _smoothed_right_vector: Vector2 = Vector2.RIGHT # The smoothed perpendicular vector for cornering
-var _last_direction: String = "south_west"	# Last animation direction
-var _last_flip_h: bool = false	# Last horizontal flip state
-var _has_reached_end: bool = false	# True if enemy reached end of path
+var _last_direction: String = "south_west" # Last animation direction
+var _last_flip_h: bool = false # Last horizontal flip state
+var _has_reached_end: bool = false # True if enemy reached end of path
 
 
 ## Status Effect State
@@ -60,10 +60,10 @@ var _is_stunned: bool = false # Is the enemy currently stunned?
 
 
 ## Node References
-@onready var animation := $Animation as AnimatedSprite2D	# Animation node
-@onready var hitbox := $PositionShape as CollisionShape2D	# Hitbox node
+@onready var animation := $Animation as AnimatedSprite2D # Animation node
+@onready var hitbox := $PositionShape as CollisionShape2D # Hitbox node
 @onready var progress_bar_container := $ProgressBarContainer as VBoxContainer
-@onready var health_bar := $ProgressBarContainer/HealthBar as TextureProgressBar	# Health bar node
+@onready var health_bar := $ProgressBarContainer/HealthBar as TextureProgressBar # Health bar node
 @onready var dot_bar := $ProgressBarContainer/DotBar as ProgressBar
 @onready var slow_bar := $ProgressBarContainer/SlowBar as ProgressBar
 @onready var stun_bar := $ProgressBarContainer/StunBar as ProgressBar
@@ -74,7 +74,7 @@ var _effect_bars: Dictionary = {} # Maps EffectType to its ProgressBar
 
 
 ## Public Properties
-var path_follow: PathFollow2D	# PathFollow2D node for movement
+var path_follow: PathFollow2D # PathFollow2D node for movement
 
 
 ## Called when the enemy enters the scene tree
@@ -120,8 +120,6 @@ func _ready() -> void:
 		set_process(false)
 		visible = false
 
-	# Animation always processes so death animations can play
-	animation.process_mode = Node.PROCESS_MODE_ALWAYS
 
 	# Set the initial state
 	reset()

@@ -7,6 +7,8 @@ signal currency_changed(new_currency)
 signal wave_changed(current_wave, total_waves)
 signal level_changed(current_level)
 signal game_state_changed(new_state)
+signal wave_status_changed(is_active: bool)
+signal start_wave_requested
 
 enum GameState {PAUSED, PLAYING}
 
@@ -17,6 +19,7 @@ var _current_level: int = 0
 var _current_wave: int = 0
 var _total_waves: int = 0
 var _game_state: GameState = GameState.PLAYING
+var _is_wave_active: bool = false
 
 var player_data: PlayerData:
 	get: return _player_data
@@ -35,6 +38,9 @@ var total_waves: int:
 
 var game_state: GameState:
 	get: return _game_state
+
+var is_wave_active: bool:
+	get: return _is_wave_active
 
 
 # Loads player data and emits initial signals when the game starts
@@ -99,10 +105,18 @@ func heal_player(amount: int) -> void:
 
 # Toggles the game state between PAUSED and PLAYING
 func toggle_game_state() -> void:
-	if _game_state == GameState.PAUSED:
-		set_game_state(GameState.PLAYING)
+	if not _is_wave_active:
+		# If no wave is active, this button acts as "Next Wave"
+		set_game_state(GameState.PLAYING) # Ensure we are playing
+		start_wave_requested.emit()
+		_is_wave_active = true
+		wave_status_changed.emit(_is_wave_active)
 	else:
-		set_game_state(GameState.PAUSED)
+		# If a wave IS active, this button acts as Pause/Resume
+		if _game_state == GameState.PAUSED:
+			set_game_state(GameState.PLAYING)
+		else:
+			set_game_state(GameState.PAUSED)
 
 
 # Sets the game state and updates the tree pause status
@@ -110,3 +124,29 @@ func set_game_state(new_state: GameState) -> void:
 	_game_state = new_state
 	get_tree().paused = (_game_state == GameState.PAUSED)
 	game_state_changed.emit(_game_state)
+
+
+func wave_completed() -> void:
+	_is_wave_active = false
+	wave_status_changed.emit(_is_wave_active)
+
+
+func reset_state() -> void:
+	# Resets the game state to default values
+	# Reload Player Data to reset health/currency (Ignore Cache to get fresh values)
+	_player_data = ResourceLoader.load("res://Config/Players/player_data.tres", "", ResourceLoader.CACHE_MODE_IGNORE)
+	
+	# Reset Wave counters
+	_current_wave = 0
+	_total_waves = 0
+	_is_wave_active = false
+	
+	# Reset Game State
+	_game_state = GameState.PLAYING
+	get_tree().paused = false
+	
+	# Emit updates
+	health_changed.emit(_player_data.health)
+	currency_changed.emit(_player_data.currency)
+	wave_changed.emit(_current_wave, _total_waves)
+	wave_status_changed.emit(_is_wave_active)

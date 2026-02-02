@@ -1,2 +1,2 @@
-# Handover - [EMPTY]
-No pending tasks or specific handover requirements for this session.
+# Handover Information
+No pending tasks or blockers from the current session.

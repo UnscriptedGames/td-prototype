@@ -128,8 +128,13 @@ func _ready() -> void:
 	# --- Game State Integration ---
 	if GameManager.has_signal("game_state_changed"):
 		GameManager.game_state_changed.connect(_on_game_state_changed)
-		# Init
-		_on_game_state_changed(GameManager.game_state)
+		
+	if GameManager.has_signal("wave_status_changed"):
+		GameManager.wave_status_changed.connect(_on_wave_status_changed)
+
+	# Init UI state based on current data
+	_update_play_button_visuals()
+
 
 	# --- Input Propagation Fix ---
 	# Ensure the root controls do not swallow mouse events, allowing them to reach InputManager._unhandled_input
@@ -139,9 +144,20 @@ func _ready() -> void:
 	
 	var viewport_container = $MainLayout/WorkspaceSplit/GameViewContainer
 	if viewport_container:
+		# IMPORTANT: GameWindow is PROCESS_MODE_ALWAYS (to handle UI inputs).
+		# We must explicitly set the game container to PAUSABLE so it respects get_tree().paused.
+		viewport_container.process_mode = Node.PROCESS_MODE_PAUSABLE
 		viewport_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		
+		# Explicitly set the SubViewport as well, just to be safe/sure.
+		if viewport_container.get_child_count() > 0:
+			var vp = viewport_container.get_child(0)
+			if vp is SubViewport:
+				vp.process_mode = Node.PROCESS_MODE_PAUSABLE
 	
 	# --- UI Cursor Fix ---
+
+
 	# Allow drag data to fall through these containers to the root
 	# This prevents the "Forbidden" cursor when hovering empty sidebar/topbar areas
 	var top_bar = $MainLayout/TopBar
@@ -298,6 +314,7 @@ func _update_peak_hold(current_val: float, delta: float, is_left: bool) -> void:
 			var pct = clamp(peak_val / max_v, 0.0, 1.0)
 			line.position.x = width * pct
 
+
 func _setup_transport() -> void:
 	# Load icons at runtime to avoid compile-time import errors
 	if FileAccess.file_exists("res://UI/Icons/play.png"):
@@ -312,12 +329,65 @@ func _on_play_button_pressed() -> void:
 
 
 func _on_game_state_changed(new_state: int) -> void:
+	_update_play_button_visuals()
+	
+	# Block interactions when paused
+	var is_paused = (new_state == GameManager.GameState.PAUSED)
+	
+	# Block Sidebar (Cards) and other non-system UI
+	if has_node("MainLayout/WorkspaceSplit/LeftSidebar"):
+		_set_container_input_state($MainLayout/WorkspaceSplit/LeftSidebar, not is_paused)
+		
+	# Note: TopBar must remain active so we can Unpause!
+	# But maybe specific children of TopBar (like buttons other than Play) should be disabled?
+	# For now, allowing TopBar is safer usage.
+
+
+func _set_container_input_state(node: Node, enabled: bool) -> void:
+	if node is Control:
+		if node is BaseButton or node is LineEdit:
+			node.disabled = not enabled
+		
+		# For draggable controls (Cards), we must block mouse events entirely
+		if not enabled:
+			node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		else:
+			# Restore. 
+			if node is BaseButton:
+				node.mouse_filter = Control.MOUSE_FILTER_STOP # Buttons usually Stop
+			elif node.has_method("_get_drag_data"):
+				node.mouse_filter = Control.MOUSE_FILTER_STOP # Draggables usually Stop
+			else:
+				node.mouse_filter = Control.MOUSE_FILTER_PASS # Containers usually Pass
+			
+	for child in node.get_children():
+		_set_container_input_state(child, enabled)
+
+
+func _on_wave_status_changed(_is_active: bool) -> void:
+	_update_play_button_visuals()
+
+
+func _update_play_button_visuals() -> void:
 	if not icon_play or not icon_pause:
 		return
+	
+	# Logic:
+	# If NO wave active -> Show Play (Meaning "Start Next Wave")
+	# If Wave Active AND Playing -> Show Pause (Meaning "Pause Game")
+	# If Wave Active AND Paused -> Show Play (Meaning "Resume Game")
+	
+	var show_pause_icon: bool = false
+	
+	if GameManager.is_wave_active:
+		if GameManager.game_state == GameManager.GameState.PLAYING:
+			show_pause_icon = true
+		else:
+			show_pause_icon = false # Paused, so show Play to resume
+	else:
+		show_pause_icon = false # Idle, show Play to start next wave
 		
-	var is_playing = (new_state == GameManager.GameState.PLAYING)
-	play_button.icon = icon_pause if is_playing else icon_play
-	print("Game State Changed: ", "Playing" if is_playing else "Paused")
+	play_button.icon = icon_pause if show_pause_icon else icon_play
 
 func _setup_menu() -> void:
 	var popup = menu_button.get_popup()
@@ -338,7 +408,7 @@ func _on_menu_item_pressed(id: int) -> void:
 			quit_confirm.popup_centered()
 
 func _on_main_menu_confirmed() -> void:
-	# In a real scenario, you might want to reset global state here
+	get_tree().paused = false # Valid state for Main Menu
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
 
 func _on_quit_confirmed() -> void:
