@@ -9,11 +9,14 @@ extends Control
 # Transport Controls
 @onready var play_button: Button = $MainLayout/TopBar/Content/TransportControls/PlayButton
 
-@onready var gauge_l: TextureProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer/GaugeL
-@onready var gauge_r: TextureProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer/GaugeR
+@onready var gauge_l: TextureProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer/Wrapper/GaugeL
+@onready var gauge_r: TextureProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer/Wrapper/GaugeR
+@onready var peak_line_l: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer/Wrapper/PeakLineL
+@onready var peak_line_r: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer/Wrapper/PeakLineR
 
 
-@onready var wave_label: Label = $MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/WaveLabel
+@onready var wave_label: Label = $MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/InfoHBox/WaveLabel
+@onready var gain_label: Label = $MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/InfoHBox/GainLabel
 
 # Card Grid
 @onready var card_grid: GridContainer = $MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent/CardMarginContainer/CardGrid
@@ -27,7 +30,6 @@ var icon_pause: Texture2D
 const CARD_SCENE = preload("res://Entities/Cards/card.tscn")
 
 # State
-var is_playing: bool = false
 var _card_manager: CardManager
 var _build_manager: BuildManager
 var _active_card: Card # Track the card currently being played/previewed
@@ -38,6 +40,25 @@ var _tower_inspector: PanelContainer # Type is TowerInspector, loose coupling to
 var _target_damage_value: float = 0.0
 var _meter_noise_offset_l: float = 0.0
 var _meter_noise_offset_r: float = 0.0
+
+# Peak Hold State
+var _peak_val_l: float = 0.0
+var _peak_val_r: float = 0.0
+var _peak_hold_timer_l: float = 0.0
+var _peak_hold_timer_r: float = 0.0
+const PEAK_HOLD_TIME: float = 0.75
+const PEAK_DECAY_RATE: float = 25.0 # dB/sec equivalent
+
+# Jitter Settings
+const JITTER_SPEED: float = 20.0 # How fast the noise fluctuates (Higher = Faster)
+const JITTER_AMPLITUDE: float = 0.01 # 2% of max value
+const STEREO_SEPARATION: float = 0.15 # 0.0 = Mono (Synced), 1.0 = Independent
+
+# Jitter State
+var _noise_target_common: float = 0.0
+var _noise_val_common: float = 0.0
+var _noise_target_diff: float = 0.0
+var _noise_val_diff: float = 0.0
 
 
 # Path to the default level
@@ -90,12 +111,25 @@ func _ready() -> void:
 		gauge_l.value = (gauge_l.max_value * 0.10) + _target_damage_value
 		gauge_r.value = (gauge_r.max_value * 0.10) + _target_damage_value
 		
-
+	
 	# --- Wave Counter Integration ---
 	if GameManager.has_signal("wave_changed"):
 		GameManager.wave_changed.connect(_on_wave_changed)
 		# Init
 		_on_wave_changed(GameManager.current_wave, GameManager.total_waves)
+
+	# --- Gain (Currency) Integration ---
+	if GameManager.has_signal("currency_changed"):
+		GameManager.currency_changed.connect(_on_gain_changed)
+		# Init
+		if GameManager.player_data:
+			_on_gain_changed(GameManager.player_data.currency)
+
+	# --- Game State Integration ---
+	if GameManager.has_signal("game_state_changed"):
+		GameManager.game_state_changed.connect(_on_game_state_changed)
+		# Init
+		_on_game_state_changed(GameManager.game_state)
 
 	# --- Input Propagation Fix ---
 	# Ensure the root controls do not swallow mouse events, allowing them to reach InputManager._unhandled_input
@@ -168,19 +202,33 @@ func _process(delta: float) -> void:
 	if not is_instance_valid(gauge_l) or not is_instance_valid(gauge_r): return
 
 	# 1. Update Noise (Simulate live signal jitter)
-	# User Request: "Jitter moves up and down by 2%"
+	# Logic: Smoothed Random Walk for "Analog" feel.
 	var max_v = gauge_l.max_value
-	var noise_amplitude = max_v * 0.02
+	var noise_amp_val = max_v * JITTER_AMPLITUDE
 	
-	# Stereo Separation: Randomize L and R independently
-	_meter_noise_offset_l = randf_range(-1.0, 1.0) * noise_amplitude
-	_meter_noise_offset_r = randf_range(-1.0, 1.0) * noise_amplitude
+	# Update Common Signal (Master Jitter)
+	# If we are close to target, pick new one
+	if abs(_noise_val_common - _noise_target_common) < 0.05:
+		_noise_target_common = randf_range(-1.0, 1.0)
 	
-	# Slight offset between channels (decorrelation)
-	# User Request: "Around 1% difference"
-	# We bias one channel slightly within 1% range
-	var separation_bias = randf_range(-0.005, 0.005) * max_v
-	_meter_noise_offset_r += separation_bias
+	# Update Difference Signal (Stereo Width Jitter)
+	if abs(_noise_val_diff - _noise_target_diff) < 0.05:
+		_noise_target_diff = randf_range(-1.0, 1.0)
+		
+	# Move towards targets (Speed Control)
+	_noise_val_common = lerp(_noise_val_common, _noise_target_common, delta * JITTER_SPEED)
+	_noise_val_diff = lerp(_noise_val_diff, _noise_target_diff, delta * JITTER_SPEED)
+	
+	# Calculate Final Offsets
+	# L = Common + (Diff * Sep)
+	# R = Common - (Diff * Sep)
+	# This ensures they move together but deviate by the Separation amount
+	var common_offset = _noise_val_common * noise_amp_val
+	var diff_offset = _noise_val_diff * noise_amp_val * STEREO_SEPARATION
+	
+	_meter_noise_offset_l = common_offset + diff_offset
+	_meter_noise_offset_r = common_offset - diff_offset
+
 
 	# 2. Lerp towards target value
 	# User Request: "Starts at 10% of bars".
@@ -197,12 +245,58 @@ func _process(delta: float) -> void:
 	var final_l = smoothed_l + _meter_noise_offset_l
 	gauge_l.value = clamp(final_l, 0.0, max_v)
 	
+	_update_peak_hold(final_l, delta, true)
 
 	# R Channel
 	var smoothed_r = lerp(gauge_r.value, final_target, smooth_speed)
 	var final_r = smoothed_r + _meter_noise_offset_r
 	gauge_r.value = clamp(final_r, 0.0, max_v)
+	
+	_update_peak_hold(final_r, delta, false)
 
+func _update_peak_hold(current_val: float, delta: float, is_left: bool) -> void:
+	# Reference correct channel data
+	var peak_val = _peak_val_l if is_left else _peak_val_r
+	var timer = _peak_hold_timer_l if is_left else _peak_hold_timer_r
+	var line = peak_line_l if is_left else peak_line_r
+	# Verify node validity before access
+	if not is_instance_valid(gauge_l): return
+	var max_v = gauge_l.max_value
+	
+	# Logic: Push
+	if current_val > peak_val:
+		peak_val = current_val
+		timer = PEAK_HOLD_TIME
+	else:
+		# Decay
+		if timer > 0:
+			timer -= delta
+		else:
+			# Decay Rate proportional to max range? 
+			# Let's use linear decay
+			peak_val -= PEAK_DECAY_RATE * delta
+			
+		# Clamp to prevent falling below current signal
+		if peak_val < current_val:
+			peak_val = current_val
+			
+	# Update State back to variables
+	if is_left:
+		_peak_val_l = peak_val
+		_peak_hold_timer_l = timer
+	else:
+		_peak_val_r = peak_val
+		_peak_hold_timer_r = timer
+		
+	# Update Visual Position
+	if is_instance_valid(line) and is_instance_valid(line.get_parent()):
+		# Width of container - line width
+		# Line parent is Wrapper (Control), parent of Wrapper is Container (or Wrapper size is set by anchors)
+		# Wrapper has anchor_right=1.0, so use its size
+		var width = line.get_parent().size.x - line.size.x
+		if width > 0:
+			var pct = clamp(peak_val / max_v, 0.0, 1.0)
+			line.position.x = width * pct
 
 func _setup_transport() -> void:
 	# Load icons at runtime to avoid compile-time import errors
@@ -214,14 +308,16 @@ func _setup_transport() -> void:
 	play_button.pressed.connect(_on_play_button_pressed)
 
 func _on_play_button_pressed() -> void:
-	if not icon_play or not icon_pause:
-		printerr("Icons not initialized")
-		return
+	GameManager.toggle_game_state()
 
-	is_playing = not is_playing
+
+func _on_game_state_changed(new_state: int) -> void:
+	if not icon_play or not icon_pause:
+		return
+		
+	var is_playing = (new_state == GameManager.GameState.PLAYING)
 	play_button.icon = icon_pause if is_playing else icon_play
-	# TODO: Connect to SceneManager/GameLoop to actually pause/play
-	print("Game State: ", "Playing" if is_playing else "Paused")
+	print("Game State Changed: ", "Playing" if is_playing else "Paused")
 
 func _setup_menu() -> void:
 	var popup = menu_button.get_popup()
@@ -306,8 +402,8 @@ func _on_card_effect_completed_from_drag(card: Card) -> void:
 	# Similar to _on_card_effect_completed but for specific card instance
 	if not is_instance_valid(card): return
 	
-	var cost = card.card_data.effect.get_cost() # Re-verify cost
-	GameManager.remove_currency(cost)
+	# var cost = card.card_data.effect.get_cost() 
+	# GameManager.remove_currency(cost) -> Handled by BuildManager
 	
 	var card_index = card.get_index()
 	if card_index != -1:
@@ -319,8 +415,8 @@ func _on_card_effect_completed(_card: Card) -> void:
 		return
 		
 	# 1. Deduct Cost
-	var cost = _active_card.card_data.effect.get_cost()
-	GameManager.remove_currency(cost)
+	# var cost = _active_card.card_data.effect.get_cost()
+	# GameManager.remove_currency(cost) -> Handled by BuildManager
 	
 	# 2. Update Deck (Shift & Draw)
 	# Find index of active card in the grid
@@ -499,3 +595,8 @@ func _on_health_changed(new_health: int) -> void:
 func _on_wave_changed(current_wave: int, total_waves: int) -> void:
 	if is_instance_valid(wave_label):
 		wave_label.text = "Track: %d / %d" % [current_wave, total_waves]
+
+
+func _on_gain_changed(new_gain: int) -> void:
+	if is_instance_valid(gain_label):
+		gain_label.text = "Gain: %d dB" % new_gain

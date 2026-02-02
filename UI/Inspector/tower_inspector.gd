@@ -34,11 +34,15 @@ const ANCHOR_MARGIN: int = 80
 const GAP: int = 10 # Gap between main inspector and priority inspector
 const INSPECTOR_OPACITY: float = 0.85 # 15% Transparency
 
+var _is_docked_left: bool = false
+
 func _ready() -> void:
 	# Set Transparency
 	self.self_modulate.a = INSPECTOR_OPACITY
 	if is_instance_valid(priority_inspector):
 		priority_inspector.self_modulate.a = INSPECTOR_OPACITY
+		# Detach from PanelContainer layout to allow manual positioning
+		priority_inspector.set_as_top_level(true)
 
 	# Connect Self Actions
 	sell_button.pressed.connect(_on_sell_button_pressed)
@@ -141,6 +145,9 @@ func update_anchor(viewport_size: Vector2, tower_global_position: Vector2, map_c
 	var my_width = size.x
 	var my_height = size.y
 	
+	# Store state for child popup
+	_is_docked_left = is_docked_left
+	
 	# Horizontal Logic
 	if is_docked_left:
 		# Inspector to LEFT of Tower
@@ -169,22 +176,33 @@ func update_anchor(viewport_size: Vector2, tower_global_position: Vector2, map_c
 	
 	# Update Priority Inspector (Global Position)
 	if priority_inspector.visible:
-		# Sync Height
-		priority_inspector.custom_minimum_size.y = size.y
-		priority_inspector.size.y = size.y
+		_update_popup_position(true, Vector2(target_global_x, target_global_y))
+
+func _update_popup_position(animate: bool, override_base_pos: Variant = null) -> void:
+	# Base position: Default to current global if no override provided
+	var base_pos = global_position
+	if override_base_pos != null:
+		base_pos = override_base_pos
 		
-		# Priority placement
-		var prio_width = priority_inspector.size.x
-		var prio_global_x = 0.0
+	# Sync Height
+	priority_inspector.custom_minimum_size.y = size.y
+	priority_inspector.size.y = size.y
+	
+	var offset_x = 0.0
+	
+	if _is_docked_left:
+		# Inspector is LEFT. Popup to LEFT (Outward).
+		offset_x = - priority_inspector.size.x - GAP
+	else:
+		# Inspector is RIGHT. Popup to RIGHT (Outward).
+		offset_x = size.x + GAP
 		
-		if is_docked_left:
-			# Inspector is LEFT. Priority LEFT of Inspector.
-			prio_global_x = target_global_x - prio_width - GAP
-		else:
-			# Inspector is RIGHT. Priority RIGHT of Inspector.
-			prio_global_x = target_global_x + my_width + GAP
-			
-		_tween.tween_property(priority_inspector, "position", Vector2(prio_global_x, target_global_y), 0.3)
+	var target_global_pos = base_pos + Vector2(offset_x, 0)
+	
+	if animate and _tween:
+		_tween.tween_property(priority_inspector, "position", target_global_pos, 0.3)
+	else:
+		priority_inspector.position = target_global_pos
 
 
 # --- UI Updates ---
@@ -273,22 +291,7 @@ func _update_sell_button() -> void:
 func _on_priority_button_pressed() -> void:
 	priority_inspector.visible = not priority_inspector.visible
 	if priority_inspector.visible:
-		# Sync Height
-		priority_inspector.custom_minimum_size.y = size.y
-		priority_inspector.size.y = size.y
-		
-		# Calculate Position (Global)
-		var viewport_width = get_viewport_rect().size.x
-		var global_pos = global_position
-		var is_docked_left = (global_pos.x < viewport_width * 0.5)
-		
-		var prio_x = 0.0
-		if is_docked_left:
-			prio_x = global_pos.x + size.x + GAP
-		else:
-			prio_x = global_pos.x - priority_inspector.size.x - GAP
-			
-		priority_inspector.position = Vector2(prio_x, global_pos.y)
+		_update_popup_position(false)
 
 func _on_priority_changed(new_priority: TargetPriority.Priority) -> void:
 	emit_signal("target_priority_changed", new_priority)

@@ -67,6 +67,7 @@ corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
 [node name="GameWindow" type="Control"]
+process_mode = 3
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -159,15 +160,27 @@ focus_mode = 0
 value = 80.0
 
 [node name="WaveInfoPanel" type="PanelContainer" parent="MainLayout/TopBar/Content/TransportControls"]
-custom_minimum_size = Vector2(120, 32)
+custom_minimum_size = Vector2(240, 32)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_wave_bg")
 
-[node name="WaveLabel" type="Label" parent="MainLayout/TopBar/Content/TransportControls/WaveInfoPanel"]
+[node name="InfoHBox" type="HBoxContainer" parent="MainLayout/TopBar/Content/TransportControls/WaveInfoPanel"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="WaveLabel" type="Label" parent="MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/InfoHBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 text = "Track: 0 / 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GainLabel" type="Label" parent="MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/InfoHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+text = "Gain: 0 dB"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -188,14 +201,30 @@ size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_meter_mask")
 clip_children = 2
 
-[node name="GaugeL" type="TextureProgressBar" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer"]
-custom_minimum_size = Vector2(0, 10)
+[node name="Wrapper" type="Control" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer"]
 layout_mode = 2
+
+[node name="GaugeL" type="TextureProgressBar" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer/Wrapper"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_vertical = 3
 max_value = 100.0
 step = 0.01
 nine_patch_stretch = true
 texture_progress = ExtResource("6_gradient")
+
+[node name="PeakLineL" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer/Wrapper"]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 0
+anchor_bottom = 1.0
+offset_right = 2.0
+grow_vertical = 2
+color = Color(1, 1, 1, 0.901961)
 
 [node name="GaugeRContainer" type="PanelContainer" parent="MainLayout/TopBar/Content/PerformanceMeterContainer"]
 layout_mode = 2
@@ -203,14 +232,30 @@ size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_meter_mask")
 clip_children = 2
 
-[node name="GaugeR" type="TextureProgressBar" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer"]
-custom_minimum_size = Vector2(0, 10)
+[node name="Wrapper" type="Control" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer"]
 layout_mode = 2
+
+[node name="GaugeR" type="TextureProgressBar" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer/Wrapper"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_vertical = 3
 max_value = 100.0
 step = 0.01
 nine_patch_stretch = true
 texture_progress = ExtResource("6_gradient")
+
+[node name="PeakLineR" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer/Wrapper"]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 0
+anchor_bottom = 1.0
+offset_right = 2.0
+grow_vertical = 2
+color = Color(1, 1, 1, 0.901961)
 
 
 
