@@ -29,7 +29,6 @@ var _pending_tower_scene: PackedScene ## Coupelled from TowerData to avoid circu
 
 ## Node References
 # These are now dynamic to support scene changing.
-var hud: LevelHUD
 var towers_container: Node2D
 var highlight_layer: TileMapLayer
 var path_layer: TileMapLayer
@@ -41,13 +40,6 @@ var _highlighted_tower_for_buff: TemplateTower = null ## NEW: Track tower under 
 
 ## Called when the node enters the scene tree.
 func _ready() -> void:
-	# Try to find the HUD if it exists (legacy support).
-	var hud_node = get_node_or_null("../LevelHUD")
-	if is_instance_valid(hud_node):
-		hud = hud_node
-		hud.sell_tower_requested.connect(_on_sell_tower_requested)
-		hud.target_priority_changed.connect(_on_target_priority_changed)
-
 	# Connects to the new global signal.
 	GlobalSignals.build_tower_requested.connect(_on_build_tower_requested)
 

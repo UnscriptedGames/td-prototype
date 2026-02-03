@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="LevelData" load_steps=11 format=3 uid="uid://sct6jvx6tm1y"]
+[gd_resource type="Resource" script_class="LevelData" format=3 uid="uid://sct6jvx6tm1y"]
 
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_x1iwa"]
 [ext_resource type="Resource" uid="uid://c5v3s0n3fxli3" path="res://Config/Towers/magic_tower_data.tres" id="2_im0jt"]
@@ -13,8 +13,8 @@
 script = ExtResource("7_agqsx")
 enemy_scene = ExtResource("8_agqsx")
 path = NodePath("Paths/Spawn01")
-count = 4
-enemy_delay = 1.5
+count = 10
+enemy_delay = 0.75
 metadata/_custom_type_script = "uid://dky0tbbrvtpkm"
 
 [sub_resource type="Resource" id="Resource_yn8wm"]

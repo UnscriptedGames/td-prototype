@@ -63,6 +63,7 @@ var _is_stunned: bool = false # Is the enemy currently stunned?
 @onready var sprite := $Sprite as Sprite2D # Wave visual node
 @onready var animation := $Animation as AnimatedSprite2D # Death animation node
 @onready var hitbox := $PositionShape as CollisionShape2D # Hitbox node
+@onready var shadow_panel := $Shadow as Panel # Shadow visual node
 @onready var progress_bar_container := $ProgressBarContainer as VBoxContainer
 @onready var health_bar := $ProgressBarContainer/HealthBar as TextureProgressBar # Health bar node
 @onready var dot_bar := $ProgressBarContainer/DotBar as ProgressBar
@@ -122,7 +123,6 @@ func _ready() -> void:
 		visible = false
 
 
-	# --- Wave Visual Setup ---
 	if data.wave_texture:
 		sprite.texture = data.wave_texture
 		if sprite.material:
@@ -260,6 +260,8 @@ func _process(delta: float) -> void:
 			# Enable visibility now that we are positioned correctly
 			if not sprite.visible:
 				sprite.visible = true
+				if shadow_panel:
+					shadow_panel.visible = true
  
 		# Play the moving animation
 		_play_animation("move", anim_dir, flip_h)
@@ -292,6 +294,8 @@ func _play_death_sequence(action_name: String) -> void:
 	
 	# Swap visuals: Hide Wave, Show Animation
 	sprite.visible = false
+	if shadow_panel:
+		shadow_panel.visible = false
 	animation.visible = true
 	
 	# Play the death animation based on the last known direction
@@ -322,6 +326,8 @@ func reset() -> void:
 	# Reset Visuals
 	if sprite:
 		sprite.visible = false # Logic in _process will enable it once positioned
+	if shadow_panel:
+		shadow_panel.visible = false
 	if animation:
 		animation.visible = false
 		animation.stop()

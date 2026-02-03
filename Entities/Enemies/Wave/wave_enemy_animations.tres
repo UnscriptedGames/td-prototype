@@ -1,4 +1,4 @@
-[gd_resource type="SpriteFrames" load_steps=89 format=3 uid="uid://crly7bs8780q0"]
+[gd_resource type="SpriteFrames" format=3 uid="uid://crly7bs8780q0"]
 
 [ext_resource type="Texture2D" uid="uid://d4j8au23feq0e" path="res://Entities/Enemies/Wave/Assets/green_goblin_die.png" id="1_2fnrx"]
 [ext_resource type="Texture2D" uid="uid://c5lthyhg8w3jc" path="res://Entities/Enemies/Wave/Assets/green_goblin_walk.png" id="2_oqaua"]

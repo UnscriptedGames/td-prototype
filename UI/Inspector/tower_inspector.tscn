@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://UI/Inspector/tower_inspector.gd" id="1_script"]
 [ext_resource type="Theme" uid="uid://dpov18qpoqhlb" path="res://UI/Themes/daw_theme.tres" id="2_theme"]
-[ext_resource type="PackedScene" uid="uid://b2n3m4k5j6l7" path="res://UI/Inspector/target_priority_inspector.tscn" id="3_prio"]
+[ext_resource type="PackedScene" path="res://UI/Inspector/target_priority_inspector.tscn" id="3_prio"]
 
 [node name="TowerInspector" type="PanelContainer"]
 custom_minimum_size = Vector2(240, 0)

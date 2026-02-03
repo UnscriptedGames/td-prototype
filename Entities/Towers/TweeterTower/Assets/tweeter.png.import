@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cfgkfmj7qei3"
-path="res://.godot/imported/Screenshot 2026-01-29 143142.png-4c9576289747197474596c9114c4a542.ctex"
+uid="uid://dkobvkiebrfk2"
+path="res://.godot/imported/tweeter.png-64c2ebda0499e65fb10c500da092dd72.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Levels/Level01/Screenshot 2026-01-29 143142.png"
-dest_files=["res://.godot/imported/Screenshot 2026-01-29 143142.png-4c9576289747197474596c9114c4a542.ctex"]
+source_file="res://Entities/Towers/TweeterTower/Assets/tweeter.png"
+dest_files=["res://.godot/imported/tweeter.png-64c2ebda0499e65fb10c500da092dd72.ctex"]
 
 [params]
 

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TowerData" load_steps=16 format=3 uid="uid://dvgo1u4245bj4"]
+[gd_resource type="Resource" script_class="TowerData" format=3 uid="uid://dvgo1u4245bj4"]
 
 [ext_resource type="Texture2D" uid="uid://dskepbmtd6tld" path="res://Entities/Towers/BombTower/Assets/bomb_tower_level01_01.png" id="1_5jr0x"]
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_bohe1"]

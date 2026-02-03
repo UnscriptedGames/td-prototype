@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://ca5pbsw2hawel"]
+[gd_scene format=3 uid="uid://ca5pbsw2hawel"]
 
 [ext_resource type="PackedScene" uid="uid://br1v6v0da2v1n" path="res://Entities/Enemies/_TemplateEnemy/template_enemy.tscn" id="1_ptqmb"]
 [ext_resource type="Resource" uid="uid://dm7sv0sau3b5b" path="res://Config/Enemies/wave_enemy_data.tres" id="2_echq7"]
@@ -11,14 +11,21 @@ size = Vector2(36, 35)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_o3mth"]
 size = Vector2(36, 35)
 
-[node name="WaveEnemy" instance=ExtResource("1_ptqmb")]
+[node name="WaveEnemy" unique_id=154223927 instance=ExtResource("1_ptqmb")]
 data = ExtResource("2_echq7")
 
-[node name="Sprite" parent="." index="0"]
-scale = Vector2(0.75, 0.75)
+[node name="Shadow" parent="." index="0" unique_id=318961968]
+offset_left = -10.999999
+offset_top = -12.999999
+offset_right = 37.0
+offset_bottom = 38.636364
+scale = Vector2(0.55, 0.55)
+
+[node name="Sprite" parent="." index="1" unique_id=1851098806]
+scale = Vector2(0.55, 0.55)
 texture = ExtResource("2_tex")
 
-[node name="Animation" parent="." index="1"]
+[node name="Animation" parent="." index="2" unique_id=225749370]
 scale = Vector2(0.3, 0.3)
 sprite_frames = ExtResource("3_do17j")
 animation = &"green_die_north_west"
@@ -26,21 +33,24 @@ autoplay = "green_move_south_west"
 frame_progress = 0.0
 offset = Vector2(0, 0)
 
-[node name="PositionShape" parent="." index="2"]
+[node name="PositionShape" parent="." index="3" unique_id=174153897]
 visible = false
 position = Vector2(0, 0.5)
 shape = SubResource("RectangleShape2D_o0hbe")
 
-[node name="HitboxShape" parent="Hitbox" index="0"]
+[node name="Hitbox" parent="." index="4" unique_id=1522640630]
+visible = false
+
+[node name="HitboxShape" parent="Hitbox" index="0" unique_id=595233257]
 position = Vector2(0, 0.5)
 shape = SubResource("RectangleShape2D_o3mth")
 
-[node name="ProgressBarContainer" parent="." index="4"]
+[node name="ProgressBarContainer" parent="." index="5" unique_id=105023792]
 offset_left = -24.0
 offset_top = -55.0
 offset_right = 72.0
 offset_bottom = 9.0
 scale = Vector2(0.5, 0.5)
 
-[node name="TargetPoint" parent="." index="5"]
+[node name="TargetPoint" parent="." index="6" unique_id=575768304]
 position = Vector2(0, -30)

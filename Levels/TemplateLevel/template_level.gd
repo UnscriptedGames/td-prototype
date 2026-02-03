@@ -91,8 +91,8 @@ func _ready() -> void:
 				if successor.curve.point_count >= 2:
 					var p0 = successor.curve.get_point_position(0)
 					var p1 = successor.curve.get_point_position(1)
-					var tan = (p1 - p0).normalized()
-					next_tangents.append(tan)
+					var segment_tangent = (p1 - p0).normalized()
+					next_tangents.append(segment_tangent)
 
 			for i in range(lane_profile.size()):
 				var offset = lane_profile[i]
@@ -230,7 +230,7 @@ func _spawn_enemy(enemy_scene: PackedScene, path_node: Path2D) -> TemplateEnemy:
 	if not is_instance_valid(enemy):
 		return null
 
-	enemy.visible = true
+	# Visibility is now handled after positioning.
 
 	var path_follow := ObjectPoolManager.get_pooled_node("PathFollow2D") as PathFollow2D
 	if not is_instance_valid(path_follow):
@@ -247,6 +247,9 @@ func _spawn_enemy(enemy_scene: PackedScene, path_node: Path2D) -> TemplateEnemy:
 	enemies_container.add_child(enemy)
 	enemy.reset()
 	enemy.global_position = path_node.global_position
+	
+	# Enable visibility only AFTER positioning to prevent (0,0) flash.
+	enemy.visible = true
 	
 	_active_enemy_count += 1 # Increment active count
 

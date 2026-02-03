@@ -44,7 +44,7 @@ func _gui_input(event: InputEvent) -> void:
 	# Check if the input event was a left mouse button press.
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		# If so, emit our custom signal with a reference to this card.
-		# The receiver (CardsHUD) will be responsible for checking if it's playable.
+		# The receiver (e.g. GameWindow or local grid handler) will be responsible for checking if it's playable.
 		card_pressed.emit(self)
 
 		# If the card was immediately freed by the logic that handles the

@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="TowerData" format=3 uid="uid://bojj6xdad27bq"]
+[gd_resource type="Resource" script_class="TowerData" format=3 uid="uid://6g7ltfri23b8"]
 
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_njmit"]
-[ext_resource type="Texture2D" uid="uid://bi5vo1w8ytlun" path="res://Entities/Towers/ArcherTower/Assets/archer_tower_level01_01.png" id="1_olgkv"]
+[ext_resource type="Texture2D" uid="uid://dkobvkiebrfk2" path="res://Entities/Towers/TweeterTower/Assets/tweeter.png" id="1_olgkv"]
 [ext_resource type="Script" uid="uid://cajll6x5mfyy4" path="res://Entities/Towers/_TemplateTower/tower_level_data.gd" id="2_pcqh6"]
 [ext_resource type="PackedScene" uid="uid://d1b6de67vc5gr" path="res://Entities/Projectiles/ArrowProjectile/arrow_projectile.tscn" id="3_2d21g"]
 [ext_resource type="Script" uid="uid://bvwum7tqhcpwg" path="res://Core/Data/AttackModifiers/attack_modifier_data.gd" id="3_euqsa"]
@@ -105,8 +105,7 @@ idle_animation = "level_03_idle"
 
 [resource]
 script = ExtResource("1_njmit")
-tower_name = "Archer Tower"
+tower_name = "Tweeter Tower"
 ghost_texture = ExtResource("1_olgkv")
-visual_offset = Vector2(0, -30)
 levels = Array[ExtResource("2_pcqh6")]([SubResource("Resource_pcqh6"), SubResource("Resource_ew8f0"), SubResource("Resource_adv42"), SubResource("Resource_b6eam"), SubResource("Resource_qg77t"), SubResource("Resource_euqsa"), SubResource("Resource_hbdv3")])
 metadata/_custom_type_script = "uid://c8knfpcb8mutu"

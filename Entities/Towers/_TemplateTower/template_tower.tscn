@@ -17,7 +17,7 @@ z_index = -1
 collision_mask = 2
 
 [node name="RangeShape" type="CollisionPolygon2D" parent="Range"]
-polygon = PackedVector2Array(0, -144, 288, 0, 0, 144, -288, 0)
+polygon = PackedVector2Array(-256, -256, 256, -256, 256, 256, -256, 256)
 
 [node name="Hitbox" type="Area2D" parent="."]
 

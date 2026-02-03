@@ -1,4 +1,4 @@
-[gd_resource type="TileSet" load_steps=9 format=3 uid="uid://dq71bx8v7hske"]
+[gd_resource type="TileSet" format=3 uid="uid://dq71bx8v7hske"]
 
 [ext_resource type="Texture2D" uid="uid://qgnxmmqex1en" path="res://Levels/Tilesets/Assets/Highlight Tower.png" id="1_3sq48"]
 [ext_resource type="Texture2D" uid="uid://ctsmm8i2fop7l" path="res://Levels/Tilesets/Assets/Highlight Range.png" id="2_7ekro"]

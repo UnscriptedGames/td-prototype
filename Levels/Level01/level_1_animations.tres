@@ -1,70 +1,73 @@
-[gd_resource type="SpriteFrames" load_steps=19 format=3 uid="uid://bkwi0pcvvdulg"]
+[gd_resource type="SpriteFrames" format=3 uid="uid://bkwi0pcvvdulg"]
 
-[ext_resource type="Texture2D" uid="uid://ky7dejusob4e" path="res://Levels/Level01/Assets/campfire_smoke.png" id="1_18pge"]
-[ext_resource type="Texture2D" uid="uid://bukesp7fn4811" path="res://Levels/Level01/Assets/campfire_flame.png" id="1_shnhr"]
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_b6ks4"]
+load_path = "res://.godot/imported/campfire_flame.png-fec2ba1c123fd2127baff753a7596820.ctex"
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wuboc"]
-atlas = ExtResource("1_shnhr")
+atlas = SubResource("CompressedTexture2D_b6ks4")
 region = Rect2(0, 0, 32, 48)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_xiwnx"]
-atlas = ExtResource("1_shnhr")
+atlas = SubResource("CompressedTexture2D_b6ks4")
 region = Rect2(32, 0, 32, 48)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_0kn3e"]
-atlas = ExtResource("1_shnhr")
+atlas = SubResource("CompressedTexture2D_b6ks4")
 region = Rect2(64, 0, 32, 48)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ymr6s"]
-atlas = ExtResource("1_shnhr")
+atlas = SubResource("CompressedTexture2D_b6ks4")
 region = Rect2(96, 0, 32, 48)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_66ida"]
-atlas = ExtResource("1_shnhr")
+atlas = SubResource("CompressedTexture2D_b6ks4")
 region = Rect2(128, 0, 32, 48)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_vt0dl"]
-atlas = ExtResource("1_shnhr")
+atlas = SubResource("CompressedTexture2D_b6ks4")
 region = Rect2(160, 0, 32, 48)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hy5l0"]
-atlas = ExtResource("1_shnhr")
+atlas = SubResource("CompressedTexture2D_b6ks4")
 region = Rect2(192, 0, 32, 48)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_25nlh"]
-atlas = ExtResource("1_shnhr")
+atlas = SubResource("CompressedTexture2D_b6ks4")
 region = Rect2(224, 0, 32, 48)
 
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_0037g"]
+load_path = "res://.godot/imported/campfire_smoke.png-3a4c97cd125820255bc5f86bb9de6b70.ctex"
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_sqwnr"]
-atlas = ExtResource("1_18pge")
+atlas = SubResource("CompressedTexture2D_0037g")
 region = Rect2(0, 0, 64, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_fk57g"]
-atlas = ExtResource("1_18pge")
+atlas = SubResource("CompressedTexture2D_0037g")
 region = Rect2(64, 0, 64, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_kywuy"]
-atlas = ExtResource("1_18pge")
+atlas = SubResource("CompressedTexture2D_0037g")
 region = Rect2(128, 0, 64, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_g7m4l"]
-atlas = ExtResource("1_18pge")
+atlas = SubResource("CompressedTexture2D_0037g")
 region = Rect2(192, 0, 64, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_xvpp4"]
-atlas = ExtResource("1_18pge")
+atlas = SubResource("CompressedTexture2D_0037g")
 region = Rect2(256, 0, 64, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_p5dbl"]
-atlas = ExtResource("1_18pge")
+atlas = SubResource("CompressedTexture2D_0037g")
 region = Rect2(320, 0, 64, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_r62iy"]
-atlas = ExtResource("1_18pge")
+atlas = SubResource("CompressedTexture2D_0037g")
 region = Rect2(384, 0, 64, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nvsqp"]
-atlas = ExtResource("1_18pge")
+atlas = SubResource("CompressedTexture2D_0037g")
 region = Rect2(448, 0, 64, 128)
 
 [resource]

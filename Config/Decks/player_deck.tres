@@ -8,9 +8,10 @@
 [ext_resource type="Resource" uid="uid://earhg57u63kk" path="res://Config/Cards/Buff/buff_attack_speed.tres" id="6_3nayk"]
 [ext_resource type="Script" uid="uid://brvxhg6y1rh68" path="res://Entities/Cards/deck_data.gd" id="6_e0s2j"]
 [ext_resource type="Resource" uid="uid://cmisfewa516ij" path="res://Config/Cards/Buff/buff_slow.tres" id="7_i8kya"]
+[ext_resource type="Resource" path="res://Config/Cards/Build/build_tweeter_tower.tres" id="8_tweeter"]
 
 [resource]
 script = ExtResource("6_e0s2j")
-cards = Array[ExtResource("1_7bjyb")]([ExtResource("3_wncbb"), ExtResource("4_e0s2j"), ExtResource("5_8stiq"), ExtResource("6_3nayk"), ExtResource("6_3nayk"), ExtResource("7_i8kya"), ExtResource("3_wncbb"), ExtResource("3_wncbb"), ExtResource("4_e0s2j"), ExtResource("5_8stiq"), ExtResource("5_8stiq")])
+cards = Array[ExtResource("1_7bjyb")]([ExtResource("3_wncbb"), ExtResource("4_e0s2j"), ExtResource("5_8stiq"), ExtResource("6_3nayk"), ExtResource("6_3nayk"), ExtResource("7_i8kya"), ExtResource("3_wncbb"), ExtResource("3_wncbb"), ExtResource("4_e0s2j"), ExtResource("5_8stiq"), ExtResource("5_8stiq"), ExtResource("8_tweeter"), ExtResource("8_tweeter")])
 card_back_texture = ExtResource("1_vvy8r")
 metadata/_custom_type_script = "uid://brvxhg6y1rh68"

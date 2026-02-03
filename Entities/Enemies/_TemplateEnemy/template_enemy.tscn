@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://br1v6v0da2v1n"]
+[gd_scene format=3 uid="uid://br1v6v0da2v1n"]
 
 [ext_resource type="Texture2D" uid="uid://cw6payn2hyg8m" path="res://Entities/Enemies/_TemplateEnemy/Assets/bar_shadow_round_outline_small.png" id="1_ejg2d"]
 [ext_resource type="Script" uid="uid://cou6jej7wqrx2" path="res://Entities/Enemies/_TemplateEnemy/template_enemy.gd" id="1_pa3af"]
@@ -9,22 +9,40 @@
 [ext_resource type="StyleBox" uid="uid://djt88h8lsiqgx" path="res://Themes/Styleboxes/stylebox_slow_bar.tres" id="4_wklvk"]
 [ext_resource type="Shader" uid="uid://g35ywrilupvd" path="res://Entities/Enemies/Shared/wave_scroller.gdshader" id="5_shader"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shadow"]
+bg_color = Color(0, 0, 0, 0.6)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+anti_aliasing = false
+
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_wave"]
 shader = ExtResource("5_shader")
 shader_parameter/scroll_speed = 1.0
 shader_parameter/corner_radius = 0.15
+shader_parameter/sprite_size = Vector2(48, 48)
+shader_parameter/frame_count = 5.0
 
-[node name="TemplateEnemy" type="Area2D"]
+[node name="TemplateEnemy" type="Area2D" unique_id=493671677]
 collision_layer = 2
 collision_mask = 0
 script = ExtResource("1_pa3af")
 
-[node name="Sprite" type="Sprite2D" parent="."]
+[node name="Shadow" type="Panel" parent="." unique_id=318961968]
+offset_left = -24.0
+offset_top = -16.0
+offset_right = 24.0
+offset_bottom = 32.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_shadow")
+
+[node name="Sprite" type="Sprite2D" parent="." unique_id=1851098806]
 material = SubResource("ShaderMaterial_wave")
 region_enabled = true
 region_rect = Rect2(0, 0, 48, 48)
 
-[node name="Animation" type="AnimatedSprite2D" parent="."]
+[node name="Animation" type="AnimatedSprite2D" parent="." unique_id=225749370]
 visible = false
 scale = Vector2(0.4, 0.4)
 sprite_frames = ExtResource("2_u23yv")
@@ -33,17 +51,17 @@ autoplay = "variant_1_walk_south_west"
 frame_progress = 0.292839
 offset = Vector2(0, -175)
 
-[node name="PositionShape" type="CollisionShape2D" parent="."]
+[node name="PositionShape" type="CollisionShape2D" parent="." unique_id=174153897]
 position = Vector2(-1, -44)
 
-[node name="Hitbox" type="Area2D" parent="."]
+[node name="Hitbox" type="Area2D" parent="." unique_id=1522640630]
 collision_layer = 4
 collision_mask = 0
 
-[node name="HitboxShape" type="CollisionShape2D" parent="Hitbox"]
+[node name="HitboxShape" type="CollisionShape2D" parent="Hitbox" unique_id=595233257]
 position = Vector2(-1, -44)
 
-[node name="ProgressBarContainer" type="VBoxContainer" parent="."]
+[node name="ProgressBarContainer" type="VBoxContainer" parent="." unique_id=105023792]
 offset_left = -48.0
 offset_top = -60.0
 offset_right = 48.0
@@ -51,32 +69,32 @@ offset_bottom = -2.0
 theme_override_constants/separation = 6
 alignment = 2
 
-[node name="StunBar" type="ProgressBar" parent="ProgressBarContainer"]
+[node name="StunBar" type="ProgressBar" parent="ProgressBarContainer" unique_id=1135166719]
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 theme_override_styles/fill = ExtResource("3_e31ia")
 value = 50.0
 show_percentage = false
 
-[node name="SlowBar" type="ProgressBar" parent="ProgressBarContainer"]
+[node name="SlowBar" type="ProgressBar" parent="ProgressBarContainer" unique_id=49351088]
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 theme_override_styles/fill = ExtResource("4_wklvk")
 value = 50.0
 show_percentage = false
 
-[node name="DotBar" type="ProgressBar" parent="ProgressBarContainer"]
+[node name="DotBar" type="ProgressBar" parent="ProgressBarContainer" unique_id=535205908]
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 theme_override_styles/fill = ExtResource("3_htrcs")
 value = 50.0
 show_percentage = false
 
-[node name="HealthBar" type="TextureProgressBar" parent="ProgressBarContainer"]
+[node name="HealthBar" type="TextureProgressBar" parent="ProgressBarContainer" unique_id=694067413]
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 value = 50.0
 texture_under = ExtResource("1_ejg2d")
 texture_progress = ExtResource("2_pa3af")
 
-[node name="TargetPoint" type="Marker2D" parent="."]
+[node name="TargetPoint" type="Marker2D" parent="." unique_id=575768304]

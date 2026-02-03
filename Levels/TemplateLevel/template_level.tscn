@@ -1,71 +1,77 @@
-[gd_scene load_steps=7 format=3 uid="uid://bir7iuxfukxsb"]
+[gd_scene format=3 uid="uid://bir7iuxfukxsb"]
 
 [ext_resource type="Script" uid="uid://6irywbbrglw3" path="res://Levels/TemplateLevel/template_level.gd" id="1_f16nf"]
 [ext_resource type="TileSet" uid="uid://deanuyo4c5m1j" path="res://Levels/Tilesets/path_tileset.tres" id="1_ser8i"]
 [ext_resource type="Script" uid="uid://cyy8netls8x7r" path="res://Systems/build_manager.gd" id="3_x6qrl"]
 [ext_resource type="Script" uid="uid://yny7h3dispg0" path="res://Addons/Tools/tilemap_buildable_overlay.gd" id="3_ylfxi"]
+[ext_resource type="Script" uid="uid://c18rpqmu5rtej" path="res://Levels/Components/grid_overlay.gd" id="4_grid"]
 [ext_resource type="PackedScene" uid="uid://d3ilyyujh1y78" path="res://Entities/Towers/GhostTower/ghost_tower.tscn" id="4_gxwin"]
+[ext_resource type="Script" uid="uid://bmef7lb8sygxw" path="res://Levels/Components/maze_shadow_generator.gd" id="5_shadow"]
 [ext_resource type="PackedScene" uid="uid://bofddehla75b3" path="res://Entities/Cards/card_manager.tscn" id="7_3pnw0"]
 
-[node name="TemplateLevel" type="Node2D"]
+[node name="TemplateLevel" type="Node2D" unique_id=1492646997]
 y_sort_enabled = true
 script = ExtResource("1_f16nf")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=1965822054]
 offset_right = 1570.0
 offset_bottom = 1012.0
 mouse_filter = 2
 expand_mode = 1
 
-[node name="DesignGuide" type="ReferenceRect" parent="."]
+[node name="DesignGuide" type="ReferenceRect" parent="." unique_id=907145451]
 offset_right = 1536.0
 offset_bottom = 1024.0
 mouse_filter = 2
 border_color = Color(1, 0, 0, 0.5)
 border_width = 2.0
 
-[node name="TileMaps" type="Node2D" parent="."]
+[node name="GridOverlay" type="Node2D" parent="." unique_id=277930824]
+script = ExtResource("4_grid")
+line_color = Color(0.023098323, 0.13775218, 0.14437675, 0.5019608)
+line_thickness = 3.0
+
+[node name="TileMaps" type="Node2D" parent="." unique_id=1301297614]
 y_sort_enabled = true
 
-[node name="BaseLayer" type="TileMapLayer" parent="TileMaps"]
-z_index = -4
-y_sort_enabled = true
-tile_set = ExtResource("1_ser8i")
-
-[node name="ShadowLayer" type="TileMapLayer" parent="TileMaps"]
+[node name="ShadowLayer" type="TileMapLayer" parent="TileMaps" unique_id=1283083688]
+modulate = Color(0, 0, 0, 0.5)
 z_index = -3
 y_sort_enabled = true
+position = Vector2(10, 10)
 tile_set = ExtResource("1_ser8i")
+script = ExtResource("5_shadow")
+source_layer_path = NodePath("../MapLayer")
 
-[node name="MapLayer" type="TileMapLayer" parent="TileMaps"]
+[node name="MapLayer" type="TileMapLayer" parent="TileMaps" unique_id=1471219969]
 z_index = -2
 y_sort_enabled = true
 script = ExtResource("3_ylfxi")
 
-[node name="HighlightLayer" type="TileMapLayer" parent="TileMaps"]
+[node name="HighlightLayer" type="TileMapLayer" parent="TileMaps" unique_id=1097366726]
 z_index = -1
 tile_set = ExtResource("1_ser8i")
 
-[node name="ObjectLayer" type="TileMapLayer" parent="TileMaps"]
+[node name="ObjectLayer" type="TileMapLayer" parent="TileMaps" unique_id=1763685675]
 y_sort_enabled = true
 
-[node name="Entities" type="Node2D" parent="."]
+[node name="Entities" type="Node2D" parent="." unique_id=334363663]
 y_sort_enabled = true
 
-[node name="Towers" type="Node2D" parent="Entities"]
+[node name="Towers" type="Node2D" parent="Entities" unique_id=579858165]
 y_sort_enabled = true
 
-[node name="Projectiles" type="Node2D" parent="Entities" groups=["projectiles_container"]]
+[node name="Projectiles" type="Node2D" parent="Entities" unique_id=1518442478 groups=["projectiles_container"]]
 z_index = 1
 y_sort_enabled = true
 
-[node name="Enemies" type="Node2D" parent="Entities"]
+[node name="Enemies" type="Node2D" parent="Entities" unique_id=1241534722]
 
-[node name="Paths" type="Node2D" parent="."]
+[node name="Paths" type="Node2D" parent="." unique_id=1401139811]
 
-[node name="Animations" type="Node2D" parent="."]
+[node name="Animations" type="Node2D" parent="." unique_id=1582348548]
 
-[node name="BuildManager" type="Node2D" parent="." groups=["build_manager"]]
+[node name="BuildManager" type="Node2D" parent="." unique_id=890361503 groups=["build_manager"]]
 script = ExtResource("3_x6qrl")
 ghost_tower_scene = ExtResource("4_gxwin")
 selected_tower_id = 0
@@ -75,9 +81,9 @@ invalid_tower_id = 4
 valid_range_id = 3
 invalid_range_id = 6
 
-[node name="CardManager" parent="." instance=ExtResource("7_3pnw0")]
+[node name="CardManager" parent="." unique_id=117636864 instance=ExtResource("7_3pnw0")]
 
-[node name="LevelCamera" type="Camera2D" parent="."]
+[node name="LevelCamera" type="Camera2D" parent="." unique_id=1695427683]
 position = Vector2(768, 512)
 limit_left = 0
 limit_top = 0
