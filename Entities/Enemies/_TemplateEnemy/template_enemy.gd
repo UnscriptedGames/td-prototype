@@ -41,13 +41,12 @@ var health: int:
 
 
 ## Internal State
-const CORNER_SMOOTHING: float = 5.0 # How quickly the enemy turns at corners. Higher is sharper.
+const CORNER_SMOOTHING: float = 15.0 # How quickly the enemy turns at corners. Higher is sharper.
 
 var state: State = State.MOVING # Current state
 var _health: int # Current health
+var lane_index: int = 0 # The specific lane index this enemy is following
 var _variant: String = "" # Current variant name
-var _path_offset: float = 0.0 # Personal offset from the path center
-var _smoothed_right_vector: Vector2 = Vector2.RIGHT # The smoothed perpendicular vector for cornering
 var _last_direction: String = "south_west" # Last animation direction
 var _last_flip_h: bool = false # Last horizontal flip state
 var _has_reached_end: bool = false # True if enemy reached end of path
@@ -60,7 +59,9 @@ var _is_stunned: bool = false # Is the enemy currently stunned?
 
 
 ## Node References
-@onready var animation := $Animation as AnimatedSprite2D # Animation node
+## Node References
+@onready var sprite := $Sprite as Sprite2D # Wave visual node
+@onready var animation := $Animation as AnimatedSprite2D # Death animation node
 @onready var hitbox := $PositionShape as CollisionShape2D # Hitbox node
 @onready var progress_bar_container := $ProgressBarContainer as VBoxContainer
 @onready var health_bar := $ProgressBarContainer/HealthBar as TextureProgressBar # Health bar node
@@ -121,6 +122,14 @@ func _ready() -> void:
 		visible = false
 
 
+	# --- Wave Visual Setup ---
+	if data.wave_texture:
+		sprite.texture = data.wave_texture
+		if sprite.material:
+			(sprite.material as ShaderMaterial).set_shader_parameter("scroll_speed", data.scroll_speed)
+	# -------------------------
+
+
 	# Set the initial state
 	reset()
 
@@ -140,7 +149,11 @@ func _validate_and_cache_variants() -> Array:
 		var is_variant_fully_valid: bool = true
 		# Loop through all required actions for that variant
 		for action in data.required_actions:
-			# Check for both required directions for each action
+			# Only validate death animations now, as movement is shader-based
+			if action == "move": continue
+			
+			# Check for death animation (flip agnostic usually, but we check direction just in case)
+			# Actually, death animations are still directional in the current setup
 			var anim_sw_name: String = "%s_%s_south_west" % [variant_name, action]
 			var anim_nw_name: String = "%s_%s_north_west" % [variant_name, action]
 
@@ -207,31 +220,46 @@ func _process(delta: float) -> void:
 		return
 
 	if path_follow and is_instance_valid(path_follow.get_parent()):
+		# Disable built-in rotation to prevent sprite spinning, we handle direction manually
+		if path_follow.rotates:
+			path_follow.rotates = false
+		
+		# Reset internal offset properties to avoiding fighting our manual logic
+		path_follow.v_offset = 0.0
+		path_follow.h_offset = 0.0
+
 		# Move the follower along the path
 		path_follow.progress += speed * _speed_modifier * delta
 		
-		# Smooth the perpendicular vector to create nice arcs around corners
-		_smoothed_right_vector = _smoothed_right_vector.lerp(path_follow.transform.x, CORNER_SMOOTHING * delta)
-
-		# Calculate the final position using the path position and the smoothed offset
-		var path_position: Vector2 = path_follow.global_position
-		global_position = path_position + (_smoothed_right_vector.normalized() * _path_offset)
-
-		# Get current and next positions to determine visual animation direction
+		# Sample current path for animation direction
+		# Since we are on a generated lane, we can just use the path's tangent directly or sample ahead slightly
 		var path: Path2D = path_follow.get_parent() as Path2D
-		var current_pos: Vector2 = path.curve.sample_baked(path_follow.progress)
-		var next_progress: float = min(path_follow.progress + 1.0, path.curve.get_baked_length())
-		var future_pos: Vector2 = path.curve.sample_baked(next_progress)
-		var direction: Vector2 = (future_pos - current_pos).normalized()
+		var baked_length: float = path.curve.get_baked_length()
+		
+		var p1 = path.curve.sample_baked(path_follow.progress)
+		var p2 = path.curve.sample_baked(min(path_follow.progress + 10.0, baked_length))
+		var tangent = (p2 - p1).normalized()
+		if tangent == Vector2.ZERO: tangent = Vector2.DOWN
 
-		# Determine animation direction based on movement
-		var anim_dir: String = "north_west" if direction.y < 0 else "south_west"
-		var flip_h: bool = direction.x > 0
+		# 4. Apply position directly from path follow (Lane System handles offset)
+		global_position = path_follow.global_position
+		# --------------------------------
+
+		# Determine animation direction based on movement vector (Tangent)
+		var anim_dir: String = "north_west" if tangent.y < 0 else "south_west"
+		var flip_h: bool = tangent.x > 0
 
 		# Store the last direction for the death animation
-		if path_follow.progress < path.curve.get_baked_length() - 0.1:
+		if path_follow.progress < path.curve.get_baked_length() - 1.0:
 			_last_direction = anim_dir
 			_last_flip_h = flip_h
+			
+		# Wave Visual: Just flip based on direction
+		if sprite:
+			sprite.flip_h = flip_h
+			# Enable visibility now that we are positioned correctly
+			if not sprite.visible:
+				sprite.visible = true
  
 		# Play the moving animation
 		_play_animation("move", anim_dir, flip_h)
@@ -262,6 +290,10 @@ func _play_death_sequence(action_name: String) -> void:
 	if progress_bar_container:
 		progress_bar_container.visible = false
 	
+	# Swap visuals: Hide Wave, Show Animation
+	sprite.visible = false
+	animation.visible = true
+	
 	# Play the death animation based on the last known direction
 	var animation_name: String = "%s_%s_%s" % [_variant, action_name, _last_direction]
 	if animation and animation.sprite_frames.has_animation(animation_name):
@@ -287,22 +319,25 @@ func reset() -> void:
 	if progress_bar_container:
 		progress_bar_container.visible = false
 
+	# Reset Visuals
+	if sprite:
+		sprite.visible = false # Logic in _process will enable it once positioned
+	if animation:
+		animation.visible = false
+		animation.stop()
+
 	# Reset state and pathing
 	state = State.MOVING
 	_has_reached_end = false
 	if is_instance_valid(path_follow):
 		path_follow.progress = 0.0
-	_smoothed_right_vector = Vector2.RIGHT
+		# Initialize rotation derived from path to prevent "swoop" on spawn
+		pass
 
 	# Reset status effects
 	_active_status_effects.clear()
 	_speed_modifier = 1.0
 	_is_stunned = false
-
-	# Assign a random path offset
-	if data:
-		_path_offset = randf_range(-data.max_path_offset, data.max_path_offset)
-		z_index = 10 if data.is_flying else 0
 
 	# Process is enabled by the spawner when ready
 	set_process(false)

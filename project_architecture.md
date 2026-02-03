@@ -14,8 +14,8 @@ This document complements **`architecture.md`** (the Agent Persona/Workflow) by 
 ## 2. UI/UX Standards
 - **Viewport Resolution:** `1536x1024` (Native Game Area) scaled to `1920x1080` screen.
 - **Layout:** "DAW-Style" Layout.
-  -   **Top Bar:** Global stats (Health, Gold, Wave).
-  -   **Left Sidebar:** Card Hand & Deck controls.
+  -   **Top Bar:** Global stats (Health, Gold, Wave) and Volume Control.
+  -   **Left Sidebar:** Card Hand & Deck controls (Effects Rack).
   -   **Right Sidebar:** Selection/Inspector details.
   -   **Center:** The Level Viewport (24x16 tiles of 64px).
 
@@ -73,4 +73,14 @@ This document complements **`architecture.md`** (the Agent Persona/Workflow) by 
 **Manager:** `BuildManager.gd`
 - **Ghost System:** Instantiates a "Ghost" tower that follows the mouse. Snaps to the 64x64 grid.
 - **Validation:** Checks `path_layer` custom data (`buildable` bool) and ensures no overlaps.
-- **Banishment:** If a drag is cancelled improperly (out of bounds), the session is "Banished" (`banish_drag_session`) to prevent the card from triggering effects until fully reset.
+- **Banishment:** If a drag is cancelled improperly (out of bounds), the session is "Banished" (`banish_drag_session`) to prevent the card from triggering effects until fully reset. This is identified by a unique `drag_id`.
+
+### 4.7. Global Systems & UI Logic
+**Controller:** `game_window.gd`
+- **Audio Manager:** Basic `AudioStreamPlayer` logic (currently focused on UI sounds).
+- **Game State:** `GameManager` (singleton) tracks game loop, wave state, and paused state.
+- **Wave Visuals (Enemies):** Hybrid system using a `ShaderMaterial` on a `Sprite2D` for scrolling "audio wave" visuals (alive state), switching to `AnimatedSprite2D` for death sequences.
+- **Volume:** Controls Master bus via `AudioServer`. Linear-to-DB mapping ensures natural slider response.
+- **Interactivity:** Uses recursive `_set_container_mouse_ignore_recursive` to manage input flow during drag-and-drop, allowing cards to "fall through" UI to the game viewport.
+- **Pause System:** Uses `get_tree().paused` for logic. Critical UI (TopBar) remains active by being in `PROCESS_MODE_ALWAYS`, while the game viewport is `PROCESS_MODE_PAUSABLE`.
+- **Game Speed:** Managed by `GameManager` modifying `Engine.time_scale`. Supports 1.0x, 1.25x, 1.5x, 2.0x, 4.0x.

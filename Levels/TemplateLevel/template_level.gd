@@ -7,6 +7,9 @@ extends Node2D
 ## Exported Variables
 
 @export var level_data: LevelData
+@export var lane_count: int = 4
+@export var max_lane_offset: float = 25.0
+
 @export var level_number: int = 1
 
 ## Regular Variables
@@ -15,6 +18,7 @@ var _current_wave_index: int = 0
 var _spawning: bool = false
 var _active_enemy_count: int = 0 # NEW: Tracks living enemies
 var _paths: Dictionary = {}
+var _lane_map: Dictionary = {} # Map SourcePathKey -> Array of LanePaths
 
 # Spawn Queue System
 var _spawn_queue: Array[Dictionary] = [] # Stores pending spawns: {time, instruction, index}
@@ -29,10 +33,89 @@ var _spawn_timer: float = 0.0
 func _ready() -> void:
 	# Cache Path2D nodes using "Paths/Name" keys for quick lookup.
 	var paths_node := $Paths as Node2D
+	# 0. Build Connectivity Maps and Cache Paths
+	var predecessor_map: Dictionary = {}
+	var successor_map: Dictionary = {}
+	
 	for child in paths_node.get_children():
-		if child is Path2D:
+		if child is Path2D and child.name.find("Lane") == -1:
 			var key_string := "%s/%s" % [paths_node.name, child.name]
 			_paths[key_string] = child
+			
+			# Check branches to populate maps
+			var branches: Array = []
+			if "branches" in child:
+				branches = child.branches
+				
+			for branch_path_node in branches:
+				var branch_node = child.get_node_or_null(branch_path_node) as Path2D
+				if branch_node:
+					predecessor_map[branch_node] = child
+					
+					if not successor_map.has(child):
+						successor_map[child] = []
+					successor_map[child].append(branch_node)
+
+	# 1. Generate Global Lane Profile
+	# Use a consistent seeded random or just random at load.
+	# We want random distribution but fixed connectivity.
+	var lane_profile: Array[float] = []
+	for i in range(lane_count):
+		# Random offset between -max and +max
+		var offset = randf_range(-max_lane_offset, max_lane_offset)
+		lane_profile.append(offset)
+	
+	# Sort profile for logical Left->Right consistency (helps debugging)
+	lane_profile.sort()
+	
+	for child in paths_node.get_children():
+		if child is Path2D and child.name.find("Lane") == -1: # Ignore already generated lanes
+			var key_string := "%s/%s" % [paths_node.name, child.name]
+			
+			# 2. Auto-Lane Generation for ALL paths
+			var lanes: Array[Path2D] = []
+			
+			# Check if we have a predecessor to stitch to
+			var predecessor = predecessor_map.get(child)
+			var previous_tangent = Vector2.ZERO
+			
+			if predecessor and predecessor.curve.point_count >= 2:
+				var p_last = predecessor.curve.get_point_position(predecessor.curve.point_count - 1)
+				var p_prev = predecessor.curve.get_point_position(predecessor.curve.point_count - 2)
+				previous_tangent = (p_last - p_prev).normalized()
+
+			# Check successors to stitch end
+			var next_tangents: Array[Vector2] = []
+			var successors = successor_map.get(child, [])
+			for successor in successors:
+				if successor.curve.point_count >= 2:
+					var p0 = successor.curve.get_point_position(0)
+					var p1 = successor.curve.get_point_position(1)
+					var tan = (p1 - p0).normalized()
+					next_tangents.append(tan)
+
+			for i in range(lane_profile.size()):
+				var offset = lane_profile[i]
+				var lane_name = "%s_Lane_%d" % [child.name, i]
+				var new_curve: Curve2D
+				
+				if is_zero_approx(offset):
+					new_curve = child.curve.duplicate()
+				else:
+					new_curve = LaneGenerator.generate_parallel_curve(child, offset, previous_tangent, next_tangents)
+				
+				if new_curve:
+					var lane_path = Path2D.new()
+					lane_path.name = lane_name
+					lane_path.curve = new_curve
+					paths_node.add_child(lane_path)
+					
+					# Store in _paths for lookup
+					var lane_key = "%s/%s" % [paths_node.name, lane_name]
+					_paths[lane_key] = lane_path
+					lanes.append(lane_path)
+					
+			_lane_map[key_string] = lanes
 
 	# Register level metadata so the HUD shows total waves.
 	if level_data:
@@ -122,19 +205,30 @@ func _spawn_queued_enemy(event: Dictionary) -> void:
 	var path_key := str(event["path"])
 	var path_node := _paths.get(path_key, null) as Path2D
 	
+	# Check if this path has associated lanes
+	var lanes = _lane_map.get(path_key, [])
+	var lane_idx = -1
+	
+	if lanes.size() > 0:
+		# Pick a random lane index
+		lane_idx = randi() % lanes.size()
+		path_node = lanes[lane_idx]
+	
 	if path_node:
-		_spawn_enemy(event["scene"], path_node)
+		var enemy = _spawn_enemy(event["scene"], path_node)
+		if enemy:
+			enemy.lane_index = lane_idx # Assign lane index
 	else:
 		push_error("Path not found for queued spawn: %s" % path_key)
 
 
-func _spawn_enemy(enemy_scene: PackedScene, path_node: Path2D) -> void:
+func _spawn_enemy(enemy_scene: PackedScene, path_node: Path2D) -> TemplateEnemy:
 	# Spawns one enemy and attaches a PathFollow2D for movement.
 	var enemies_container := entities.get_node("Enemies") as Node2D
 
 	var enemy := ObjectPoolManager.get_object(enemy_scene) as TemplateEnemy
 	if not is_instance_valid(enemy):
-		return
+		return null
 
 	enemy.visible = true
 
@@ -162,6 +256,8 @@ func _spawn_enemy(enemy_scene: PackedScene, path_node: Path2D) -> void:
 		enemy.reached_end_of_path.connect(_on_enemy_finished_path)
 	if not enemy.died.is_connected(_on_enemy_died):
 		enemy.died.connect(_on_enemy_died)
+		
+	return enemy
 
 
 func _on_enemy_died(_enemy: TemplateEnemy, reward_amount: int) -> void:
@@ -174,52 +270,94 @@ func _on_enemy_died(_enemy: TemplateEnemy, reward_amount: int) -> void:
 func _on_enemy_finished_path(enemy: TemplateEnemy) -> void:
 	# Handles path end or branching for a moving enemy.
 	if not is_instance_valid(enemy):
-		# If enemy invalid, still debit count logic? Hard to say, safe to ignore usually.
 		return
 
 	var path_follow := enemy.path_follow as PathFollow2D
 	if not is_instance_valid(path_follow):
 		push_error("Enemy missing path_follow reference.")
 		return
-
-	var current_path := path_follow.get_parent() as Path2D
-	# ... (Branching logic unchanged, omitted for brevity if unmodified, wait, I need to provide full body for replacement...)
-	# Since this tool requires full replacement or chunks, and I am modifying _on_enemy_finished_path substantially 
-	# (decrementing count on Goal), I must be careful. 
-	# The prompt asks for Atomic Updates. I will provide the FULL methods.
-
-	if not is_instance_valid(current_path):
-		push_error("PathFollow2D has no Path2D parent.")
+		
+	# Logic to find parent path
+	var current_path_node = path_follow.get_parent() as Path2D
+	
+	# If we are on a "Lane", we need to find the "Source" path to check branches
+	# The source path name is stored in the key? No.
+	# But we know the structure: SourceName_Lane_Index
+	# Or, simply, does the current path node have branches? 
+	# Generated Lane Paths DO NOT have the 'branches' metadata on them directly unless we copied it (which we didn't).
+	# We generated them as children of "Paths", unrelated to the source.
+	
+	# CRITICAL: We need to find the "Logical Source Path" for the current lane.
+	# We can parse the name: "SpawnPath_Lane_2" -> "SpawnPath"
+	# Or simpler: The Level keeps the map.
+	
+	var current_lane_name = current_path_node.name
+	var source_path_name = current_lane_name
+	var is_lane = current_lane_name.find("_Lane_") != -1
+	
+	if is_lane:
+		# Strip suffix to get source name
+		# Assume format: Name_Lane_X
+		var parts = current_lane_name.split("_Lane_")
+		source_path_name = parts[0]
+	
+	# Find source path node in _paths
+	var source_key = "%s/%s" % [$Paths.name, source_path_name]
+	var source_path = _paths.get(source_key)
+	
+	if not source_path:
+		# Fallback/Error
+		enemy.reached_goal()
+		GameManager.damage_player(enemy.data.damage)
+		_active_enemy_count -= 1
+		_check_wave_completion()
 		return
 
-	var has_branches := "branches" in current_path and not (current_path.branches as Array).is_empty()
-	if not has_branches:
+	var branches: Array = []
+	if "branches" in source_path:
+		branches = source_path.branches
+		
+	if branches.is_empty():
 		GameManager.damage_player(enemy.data.damage)
 		enemy.reached_goal()
 		_active_enemy_count -= 1 # Enemy removed from play
 		_check_wave_completion()
 		return
 
-	var next_path_nodepath := (current_path.branches as Array).pick_random() as NodePath
-	var next_path := current_path.get_node_or_null(next_path_nodepath) as Path2D
-	if not next_path:
-		push_error("Invalid branch path: %s" % next_path_nodepath)
-		GameManager.damage_player(enemy.data.damage)
+	var next_path_nodepath := branches.pick_random() as NodePath
+	# The branch points to a node path (relative or absolute). We need the Node.
+	var next_source_path = source_path.get_node_or_null(next_path_nodepath) as Path2D
+	
+	if not next_source_path:
+		push_error("Invalid branch path from %s to %s" % [source_path.name, next_path_nodepath])
 		enemy.reached_goal()
-		_active_enemy_count -= 1 # Enemy removed from play
+		GameManager.damage_player(enemy.data.damage)
+		_active_enemy_count -= 1
 		_check_wave_completion()
 		return
-
+		
+	# Now find the corresponding lane on the next path
+	var next_path_key = "%s/%s" % [$Paths.name, next_source_path.name]
+	var next_lanes = _lane_map.get(next_path_key, [])
+	
+	var target_lane_path = next_source_path # Default to base if no lanes
+	if next_lanes.size() > 0:
+		# Try to keep same index
+		if enemy.lane_index >= 0 and enemy.lane_index < next_lanes.size():
+			target_lane_path = next_lanes[enemy.lane_index]
+		else:
+			target_lane_path = next_lanes.pick_random() # Fallback
+			
+	# Transition
 	enemy.prepare_for_new_path()
 
 	var new_path_follow := ObjectPoolManager.get_pooled_node("PathFollow2D") as PathFollow2D
 	if not is_instance_valid(new_path_follow):
-		push_error("Failed to get a PathFollow2D from the pool.")
 		new_path_follow = PathFollow2D.new()
 
 	new_path_follow.rotates = false
 	new_path_follow.loop = false
-	next_path.add_child(new_path_follow)
+	target_lane_path.add_child(new_path_follow)
 
 	enemy.path_follow = new_path_follow
 

@@ -8,9 +8,11 @@ signal wave_changed(current_wave, total_waves)
 signal level_changed(current_level)
 signal game_state_changed(new_state)
 signal wave_status_changed(is_active: bool)
+signal game_speed_changed(new_speed: float)
 signal start_wave_requested
 
 enum GameState {PAUSED, PLAYING}
+const SPEED_STEPS: Array[float] = [1.0, 1.25, 1.5, 2.0, 4.0]
 
 # Player and level state variables
 var _player_data: PlayerData
@@ -20,6 +22,7 @@ var _current_wave: int = 0
 var _total_waves: int = 0
 var _game_state: GameState = GameState.PLAYING
 var _is_wave_active: bool = false
+var _game_speed_index: int = 0
 
 var player_data: PlayerData:
 	get: return _player_data
@@ -126,6 +129,22 @@ func set_game_state(new_state: GameState) -> void:
 	game_state_changed.emit(_game_state)
 
 
+func step_speed_up() -> void:
+	if _game_speed_index < SPEED_STEPS.size() - 1:
+		_game_speed_index += 1
+		_update_time_scale()
+
+func step_speed_down() -> void:
+	if _game_speed_index > 0:
+		_game_speed_index -= 1
+		_update_time_scale()
+
+func _update_time_scale() -> void:
+	var new_speed = SPEED_STEPS[_game_speed_index]
+	Engine.time_scale = new_speed
+	game_speed_changed.emit(new_speed)
+
+
 func wave_completed() -> void:
 	_is_wave_active = false
 	wave_status_changed.emit(_is_wave_active)
@@ -143,6 +162,8 @@ func reset_state() -> void:
 	
 	# Reset Game State
 	_game_state = GameState.PLAYING
+	_game_speed_index = 0
+	Engine.time_scale = SPEED_STEPS[0]
 	get_tree().paused = false
 	
 	# Emit updates

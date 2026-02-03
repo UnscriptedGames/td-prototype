@@ -1,7 +1,7 @@
 [gd_resource type="SpriteFrames" load_steps=23 format=3 uid="uid://br8obf1poanq3"]
 
-[ext_resource type="Texture2D" uid="uid://d4j8au23feq0e" path="res://Entities/Enemies/Goblin/Assets/green_goblin_die.png" id="1_mr66t"]
-[ext_resource type="Texture2D" uid="uid://c5lthyhg8w3jc" path="res://Entities/Enemies/Goblin/Assets/green_goblin_walk.png" id="2_cxuyr"]
+[ext_resource type="Texture2D" uid="uid://d4j8au23feq0e" path="res://Entities/Enemies/Wave/Assets/green_goblin_die.png" id="1_mr66t"]
+[ext_resource type="Texture2D" uid="uid://c5lthyhg8w3jc" path="res://Entities/Enemies/Wave/Assets/green_goblin_walk.png" id="2_cxuyr"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_jctax"]
 atlas = ExtResource("1_mr66t")

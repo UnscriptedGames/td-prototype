@@ -1,11 +1,12 @@
-[gd_scene load_steps=12 format=3 uid="uid://d3x1y204a5b6c"]
+[gd_scene load_steps=11 format=3 uid="uid://d3x1y204a5b6c"]
 
 [ext_resource type="Script" uid="uid://dtscqhcaqtreq" path="res://UI/Layout/game_window.gd" id="1_layout"]
 [ext_resource type="Theme" uid="uid://dpov18qpoqhlb" path="res://UI/Themes/daw_theme.tres" id="2_theme"]
 [ext_resource type="Texture2D" uid="uid://bcwomx5iudjvu" path="res://UI/Icons/play.png" id="3_play"]
-[ext_resource type="Texture2D" uid="uid://sbbemathd2vd" path="res://UI/Icons/skip.png" id="4_skip"]
-[ext_resource type="Texture2D" uid="uid://jtjdtu4at84y" path="res://UI/Icons/volume.png" id="5_volume"]
-[ext_resource type="Texture2D" path="res://UI/Themes/peak_meter_gradient.tres" id="6_gradient"]
+[ext_resource type="Texture2D" uid="uid://drri2jnsth650" path="res://UI/Icons/speed_down.png" id="4_speed_down"]
+[ext_resource type="Texture2D" uid="uid://bmn07vf1fc1ti" path="res://UI/Icons/speed_up.png" id="5_speed_up"]
+[ext_resource type="Texture2D" uid="uid://jtjdtu4at84y" path="res://UI/Icons/volume.png" id="6_volume"]
+[ext_resource type="Texture2D" uid="uid://c0vdo7md7hdkc" path="res://UI/Themes/peak_meter_gradient.tres" id="7_gradient"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.262745, 0.301961, 0.333333, 1)
@@ -16,48 +17,6 @@ corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_meter_bg"]
-bg_color = Color(0.168627, 0.168627, 0.168627, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.101961, 0.101961, 0.101961, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_meter_fill_white"]
-bg_color = Color(1, 1, 1, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="Shader" id="Shader_peak"]
-code = "shader_type canvas_item;
-
-uniform sampler2D gradient_tex;
-
-void fragment() {
-	vec4 input_color = COLOR;
-	if (input_color.r > 0.5) {
-		vec4 grad_color = texture(gradient_tex, vec2(UV.x, 0.5));
-		COLOR.rgb = grad_color.rgb;
-		COLOR.a = input_color.a;
-	}
-}"
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_peak"]
-shader = SubResource("Shader_peak")
-shader_parameter/gradient_tex = ExtResource("6_gradient")
-
-
-
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_meter_mask"]
 bg_color = Color(0, 0, 0, 1)
@@ -126,6 +85,15 @@ size_flags_horizontal = 3
 layout_mode = 2
 theme_override_constants/separation = 15
 
+[node name="SpeedDownButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+icon = ExtResource("4_speed_down")
+flat = true
+expand_icon = true
+
 [node name="PlayButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls"]
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
@@ -135,12 +103,12 @@ icon = ExtResource("3_play")
 flat = true
 expand_icon = true
 
-[node name="NextWaveButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls"]
+[node name="SpeedUpButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls"]
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
-icon = ExtResource("4_skip")
+icon = ExtResource("5_speed_up")
 flat = true
 expand_icon = true
 
@@ -148,7 +116,7 @@ expand_icon = true
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 size_flags_vertical = 4
-texture = ExtResource("5_volume")
+texture = ExtResource("6_volume")
 expand_mode = 1
 stretch_mode = 5
 
@@ -160,7 +128,7 @@ focus_mode = 0
 value = 80.0
 
 [node name="WaveInfoPanel" type="PanelContainer" parent="MainLayout/TopBar/Content/TransportControls"]
-custom_minimum_size = Vector2(240, 32)
+custom_minimum_size = Vector2(350, 32)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_wave_bg")
@@ -174,6 +142,13 @@ alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 text = "Track: 0 / 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SpeedLabel" type="Label" parent="MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/InfoHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+text = "Speed: 1.00x"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -194,12 +169,11 @@ layout_mode = 2
 size_flags_vertical = 4
 theme_override_constants/separation = 2
 
-
 [node name="GaugeLContainer" type="PanelContainer" parent="MainLayout/TopBar/Content/PerformanceMeterContainer"]
+clip_children = 2
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_meter_mask")
-clip_children = 2
 
 [node name="Wrapper" type="Control" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer"]
 layout_mode = 2
@@ -213,10 +187,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 3
-max_value = 100.0
 step = 0.01
 nine_patch_stretch = true
-texture_progress = ExtResource("6_gradient")
+texture_progress = ExtResource("7_gradient")
 
 [node name="PeakLineL" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer/Wrapper"]
 custom_minimum_size = Vector2(2, 0)
@@ -227,10 +200,10 @@ grow_vertical = 2
 color = Color(1, 1, 1, 0.901961)
 
 [node name="GaugeRContainer" type="PanelContainer" parent="MainLayout/TopBar/Content/PerformanceMeterContainer"]
+clip_children = 2
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_meter_mask")
-clip_children = 2
 
 [node name="Wrapper" type="Control" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer"]
 layout_mode = 2
@@ -244,10 +217,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 3
-max_value = 100.0
 step = 0.01
 nine_patch_stretch = true
-texture_progress = ExtResource("6_gradient")
+texture_progress = ExtResource("7_gradient")
 
 [node name="PeakLineR" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer/Wrapper"]
 custom_minimum_size = Vector2(2, 0)
@@ -256,8 +228,6 @@ anchor_bottom = 1.0
 offset_right = 2.0
 grow_vertical = 2
 color = Color(1, 1, 1, 0.901961)
-
-
 
 [node name="RightSpacer" type="Control" parent="MainLayout/TopBar/Content"]
 custom_minimum_size = Vector2(20, 0)

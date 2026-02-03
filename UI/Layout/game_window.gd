@@ -8,6 +8,8 @@ extends Control
 
 # Transport Controls
 @onready var play_button: Button = $MainLayout/TopBar/Content/TransportControls/PlayButton
+@onready var speed_down_button: Button = $MainLayout/TopBar/Content/TransportControls/SpeedDownButton
+@onready var speed_up_button: Button = $MainLayout/TopBar/Content/TransportControls/SpeedUpButton
 
 @onready var gauge_l: TextureProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer/Wrapper/GaugeL
 @onready var gauge_r: TextureProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer/Wrapper/GaugeR
@@ -16,10 +18,12 @@ extends Control
 
 
 @onready var wave_label: Label = $MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/InfoHBox/WaveLabel
+@onready var speed_label: Label = $MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/InfoHBox/SpeedLabel
 @onready var gain_label: Label = $MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/InfoHBox/GainLabel
 
 # Card Grid
 @onready var card_grid: GridContainer = $MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent/CardMarginContainer/CardGrid
+@onready var volume_slider: HSlider = $MainLayout/TopBar/Content/TransportControls/VolumeSlider
 @export var player_deck: Resource # Loaded as DeckData
 
 # Icons
@@ -131,6 +135,19 @@ func _ready() -> void:
 		
 	if GameManager.has_signal("wave_status_changed"):
 		GameManager.wave_status_changed.connect(_on_wave_status_changed)
+
+	if GameManager.has_signal("game_speed_changed"):
+		GameManager.game_speed_changed.connect(_on_game_speed_changed)
+		# Init Label
+		_on_game_speed_changed(Engine.time_scale)
+
+	# --- Volume Integration ---
+	if volume_slider:
+		volume_slider.value_changed.connect(_on_volume_changed)
+		# Initialize slider with current Master bus volume
+		var master_bus_idx = AudioServer.get_bus_index("Master")
+		var vol_db = AudioServer.get_bus_volume_db(master_bus_idx)
+		volume_slider.value = db_to_linear(vol_db) * 100.0
 
 	# Init UI state based on current data
 	_update_play_button_visuals()
@@ -323,9 +340,24 @@ func _setup_transport() -> void:
 		icon_pause = load("res://UI/Icons/pause.png")
 		
 	play_button.pressed.connect(_on_play_button_pressed)
+	
+	if speed_down_button:
+		speed_down_button.pressed.connect(GameManager.step_speed_down)
+	if speed_up_button:
+		speed_up_button.pressed.connect(GameManager.step_speed_up)
 
 func _on_play_button_pressed() -> void:
 	GameManager.toggle_game_state()
+
+
+func _on_volume_changed(value: float) -> void:
+	var master_bus_idx = AudioServer.get_bus_index("Master")
+	# Convert 0-100 linear scale to decibels
+	var vol_db = linear_to_db(value / 100.0)
+	AudioServer.set_bus_volume_db(master_bus_idx, vol_db)
+	
+	# Optional: Mute if volume is very low
+	AudioServer.set_bus_mute(master_bus_idx, value <= 0.0)
 
 
 func _on_game_state_changed(new_state: int) -> void:
@@ -366,6 +398,11 @@ func _set_container_input_state(node: Node, enabled: bool) -> void:
 
 func _on_wave_status_changed(_is_active: bool) -> void:
 	_update_play_button_visuals()
+
+
+func _on_game_speed_changed(new_speed: float) -> void:
+	if speed_label:
+		speed_label.text = "Speed: %.2fx" % new_speed
 
 
 func _update_play_button_visuals() -> void:
@@ -618,7 +655,7 @@ func _set_container_mouse_ignore_recursive(node: Node, allow_buttons: bool = tru
 		# - If allow_buttons is TRUE: KEEP it (MOUSE_FILTER_STOP)
 		# - If allow_buttons is FALSE: IGNORE it (drag falls through)
 		# Identify interactive elements: Buttons, Inputs, OR Draggable items (Cards)
-		var is_interactive = node is BaseButton or node is LineEdit or node is TextEdit or node is Tree or node is ItemList
+		var is_interactive = node is BaseButton or node is LineEdit or node is TextEdit or node is Tree or node is ItemList or node is Range
 		if not is_interactive and node.has_method("_get_drag_data"):
 			is_interactive = true
 

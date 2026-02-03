@@ -1,0 +1,46 @@
+[gd_scene load_steps=7 format=3 uid="uid://ca5pbsw2hawel"]
+
+[ext_resource type="PackedScene" uid="uid://br1v6v0da2v1n" path="res://Entities/Enemies/_TemplateEnemy/template_enemy.tscn" id="1_ptqmb"]
+[ext_resource type="Resource" uid="uid://dm7sv0sau3b5b" path="res://Config/Enemies/wave_enemy_data.tres" id="2_echq7"]
+[ext_resource type="Texture2D" uid="uid://dmibkwifrsc74" path="res://Entities/Enemies/Wave/Assets/wave_enemy_blue.png" id="2_tex"]
+[ext_resource type="SpriteFrames" uid="uid://crly7bs8780q0" path="res://Entities/Enemies/Wave/wave_enemy_animations.tres" id="3_do17j"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_o0hbe"]
+size = Vector2(36, 35)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_o3mth"]
+size = Vector2(36, 35)
+
+[node name="WaveEnemy" instance=ExtResource("1_ptqmb")]
+data = ExtResource("2_echq7")
+
+[node name="Sprite" parent="." index="0"]
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("2_tex")
+
+[node name="Animation" parent="." index="1"]
+scale = Vector2(0.3, 0.3)
+sprite_frames = ExtResource("3_do17j")
+animation = &"green_die_north_west"
+autoplay = "green_move_south_west"
+frame_progress = 0.0
+offset = Vector2(0, 0)
+
+[node name="PositionShape" parent="." index="2"]
+visible = false
+position = Vector2(0, 0.5)
+shape = SubResource("RectangleShape2D_o0hbe")
+
+[node name="HitboxShape" parent="Hitbox" index="0"]
+position = Vector2(0, 0.5)
+shape = SubResource("RectangleShape2D_o3mth")
+
+[node name="ProgressBarContainer" parent="." index="4"]
+offset_left = -24.0
+offset_top = -55.0
+offset_right = 72.0
+offset_bottom = 9.0
+scale = Vector2(0.5, 0.5)
+
+[node name="TargetPoint" parent="." index="5"]
+position = Vector2(0, -30)

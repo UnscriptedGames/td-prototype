@@ -1,6 +1,6 @@
 ## Path Data Node
 class_name PathData
-extends Node
+extends Path2D
 
 ## Branching Paths
-@export var branches: Array[NodePath]	# List of paths this path can branch to
+@export var branches: Array[NodePath] # List of paths this path can branch to

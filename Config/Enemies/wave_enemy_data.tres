@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=4 format=3 uid="uid://dm7sv0sau3b5b"]
+
+[ext_resource type="SpriteFrames" uid="uid://crly7bs8780q0" path="res://Entities/Enemies/Wave/wave_enemy_animations.tres" id="1_mth7w"]
+[ext_resource type="Script" uid="uid://b5ta2srmrxkqa" path="res://Entities/Enemies/_TemplateEnemy/template_enemy_data.gd" id="2_x4n50"]
+[ext_resource type="Texture2D" uid="uid://dmibkwifrsc74" path="res://Entities/Enemies/Wave/Assets/wave_enemy_blue.png" id="3_mth7w"]
+
+[resource]
+script = ExtResource("2_x4n50")
+max_health = 5
+speed = 80.0
+damage = 2
+max_path_offset = 10.0
+variants = Array[String](["green", "purple", "orange", "yellow"])
+required_actions = Array[String](["move", "die"])
+animations = ExtResource("1_mth7w")
+wave_texture = ExtResource("3_mth7w")
+scroll_speed = 0.1
