@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://c18rpqmu5rtej" path="res://Levels/Components/grid_overlay.gd" id="4_grid"]
 [ext_resource type="PackedScene" uid="uid://d3ilyyujh1y78" path="res://Entities/Towers/GhostTower/ghost_tower.tscn" id="4_gxwin"]
 [ext_resource type="Script" uid="uid://bmef7lb8sygxw" path="res://Levels/Components/maze_shadow_generator.gd" id="5_shadow"]
+[ext_resource type="Script" path="res://Levels/Components/maze_renderer.gd" id="6_renderer"]
 [ext_resource type="PackedScene" uid="uid://bofddehla75b3" path="res://Entities/Cards/card_manager.tscn" id="7_3pnw0"]
 
 [node name="TemplateLevel" type="Node2D" unique_id=1492646997]
@@ -33,6 +34,12 @@ line_thickness = 3.0
 
 [node name="TileMaps" type="Node2D" parent="." unique_id=1301297614]
 y_sort_enabled = true
+
+[node name="MazeRenderer" type="Node2D" parent="TileMaps" unique_id=2021264931]
+z_index = -1
+script = ExtResource("6_renderer")
+source_layer_path = NodePath("../MapLayer")
+wall_source_id = -1
 
 [node name="ShadowLayer" type="TileMapLayer" parent="TileMaps" unique_id=1283083688]
 modulate = Color(0, 0, 0, 0.5)
