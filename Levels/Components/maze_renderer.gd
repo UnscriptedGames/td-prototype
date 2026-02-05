@@ -11,67 +11,49 @@ class_name MazeRenderer
 		_update_source_reference()
 		queue_redraw()
 
+@export var custom_styles: Array[MazeTileStyle] = []:
+	set(value):
+		custom_styles = value
+		queue_redraw()
+
 @export_group("Visuals")
-@export var button_color: Color = Color("4b80ca"): # Default blueish
-	set(value):
-		button_color = value
-		queue_redraw()
-
-@export var side_color: Color = Color("2a4478"): # Darker shade for sides
-	set(value):
-		side_color = value
-		queue_redraw()
-
-@export var glow_color: Color = Color("8ecbf4"): # Much brighter/cyanish for better contrast
-	set(value):
-		glow_color = value
-		queue_redraw()
-
-@export var glow_opacity: float = 0.4: # Base opacity for the glow layers
-	set(value):
-		glow_opacity = value
-		queue_redraw()
-
-@export var glow_steps: int = 3: # Number of concentric layers
+# Geometry-only settings (Global)
+@export var glow_steps: int = 4:
 	set(value):
 		glow_steps = value
 		queue_redraw()
 
-@export var glow_step_size: float = 2.0: # Distance between layers
+@export var glow_step_size: float = 0.8:
 	set(value):
 		glow_step_size = value
 		queue_redraw()
 
-@export var custom_glow_radius: float = -1.0: # -1.0 = Auto (based on button radius), >= 0 = Custom
+@export var custom_glow_radius: float = 5.0: # -1.0 = Auto (based on button radius), >= 0 = Custom
 	set(value):
 		custom_glow_radius = value
 		queue_redraw()
 
-@export var inner_padding: float = 5.0: # Distance from edge for the glow
+@export var inner_padding: float = 3.0: # Distance from edge for the glow
 	set(value):
 		inner_padding = value
 		queue_redraw()
 
-@export_range(0.0, 1.0) var button_scale: float = 0.85:
+@export_range(0.0, 1.0) var button_scale: float = 0.95:
 	set(value):
 		button_scale = value
 		queue_redraw()
-@export var corner_radius: float = 8.0:
+@export var corner_radius: float = 5.0:
 	set(value):
 		corner_radius = value
 		queue_redraw()
 
-@export var depth_offset: Vector2 = Vector2(0, 10):
+@export var depth_offset: Vector2 = Vector2(4, 4):
 	set(value):
 		depth_offset = value
 		queue_redraw()
 
-@export var wall_source_id: int = -1: # -1 means all, set to specific ID to filter
-	set(value):
-		wall_source_id = value
-		queue_redraw()
-
 var _source_layer: TileMapLayer
+var _style_lookup: Dictionary = {}
 
 func _ready() -> void:
 	_update_source_reference()
@@ -94,6 +76,26 @@ func _update_source_reference() -> void:
 func _on_source_changed() -> void:
 	queue_redraw()
 
+func _rebuild_style_lookup() -> void:
+	_style_lookup.clear()
+	for map in custom_styles:
+		if map:
+			var key = Vector3i(map.source_id, map.atlas_coords.x, map.atlas_coords.y)
+			_style_lookup[key] = map
+
+func _get_active_style(coords: Vector2i) -> MazeTileStyle:
+	# 1. Check Custom Mapping
+	var source_id = _source_layer.get_cell_source_id(coords)
+	var atlas_coords = _source_layer.get_cell_atlas_coords(coords)
+	var key = Vector3i(source_id, atlas_coords.x, atlas_coords.y)
+	
+	if key in _style_lookup:
+		# Return the specific style for this tile
+		return _style_lookup[key]
+		
+	# No match found -> Return null (don't draw)
+	return null
+
 func _draw() -> void:
 	if not _source_layer:
 		return
@@ -102,62 +104,54 @@ func _draw() -> void:
 	if not tile_set:
 		return
 		
+	_rebuild_style_lookup() # Ensure lookup is fresh
+		
 	var tile_size = tile_set.tile_size
 	var used_cells = _source_layer.get_used_cells()
 	
 	for coords in used_cells:
-		if wall_source_id != -1:
-			var sid = _source_layer.get_cell_source_id(coords)
-			if sid != wall_source_id:
-				continue
+		# Resolve Style
+		var style = _get_active_style(coords)
+		
+		# Skip if no style is defined for this tile
+		if not style:
+			continue
 		
 		# Calculate geometry
 		var cell_center = _source_layer.map_to_local(coords)
-		# NOTE: map_to_local returns center of tile in TileMapLayer local space.
 		
 		var full_size = Vector2(tile_size)
 		var draw_size = full_size * button_scale
 		
-		# Center the entire visual mass (Front + Back) on the cell center
-		# The visual center is the midpoint between Front Face and Back Face.
-		# Back Face is at depth_offset relative to Front.
-		# So we shift the origin by -depth_offset * 0.5
 		var centering_offset = - depth_offset * 0.5
 		var offset_pos = cell_center - (draw_size * 0.5) + centering_offset
 		
-		# Define the main Rect (Face)
+		# Define Rects
 		var face_rect = Rect2(offset_pos, draw_size)
-		
-		# Define Side/Depth Rect (shifted by depth_offset)
 		var back_rect = face_rect
 		back_rect.position += depth_offset
 		
-		# Draw the block "body" (extrusions) first
-		_draw_extrusion(face_rect, back_rect, side_color)
+		# Draw Extrusion
+		_draw_extrusion(face_rect, back_rect, style.side_color)
 		
-		# Draw the Face on top (Base Layer)
-		draw_style_box(_create_style_box(button_color), face_rect)
+		# Draw Face
+		draw_style_box(_create_style_box(style.button_color), face_rect)
 		
-		# Draw Inner Glow (Inset Layer)
-		# We use a multi-pass approach to simulate a soft gradient.
-		if inner_padding > 0 and glow_opacity > 0:
+		# Draw Inner Glow
+		if inner_padding > 0 and style.glow_opacity > 0:
 			for i in range(glow_steps):
 				var current_padding = inner_padding + (i * glow_step_size)
 				var inner_rect = face_rect.grow(-current_padding)
 				
 				if inner_rect.size.x > 0 and inner_rect.size.y > 0:
 					var sb_glow = StyleBoxFlat.new()
-					sb_glow.bg_color = glow_color
-					# Use the user-defined opacity
-					sb_glow.bg_color.a = glow_opacity
+					sb_glow.bg_color = style.glow_color
+					sb_glow.bg_color.a = style.glow_opacity
 					
-					# Calculate radius: shrunk by padding
 					var inner_radius = 0.0
 					if custom_glow_radius >= 0.0:
-						# User override, still shrink for inner layers to keep concentric look
 						inner_radius = max(0.0, custom_glow_radius - (i * glow_step_size))
 					else:
-						# Auto: relative to outer button radius
 						inner_radius = max(0.0, corner_radius - current_padding)
 					
 					sb_glow.set_corner_radius_all(int(inner_radius))

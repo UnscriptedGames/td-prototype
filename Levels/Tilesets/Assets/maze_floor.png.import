@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cf3lfr8xbvp1v"
-path="res://.godot/imported/test.png-973a80855e9e8901ba29f884ffbd6726.ctex"
+uid="uid://2x7jg7htqj6m"
+path="res://.godot/imported/maze_floor.png-dca53cb1ff1f595427a9e0f004345fb9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Config/Cards/Build/test.png"
-dest_files=["res://.godot/imported/test.png-973a80855e9e8901ba29f884ffbd6726.ctex"]
+source_file="res://Levels/Tilesets/Assets/maze_floor.png"
+dest_files=["res://.godot/imported/maze_floor.png-dca53cb1ff1f595427a9e0f004345fb9.ctex"]
 
 [params]
 

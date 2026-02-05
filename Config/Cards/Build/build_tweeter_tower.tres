@@ -1,10 +1,10 @@
-[gd_resource type="Resource" script_class="CardData" load_steps=7 format=3]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://ccbpqy8ufcehr"]
 
 [ext_resource type="Script" uid="uid://1pgmy4c6yckj" path="res://Entities/Cards/Effects/build_tower_effect.gd" id="1_bssmu"]
-[ext_resource type="Resource" path="res://Config/Towers/tweeter_tower_data.tres" id="2_2fwjp"]
+[ext_resource type="Resource" uid="uid://6g7ltfri23b8" path="res://Config/Towers/tweeter_tower_data.tres" id="2_2fwjp"]
 [ext_resource type="Texture2D" uid="uid://dbg0iecj244sa" path="res://Entities/Cards/Assets/card_archer_tower.png" id="3_p8w8c"]
 [ext_resource type="Script" uid="uid://drvh5madwcotk" path="res://Entities/Cards/card_data.gd" id="4_6owso"]
-[ext_resource type="PackedScene" path="res://Entities/Towers/TweeterTower/tweeter_tower.tscn" id="4_scene"]
+[ext_resource type="PackedScene" uid="uid://bdsj66s3pbnpa" path="res://Entities/Towers/TweeterTower/tweeter_tower.tscn" id="4_scene"]
 
 [sub_resource type="Resource" id="Resource_ocjl4"]
 script = ExtResource("1_bssmu")
@@ -14,7 +14,6 @@ metadata/_custom_type_script = "uid://1pgmy4c6yckj"
 
 [resource]
 script = ExtResource("4_6owso")
-title = "Tweeter Tower"
 front_texture = ExtResource("3_p8w8c")
 effect = SubResource("Resource_ocjl4")
 metadata/_custom_type_script = "uid://drvh5madwcotk"

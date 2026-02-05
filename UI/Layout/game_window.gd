@@ -639,7 +639,7 @@ func _drop_data(_at_position: Vector2, _data: Variant) -> void:
 func _wire_up_level(level_instance: Node) -> void:
 	# Update Build Manager References
 	if _build_manager:
-		var path_layer = level_instance.get_node_or_null("TileMaps/MapLayer")
+		var path_layer = level_instance.get_node_or_null("TileMaps/MazeLayer")
 		var highlight = level_instance.get_node_or_null("TileMaps/HighlightLayer")
 		var towers = level_instance.get_node_or_null("Entities/Towers")
 		

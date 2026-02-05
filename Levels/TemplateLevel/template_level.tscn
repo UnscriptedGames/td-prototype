@@ -3,10 +3,9 @@
 [ext_resource type="Script" uid="uid://6irywbbrglw3" path="res://Levels/TemplateLevel/template_level.gd" id="1_f16nf"]
 [ext_resource type="TileSet" uid="uid://deanuyo4c5m1j" path="res://Levels/Tilesets/path_tileset.tres" id="1_ser8i"]
 [ext_resource type="Script" uid="uid://cyy8netls8x7r" path="res://Systems/build_manager.gd" id="3_x6qrl"]
-[ext_resource type="Script" uid="uid://yny7h3dispg0" path="res://Addons/Tools/tilemap_buildable_overlay.gd" id="3_ylfxi"]
 [ext_resource type="Script" uid="uid://c18rpqmu5rtej" path="res://Levels/Components/grid_overlay.gd" id="4_grid"]
 [ext_resource type="PackedScene" uid="uid://d3ilyyujh1y78" path="res://Entities/Towers/GhostTower/ghost_tower.tscn" id="4_gxwin"]
-[ext_resource type="Script" uid="uid://bmef7lb8sygxw" path="res://Levels/Components/maze_shadow_generator.gd" id="5_shadow"]
+[ext_resource type="Script" uid="uid://dt7srovmpurri" path="res://Levels/Components/background_renderer.gd" id="6_bg"]
 [ext_resource type="Script" uid="uid://63tactyc62r7" path="res://Levels/Components/maze_renderer.gd" id="6_renderer"]
 [ext_resource type="PackedScene" uid="uid://bofddehla75b3" path="res://Entities/Cards/card_manager.tscn" id="7_3pnw0"]
 
@@ -35,31 +34,25 @@ line_thickness = 3.0
 [node name="TileMaps" type="Node2D" parent="." unique_id=1301297614]
 y_sort_enabled = true
 
+[node name="BackgroundRenderer" type="Node2D" parent="TileMaps" unique_id=1621264932]
+z_index = -5
+script = ExtResource("6_bg")
+
 [node name="MazeRenderer" type="Node2D" parent="TileMaps" unique_id=2021264931]
 z_index = -1
 script = ExtResource("6_renderer")
-source_layer_path = NodePath("../MapLayer")
+source_layer_path = NodePath("../MazeLayer")
 
-[node name="ShadowLayer" type="TileMapLayer" parent="TileMaps" unique_id=1283083688]
-modulate = Color(0, 0, 0, 0.5)
-z_index = -3
-y_sort_enabled = true
-position = Vector2(10, 10)
-tile_set = ExtResource("1_ser8i")
-script = ExtResource("5_shadow")
-source_layer_path = NodePath("../MapLayer")
-
-[node name="MapLayer" type="TileMapLayer" parent="TileMaps" unique_id=1471219969]
+[node name="MazeLayer" type="TileMapLayer" parent="TileMaps" unique_id=1471219969]
 z_index = -2
 y_sort_enabled = true
-script = ExtResource("3_ylfxi")
+
+[node name="FloorLayer" type="TileMapLayer" parent="TileMaps" unique_id=1763685675]
+y_sort_enabled = true
 
 [node name="HighlightLayer" type="TileMapLayer" parent="TileMaps" unique_id=1097366726]
 z_index = -1
 tile_set = ExtResource("1_ser8i")
-
-[node name="ObjectLayer" type="TileMapLayer" parent="TileMaps" unique_id=1763685675]
-y_sort_enabled = true
 
 [node name="Entities" type="Node2D" parent="." unique_id=334363663]
 y_sort_enabled = true
