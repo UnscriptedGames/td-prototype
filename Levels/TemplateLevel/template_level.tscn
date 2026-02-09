@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://c18rpqmu5rtej" path="res://Levels/Components/grid_overlay.gd" id="4_grid"]
 [ext_resource type="PackedScene" uid="uid://d3ilyyujh1y78" path="res://Entities/Towers/GhostTower/ghost_tower.tscn" id="4_gxwin"]
 [ext_resource type="Script" uid="uid://dt7srovmpurri" path="res://Levels/Components/background_renderer.gd" id="6_bg"]
+[ext_resource type="Script" path="res://Levels/Components/background_renderer_2.gd" id="6_bg2"]
 [ext_resource type="Script" uid="uid://63tactyc62r7" path="res://Levels/Components/maze_renderer.gd" id="6_renderer"]
 [ext_resource type="PackedScene" uid="uid://bofddehla75b3" path="res://Entities/Cards/card_manager.tscn" id="7_3pnw0"]
 
@@ -37,6 +38,12 @@ y_sort_enabled = true
 [node name="BackgroundRenderer" type="Node2D" parent="TileMaps" unique_id=1621264932]
 z_index = -5
 script = ExtResource("6_bg")
+
+[node name="BackgroundRenderer2" type="Node2D" parent="TileMaps" node_paths=PackedStringArray("floor_layer") unique_id=1621264933]
+z_index = -5
+script = ExtResource("6_bg2")
+floor_layer = NodePath("../FloorLayer")
+enabled = false
 
 [node name="MazeRenderer" type="Node2D" parent="TileMaps" unique_id=2021264931]
 z_index = -1

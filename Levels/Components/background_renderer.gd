@@ -10,6 +10,16 @@ class_name BackgroundRenderer
 @export var grid_height: int = 16
 
 @export_group("Visuals")
+@export_range(0.0, 1.0) var noise_strength: float = 0.05:
+	set(value):
+		noise_strength = value
+		_update_shader_params()
+
+@export_range(0.0, 1.0) var gradient_strength: float = 0.1:
+	set(value):
+		gradient_strength = value
+		_update_shader_params()
+
 @export var button_color: Color = Color("2e2e30"): # Dark grey for pads
 	set(value):
 		button_color = value
@@ -64,12 +74,186 @@ class_name BackgroundRenderer
 		depth_offset = value
 		queue_redraw()
 
+@export var enabled: bool = true:
+	set(value):
+		enabled = value
+		queue_redraw()
+
+var _pressed_states: Dictionary = {} # Coords(Vector2i) -> PressRatio(float 0.0 to 1.0)
+var _active_tweens: Dictionary = {} # Coords(Vector2i) -> Tween
+var _current_pressed_pad: Vector2i = Vector2i(-1, -1)
+
+var _pad_colors: Dictionary = {} # Coords(Vector2i) -> Color
+var _color_timers: Dictionary = {} # Coords(Vector2i) -> Tween (Timer)
+var _hidden_cells: Dictionary = {} # Coords(Vector2i) -> bool
+
 func _ready() -> void:
+	if _pressed_states == null:
+		_pressed_states = {}
+	if _pad_colors == null:
+		_pad_colors = {}
+	if _hidden_cells == null:
+		_hidden_cells = {}
+	
+	_setup_material()
 	queue_redraw()
 
+func _setup_material() -> void:
+	# Load Matte Shader
+	var shader = load("res://Levels/Components/matte_surface.gdshader")
+	if shader:
+		var mat = ShaderMaterial.new()
+		mat.shader = shader
+		self.material = mat
+		_update_shader_params()
+
+func _update_shader_params() -> void:
+	if material is ShaderMaterial:
+		material.set_shader_parameter("noise_strength", noise_strength)
+		material.set_shader_parameter("gradient_strength", gradient_strength)
+		queue_redraw()
+
+func set_cell_hidden(coords: Vector2i, is_hidden: bool) -> void:
+	if _hidden_cells == null: _hidden_cells = {}
+	
+	if is_hidden:
+		_hidden_cells[coords] = true
+	else:
+		_hidden_cells.erase(coords)
+	queue_redraw()
+
+func _input(event: InputEvent) -> void:
+	if Engine.is_editor_hint():
+		return
+		
+	if not enabled:
+		return
+		
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		# Manual global to map conversion (Tile Size = 64x64)
+		var local_pos = to_local(get_global_mouse_position())
+		var tile_size = Vector2(64, 64)
+		var grid_x = floor(local_pos.x / tile_size.x)
+		var grid_y = floor(local_pos.y / tile_size.y)
+		var coords = Vector2i(grid_x, grid_y)
+		
+		# Check if hidden
+		if _hidden_cells.has(coords):
+			return
+		
+		# Check bounds
+		if coords.x >= 0 and coords.x < grid_width and coords.y >= 0 and coords.y < grid_height:
+			if event.pressed:
+				_animate_pad(coords, 1.0)
+				_randomize_pad_color(coords)
+				_current_pressed_pad = coords
+				
+		# Handle Release (Global or specific)
+		if not event.pressed:
+			# If we have a currently held pad, release it regardless of where the mouse is now
+			if _current_pressed_pad != Vector2i(-1, -1):
+				_animate_pad(_current_pressed_pad, 0.0)
+				_start_color_reset_timer(_current_pressed_pad)
+				_current_pressed_pad = Vector2i(-1, -1)
+
+func _randomize_pad_color(coords: Vector2i) -> void:
+	if _pad_colors == null: _pad_colors = {}
+	
+	# Kill existing reset timer if any
+	if _color_timers.has(coords):
+		var timer = _color_timers[coords]
+		if timer and timer.is_valid():
+			timer.kill()
+		_color_timers.erase(coords)
+	
+	# Generate random vibrant color (HSV)
+	var hue = randf()
+	# Constrain Saturation (0.5 to 0.8) to prevent "neon" look
+	var sat = randf_range(0.5, 0.8)
+	# Constrain Value (0.6 to 0.9) to prevent being too dark or too bright/washed out
+	var val = randf_range(0.6, 0.9)
+	var new_color = Color.from_hsv(hue, sat, val)
+	
+	_pad_colors[coords] = new_color
+	queue_redraw()
+
+func _start_color_reset_timer(coords: Vector2i) -> void:
+	# Create a tween to act as a timer
+	var tween = create_tween()
+	_color_timers[coords] = tween
+	
+	tween.tween_interval(3.0)
+	tween.tween_callback(func():
+		if _pad_colors.has(coords):
+			_pad_colors.erase(coords)
+		if _color_timers.has(coords):
+			_color_timers.erase(coords)
+		queue_redraw()
+	)
+
+func _animate_pad(coords: Vector2i, target_value: float) -> void:
+	if _pressed_states == null:
+		_pressed_states = {}
+		
+	# Kill existing tween for this pad if it exists
+	if _active_tweens.has(coords):
+		var existing_tween = _active_tweens[coords]
+		if existing_tween and existing_tween.is_valid():
+			existing_tween.kill()
+		
+	var tween = create_tween()
+	_active_tweens[coords] = tween # Store reference
+	
+	tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	
+	if target_value == 0.0:
+		tween.set_trans(Tween.TRANS_ELASTIC)
+		tween.set_ease(Tween.EASE_OUT)
+	
+	var start_val = _pressed_states.get(coords, 0.0)
+	
+	tween.tween_method(
+		func(val):
+			if _pressed_states == null: _pressed_states = {}
+			_pressed_states[coords] = val
+			queue_redraw(),
+		start_val,
+		target_value,
+		0.1 if target_value > 0.5 else 0.3
+	)
+	
+	# Cleanup when done
+	tween.finished.connect(func():
+		if _active_tweens.has(coords) and _active_tweens[coords] == tween:
+			_active_tweens.erase(coords)
+	)
+
 func _draw() -> void:
+	if not enabled:
+		return
+
+	# Use local safety variables to prevent threaded/tool script access issues
+	var pressed_safe = _pressed_states
+	if pressed_safe == null:
+		pressed_safe = {}
+		_pressed_states = pressed_safe
+		
+	var colors_safe = _pad_colors
+	if colors_safe == null:
+		colors_safe = {}
+		_pad_colors = colors_safe
+		
+	var hidden_safe = _hidden_cells
+	if hidden_safe == null:
+		hidden_safe = {}
+		_hidden_cells = hidden_safe
+
 	# 1. Tile Size Fixed
 	var tile_size = Vector2i(64, 64)
+	
+	# Setup material in Editor/Runtime if missing
+	if not material:
+		_setup_material()
 	
 	# 2. Pre-create StyleBoxes to avoid allocation spam
 	var sb_face = _create_style_box(button_color)
@@ -100,8 +284,46 @@ func _draw() -> void:
 		for y in range(grid_height):
 			var coords = Vector2i(x, y)
 			
-			# Always draw, no exclusion check
-		
+			# Hidden Check
+			if hidden_safe.has(coords):
+				continue
+			
+			# Determine Colors for this pad
+			var current_face_sb = sb_face
+			var current_side_sb = sb_side
+			var current_side_color = side_color
+			var current_glow_sbs = sb_glows
+			
+			if colors_safe.has(coords):
+				var base_col = colors_safe[coords]
+				current_face_sb = _create_style_box(base_col)
+				
+				var darkened_col = base_col.darkened(0.65)
+				current_side_color = darkened_col
+				current_side_sb = _create_style_box(darkened_col)
+				
+				# Generate custom glow stack
+				current_glow_sbs = []
+				var lightened_col = base_col.lightened(0.5)
+				lightened_col.a = glow_opacity # Keep transparency
+				
+				if inner_padding > 0 and glow_opacity > 0:
+					for i in range(glow_steps):
+						var sb = StyleBoxFlat.new()
+						sb.bg_color = lightened_col
+						
+						var current_padding = inner_padding + (i * glow_step_size)
+						var inner_radius = 0.0
+						if custom_glow_radius >= 0.0:
+							inner_radius = max(0.0, custom_glow_radius - (i * glow_step_size))
+						else:
+							inner_radius = max(0.0, corner_radius - current_padding)
+						
+						sb.set_corner_radius_all(int(inner_radius))
+						sb.corner_detail = 4
+						sb.anti_aliasing = true
+						current_glow_sbs.append(sb)
+
 			# Calculate geometry
 			# Explicitly use Vector2 for calculation to avoid integer division warning
 			var cell_center = Vector2(coords * tile_size) + (Vector2(tile_size) / 2.0)
@@ -109,27 +331,33 @@ func _draw() -> void:
 			var full_size = Vector2(tile_size)
 			var draw_size = full_size * button_scale
 			
-			var centering_offset = - depth_offset * 0.5
-			var offset_pos = cell_center - (draw_size * 0.5) + centering_offset
+			# Animation Logic
+			var press_ratio = pressed_safe.get(coords, 0.0)
+			var current_depth_offset = depth_offset * (1.0 - press_ratio)
+			
+			var resting_pos = cell_center - (draw_size * 0.5) + (-depth_offset * 0.5)
+			var pressed_pos = cell_center - (draw_size * 0.5)
+			var offset_pos = resting_pos.lerp(pressed_pos, press_ratio)
 			
 			var face_rect = Rect2(offset_pos, draw_size)
 			var back_rect = face_rect
-			back_rect.position += depth_offset
+			back_rect.position += current_depth_offset
 			
 			# Draw Extrusion (Manual implementation using pre-cached side stylebox)
-			_draw_extrusion_optimized(face_rect, back_rect, side_color, sb_side)
+			if current_depth_offset.length_squared() > 0.1:
+				_draw_extrusion_optimized(face_rect, back_rect, current_side_color, current_side_sb, current_depth_offset)
 			
 			# Draw Face
-			draw_style_box(sb_face, face_rect)
+			draw_style_box(current_face_sb, face_rect)
 			
 			# Draw Inner Glows
-			for i in range(sb_glows.size()):
+			for i in range(current_glow_sbs.size()):
 				var current_padding = inner_padding + (i * glow_step_size)
 				var inner_rect = face_rect.grow(-current_padding)
 				if inner_rect.size.x > 0 and inner_rect.size.y > 0:
-					draw_style_box(sb_glows[i], inner_rect)
+					draw_style_box(current_glow_sbs[i], inner_rect)
 
-func _draw_extrusion_optimized(front: Rect2, back: Rect2, color: Color, sb_back: StyleBoxFlat) -> void:
+func _draw_extrusion_optimized(front: Rect2, back: Rect2, color: Color, sb_back: StyleBoxFlat, effective_depth: Vector2) -> void:
 	var r = min(corner_radius, min(front.size.x, front.size.y) * 0.5)
 	
 	# Draw Back Face
@@ -156,82 +384,18 @@ func _draw_extrusion_optimized(front: Rect2, back: Rect2, color: Color, sb_back:
 	
 	# Draw Corner Pills
 	var c_tl = Vector2(front.position.x + r, front.position.y + r)
-	draw_line(c_tl, c_tl + depth_offset, color, r * 2.0)
+	draw_line(c_tl, c_tl + effective_depth, color, r * 2.0)
 	var c_tr = Vector2(front.end.x - r, front.position.y + r)
-	draw_line(c_tr, c_tr + depth_offset, color, r * 2.0)
+	draw_line(c_tr, c_tr + effective_depth, color, r * 2.0)
 	var c_br = Vector2(front.end.x - r, front.end.y - r)
-	draw_line(c_br, c_br + depth_offset, color, r * 2.0)
+	draw_line(c_br, c_br + effective_depth, color, r * 2.0)
 	var c_bl = Vector2(front.position.x + r, front.end.y - r)
-	draw_line(c_bl, c_bl + depth_offset, color, r * 2.0)
+	draw_line(c_bl, c_bl + effective_depth, color, r * 2.0)
 	
 	# Draw Side Quads
 	_draw_triangle_quad(f_tl_h, f_tr_h, b_tr_h, b_tl_h, color)
 	_draw_triangle_quad(f_br_h, f_bl_h, b_bl_h, b_br_h, color)
 	_draw_triangle_quad(f_bl_v, f_tl_v, b_tl_v, b_bl_v, color)
-	_draw_triangle_quad(f_tr_v, f_br_v, b_br_v, b_tr_v, color)
-
-func _draw_extrusion(front: Rect2, back: Rect2, color: Color) -> void:
-	# 8-Quad approach: Draw 4 side strips + 4 corner chamfers to connect the rounded
-	# front and back faces. This fills the gaps that the old convex-hull approach missed.
-	var r = min(corner_radius, min(front.size.x, front.size.y) * 0.5)
-	
-	# Draw the Back Face (Base) first
-	draw_style_box(_create_style_box(color), back)
-	
-	# Calculate the 8 tangent points for the front face:
-	# Top edge tangents (horizontal)
-	var f_tl_h = Vector2(front.position.x + r, front.position.y)
-	var f_tr_h = Vector2(front.end.x - r, front.position.y)
-	# Bottom edge tangents (horizontal)
-	var f_bl_h = Vector2(front.position.x + r, front.end.y)
-	var f_br_h = Vector2(front.end.x - r, front.end.y)
-	# Left edge tangents (vertical)
-	var f_tl_v = Vector2(front.position.x, front.position.y + r)
-	var f_bl_v = Vector2(front.position.x, front.end.y - r)
-	# Right edge tangents (vertical)
-	var f_tr_v = Vector2(front.end.x, front.position.y + r)
-	var f_br_v = Vector2(front.end.x, front.end.y - r)
-	
-	# Calculate the 8 tangent points for the back face:
-	var b_tl_h = Vector2(back.position.x + r, back.position.y)
-	var b_tr_h = Vector2(back.end.x - r, back.position.y)
-	var b_bl_h = Vector2(back.position.x + r, back.end.y)
-	var b_br_h = Vector2(back.end.x - r, back.end.y)
-	var b_tl_v = Vector2(back.position.x, back.position.y + r)
-	var b_bl_v = Vector2(back.position.x, back.end.y - r)
-	var b_tr_v = Vector2(back.end.x, back.position.y + r)
-	var b_br_v = Vector2(back.end.x, back.end.y - r)
-	
-	# Draw 4 Corner "Pills" (Swept Circles)
-	# Instead of trying to triangulate the gap, we draw a thick line connecting
-	# the center of the Front corner circle to the center of the Back corner circle.
-	# Width = 2*r ensures it matches the circle diameter.
-	# This creates a "skewed cylinder" that perfectly fills the corner volume.
-	
-	# Top-Left Center
-	var c_tl = Vector2(front.position.x + r, front.position.y + r)
-	draw_line(c_tl, c_tl + depth_offset, color, r * 2.0)
-	
-	# Top-Right Center
-	var c_tr = Vector2(front.end.x - r, front.position.y + r)
-	draw_line(c_tr, c_tr + depth_offset, color, r * 2.0)
-	
-	# Bottom-Right Center
-	var c_br = Vector2(front.end.x - r, front.end.y - r)
-	draw_line(c_br, c_br + depth_offset, color, r * 2.0)
-	
-	# Bottom-Left Center
-	var c_bl = Vector2(front.position.x + r, front.end.y - r)
-	draw_line(c_bl, c_bl + depth_offset, color, r * 2.0)
-	
-	# Draw 4 Side Strip Quads (connects the straight edges)
-	# Top Side
-	_draw_triangle_quad(f_tl_h, f_tr_h, b_tr_h, b_tl_h, color)
-	# Bottom Side
-	_draw_triangle_quad(f_br_h, f_bl_h, b_bl_h, b_br_h, color)
-	# Left Side
-	_draw_triangle_quad(f_bl_v, f_tl_v, b_tl_v, b_bl_v, color)
-	# Right Side
 	_draw_triangle_quad(f_tr_v, f_br_v, b_br_v, b_tr_v, color)
 
 func _draw_triangle_quad(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2, color: Color) -> void:

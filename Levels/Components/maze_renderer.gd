@@ -16,6 +16,13 @@ class_name MazeRenderer
 		custom_styles = value
 		queue_redraw()
 
+@export var grid_width: int = 24 # Match BackgroundRenderer default
+
+@export_range(0.0, 1.0) var reveal_ratio: float = 1.0:
+	set(value):
+		reveal_ratio = value
+		queue_redraw()
+
 @export_group("Visuals")
 # Geometry-only settings (Global)
 @export var glow_steps: int = 4:
@@ -96,6 +103,10 @@ func _get_active_style(coords: Vector2i) -> MazeTileStyle:
 	# No match found -> Return null (don't draw)
 	return null
 
+func has_cell(coords: Vector2i) -> bool:
+	if not _source_layer: return false
+	return _get_active_style(coords) != null
+
 func _draw() -> void:
 	if not _source_layer:
 		return
@@ -109,30 +120,48 @@ func _draw() -> void:
 	var tile_size = tile_set.tile_size
 	var used_cells = _source_layer.get_used_cells()
 	
+	# Pass 1: Draw All Shadows/Extrusions (Bottom Layer)
 	for coords in used_cells:
-		# Resolve Style
+		# Reveal Logic
+		if (float(coords.x) + 0.5) / float(grid_width) > reveal_ratio:
+			continue
+
 		var style = _get_active_style(coords)
-		
-		# Skip if no style is defined for this tile
 		if not style:
 			continue
 		
-		# Calculate geometry
+		# Geometry
 		var cell_center = _source_layer.map_to_local(coords)
-		
 		var full_size = Vector2(tile_size)
 		var draw_size = full_size * button_scale
-		
 		var centering_offset = - depth_offset * 0.5
 		var offset_pos = cell_center - (draw_size * 0.5) + centering_offset
 		
-		# Define Rects
 		var face_rect = Rect2(offset_pos, draw_size)
 		var back_rect = face_rect
 		back_rect.position += depth_offset
 		
-		# Draw Extrusion
+		# Draw Extrusion Only
 		_draw_extrusion(face_rect, back_rect, style.side_color)
+
+	# Pass 2: Draw All Faces/Glows (Top Layer)
+	for coords in used_cells:
+		# Reveal Logic
+		if (float(coords.x) + 0.5) / float(grid_width) > reveal_ratio:
+			continue
+
+		var style = _get_active_style(coords)
+		if not style:
+			continue
+		
+		# Geometry (Recalculated for independence)
+		var cell_center = _source_layer.map_to_local(coords)
+		var full_size = Vector2(tile_size)
+		var draw_size = full_size * button_scale
+		var centering_offset = - depth_offset * 0.5
+		var offset_pos = cell_center - (draw_size * 0.5) + centering_offset
+		
+		var face_rect = Rect2(offset_pos, draw_size)
 		
 		# Draw Face
 		draw_style_box(_create_style_box(style.button_color), face_rect)

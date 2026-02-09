@@ -164,7 +164,7 @@ func _ready() -> void:
 		# IMPORTANT: GameWindow is PROCESS_MODE_ALWAYS (to handle UI inputs).
 		# We must explicitly set the game container to PAUSABLE so it respects get_tree().paused.
 		viewport_container.process_mode = Node.PROCESS_MODE_PAUSABLE
-		viewport_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		viewport_container.mouse_filter = Control.MOUSE_FILTER_PASS
 		
 		# Explicitly set the SubViewport as well, just to be safe/sure.
 		if viewport_container.get_child_count() > 0:

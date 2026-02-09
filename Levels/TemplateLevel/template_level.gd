@@ -28,9 +28,33 @@ var _spawn_timer: float = 0.0
 
 @onready var entities: Node2D = $Entities
 
+@export_group("Renderers")
+@export var background_renderer: BackgroundRenderer
+@export var maze_renderer: MazeRenderer
+@export var floor_layer: TileMapLayer # Reference to the Path/Floor layer
+
+@export_group("Opening Sequence")
+@export var play_opening_sequence: bool = true
+@export var boot_delay: float = 2.0
+@export var maze_wipe_duration: float = 1.0
+@export var path_dissolve_duration: float = 1.0
+
 ## Built-in Methods
 
 func _ready() -> void:
+	# Try to auto-connect renderers if not assigned
+	if not background_renderer:
+		background_renderer = find_child("BackgroundRenderer", true, false)
+	if not maze_renderer:
+		maze_renderer = find_child("MazeRenderer", true, false)
+		
+	# Start functionality
+	if play_opening_sequence:
+		call_deferred("_start_opening_sequence")
+	else:
+		# Ensure everything is visible if sequence is skipped
+		if maze_renderer: maze_renderer.reveal_ratio = 1.0
+
 	# Cache Path2D nodes using "Paths/Name" keys for quick lookup.
 	var paths_node := $Paths as Node2D
 	# 0. Build Connectivity Maps and Cache Paths
@@ -391,3 +415,35 @@ func _check_wave_completion() -> void:
 	# Only complete the wave if NO enemies are left AND we are done spawning.
 	if _active_enemy_count <= 0 and not _spawning:
 		GameManager.wave_completed()
+
+func _start_opening_sequence() -> void:
+	if not background_renderer or not maze_renderer:
+		return
+		
+	# 1. Reset State
+	maze_renderer.reveal_ratio = 0.0
+	
+	# 2. Sequence
+	var tween = create_tween()
+	tween.tween_interval(boot_delay)
+	# Wipe Maze In
+	tween.tween_property(maze_renderer, "reveal_ratio", 1.0, maze_wipe_duration)
+	# Then Dissolve Path
+	tween.tween_callback(_start_dissolve_sequence)
+
+func _start_dissolve_sequence() -> void:
+	if not background_renderer or not floor_layer:
+		return
+	
+	# Identify Path Cells directly from the Floor Layer
+	var path_cells = floor_layer.get_used_cells()
+	path_cells.shuffle()
+	
+	if path_cells.is_empty(): return
+	
+	var tween = create_tween()
+	
+	var step = path_dissolve_duration / float(path_cells.size())
+	for coord in path_cells:
+		tween.tween_callback(background_renderer.set_cell_hidden.bind(coord, true))
+		tween.tween_interval(step)
