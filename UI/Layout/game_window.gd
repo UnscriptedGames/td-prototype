@@ -470,10 +470,9 @@ func _on_hand_changed(new_hand: Array[CardData]) -> void:
 		card_grid.add_child(card_instance)
 		
 		# Layout: Fixed Cell Size Calculation
-		# Width: (384 Sidebar - 40 Margins/Sep) / 2 = 172 (safe 162)
-		# Height: (1080 Screen - 56 Top - 60 Header - 20 Margin - 60 Spacing) / 4 Rows = ~226
-		# We use 215 to be safe and ensure the TopBar is never squashed.
-		card_instance.custom_minimum_size = Vector2(162, 215)
+		# Width: (320 Sidebar - 40 Margins/Sep) / 2 = 140
+		# Height: Maintain Aspect Ratio ~ 1.33 -> 186
+		card_instance.custom_minimum_size = Vector2(140, 186)
 		
 		# Do NOT expand vertically to push the UI.
 		# Just sit at the fixed size.

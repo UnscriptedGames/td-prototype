@@ -2,59 +2,58 @@
 
 [ext_resource type="Script" uid="uid://6irywbbrglw3" path="res://Levels/TemplateLevel/template_level.gd" id="1_f16nf"]
 [ext_resource type="TileSet" uid="uid://deanuyo4c5m1j" path="res://Levels/Tilesets/path_tileset.tres" id="1_ser8i"]
+[ext_resource type="Shader" uid="uid://dxdrp5juv3u7u" path="res://Levels/Components/matte_surface.gdshader" id="3_pbnvl"]
 [ext_resource type="Script" uid="uid://cyy8netls8x7r" path="res://Systems/build_manager.gd" id="3_x6qrl"]
-[ext_resource type="Script" uid="uid://c18rpqmu5rtej" path="res://Levels/Components/grid_overlay.gd" id="4_grid"]
 [ext_resource type="PackedScene" uid="uid://d3ilyyujh1y78" path="res://Entities/Towers/GhostTower/ghost_tower.tscn" id="4_gxwin"]
 [ext_resource type="Script" uid="uid://dt7srovmpurri" path="res://Levels/Components/background_renderer.gd" id="6_bg"]
-[ext_resource type="Script" path="res://Levels/Components/background_renderer_2.gd" id="6_bg2"]
 [ext_resource type="Script" uid="uid://63tactyc62r7" path="res://Levels/Components/maze_renderer.gd" id="6_renderer"]
 [ext_resource type="PackedScene" uid="uid://bofddehla75b3" path="res://Entities/Cards/card_manager.tscn" id="7_3pnw0"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_k2fl1"]
+shader = ExtResource("3_pbnvl")
+shader_parameter/noise_strength = 0.05
+shader_parameter/gradient_strength = 0.1
+shader_parameter/light_direction = Vector2(1, 1)
 
 [node name="TemplateLevel" type="Node2D" unique_id=1492646997]
 y_sort_enabled = true
 script = ExtResource("1_f16nf")
 
 [node name="Background" type="TextureRect" parent="." unique_id=1965822054]
-offset_right = 1570.0
-offset_bottom = 1012.0
+offset_right = 1600.0
+offset_bottom = 1024.0
 mouse_filter = 2
 expand_mode = 1
 
 [node name="DesignGuide" type="ReferenceRect" parent="." unique_id=907145451]
-offset_right = 1536.0
+offset_right = 1600.0
 offset_bottom = 1024.0
 mouse_filter = 2
 border_color = Color(1, 0, 0, 0.5)
 border_width = 2.0
 
-[node name="GridOverlay" type="Node2D" parent="." unique_id=277930824]
-script = ExtResource("4_grid")
-line_color = Color(0.023098323, 0.13775218, 0.14437675, 0.5019608)
-line_thickness = 3.0
-
 [node name="TileMaps" type="Node2D" parent="." unique_id=1301297614]
 y_sort_enabled = true
 
 [node name="BackgroundRenderer" type="Node2D" parent="TileMaps" unique_id=1621264932]
+visible = false
 z_index = -5
+material = SubResource("ShaderMaterial_k2fl1")
 script = ExtResource("6_bg")
-
-[node name="BackgroundRenderer2" type="Node2D" parent="TileMaps" node_paths=PackedStringArray("floor_layer") unique_id=1621264933]
-z_index = -5
-script = ExtResource("6_bg2")
-floor_layer = NodePath("../FloorLayer")
-enabled = false
+grid_width = 25
 
 [node name="MazeRenderer" type="Node2D" parent="TileMaps" unique_id=2021264931]
 z_index = -1
 script = ExtResource("6_renderer")
+grid_width = 25
 source_layer_path = NodePath("../MazeLayer")
 
 [node name="MazeLayer" type="TileMapLayer" parent="TileMaps" unique_id=1471219969]
 z_index = -2
 y_sort_enabled = true
 
-[node name="FloorLayer" type="TileMapLayer" parent="TileMaps" unique_id=1763685675]
+[node name="SongLayer" type="TileMapLayer" parent="TileMaps" unique_id=1471219970]
+z_index = -2
 y_sort_enabled = true
 
 [node name="HighlightLayer" type="TileMapLayer" parent="TileMaps" unique_id=1097366726]
@@ -90,9 +89,9 @@ invalid_range_id = 6
 [node name="CardManager" parent="." unique_id=117636864 instance=ExtResource("7_3pnw0")]
 
 [node name="LevelCamera" type="Camera2D" parent="." unique_id=1695427683]
-position = Vector2(768, 512)
+position = Vector2(800, 512)
 limit_left = 0
 limit_top = 0
-limit_right = 1536
+limit_right = 1600
 limit_bottom = 1024
 position_smoothing_enabled = true

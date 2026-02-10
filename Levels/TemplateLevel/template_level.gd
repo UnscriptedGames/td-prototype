@@ -31,13 +31,33 @@ var _spawn_timer: float = 0.0
 @export_group("Renderers")
 @export var background_renderer: BackgroundRenderer
 @export var maze_renderer: MazeRenderer
-@export var floor_layer: TileMapLayer # Reference to the Path/Floor layer
+@export var song_layer: TileMapLayer # Reference to the SongLayer (optional if named standardly)
+@export var floor_tile_id: int = 1 # ID of the tile used for the floor/path
 
 @export_group("Opening Sequence")
 @export var play_opening_sequence: bool = true
-@export var boot_delay: float = 2.0
-@export var maze_wipe_duration: float = 1.0
-@export var path_dissolve_duration: float = 1.0
+
+## 1. Initial wait time before the sequence starts.
+@export var step1_boot_delay: float = 2.0
+
+## 2. Duration of the center-out wipe animation for the Song Layer.
+@export var step2_song_wipe_duration: float = 3.0
+
+## 3. Wait time after the wipe finishes, before the dissolve starts.
+@export var step3_dissolve_delay: float = 1.0
+
+## 4. Duration of the transition from Song Layer to Maze Layer.
+@export var step4_dissolve_duration: float = 2.0
+
+## 5. Duration of the background pad removal flow along the path.
+@export var step5_path_flow_duration: float = 1.0
+
+## 5a. Time (in seconds) to start the flow BEFORE the dissolve ends.
+## Use this to overlap the animations.
+@export var step5_flow_overlap: float = 0.0
+
+## 6. Duration for individual pad animations (shrink/scale).
+@export var step6_pad_anim_duration: float = 0.5
 
 ## Built-in Methods
 
@@ -47,9 +67,30 @@ func _ready() -> void:
 		background_renderer = find_child("BackgroundRenderer", true, false)
 	if not maze_renderer:
 		maze_renderer = find_child("MazeRenderer", true, false)
+	if not song_layer:
+		song_layer = find_child("SongLayer", true, false)
 		
 	# Start functionality
 	if play_opening_sequence:
+		# Force full State Initialization to prevent flicker/wrong layer
+		if maze_renderer:
+			# Setup Layers (Source=Maze, Transition=Song)
+			var maze_layer_node = find_child("MazeLayer", true, false)
+			
+			if maze_layer_node:
+				maze_renderer.source_layer_path = maze_layer_node.get_path()
+			if song_layer:
+				maze_renderer.transition_layer_path = song_layer.get_path()
+			
+			# Setup State (Show Song Layer via Transition 0.0)
+			if "transition_progress" in maze_renderer:
+				maze_renderer.transition_progress = 0.0
+				
+			# Setup Wipe (Hidden, Center Out)
+			if "reveal_mode" in maze_renderer:
+				maze_renderer.reveal_mode = maze_renderer.RevealMode.CENTER_OUT
+			maze_renderer.reveal_ratio = 0.0
+			
 		call_deferred("_start_opening_sequence")
 	else:
 		# Ensure everything is visible if sequence is skipped
@@ -421,29 +462,149 @@ func _start_opening_sequence() -> void:
 		return
 		
 	# 1. Reset State
-	maze_renderer.reveal_ratio = 0.0
+	# Goal: MazeRenderer shows SongLayer wipe in, then dissolves to MazeLayer.
+	if maze_renderer:
+		maze_renderer.reveal_mode = maze_renderer.RevealMode.CENTER_OUT
+		maze_renderer.reveal_ratio = 0.0
+		maze_renderer.transition_progress = 0.0
 	
 	# 2. Sequence
 	var tween = create_tween()
-	tween.tween_interval(boot_delay)
-	# Wipe Maze In
-	tween.tween_property(maze_renderer, "reveal_ratio", 1.0, maze_wipe_duration)
-	# Then Dissolve Path
-	tween.tween_callback(_start_dissolve_sequence)
+	
+	# Removed global easing for consistent linear flow as requested
+	tween.tween_interval(step1_boot_delay)
+	
+	# Step A: Wipe In Song (Visually)
+	
+	# Configure Wipe Width based on Pad Animation Duration
+	if "wipe_anim_width" in maze_renderer and step2_song_wipe_duration > 0.001:
+		var wipe_width = step6_pad_anim_duration / step2_song_wipe_duration
+		maze_renderer.wipe_anim_width = clampf(wipe_width, 0.01, 1.0)
+		
+	tween.tween_property(maze_renderer, "reveal_ratio", 1.0, step2_song_wipe_duration)
+	
+	# Phase 2: Explicit Wait (Decoupled from Tween Chaining)
+	tween.finished.connect(_on_wipe_finished)
+
+func _on_wipe_finished() -> void:
+	# Explicitly wait using a SceneTreeTimer, ensuring the delay is robust.
+	if step3_dissolve_delay > 0.0:
+		await get_tree().create_timer(step3_dissolve_delay).timeout
+	
+	_start_dissolve_sequence()
 
 func _start_dissolve_sequence() -> void:
-	if not background_renderer or not floor_layer:
-		return
-	
-	# Identify Path Cells directly from the Floor Layer
-	var path_cells = floor_layer.get_used_cells()
-	path_cells.shuffle()
-	
-	if path_cells.is_empty(): return
+	if not maze_renderer: return
 	
 	var tween = create_tween()
 	
-	var step = path_dissolve_duration / float(path_cells.size())
-	for coord in path_cells:
-		tween.tween_callback(background_renderer.set_cell_hidden.bind(coord, true))
-		tween.tween_interval(step)
+	# Step C & D: Dissolve & Flow (Overlapping)
+	
+	# Configure MazeRenderer Pop Speed based on Pad Animation Duration
+	if "dissolve_anim_width" in maze_renderer and step4_dissolve_duration > 0.001:
+		var calculated_width = step6_pad_anim_duration / step4_dissolve_duration
+		# Safety Clamp: Cap at 1.0 (Full Duration) to prevent math errors if duration is huge
+		maze_renderer.dissolve_anim_width = clampf(calculated_width, 0.01, 1.0)
+	
+	# We use set_parallel(true) to explicitly state that the following tweens
+	# happen simultaneously. This guarantees they share the same start time on the timeline.
+	tween.set_parallel(true)
+	
+	# 1. Start Dissolve (Duration 3s)
+	if "transition_progress" in maze_renderer:
+		tween.tween_property(maze_renderer, "transition_progress", 1.0, step4_dissolve_duration)
+	
+	# 2. Start Flow Timer (Delay = 3s - Overlap)
+	# This starts at T=0 (relative to this block) but waits for 'flow_start_delay'.
+	var flow_start_delay = max(0.0, step4_dissolve_duration - step5_flow_overlap)
+	tween.tween_callback(_start_path_flow_dissolve).set_delay(flow_start_delay)
+	
+	# End Parallel Block
+	tween.set_parallel(false)
+	
+	# Step E: Cleanup
+	# This runs after the longest tween in the parallel block finishes.
+	tween.tween_callback(func():
+		maze_renderer.transition_layer_path = NodePath()
+		maze_renderer.reveal_mode = maze_renderer.RevealMode.LINEAR # Reset for gameplay
+	)
+
+func _start_path_flow_dissolve() -> void:
+	if not background_renderer or not maze_renderer:
+		return
+		
+	# 1. Get Maze Layer Data
+	var layer_node = maze_renderer.get_node_or_null(maze_renderer.source_layer_path)
+	if not layer_node is TileMapLayer:
+		return
+	var maze_layer = layer_node as TileMapLayer
+	
+	# 2. Find Start Point (Spawn01)
+	# Start with a default in case path is missing
+	var start_coords = Vector2i(0, 8)
+	
+	var spawn_path = _paths.get("%s/Spawn01" % $Paths.name) as Path2D
+	if spawn_path and spawn_path.curve.point_count > 0:
+		var start_local = spawn_path.curve.get_point_position(0) + spawn_path.position
+		# Map path local (which is usually global-ish/level relative) to TileMap local
+		# Assuming Paths and TileMaps are siblings or zero-offset
+		var map_pos = maze_layer.to_local(to_global(start_local))
+		start_coords = maze_layer.local_to_map(map_pos)
+		
+	# 3. BFS Flood Fill
+	# Find all connected floor tiles (ID == floor_tile_id)
+	var queue: Array[Vector2i] = [start_coords]
+	var visited: Dictionary = {start_coords: 0} # Coords -> Distance
+	var max_distance: int = 0
+	
+	# Standard 4-way neighbors
+	var directions = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
+	
+	while queue.size() > 0:
+		var current = queue.pop_front()
+		var current_dist = visited[current]
+		
+		# Update max distance for normalization
+		if current_dist > max_distance:
+			max_distance = current_dist
+			
+		for dir in directions:
+			var next = current + dir
+			
+			if visited.has(next):
+				continue
+				
+			# Check if valid floor tile
+			if maze_layer.get_cell_source_id(next) == floor_tile_id:
+				visited[next] = current_dist + 1
+				queue.append(next)
+				
+	# 4. Animate
+	# Create a tween to hide background cells along the path
+	var tween = create_tween()
+	
+	# We want the whole flow to take `step5_path_flow_duration`
+	# So delay per step = duration / max_distance
+	var step_delay = 0.05
+	if max_distance > 0:
+		step_delay = step5_path_flow_duration / float(max_distance)
+		
+	for cell in visited.keys():
+		var dist = visited[cell]
+		var delay = float(dist) * step_delay
+		
+		# We can't use tween_callback with specific delays easily in a loop without a parallel/sequence mess
+		# Better to use tween_method or just a timer?
+		# Actually, tween.parallel() with tween_callback doesn't allow individual delays easily.
+		# But we can use a separate purely parallel tween structure or just schedule specific calls.
+		
+		# Best approach for massive number of calls:
+		# Use a method that takes a time and checks against elapsed? No.
+		# Use typical godot trick: tween.parallel().tween_callback().set_delay()
+		
+		# Duration for individual cell shrink
+		var shrink_duration = step6_pad_anim_duration
+		
+		tween.parallel().tween_callback(func():
+			background_renderer.animate_hide_cell(cell, shrink_duration)
+		).set_delay(delay)

@@ -6,7 +6,7 @@ class_name BackgroundRenderer
 ## Draws rounded, "floating" buttons on all grid spots.
 
 @export_group("Grid")
-@export var grid_width: int = 24
+@export var grid_width: int = 25
 @export var grid_height: int = 16
 
 @export_group("Visuals")
@@ -86,6 +86,8 @@ var _current_pressed_pad: Vector2i = Vector2i(-1, -1)
 var _pad_colors: Dictionary = {} # Coords(Vector2i) -> Color
 var _color_timers: Dictionary = {} # Coords(Vector2i) -> Tween (Timer)
 var _hidden_cells: Dictionary = {} # Coords(Vector2i) -> bool
+var _cell_scales: Dictionary = {} # Coords(Vector2i) -> float (Scale multiplier)
+var _style_box_pool: Dictionary = {} # Key: {color, radius} -> StyleBoxFlat
 
 func _ready() -> void:
 	if _pressed_states == null:
@@ -94,9 +96,33 @@ func _ready() -> void:
 		_pad_colors = {}
 	if _hidden_cells == null:
 		_hidden_cells = {}
+	if _cell_scales == null:
+		_cell_scales = {}
 	
+	_preload_style_boxes()
 	_setup_material()
 	queue_redraw()
+
+func _preload_style_boxes() -> void:
+	# Pre-populate pool with known/common styles
+	_style_box_pool.clear()
+	
+	# Cache main/side colors
+	_create_style_box(button_color, corner_radius)
+	_create_style_box(side_color, corner_radius)
+	
+	# Cache default glows
+	if inner_padding > 0 and glow_opacity > 0:
+		var c = glow_color
+		c.a = glow_opacity
+		for i in range(glow_steps):
+			var current_padding = inner_padding + (i * glow_step_size)
+			var inner_radius = 0.0
+			if custom_glow_radius >= 0.0:
+				inner_radius = max(0.0, custom_glow_radius - (i * glow_step_size))
+			else:
+				inner_radius = max(0.0, corner_radius - current_padding)
+			_create_style_box(c, inner_radius)
 
 func _setup_material() -> void:
 	# Load Matte Shader
@@ -120,7 +146,44 @@ func set_cell_hidden(coords: Vector2i, is_hidden: bool) -> void:
 		_hidden_cells[coords] = true
 	else:
 		_hidden_cells.erase(coords)
+		# Also reset scale if unhiding
+		if _cell_scales.has(coords):
+			_cell_scales.erase(coords)
+			
 	queue_redraw()
+
+func animate_hide_cell(coords: Vector2i, duration: float = 0.5) -> void:
+	if _cell_scales == null: _cell_scales = {}
+	
+	# If already hidden, ignore
+	if _hidden_cells.has(coords):
+		return
+		
+	# Create a tween to shrink the cell
+	var tween = create_tween()
+	# Changed to Cubic Out for smoother, more visible shrinking (responsive to duration)
+	tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	
+	# Start from current scale or 1.0
+	var start_scale = _cell_scales.get(coords, 1.0)
+	
+	tween.tween_method(
+		func(val):
+			if _cell_scales == null: _cell_scales = {}
+			_cell_scales[coords] = val
+			queue_redraw(),
+		start_scale,
+		0.0,
+		duration
+	)
+	
+	# Cleanup after shrink
+	tween.finished.connect(func():
+		set_cell_hidden(coords, true)
+		# Clean up the scale entry since it's hidden now
+		if _cell_scales.has(coords):
+			_cell_scales.erase(coords)
+	)
 
 func _input(event: InputEvent) -> void:
 	if Engine.is_editor_hint():
@@ -248,6 +311,11 @@ func _draw() -> void:
 		hidden_safe = {}
 		_hidden_cells = hidden_safe
 
+	var scales_safe = _cell_scales
+	if scales_safe == null:
+		scales_safe = {}
+		_cell_scales = scales_safe
+
 	# 1. Tile Size Fixed
 	var tile_size = Vector2i(64, 64)
 	
@@ -256,16 +324,12 @@ func _draw() -> void:
 		_setup_material()
 	
 	# 2. Pre-create StyleBoxes to avoid allocation spam
-	var sb_face = _create_style_box(button_color)
-	var sb_side = _create_style_box(side_color)
+	var sb_face = _create_style_box(button_color, corner_radius)
+	var sb_side = _create_style_box(side_color, corner_radius)
 	var sb_glows: Array[StyleBoxFlat] = []
 	
 	if inner_padding > 0 and glow_opacity > 0:
 		for i in range(glow_steps):
-			var sb = StyleBoxFlat.new()
-			sb.bg_color = glow_color
-			sb.bg_color.a = glow_opacity
-			
 			var current_padding = inner_padding + (i * glow_step_size)
 			# Calculate radius
 			var inner_radius = 0.0
@@ -274,9 +338,10 @@ func _draw() -> void:
 			else:
 				inner_radius = max(0.0, corner_radius - current_padding)
 			
-			sb.set_corner_radius_all(int(inner_radius))
-			sb.corner_detail = 4
-			sb.anti_aliasing = true
+			var c = glow_color
+			c.a = glow_opacity
+			
+			var sb = _create_style_box(c, inner_radius)
 			sb_glows.append(sb)
 
 	# 3. Iterate all grid cells
@@ -296,11 +361,11 @@ func _draw() -> void:
 			
 			if colors_safe.has(coords):
 				var base_col = colors_safe[coords]
-				current_face_sb = _create_style_box(base_col)
+				current_face_sb = _create_style_box(base_col, corner_radius)
 				
 				var darkened_col = base_col.darkened(0.65)
 				current_side_color = darkened_col
-				current_side_sb = _create_style_box(darkened_col)
+				current_side_sb = _create_style_box(darkened_col, corner_radius)
 				
 				# Generate custom glow stack
 				current_glow_sbs = []
@@ -309,9 +374,6 @@ func _draw() -> void:
 				
 				if inner_padding > 0 and glow_opacity > 0:
 					for i in range(glow_steps):
-						var sb = StyleBoxFlat.new()
-						sb.bg_color = lightened_col
-						
 						var current_padding = inner_padding + (i * glow_step_size)
 						var inner_radius = 0.0
 						if custom_glow_radius >= 0.0:
@@ -319,9 +381,7 @@ func _draw() -> void:
 						else:
 							inner_radius = max(0.0, corner_radius - current_padding)
 						
-						sb.set_corner_radius_all(int(inner_radius))
-						sb.corner_detail = 4
-						sb.anti_aliasing = true
+						var sb = _create_style_box(lightened_col, inner_radius)
 						current_glow_sbs.append(sb)
 
 			# Calculate geometry
@@ -329,7 +389,12 @@ func _draw() -> void:
 			var cell_center = Vector2(coords * tile_size) + (Vector2(tile_size) / 2.0)
 			
 			var full_size = Vector2(tile_size)
-			var draw_size = full_size * button_scale
+			# Calculate available size (Cell - Shadow Depth) to ensure Scale 1.0 fits perfectly without overlap (Matching MazeRenderer)
+			var available_size = (full_size - depth_offset.abs()).max(Vector2.ZERO)
+			
+			# Apply per-cell scale animation
+			var cell_scale_mult = scales_safe.get(coords, 1.0)
+			var draw_size = available_size * button_scale * cell_scale_mult
 			
 			# Animation Logic
 			var press_ratio = pressed_safe.get(coords, 0.0)
@@ -419,11 +484,20 @@ func _draw_safe_triangle(a: Vector2, b: Vector2, c: Vector2, color: Color) -> vo
 	if area > 0.1: # Threshold to ignore degenerate/collinear triangles
 		draw_polygon([a, b, c], [color])
 
-func _create_style_box(color: Color) -> StyleBoxFlat:
-	# Helper to create a stylebox for drawing
+func _create_style_box(color: Color, radius: float) -> StyleBoxFlat:
+	# Caching wrapper for StyleBoxes
+	var key = [color, radius]
+	
+	if _style_box_pool.has(key):
+		return _style_box_pool[key]
+		
+	# Create new
 	var sb = StyleBoxFlat.new()
 	sb.bg_color = color
-	sb.set_corner_radius_all(int(corner_radius))
+	sb.set_corner_radius_all(int(radius))
 	sb.corner_detail = 4
 	sb.anti_aliasing = true
+	
+	# Cache
+	_style_box_pool[key] = sb
 	return sb
