@@ -1,44 +1,15 @@
 [gd_scene format=3 uid="uid://d3x1y204a5b6c"]
 
 [ext_resource type="Script" uid="uid://dtscqhcaqtreq" path="res://UI/Layout/game_window.gd" id="1_layout"]
-[ext_resource type="Theme" uid="uid://larg14strx6s" path="res://Assets/Theme/neumorphic_theme.tres" id="2_theme"]
-[ext_resource type="Texture2D" uid="uid://bcwomx5iudjvu" path="res://UI/Icons/play.png" id="3_play"]
-[ext_resource type="Texture2D" uid="uid://drri2jnsth650" path="res://UI/Icons/speed_down.png" id="4_speed_down"]
-[ext_resource type="Texture2D" uid="uid://bmn07vf1fc1ti" path="res://UI/Icons/speed_up.png" id="5_speed_up"]
-[ext_resource type="Texture2D" uid="uid://jtjdtu4at84y" path="res://UI/Icons/volume.png" id="6_volume"]
+[ext_resource type="Theme" uid="uid://dpov18qpoqhlb" path="res://UI/Themes/daw_theme.tres" id="2_theme"]
+[ext_resource type="Texture2D" uid="uid://cjdgy6uoobd48" path="res://UI/Icons/speed_down.svg" id="3_j48ql"]
+[ext_resource type="Texture2D" uid="uid://db0c38x6qu3j6" path="res://UI/Icons/play.svg" id="4_648vu"]
+[ext_resource type="Texture2D" uid="uid://b2rofkoacpmvm" path="res://UI/Icons/speed_up.svg" id="5_v3gkn"]
+[ext_resource type="Texture2D" uid="uid://coxcnq8aomvit" path="res://UI/Icons/volume.svg" id="6_q8a2y"]
 [ext_resource type="Texture2D" uid="uid://c0vdo7md7hdkc" path="res://UI/Themes/peak_meter_gradient.tres" id="7_gradient"]
-[ext_resource type="Material" uid="uid://dnym3kxp5btnx" path="res://Assets/Theme/matte_ui.tres" id="8_matte"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
-bg_color = Color(0.117647, 0.117647, 0.141176, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_top_bar"]
-bg_color = Color(0.172549, 0.172549, 0.207843, 1)
-corner_detail = 4
-shadow_color = Color(0, 0, 0, 0.3)
-shadow_size = 4
-shadow_offset = Vector2(0, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wave_bg"]
-bg_color = Color(0, 0, 0, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_meter_mask"]
-bg_color = Color(0, 0, 0, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_side_bar"]
-bg_color = Color(0.172549, 0.172549, 0.207843, 1)
-corner_detail = 1
-shadow_color = Color(0, 0, 0, 0.3)
-shadow_size = 4
-shadow_offset = Vector2(1, 0)
+[ext_resource type="Texture2D" uid="uid://c26p8kca2limr" path="res://UI/Icons/minimise.svg" id="9_0yftj"]
+[ext_resource type="Texture2D" uid="uid://bgjlsw5u6ehrv" path="res://UI/Icons/window.svg" id="10_fcxat"]
+[ext_resource type="Texture2D" uid="uid://ld1ntqmn7kgd" path="res://UI/Icons/close.svg" id="11_4r27i"]
 
 [node name="GameWindow" type="Control" unique_id=1969327129]
 process_mode = 3
@@ -50,6 +21,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("2_theme")
 script = ExtResource("1_layout")
+metadata/_edit_vertical_guides_ = [960.0]
 
 [node name="Background" type="Panel" parent="." unique_id=208253181]
 layout_mode = 1
@@ -58,7 +30,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+theme_type_variation = &"WorkspacePanel"
 
 [node name="MainLayout" type="VBoxContainer" parent="." unique_id=741348368]
 layout_mode = 1
@@ -71,12 +43,15 @@ theme_override_constants/separation = 0
 
 [node name="TopBar" type="PanelContainer" parent="MainLayout" unique_id=925509776]
 z_index = 2
-material = ExtResource("8_matte")
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_top_bar")
+theme_type_variation = &"TopBarPanel"
 
 [node name="Content" type="HBoxContainer" parent="MainLayout/TopBar" unique_id=1225175078]
+layout_mode = 2
+
+[node name="Spacer1" type="Control" parent="MainLayout/TopBar/Content" unique_id=1957524981]
+custom_minimum_size = Vector2(10, 0)
 layout_mode = 2
 
 [node name="MenuButton" type="MenuButton" parent="MainLayout/TopBar/Content" unique_id=1995104034]
@@ -95,48 +70,120 @@ focus_mode = 0
 text = " Help "
 flat = true
 
-[node name="Spacer" type="Control" parent="MainLayout/TopBar/Content" unique_id=931244549]
+[node name="VSeparator1" type="VSeparator" parent="MainLayout/TopBar/Content" unique_id=73948576]
 layout_mode = 2
-size_flags_horizontal = 3
+
+[node name="Spacer2" type="Control" parent="MainLayout/TopBar/Content" unique_id=62018420]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+
+[node name="PerformanceMeterContainer" type="PanelContainer" parent="MainLayout/TopBar/Content" unique_id=1077080360]
+custom_minimum_size = Vector2(225, 24)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"MeterBackground"
+
+[node name="MeterHBox" type="HBoxContainer" parent="MainLayout/TopBar/Content/PerformanceMeterContainer" unique_id=184920401]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="HealthLabel" type="Label" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=182939402]
+layout_mode = 2
+text = "Integrity:"
+vertical_alignment = 1
+
+[node name="MeterVBox" type="VBoxContainer" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=532243765]
+custom_minimum_size = Vector2(350, 40)
+layout_mode = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_gradient"]
+texture = ExtResource("7_gradient")
+
+[node name="BarL" type="ProgressBar" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox" unique_id=2084685703]
+custom_minimum_size = Vector2(350, 6)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/fill = SubResource("StyleBoxTexture_gradient")
+step = 0.01
+show_percentage = false
+
+[node name="PeakLineL" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarL" unique_id=2027420559]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -2.0
+grow_horizontal = 0
+grow_vertical = 2
+color = Color(0.5137255, 0.5137255, 0.5137255, 1)
+
+[node name="BarR" type="ProgressBar" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox" unique_id=1229082749]
+custom_minimum_size = Vector2(350, 6)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/fill = SubResource("StyleBoxTexture_gradient")
+step = 0.01
+show_percentage = false
+
+[node name="PeakLineR" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarR" unique_id=632731713]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -2.0
+grow_horizontal = 0
+grow_vertical = 2
+color = Color(0.5137255, 0.5137255, 0.5137255, 1)
+[node name="Spacer4" type="Control" parent="MainLayout/TopBar/Content" unique_id=92806510]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
 
 [node name="TransportControls" type="HBoxContainer" parent="MainLayout/TopBar/Content" unique_id=1503373109]
 layout_mode = 2
 theme_override_constants/separation = 15
 
 [node name="SpeedDownButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls" unique_id=1417243523]
-custom_minimum_size = Vector2(42, 42)
+custom_minimum_size = Vector2(35, 35)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
-icon = ExtResource("4_speed_down")
+icon = ExtResource("3_j48ql")
 flat = true
 expand_icon = true
 
 [node name="PlayButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls" unique_id=1372303758]
-custom_minimum_size = Vector2(42, 42)
+custom_minimum_size = Vector2(35, 35)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
-icon = ExtResource("3_play")
+icon = ExtResource("4_648vu")
 flat = true
 expand_icon = true
 
 [node name="SpeedUpButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls" unique_id=996963216]
-custom_minimum_size = Vector2(42, 42)
+custom_minimum_size = Vector2(35, 35)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
-icon = ExtResource("5_speed_up")
+icon = ExtResource("5_v3gkn")
 flat = true
 expand_icon = true
 
-[node name="VolumeIcon" type="TextureRect" parent="MainLayout/TopBar/Content/TransportControls" unique_id=1707035131]
-custom_minimum_size = Vector2(32, 32)
+[node name="VolumeButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls" unique_id=1707035131]
+custom_minimum_size = Vector2(35, 35)
 layout_mode = 2
 size_flags_vertical = 4
-texture = ExtResource("6_volume")
-expand_mode = 1
-stretch_mode = 5
+focus_mode = 0
+icon = ExtResource("6_q8a2y")
+flat = true
+expand_icon = true
 
 [node name="VolumeSlider" type="HSlider" parent="MainLayout/TopBar/Content/TransportControls" unique_id=1422392630]
 custom_minimum_size = Vector2(100, 0)
@@ -145,111 +192,79 @@ size_flags_vertical = 4
 focus_mode = 0
 value = 80.0
 
-[node name="WaveInfoPanel" type="PanelContainer" parent="MainLayout/TopBar/Content/TransportControls" unique_id=1437747474]
+[node name="VSeparator2" type="VSeparator" parent="MainLayout/TopBar/Content" unique_id=84059687]
+layout_mode = 2
+
+[node name="WaveInfoPanel" type="PanelContainer" parent="MainLayout/TopBar/Content" unique_id=1437747474]
 custom_minimum_size = Vector2(350, 32)
 layout_mode = 2
 size_flags_vertical = 4
-theme_override_styles/panel = SubResource("StyleBoxFlat_wave_bg")
+theme_type_variation = &"DisplayPanel"
 
-[node name="InfoHBox" type="HBoxContainer" parent="MainLayout/TopBar/Content/TransportControls/WaveInfoPanel" unique_id=192214825]
+[node name="InfoHBox" type="HBoxContainer" parent="MainLayout/TopBar/Content/WaveInfoPanel" unique_id=192214825]
 layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="WaveLabel" type="Label" parent="MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/InfoHBox" unique_id=1299038656]
+[node name="WaveLabel" type="Label" parent="MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox" unique_id=1299038656]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 text = "Track: 0 / 0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="SpeedLabel" type="Label" parent="MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/InfoHBox" unique_id=108164397]
+[node name="SpeedLabel" type="Label" parent="MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox" unique_id=108164397]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 text = "Speed: 1.00x"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="GainLabel" type="Label" parent="MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/InfoHBox" unique_id=498584933]
+[node name="GainLabel" type="Label" parent="MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox" unique_id=498584933]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 text = "Gain: 0 dB"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Spacer2" type="Control" parent="MainLayout/TopBar/Content" unique_id=62018420]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="PerformanceMeterContainer" type="VBoxContainer" parent="MainLayout/TopBar/Content" unique_id=1077080360]
-custom_minimum_size = Vector2(225, 24)
-layout_mode = 2
-size_flags_vertical = 4
-theme_override_constants/separation = 2
-
-[node name="GaugeLContainer" type="PanelContainer" parent="MainLayout/TopBar/Content/PerformanceMeterContainer" unique_id=856117676]
-clip_children = 2
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_meter_mask")
-
-[node name="Wrapper" type="Control" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer" unique_id=228827717]
+[node name="Spacer3" type="Control" parent="MainLayout/TopBar/Content" unique_id=1173521741]
+custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 
-[node name="GaugeL" type="TextureProgressBar" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer/Wrapper" unique_id=2084685703]
-custom_minimum_size = Vector2(0, 10)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_vertical = 3
-step = 0.01
-nine_patch_stretch = true
-texture_progress = ExtResource("7_gradient")
-
-[node name="PeakLineL" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer/Wrapper" unique_id=2027420559]
-custom_minimum_size = Vector2(2, 0)
-layout_mode = 0
-anchor_bottom = 1.0
-offset_right = 2.0
-grow_vertical = 2
-color = Color(1, 1, 1, 0.901961)
-
-[node name="GaugeRContainer" type="PanelContainer" parent="MainLayout/TopBar/Content/PerformanceMeterContainer" unique_id=56897445]
-clip_children = 2
+[node name="VSeparator3" type="VSeparator" parent="MainLayout/TopBar/Content" unique_id=95160798]
 layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_meter_mask")
-
-[node name="Wrapper" type="Control" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer" unique_id=812632928]
-layout_mode = 2
-
-[node name="GaugeR" type="TextureProgressBar" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer/Wrapper" unique_id=1229082749]
-custom_minimum_size = Vector2(0, 10)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_vertical = 3
-step = 0.01
-nine_patch_stretch = true
-texture_progress = ExtResource("7_gradient")
-
-[node name="PeakLineR" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer/Wrapper" unique_id=632731713]
-custom_minimum_size = Vector2(2, 0)
-layout_mode = 0
-anchor_bottom = 1.0
-offset_right = 2.0
-grow_vertical = 2
-color = Color(1, 1, 1, 0.901961)
 
 [node name="RightSpacer" type="Control" parent="MainLayout/TopBar/Content" unique_id=829581726]
-custom_minimum_size = Vector2(20, 0)
+custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
+
+[node name="VSeparator4" type="VSeparator" parent="MainLayout/TopBar/Content" unique_id=106271809]
+layout_mode = 2
+
+[node name="WindowControls" type="HBoxContainer" parent="MainLayout/TopBar/Content" unique_id=29384756]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MinimizeButton" type="Button" parent="MainLayout/TopBar/Content/WindowControls" unique_id=38475629]
+custom_minimum_size = Vector2(35, 35)
+layout_mode = 2
+focus_mode = 0
+icon = ExtResource("9_0yftj")
+flat = true
+expand_icon = true
+
+[node name="MaximizeButton" type="Button" parent="MainLayout/TopBar/Content/WindowControls" unique_id=48576293]
+custom_minimum_size = Vector2(35, 35)
+layout_mode = 2
+focus_mode = 0
+icon = ExtResource("10_fcxat")
+flat = true
+expand_icon = true
+
+[node name="CloseButton" type="Button" parent="MainLayout/TopBar/Content/WindowControls" unique_id=37582946]
+custom_minimum_size = Vector2(35, 35)
+layout_mode = 2
+focus_mode = 0
+icon = ExtResource("11_4r27i")
+flat = true
+expand_icon = true
 
 [node name="WorkspaceSplit" type="HBoxContainer" parent="MainLayout" unique_id=1499982377]
 layout_mode = 2
@@ -258,10 +273,9 @@ theme_override_constants/separation = 0
 
 [node name="LeftSidebar" type="PanelContainer" parent="MainLayout/WorkspaceSplit" unique_id=1963009277]
 z_index = 1
-material = ExtResource("8_matte")
 custom_minimum_size = Vector2(320, 0)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_side_bar")
+theme_type_variation = &"SideBarPanel"
 
 [node name="SidebarContent" type="VBoxContainer" parent="MainLayout/WorkspaceSplit/LeftSidebar" unique_id=387430190]
 layout_mode = 2

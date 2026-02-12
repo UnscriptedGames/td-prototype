@@ -11,24 +11,32 @@ extends Control
 @onready var speed_down_button: Button = $MainLayout/TopBar/Content/TransportControls/SpeedDownButton
 @onready var speed_up_button: Button = $MainLayout/TopBar/Content/TransportControls/SpeedUpButton
 
-@onready var gauge_l: TextureProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer/Wrapper/GaugeL
-@onready var gauge_r: TextureProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer/Wrapper/GaugeR
-@onready var peak_line_l: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeLContainer/Wrapper/PeakLineL
-@onready var peak_line_r: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/GaugeRContainer/Wrapper/PeakLineR
+@onready var gauge_l: ProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarL
+@onready var gauge_r: ProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarR
+@onready var peak_line_l: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarL/PeakLineL
+@onready var peak_line_r: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarR/PeakLineR
+
+# Window Controls
+@onready var btn_minimize: Button = $MainLayout/TopBar/Content/WindowControls/MinimizeButton
+@onready var btn_maximize: Button = $MainLayout/TopBar/Content/WindowControls/MaximizeButton
+@onready var btn_close: Button = $MainLayout/TopBar/Content/WindowControls/CloseButton
 
 
-@onready var wave_label: Label = $MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/InfoHBox/WaveLabel
-@onready var speed_label: Label = $MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/InfoHBox/SpeedLabel
-@onready var gain_label: Label = $MainLayout/TopBar/Content/TransportControls/WaveInfoPanel/InfoHBox/GainLabel
+@onready var wave_label: Label = $MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox/WaveLabel
+@onready var speed_label: Label = $MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox/SpeedLabel
+@onready var gain_label: Label = $MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox/GainLabel
 
 # Card Grid
 @onready var card_grid: GridContainer = $MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent/CardMarginContainer/CardGrid
+@onready var volume_button: Button = $MainLayout/TopBar/Content/TransportControls/VolumeButton
 @onready var volume_slider: HSlider = $MainLayout/TopBar/Content/TransportControls/VolumeSlider
 @export var player_deck: Resource # Loaded as DeckData
 
 # Icons
-var icon_play: Texture2D
-var icon_pause: Texture2D
+var icon_play: Texture2D = preload("res://UI/Icons/play.svg")
+var icon_pause: Texture2D = preload("res://UI/Icons/pause.svg")
+var icon_volume: Texture2D = preload("res://UI/Icons/volume.svg")
+var icon_mute: Texture2D = preload("res://UI/Icons/volume_mute.svg")
 
 # Assets
 const CARD_SCENE = preload("res://Entities/Cards/card.tscn")
@@ -64,6 +72,10 @@ var _noise_val_common: float = 0.0
 var _noise_target_diff: float = 0.0
 var _noise_val_diff: float = 0.0
 
+# Volume State
+var _is_muted: bool = false
+var _previous_volume: float = 80.0 # Default fallback
+
 
 # Path to the default level
 const DEFAULT_LEVEL_PATH: String = "res://Levels/TemplateLevel/template_level.tscn"
@@ -81,6 +93,8 @@ func _ready() -> void:
 	_setup_menu()
 	_setup_confirmations()
 	_setup_transport()
+	_setup_window_controls()
+
 	
 	# Managers
 	_active_card = null
@@ -148,6 +162,9 @@ func _ready() -> void:
 		var master_bus_idx = AudioServer.get_bus_index("Master")
 		var vol_db = AudioServer.get_bus_volume_db(master_bus_idx)
 		volume_slider.value = db_to_linear(vol_db) * 100.0
+		
+	if volume_button:
+		volume_button.pressed.connect(_on_volume_button_pressed)
 
 	# Init UI state based on current data
 	_update_play_button_visuals()
@@ -332,13 +349,15 @@ func _update_peak_hold(current_val: float, delta: float, is_left: bool) -> void:
 			line.position.x = width * pct
 
 
+func _setup_window_controls() -> void:
+	if btn_minimize:
+		btn_minimize.pressed.connect(_on_minimize_pressed)
+	if btn_maximize:
+		btn_maximize.pressed.connect(_on_maximize_pressed)
+	if btn_close:
+		btn_close.pressed.connect(_on_close_pressed)
+
 func _setup_transport() -> void:
-	# Load icons at runtime to avoid compile-time import errors
-	if FileAccess.file_exists("res://UI/Icons/play.png"):
-		icon_play = load("res://UI/Icons/play.png")
-	if FileAccess.file_exists("res://UI/Icons/pause.png"):
-		icon_pause = load("res://UI/Icons/pause.png")
-		
 	play_button.pressed.connect(_on_play_button_pressed)
 	
 	if speed_down_button:
@@ -350,15 +369,19 @@ func _on_play_button_pressed() -> void:
 	GameManager.toggle_game_state()
 
 
-func _on_volume_changed(value: float) -> void:
-	var master_bus_idx = AudioServer.get_bus_index("Master")
-	# Convert 0-100 linear scale to decibels
-	var vol_db = linear_to_db(value / 100.0)
-	AudioServer.set_bus_volume_db(master_bus_idx, vol_db)
-	
-	# Optional: Mute if volume is very low
-	AudioServer.set_bus_mute(master_bus_idx, value <= 0.0)
+func _on_minimize_pressed() -> void:
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
 
+func _on_maximize_pressed() -> void:
+	var current_mode = DisplayServer.window_get_mode()
+	if current_mode == DisplayServer.WINDOW_MODE_FULLSCREEN or current_mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+
+func _on_close_pressed() -> void:
+	if quit_confirm:
+		quit_confirm.popup_centered()
 
 func _on_game_state_changed(new_state: int) -> void:
 	_update_play_button_visuals()
@@ -706,3 +729,42 @@ func _on_wave_changed(current_wave: int, total_waves: int) -> void:
 func _on_gain_changed(new_gain: int) -> void:
 	if is_instance_valid(gain_label):
 		gain_label.text = "Gain: %d dB" % new_gain
+
+
+func _on_volume_changed(value: float) -> void:
+	# Convert 0-100 linear range to dB
+	# Linear to dB: linear2db(value / 100.0)
+	var linear_val = value / 100.0
+	var db_val = linear_to_db(linear_val)
+	
+	var master_bus_idx = AudioServer.get_bus_index("Master")
+	AudioServer.set_bus_volume_db(master_bus_idx, db_val)
+	
+	# Mute logic sync
+	if value <= 0 and not _is_muted:
+		_is_muted = true
+		if volume_button: volume_button.icon = icon_mute
+	elif value > 0 and _is_muted:
+		_is_muted = false
+		if volume_button: volume_button.icon = icon_volume
+
+
+func _on_volume_button_pressed() -> void:
+	if _is_muted:
+		# UNMUTE
+		_is_muted = false
+		if volume_button: volume_button.icon = icon_volume
+		
+		# Restore previous volume
+		if _previous_volume <= 0: _previous_volume = 50.0 # Safe default
+		if volume_slider: volume_slider.value = _previous_volume
+		
+	else:
+		# MUTE
+		_is_muted = true
+		if volume_button: volume_button.icon = icon_mute
+		
+		# Save current volume
+		if volume_slider:
+			_previous_volume = volume_slider.value
+			volume_slider.value = 0

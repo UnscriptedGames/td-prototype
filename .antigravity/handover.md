@@ -1,20 +1,28 @@
-# Handover Log - 2026-02-10
+# Handover Log - 2026-02-12
 
 ## Current State
-- **Animation Sequence**: Refactored into three distinct phases (Wipe -> Timer Wait -> Dissolve/Flow) to guarantee timing reliability.
-- **Renderers**: `MazeRenderer` and `BackgroundRenderer` are now optimized with `StyleBoxFlat` pooling and pre-population (in `_ready`), eliminating animation stutter.
-- **Layout Consistency**: Both renderers use "Smart Sizing" (`(Cell - Depth) * Scale`) to ensure they never overlap grid boundaries and align perfectly.
-- **Visuals**: Song Wipe now supports a soft "pop-in" edge animated by `pad_anim_duration`.
+- **Volume Control**: Converted static `VolumeIcon` to a functional `Button`.
+    - Handles mute/unmute toggling with icon swaps (`volume.svg` / `volume_mute.svg`).
+    - Synchronizes with `VolumeSlider` and restores previous levels.
+- **Health Info**: Added "Integrity:" `Label` to the left of the peak meters.
+- **UI Hierarchy**: Simplified `PerformanceMeterContainer`. Removed `MeterBorder`, `Gauges` VBox, and custom dash drawing script (`meter_dashes.gd`).
+- **Meters**: Currently using `TextureProgressBar` nodes (`BarL`, `BarR`) nested in a `MeterVBox`.
 
 ## Signal & Logic Maps
-- `TemplateLevel.gd`:
-    - `_start_opening_sequence()`: Kickoff.
-    - `_on_wipe_finished()`: Media wait logic (Timer).
-    - `_start_dissolve_sequence()`: Technical transition logic.
-- `MazeRenderer.gd` / `BackgroundRenderer.gd`:
-    - `_preload_style_boxes()`: Prime cache during load.
-    - `_create_style_box(color, radius)`: Cache-aware resource getter.
+- `game_window.gd`:
+    - `_on_volume_button_pressed()`: Logic for master bus muting and icon state.
+    - `_on_volume_changed(value)`: Signal from slider to update audio server.
+    - `@onready` paths updated for the simplified meter hierarchy.
 
-## Next Session: UI & Toolbars
-- **Goal**: Implement the UI theme and design the toolbar layouts.
-- **Action**: Review `UI` base classes and prepare the design system (Styles/Themes).
+## Pending Task: ProgressBar Conversion
+The user wants to edit meter backgrounds and borders via the Theme editor. Standard `StyleBoxFlat` theme properties are ignored by `TextureProgressBar`.
+- **Goal**: Convert `BarL` and `BarR` to standard `ProgressBar` nodes.
+- **Instruction**:
+    1. Change node types to `ProgressBar`.
+    2. Add a `StyleBoxTexture` to the `theme_override_styles/fill` property.
+    3. Point that texture to `res://UI/Themes/peak_meter_gradient.tres` to maintain the visual look.
+    4. Set `show_percentage = false`.
+    5. Update script type hints in `game_window.gd` from `TextureProgressBar` to `ProgressBar`.
+
+## Immediate Next Step
+Execute the conversion of `BarL` and `BarR` in `game_window.tscn` to `ProgressBar` nodes and verify theme-based borders work.
