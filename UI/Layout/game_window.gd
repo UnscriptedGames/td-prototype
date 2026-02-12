@@ -11,10 +11,10 @@ extends Control
 @onready var speed_down_button: Button = $MainLayout/TopBar/Content/TransportControls/SpeedDownButton
 @onready var speed_up_button: Button = $MainLayout/TopBar/Content/TransportControls/SpeedUpButton
 
-@onready var gauge_l: ProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarL
-@onready var gauge_r: ProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarR
-@onready var peak_line_l: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarL/PeakLineL
-@onready var peak_line_r: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarR/PeakLineR
+@onready var gauge_l: ProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL
+@onready var gauge_r: ProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR
+@onready var peak_line_l: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL/PeakLineL
+@onready var peak_line_r: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR/PeakLineR
 
 # Window Controls
 @onready var btn_minimize: Button = $MainLayout/TopBar/Content/WindowControls/MinimizeButton

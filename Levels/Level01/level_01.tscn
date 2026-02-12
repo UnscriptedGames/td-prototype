@@ -50,6 +50,7 @@ max_lane_offset = 10.0
 background_renderer = NodePath("TileMaps/BackgroundRenderer")
 maze_renderer = NodePath("TileMaps/MazeRenderer")
 song_layer = NodePath("TileMaps/SongLayer")
+play_opening_sequence = false
 step1_boot_delay = 1.0
 step2_song_wipe_duration = 2.0
 step3_dissolve_delay = 2.0
@@ -96,7 +97,6 @@ tile_map_data = PackedByteArray("AAABAAIABQAAAAAAAAACAAIABQAAAAAAAAADAAIABQAAAAA
 tile_set = ExtResource("3_vkb5y")
 
 [node name="HighlightLayer" parent="TileMaps" parent_id_path=PackedInt32Array(1301297614) index="4" unique_id=1097366726]
-visible = false
 z_index = 0
 y_sort_enabled = true
 tile_set = ExtResource("4_5muv1")

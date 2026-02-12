@@ -70,52 +70,30 @@ corner_radius_bottom_left = 4
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slider_grabber_area"]
 content_margin_top = 4.0
 content_margin_bottom = 4.0
-bg_color = Color(0.15, 0.15, 0.18, 1)
-border_width_top = 6
-border_width_bottom = 6
-border_color = Color(0, 0, 0, 0)
+bg_color = Color(0.039215688, 0.039215688, 0.050980393, 0)
 corner_radius_top_left = 2
 corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
-expand_margin_top = 1.0
-expand_margin_bottom = 1.0
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slider_track"]
 content_margin_top = 4.0
 content_margin_bottom = 4.0
-bg_color = Color(0.025840001, 0.025840001, 0.025840001, 0.71500003)
-border_width_top = 3
-border_width_bottom = 3
+bg_color = Color(0.039215688, 0.039215688, 0.050980393, 0.7529412)
+border_width_top = 2
+border_width_bottom = 2
 border_color = Color(0, 0, 0, 0)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
 expand_margin_top = 1.0
 expand_margin_bottom = 1.0
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_meter_bg"]
-bg_color = Color(0.09019608, 0.09411765, 0.101960786, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_meter_border"]
-bg_color = Color(0, 0, 0, 0)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0, 0, 0, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_meter_panel"]
-bg_color = Color(0, 0, 0, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aem5e"]
+bg_color = Color(0.10980392, 0.11372549, 0.12156863, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sidebar_panel"]
 bg_color = Color(0.15686275, 0.15686275, 0.18039216, 1)
@@ -124,12 +102,13 @@ shadow_size = 4
 shadow_offset = Vector2(1, 0)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_topbar_panel"]
-bg_color = Color(0.09019608, 0.09411765, 0.101960786, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
+bg_color = Color(0.10980392, 0.11372549, 0.12156863, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
 border_width_bottom = 3
-border_color = Color(0, 0, 0, 1)
+border_color = Color(0.03238219, 0.03238219, 0.03238219, 1)
+border_blend = true
 corner_detail = 1
 shadow_color = Color(0, 0, 0, 0.2)
 shadow_size = 4
@@ -137,8 +116,8 @@ shadow_offset = Vector2(0, 1)
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_vseparator"]
 color = Color(0.5137255, 0.5137255, 0.5137255, 1)
-grow_begin = -10.0
-grow_end = -10.0
+grow_begin = -9.0
+grow_end = -9.0
 thickness = 2
 vertical = true
 
@@ -146,9 +125,12 @@ vertical = true
 bg_color = Color(0.117647, 0.117647, 0.141176, 1)
 
 [resource]
+Button/colors/font_color = Color(0.5137255, 0.5137255, 0.5137255, 1)
+Button/colors/font_hover_color = Color(0.7529412, 0.7529412, 0.7529412, 1)
+Button/colors/font_pressed_color = Color(0.5137255, 0.5137255, 0.5137255, 1)
 Button/colors/icon_hover_color = Color(0.75258213, 0.75258213, 0.7525821, 1)
 Button/colors/icon_normal_color = Color(0.5137255, 0.5137255, 0.5137255, 1)
-Button/colors/icon_pressed_color = Color(0.5, 0.5, 0.5, 1)
+Button/colors/icon_pressed_color = Color(0.5137255, 0.5137255, 0.5137255, 1)
 Button/styles/disabled = SubResource("StyleBoxFlat_button_disabled")
 Button/styles/focus = SubResource("StyleBoxFlat_button_hover")
 Button/styles/hover = SubResource("StyleBoxFlat_button_hover")
@@ -164,12 +146,6 @@ HSlider/styles/slider = SubResource("StyleBoxFlat_slider_track")
 Label/colors/font_color = Color(0.513726, 0.513726, 0.513726, 1)
 MeterBackground/base_type = &"PanelContainer"
 MeterBackground/styles/panel = SubResource("StyleBoxFlat_meter_bg")
-MeterBorder/base_type = &"PanelContainer"
-MeterBorder/styles/panel = SubResource("StyleBoxFlat_meter_border")
-MeterPanel/base_type = &"PanelContainer"
-MeterPanel/styles/panel = SubResource("StyleBoxFlat_meter_panel")
-ProgressBar/styles/background = SubResource("StyleBoxFlat_aem5e")
-ProgressBar/styles/fill = null
 SideBarPanel/base_type = &"PanelContainer"
 SideBarPanel/styles/panel = SubResource("StyleBoxFlat_sidebar_panel")
 TopBarPanel/base_type = &"PanelContainer"

@@ -1,29 +1,31 @@
 shader_type canvas_item;
 
-uniform sampler2D gradient_tex;
-uniform float max_width = 225.0;
-uniform float global_origin_x = 0.0;
+uniform vec4 color_start : source_color = vec4(0.0, 1.0, 0.0, 1.0); // Green
+uniform vec4 color_mid : source_color = vec4(1.0, 1.0, 0.0, 1.0);   // Yellow
+uniform vec4 color_end : source_color = vec4(1.0, 0.0, 0.0, 1.0);   // Red
 
-void fragment() {
-	vec4 input_color = COLOR;
-	// Detect White Fill of the StyleBoxFlat
-	if (input_color.r > 0.5) {
-		// Screen-Space Mapping
-		// FRAGCOORD.x is the absolute screen pixel X.
-		// global_origin_x is the screen pixel X of the bar's left edge (passed from script).
-		float dist = FRAGCOORD.x - global_origin_x;
-		float grad_pos = clamp(dist / max_width, 0.0, 1.0);
-		
-		vec4 grad_color = texture(gradient_tex, vec2(grad_pos, 0.5));
-		
-		COLOR.rgb = grad_color.rgb;
-		COLOR.a = input_color.a;
-	}
+uniform float mid_point : hint_range(0.0, 1.0) = 0.5;
+uniform float total_width = 350.0; // Matches bar width
+
+varying float v_progress;
+
+void vertex() {
+	// Calculate progress based on local vertex position relative to total expected width.
+	// This ensures the gradient is "static" and revealed, rather than squashed.
+	v_progress = VERTEX.x / total_width;
 }
 
-		
-		// Preserve original alpha (for antialiased rounded corners)
-		COLOR.a = input_color.a;
+void fragment() {
+	vec4 color;
+	if (v_progress < mid_point) {
+		// Map 0 -> mid_point to 0 -> 1 for mix
+		float t = v_progress / mid_point;
+		color = mix(color_start, color_mid, t);
+	} else {
+		// Map mid_point -> 1 to 0 -> 1 for mix
+		float t = (v_progress - mid_point) / (1.0 - mid_point);
+		color = mix(color_mid, color_end, t);
 	}
-	// Else: Keep background color as is.
+	
+	COLOR = color;
 }
