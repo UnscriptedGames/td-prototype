@@ -116,6 +116,14 @@ func _ready() -> void:
 	add_child(_card_manager)
 	_card_manager.hand_changed.connect(_on_hand_changed)
 	
+	# --- Debug: Tab Buttons ---
+	var buffs_btn = %BuffsButton
+	var cards_btn = %CardsButton
+	if buffs_btn:
+		buffs_btn.toggled.connect(func(pressed): if pressed: print("DEBUG: Buffs Tab Selected"))
+	if cards_btn:
+		cards_btn.toggled.connect(func(pressed): if pressed: print("DEBUG: Cards Tab Selected"))
+	
 	# --- Player Health Integration ---
 	if GameManager.has_signal("health_changed"):
 		GameManager.health_changed.connect(_on_health_changed)
@@ -200,22 +208,9 @@ func _ready() -> void:
 	if top_bar: _set_container_mouse_ignore_recursive(top_bar)
 	if left_sidebar: _set_container_mouse_ignore_recursive(left_sidebar)
 	
-	# --- Drag-to-Build Setup ---
+	# DropOverlay code removed (game_view_dropper.gd deleted)
 	var game_view_container = $MainLayout/WorkspaceSplit/GameViewContainer
-	
-	# Create a dedicated Overlay Control to catch drop events
-	# This bypasses SubViewportContainer's input swallowing
-	var drop_overlay = Control.new()
-	drop_overlay.name = "DropOverlay"
-	drop_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	drop_overlay.mouse_filter = Control.MOUSE_FILTER_PASS
-	drop_overlay.set_script(load("res://UI/Layout/game_view_dropper.gd"))
-	
-	game_view_container.add_child(drop_overlay)
-	
-	# Connect the success signal from the overlay
-	if drop_overlay.has_signal("card_dropped"):
-		drop_overlay.card_dropped.connect(_on_card_effect_completed_from_drag)
+
 	
 	# Initialise Deck
 	if not player_deck:

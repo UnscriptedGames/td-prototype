@@ -37,7 +37,7 @@ window/stretch/aspect="expand"
 
 [gui]
 
-theme/custom="res://Assets/Theme/neumorphic_theme.tres"
+theme/custom="res://UI/Themes/daw_theme.tres"
 
 [layer_names]
 

@@ -4,9 +4,9 @@
 [ext_resource type="Script" uid="uid://cou6jej7wqrx2" path="res://Entities/Enemies/_TemplateEnemy/template_enemy.gd" id="1_pa3af"]
 [ext_resource type="Texture2D" uid="uid://efm7vnhsuk84" path="res://Entities/Enemies/_TemplateEnemy/Assets/bar_round_small.png" id="2_pa3af"]
 [ext_resource type="SpriteFrames" uid="uid://br8obf1poanq3" path="res://Entities/Enemies/_TemplateEnemy/template_enemy_animations.tres" id="2_u23yv"]
-[ext_resource type="StyleBox" uid="uid://6m1q8jw2p6hi" path="res://Themes/Styleboxes/new_style_stun_flat.tres" id="3_e31ia"]
-[ext_resource type="StyleBox" uid="uid://c1kyee8pg41dh" path="res://Themes/Styleboxes/stylebox_dot_bar.tres" id="3_htrcs"]
-[ext_resource type="StyleBox" uid="uid://djt88h8lsiqgx" path="res://Themes/Styleboxes/stylebox_slow_bar.tres" id="4_wklvk"]
+[ext_resource type="StyleBox" uid="uid://6m1q8jw2p6hi" path="res://UI/Themes/Styleboxes/new_style_stun_flat.tres" id="3_e31ia"]
+[ext_resource type="StyleBox" uid="uid://c1kyee8pg41dh" path="res://UI/Themes/Styleboxes/stylebox_dot_bar.tres" id="3_htrcs"]
+[ext_resource type="StyleBox" uid="uid://djt88h8lsiqgx" path="res://UI/Themes/Styleboxes/stylebox_slow_bar.tres" id="4_wklvk"]
 [ext_resource type="Shader" uid="uid://g35ywrilupvd" path="res://Entities/Enemies/Shared/wave_scroller.gdshader" id="5_shader"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shadow"]

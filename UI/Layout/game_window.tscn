@@ -25,6 +25,15 @@ shader_parameter/total_width = 350.0
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_white"]
 bg_color = Color(1, 1, 1, 1)
 
+[sub_resource type="ButtonGroup" id="ButtonGroup_sidebar_tabs"]
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_tab_separator_local"]
+color = Color(0.5137255, 0.5137255, 0.5137255, 1)
+grow_begin = 0.0
+grow_end = 0.0
+thickness = 2
+vertical = true
+
 [node name="GameWindow" type="Control" unique_id=1969327129]
 process_mode = 3
 layout_mode = 3
@@ -318,13 +327,49 @@ theme_type_variation = &"SideBarPanel"
 [node name="SidebarContent" type="VBoxContainer" parent="MainLayout/WorkspaceSplit/LeftSidebar" unique_id=387430190]
 layout_mode = 2
 
-[node name="Header" type="Label" parent="MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent" unique_id=1999103248]
+[node name="TabPadding" type="MarginContainer" parent="MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent" unique_id=208253187]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Effects Rack"
-horizontal_alignment = 1
+theme_override_constants/margin_left = 9
+theme_override_constants/margin_top = 9
+theme_override_constants/margin_right = 9
+theme_override_constants/margin_bottom = 3
 
-[node name="HSeparator" type="HSeparator" parent="MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent" unique_id=152939837]
+[node name="TabContainer" type="HBoxContainer" parent="MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent/TabPadding" unique_id=208253182]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="BuffsButton" type="Button" parent="MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent/TabPadding/TabContainer" unique_id=208253183]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_type_variation = &"TabButton"
+toggle_mode = true
+button_pressed = true
+button_group = SubResource("ButtonGroup_sidebar_tabs")
+text = "Buffs"
+
+[node name="TabSeparator" type="VSeparator" parent="MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent/TabPadding/TabContainer" unique_id=208253184]
+layout_mode = 2
+theme_override_constants/separation = 20
+theme_override_styles/separator = SubResource("StyleBoxLine_tab_separator_local")
+
+[node name="CardsButton" type="Button" parent="MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent/TabPadding/TabContainer" unique_id=208253185]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_type_variation = &"TabButton"
+toggle_mode = true
+button_group = SubResource("ButtonGroup_sidebar_tabs")
+text = "Cards"
+
+[node name="SeparatorMargin" type="MarginContainer" parent="MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent" unique_id=208253186]
+layout_mode = 2
+theme_override_constants/margin_left = 9
+theme_override_constants/margin_right = 9
+
+[node name="HSeparator" type="HSeparator" parent="MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent/SeparatorMargin" unique_id=152939837]
 layout_mode = 2
 
 [node name="CardMarginContainer" type="MarginContainer" parent="MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent" unique_id=1387222036]

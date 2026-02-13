@@ -1,9 +1,0 @@
-[gd_resource type="ShaderMaterial" format=3 uid="uid://dnym3kxp5btnx"]
-
-[ext_resource type="Shader" uid="uid://dxdrp5juv3u7u" path="res://Levels/Components/matte_surface.gdshader" id="1_qn7km"]
-
-[resource]
-shader = ExtResource("1_qn7km")
-shader_parameter/noise_strength = 0.02000000095
-shader_parameter/gradient_strength = 0.050000002375
-shader_parameter/light_direction = Vector2(1, 1)
