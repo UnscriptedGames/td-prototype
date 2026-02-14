@@ -113,21 +113,8 @@ func handle_build_input(event: InputEvent) -> bool:
 		return true
 
 	if (event is InputEventMouseButton) and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		if (not is_instance_valid(path_layer)) or (not is_instance_valid(_ghost_tower)):
+		if validate_and_place():
 			return true
-
-		var map_coords: Vector2i = path_layer.local_to_map(path_layer.to_local(_ghost_tower.global_position))
-		var can_place: bool = is_buildable_at(map_coords)
-
-		if can_place:
-			# Set a flag to indicate we are successfully placing the tower.
-			_is_placing = true
-			var tower_data: TowerData = _ghost_tower.data
-			var range_points: PackedVector2Array = _ghost_tower.get_range_points()
-			place_tower(tower_data, _ghost_tower.global_position, range_points)
-			_exit_build_mode()
-
-		return true
 
 	return false
 
@@ -177,6 +164,43 @@ func get_selected_tower_sell_value() -> int:
 	return int(ceil(total_cost * 0.80))
 
 
+func validate_and_place() -> bool:
+	if state != State.BUILDING_TOWER:
+		return false
+		
+	if (not is_instance_valid(path_layer)) or (not is_instance_valid(_ghost_tower)):
+		return false
+
+	var map_coords: Vector2i = path_layer.local_to_map(path_layer.to_local(_ghost_tower.global_position))
+	
+	# Check Placement Validity
+	if not is_buildable_at(map_coords):
+		return false
+		
+	# Check Resources
+	var tower_data: TowerData = _ghost_tower.data
+	var cost = tower_data.levels[0].cost
+	
+	if GameManager.get_stock(tower_data) <= 0:
+		# TODO: Valid UI Feedback (Floating Text / Shake)
+		print("Not enough stock!")
+		_exit_build_mode()
+		return false
+		
+	if GameManager.player_data.currency < cost:
+		# TODO: Valid UI Feedback
+		print("Not enough gold!")
+		_exit_build_mode()
+		return false
+
+	# Success
+	_is_placing = true
+	var range_points: PackedVector2Array = _ghost_tower.get_range_points()
+	place_tower(tower_data, _ghost_tower.global_position, range_points)
+	_exit_build_mode()
+	return true
+
+
 # --- PRIVATE SIGNAL HANDLERS ---
 
 func _on_build_tower_requested(tower_data: TowerData, tower_scene: PackedScene) -> void:
@@ -196,6 +220,10 @@ func _on_sell_tower_requested() -> void:
 
 	var refund_amount := get_selected_tower_sell_value()
 	GameManager.add_currency(refund_amount)
+	
+	# Refund Stock
+	if _selected_tower.data:
+		GameManager.refund_stock(_selected_tower.data)
 
 	var tower_to_remove = _selected_tower
 	_deselect_current_tower()
@@ -229,6 +257,9 @@ func place_tower(tower_data: TowerData, build_position: Vector2, range_points: P
 		return
 
 	var build_cost: int = tower_data.levels[0].cost
+	
+	# Consume Resources
+	GameManager.consume_stock(tower_data)
 	GameManager.remove_currency(build_cost)
 
 	# Announce that the card effect was successfully completed.
@@ -406,25 +437,8 @@ func update_drag_ghost(screen_position: Vector2) -> void:
 
 # _banish_current_drag removed (replaced by banish_drag_session)
 
-## Validates placement at current ghost position and places if valid.
-func validate_and_place() -> bool:
-	if not _is_dragging: return false # Banished check
-	
-	if state != State.BUILDING_TOWER or not is_instance_valid(_ghost_tower) or not is_instance_valid(path_layer):
-		return false
-		
-	var map_coords: Vector2i = path_layer.local_to_map(path_layer.to_local(_ghost_tower.global_position))
-	var can_place: bool = is_buildable_at(map_coords)
-	
-	if can_place:
-		_is_placing = true
-		var tower_data: TowerData = _ghost_tower.data
-		var range_points: PackedVector2Array = _ghost_tower.get_range_points()
-		place_tower(tower_data, _ghost_tower.global_position, range_points)
-		_exit_build_mode()
-		return true
-		
-	return false
+# validate_and_place removed (Duplicate)
+# dangling return removed
 	
 
 func is_buildable_at(map_coords: Vector2i) -> bool:
@@ -551,6 +565,7 @@ func apply_buff_at(screen_position: Vector2, buff_effect: Resource) -> bool:
 		# Apply the buff directly
 		if target_tower.has_method("apply_buff"):
 			target_tower.apply_buff(buff_effect)
+			GlobalSignals.buff_applied.emit(buff_effect)
 			return true
 	
 	return false

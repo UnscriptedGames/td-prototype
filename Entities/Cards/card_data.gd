@@ -12,4 +12,13 @@ extends Resource
 @export var front_texture: Texture2D
 
 ## A reference to the CardEffect resource that runs when this card is played.
+## A reference to the CardEffect resource that runs when this card is played.
 @export var effect: CardEffect
+
+## Loadout Properties
+@export var allocation_cost: int = 5
+@export var is_unlocked: bool = true
+
+## Gameplay Properties
+@export var gold_cost: int = 0
+@export var cooldown: float = 0.0

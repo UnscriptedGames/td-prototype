@@ -24,6 +24,13 @@ var _game_state: GameState = GameState.PLAYING
 var _is_wave_active: bool = false
 var _game_speed_index: int = 0
 
+# Loadout System
+const LoadoutConfigScript = preload("res://Config/loadout_config.gd")
+var _active_loadout: Resource # Type hint as Resource to avoid cyclic dependency issues or editor delays
+var _loadout_stock: Dictionary = {} # Key: TowerData, Value: int (Current Stock)
+
+signal loadout_stock_changed(tower_data: TowerData, new_stock: int)
+
 var player_data: PlayerData:
 	get: return _player_data
 
@@ -45,12 +52,55 @@ var game_state: GameState:
 var is_wave_active: bool:
 	get: return _is_wave_active
 
+var active_loadout: Resource:
+	get: return _active_loadout
 
+var loadout_stock: Dictionary:
+	get: return _loadout_stock
+
+
+# Loads player data and emits initial signals when the game starts
 # Loads player data and emits initial signals when the game starts
 func _ready() -> void:
 	_player_data = load("res://Config/Players/player_data.tres")
 	health_changed.emit(_player_data.health)
 	currency_changed.emit(_player_data.currency)
+	
+	# TODO: Remove this temporary test loadout when UI is ready
+	_initialize_test_loadout()
+
+func _initialize_test_loadout() -> void:
+	# Temporary: Create a dummy loadout for testing Phase 1.5
+	var test_loadout = LoadoutConfigScript.new()
+	# Empty loadout for now, Phase 1.5 will populate this real data
+	set_active_loadout(test_loadout)
+
+func set_active_loadout(loadout: Resource) -> void:
+	_active_loadout = loadout
+	_loadout_stock = loadout.towers.duplicate()
+	# Notify listeners
+	for tower in _loadout_stock:
+		loadout_stock_changed.emit(tower, _loadout_stock[tower])
+
+func get_stock(tower_data: TowerData) -> int:
+	return _loadout_stock.get(tower_data, 0)
+
+func consume_stock(tower_data: TowerData) -> bool:
+	var current = get_stock(tower_data)
+	if current > 0:
+		_loadout_stock[tower_data] = current - 1
+		loadout_stock_changed.emit(tower_data, current - 1)
+		return true
+	return false
+
+func refund_stock(tower_data: TowerData) -> void:
+	# We should cap this at the max loadout? Or allow overstock from refunds?
+	# Implementation Plan says: Selling returns stock.
+	# We should probably respect the initial max if we want to be strict, 
+	# but for now, simple increment is fine.
+	var current = get_stock(tower_data)
+	_loadout_stock[tower_data] = current + 1
+	loadout_stock_changed.emit(tower_data, current + 1)
 
 
 # Sets the player data and updates health and currency signals
@@ -171,3 +221,26 @@ func reset_state() -> void:
 	currency_changed.emit(_player_data.currency)
 	wave_changed.emit(_current_wave, _total_waves)
 	wave_status_changed.emit(_is_wave_active)
+	_reset_relic_state()
+
+# --- RELIC LOGIC ---
+
+var _relic_used_this_level: bool = false
+signal relic_state_changed(is_available: bool)
+
+func try_use_relic(_relic_data: Resource) -> bool:
+	if _relic_used_this_level:
+		return false
+		
+	_relic_used_this_level = true
+	# Emit false to indicate relics are now unavailable
+	relic_state_changed.emit(false)
+	return true
+	
+func is_relic_used() -> bool:
+	return _relic_used_this_level
+
+func _reset_relic_state() -> void:
+	_relic_used_this_level = false
+	# Emit true to indicate relics are available
+	relic_state_changed.emit(true)

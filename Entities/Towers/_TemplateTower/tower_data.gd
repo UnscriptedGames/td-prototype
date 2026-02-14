@@ -7,4 +7,9 @@ class_name TowerData
 @export var visual_offset: Vector2 = Vector2.ZERO
 
 ## Level-Based Stats
+## Level-Based Stats
 @export var levels: Array[TowerLevelData] = []
+
+## Loadout Properties
+@export var allocation_cost: int = 10
+@export var is_unlocked: bool = true

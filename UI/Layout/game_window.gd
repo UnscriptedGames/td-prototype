@@ -27,26 +27,19 @@ extends Control
 @onready var gain_label: Label = $MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox/GainLabel
 
 # Card Grid
-@onready var card_grid: GridContainer = $MainLayout/WorkspaceSplit/LeftSidebar/SidebarContent/CardMarginContainer/CardGrid
 @onready var volume_button: Button = $MainLayout/TopBar/Content/TransportControls/VolumeButton
 @onready var volume_slider: HSlider = $MainLayout/TopBar/Content/TransportControls/VolumeSlider
-@export var player_deck: Resource # Loaded as DeckData
-
 # Icons
 var icon_play: Texture2D = preload("res://UI/Icons/play.svg")
 var icon_pause: Texture2D = preload("res://UI/Icons/pause.svg")
 var icon_volume: Texture2D = preload("res://UI/Icons/volume.svg")
 var icon_mute: Texture2D = preload("res://UI/Icons/volume_mute.svg")
 
-# Assets
-const CARD_SCENE = preload("res://Entities/Cards/card.tscn")
-
 # State
-var _card_manager: CardManager
 var _build_manager: BuildManager
-var _active_card: Card # Track the card currently being played/previewed
 var _selected_tower: TemplateTower = null
 var _tower_inspector: PanelContainer # Type is TowerInspector, loose coupling to avoid cyclic ref/lag
+var _sidebar_hud: Control # Typed as Control to avoid resolution issues (SidebarHUD)
 
 # Meter Animation State
 var _target_damage_value: float = 0.0
@@ -97,7 +90,7 @@ func _ready() -> void:
 
 	
 	# Managers
-	_active_card = null
+	# Managers
 	
 	# Get BuildManager from InputManager if available
 	if InputManager.has_method("get_build_manager"):
@@ -111,18 +104,16 @@ func _ready() -> void:
 			var container = $MainLayout/WorkspaceSplit/GameViewContainer
 			_build_manager.bind_to_viewport(viewport, container)
 	
-	# Setup Card Manager
-	_card_manager = CardManager.new()
-	add_child(_card_manager)
-	_card_manager.hand_changed.connect(_on_hand_changed)
-	
-	# --- Debug: Tab Buttons ---
-	var buffs_btn = %BuffsButton
-	var cards_btn = %CardsButton
-	if buffs_btn:
-		buffs_btn.toggled.connect(func(pressed): if pressed: print("DEBUG: Buffs Tab Selected"))
-	if cards_btn:
-		cards_btn.toggled.connect(func(pressed): if pressed: print("DEBUG: Cards Tab Selected"))
+	# Setup Sidebar HUD
+	# Setup Sidebar HUD
+	var sidebar_container = $MainLayout/WorkspaceSplit/LeftSidebar
+	if sidebar_container:
+		for child in sidebar_container.get_children():
+			child.queue_free()
+			
+		# Instantiate new HUD
+		_sidebar_hud = (preload("res://UI/HUD/Sidebar/sidebar_hud.tscn")).instantiate()
+		sidebar_container.add_child(_sidebar_hud)
 	
 	# --- Player Health Integration ---
 	if GameManager.has_signal("health_changed"):
@@ -212,14 +203,7 @@ func _ready() -> void:
 	var game_view_container = $MainLayout/WorkspaceSplit/GameViewContainer
 
 	
-	# Initialise Deck
-	if not player_deck:
-		if FileAccess.file_exists("res://Config/Decks/player_deck.tres"):
-			player_deck = load("res://Config/Decks/player_deck.tres")
-			
-	if player_deck:
-		# Use 8 as the hand size for the grid
-		_card_manager.initialise_deck(player_deck, 8)
+	# Initialise Deck - REMOVED (Replaced by Loadout / SidebarHUD)
 		
 	# Instantiating Inspector
 	var inspector_scene = load("res://UI/Inspector/tower_inspector.tscn")
@@ -477,83 +461,22 @@ func _load_level(level_path: String) -> void:
 
 # --- Card Logic ---
 
-func _on_hand_changed(new_hand: Array[CardData]) -> void:
-	# Clear existing children
-	for child in card_grid.get_children():
-		child.queue_free()
-		
-	# Populate grid
-	for card_data in new_hand:
-		var card_instance = CARD_SCENE.instantiate()
-		card_grid.add_child(card_instance)
-		
-		# Layout: Fixed Cell Size Calculation
-		# Width: (320 Sidebar - 40 Margins/Sep) / 2 = 140
-		# Height: Maintain Aspect Ratio ~ 1.33 -> 186
-		card_instance.custom_minimum_size = Vector2(140, 186)
-		
-		# Do NOT expand vertically to push the UI.
-		# Just sit at the fixed size.
-		card_instance.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		card_instance.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		
-		# Data
-		card_instance.display(card_data)
-		
-	# Buff States are now handled via drag-and-drop validation, so cards are always playable.
-	# _update_buff_cards_state(_selected_tower) - REMOVED
 
+# --- Loadout Interaction ---
 
-# --- INPUT HANDLING ---
+# --- Loadout Interaction ---
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel"):
-		# User pressed Escape
-		if _build_manager and _build_manager.state == _build_manager.State.BUILDING_TOWER:
-			# If we are in build mode (dragging or ghost), cancel it.
-			_build_manager.cancel_drag_ghost()
-			
-			# Note: We can't easily force the system to "drop" the drag data,
-			# but cancelling the ghost tower is the visual feedback we need.
-			# Godot's drag system might auto-cancel if Esc is standard, but if not:
-			# The ghost disappears, and eventually the user releases the mouse.
-			# If they release validly, validate_and_place() handles checks.
+func _on_card_effect_completed_from_drag(_card_node: Node) -> void:
+	# Logic moved to BuildManager/GameManager.
+	# We might need this for visual feedback or sound?
+	pass
 
-# --- DRAG AND DROP HANDLERS REPLACED BY GAME_VIEW_DROPPER ---
-
-
-func _on_card_effect_completed_from_drag(card: Card) -> void:
-	# Similar to _on_card_effect_completed but for specific card instance
-	if not is_instance_valid(card): return
-	
-	# var cost = card.card_data.effect.get_cost() 
-	# GameManager.remove_currency(cost) -> Handled by BuildManager
-	
-	var card_index = card.get_index()
-	if card_index != -1:
-		_card_manager.play_card_shift(card_index, {})
-
-
-func _on_card_effect_completed(_card: Card) -> void:
-	if not is_instance_valid(_active_card):
-		return
-		
-	# 1. Deduct Cost
-	# var cost = _active_card.card_data.effect.get_cost()
-	# GameManager.remove_currency(cost) -> Handled by BuildManager
-	
-	# 2. Update Deck (Shift & Draw)
-	# Find index of active card in the grid
-	var card_index = _active_card.get_index()
-	if card_index != -1:
-		_card_manager.play_card_shift(card_index, {})
-		
-	_active_card = null
+func _on_card_effect_completed(_card_node: Node) -> void:
+	pass
 
 
 func _on_card_effect_cancelled() -> void:
-	# Create ghost cancelled, just reset active card
-	_active_card = null
+	pass
 
 
 # --- Buff / Selection Logic ---
@@ -626,32 +549,8 @@ func load_level_instance(level_instance: Node) -> void:
 	game_viewport.add_child(level_instance)
 	_wire_up_level(level_instance)
 
-# --- Drag Fix ---
-# Prevent "Forbidden" cursor when hovering empty UI space
-func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
-	if typeof(data) == TYPE_DICTIONARY and data.has("type") and data["type"] == "card_drag":
-		# We are dragging over the UI (outside GameViewDropper)
-		if _build_manager:
-			var drag_id = data.get("drag_id", -1)
-			
-			# Case A: We are transitioning from Game -> UI (Exiting). Banish!
-			if _build_manager.is_dragging():
-				_build_manager.banish_drag_session()
-				if data.get("preview"): data["preview"].visible = false
-				
-			# Case B: We are already banished. Keep hidden.
-			elif _build_manager.is_drag_banished(drag_id):
-				if data.get("preview"): data["preview"].visible = false
-				
-			# Case C: We are just starting (Sidebar). Not dragging yet, not banished.
-			else:
-				if data.get("preview"): data["preview"].visible = true
-			
-		return true
-	return false
-
-func _drop_data(_at_position: Vector2, _data: Variant) -> void:
-	pass
+# --- Drag Fix REPLACED (See end of file) ---
+# Old logic removed to prevent duplicates.
 
 func _wire_up_level(level_instance: Node) -> void:
 	# Update Build Manager References
@@ -763,3 +662,61 @@ func _on_volume_button_pressed() -> void:
 		if volume_slider:
 			_previous_volume = volume_slider.value
 			volume_slider.value = 0
+
+
+# --- DRAG AND DROP ---
+
+func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
+	if typeof(data) == TYPE_DICTIONARY and data.get("type") == "card_drag":
+		var container = $MainLayout/WorkspaceSplit/GameViewContainer
+		if container and container.get_global_rect().has_point(get_global_mouse_position()):
+			# Dragging over Game View
+			if _build_manager:
+				# 1. Start Drag if not active
+				if not _build_manager.is_dragging():
+					var item_data = data.get("data")
+					var subtype = data.get("subtype")
+					
+					if subtype == "tower" and item_data is TowerData:
+						if item_data.scene_path:
+							var scene = load(item_data.scene_path)
+							if scene:
+								_build_manager.start_drag_ghost_with_scene(item_data, scene, data.get("drag_id"), data.get("source"))
+					
+					elif subtype == "buff":
+						_build_manager.start_drag_buff(data.get("source"), data.get("drag_id"))
+				
+				# 2. Update Drag
+				# Note: is_dragging() might be false if just started above? 
+				# No, start_drag.. sets _is_dragging = true immediately.
+				if _build_manager.is_dragging():
+					if data.get("subtype") == "buff":
+						_build_manager.update_drag_buff(get_global_mouse_position())
+					else:
+						_build_manager.update_drag_ghost(get_global_mouse_position())
+				
+				# Hide UI Preview while in world
+				if data.get("preview"): data.preview.visible = false
+				return true
+		else:
+			# Dragging over UI
+			if _build_manager and _build_manager.is_dragging():
+				if data.get("subtype") == "buff":
+					_build_manager.cancel_drag_buff()
+				else:
+					_build_manager.cancel_drag_ghost()
+			
+			# Show UI Preview
+			if data.get("preview"): data.preview.visible = true
+			
+			return false
+			
+	return false
+
+func _drop_data(_at_position: Vector2, data: Variant) -> void:
+	if not _build_manager: return
+	
+	if data.get("subtype") == "buff":
+		_build_manager.apply_buff_at(get_global_mouse_position(), data.get("data"))
+	else:
+		_build_manager.validate_and_place()
