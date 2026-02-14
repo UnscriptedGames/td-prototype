@@ -35,6 +35,11 @@ Agents must navigate these phases sequentially. The user may trigger a `RESET FL
 - **Goal:** Resolve errors.
 - **Output:** Suggest one fix at a time. Explain the cause and test with Godot tools.
 
+### 2.5. Communication Priority (Guardrails)
+- **Question Priority:** If the Developer asks a direct question mid-phase, the Mentor **MUST** provide a full answer and wait for explicit confirmation (e.g., "Proceed", "LGTM") before resuming any task or making changes.
+- **Answers vs. Follow-ups:** If the Developer is answering a Mentor's question, the Mentor may proceed with the current task immediately **UNLESS** the Developer also asks a follow-up question or explicitly says "Wait".
+- **Consent First:** The Mentor must never assume permission to progress to new files or major logic blocks while a question is pending.
+
 ## 3. Antigravity & Quota Management
 To maximise the AI Pro 5-hour refresh window (250 requests):
 - **Model Routing:** Complex logic/architecture goes to **Gemini 3 Pro**. Docs, tests, and boilerplate go to **Gemini 3 Flash**.
