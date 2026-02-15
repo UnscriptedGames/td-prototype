@@ -141,7 +141,7 @@ func reset_attack() -> void:
 		animation_player.play(idle_animation)
 
 
-func apply_buff(buff_effect: BuffTowerEffect) -> void:
+func apply_buff(buff_effect: BuffEffectStandard) -> void:
 	buff_manager.apply_buff(buff_effect)
 
 

@@ -1,7 +1,8 @@
+@tool
+class_name BuildManager
 extends Node2D
 
 ## Manages the tower building process, including ghost towers and placement validation.
-class_name BuildManager
 
 signal tower_selected
 signal tower_deselected
@@ -437,9 +438,8 @@ func update_drag_ghost(screen_position: Vector2) -> void:
 
 # _banish_current_drag removed (replaced by banish_drag_session)
 
-# validate_and_place removed (Duplicate)
-# dangling return removed
-	
+## Validates current ghost placement and places tower if valid.
+## Called by Drag and Drop system on drop.
 
 func is_buildable_at(map_coords: Vector2i) -> bool:
 	if not is_instance_valid(path_layer):

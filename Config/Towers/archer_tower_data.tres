@@ -105,7 +105,6 @@ idle_animation = "level_03_idle"
 
 [resource]
 script = ExtResource("1_njmit")
-tower_name = "Archer Tower"
 ghost_texture = ExtResource("1_olgkv")
 visual_offset = Vector2(0, -30)
 levels = Array[ExtResource("2_pcqh6")]([SubResource("Resource_pcqh6"), SubResource("Resource_ew8f0"), SubResource("Resource_adv42"), SubResource("Resource_b6eam"), SubResource("Resource_qg77t"), SubResource("Resource_euqsa"), SubResource("Resource_hbdv3")])

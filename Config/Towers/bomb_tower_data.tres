@@ -103,7 +103,6 @@ idle_animation = "level_03_idle"
 
 [resource]
 script = ExtResource("1_bohe1")
-tower_name = "Bomb Tower"
 ghost_texture = ExtResource("1_5jr0x")
 visual_offset = Vector2(0, -20)
 levels = Array[ExtResource("2_ettj2")]([SubResource("Resource_ettj2"), SubResource("Resource_v3ouq"), SubResource("Resource_fmtiq"), SubResource("Resource_l3175"), SubResource("Resource_tqkyf"), SubResource("Resource_84jm7"), SubResource("Resource_te6lm")])

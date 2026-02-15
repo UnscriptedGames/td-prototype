@@ -25,7 +25,7 @@ var _is_wave_active: bool = false
 var _game_speed_index: int = 0
 
 # Loadout System
-const LoadoutConfigScript = preload("res://Config/loadout_config.gd")
+const LoadoutConfigScript = preload("res://Config/Loadouts/loadout_config.gd")
 var _active_loadout: Resource # Type hint as Resource to avoid cyclic dependency issues or editor delays
 var _loadout_stock: Dictionary = {} # Key: TowerData, Value: int (Current Stock)
 
@@ -70,10 +70,12 @@ func _ready() -> void:
 	_initialize_test_loadout()
 
 func _initialize_test_loadout() -> void:
-	# Temporary: Create a dummy loadout for testing Phase 1.5
-	var test_loadout = LoadoutConfigScript.new()
-	# Empty loadout for now, Phase 1.5 will populate this real data
-	set_active_loadout(test_loadout)
+	# Load the actual test loadout resource
+	var test_loadout = load("res://Config/Loadouts/test_loadout.tres")
+	if test_loadout:
+		set_active_loadout(test_loadout)
+	else:
+		push_error("Failed to load test_loadout.tres")
 
 func set_active_loadout(loadout: Resource) -> void:
 	_active_loadout = loadout

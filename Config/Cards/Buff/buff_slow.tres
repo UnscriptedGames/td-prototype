@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CardData" load_steps=7 format=3 uid="uid://cmisfewa516ij"]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://cmisfewa516ij"]
 
 [ext_resource type="Script" uid="uid://clgj0ibwjjwrv" path="res://Entities/Cards/Effects/buff_tower_effect.gd" id="1_exgba"]
 [ext_resource type="Script" uid="uid://d1g1t4lju13s1" path="res://Core/Data/StatusEffects/status_effect_data.gd" id="2_s3cpb"]

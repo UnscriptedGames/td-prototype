@@ -1,18 +1,22 @@
-# Handover - [2026-02-14]
+# Handover - [2026-02-15]
 
 ## Current State
-- **SidebarHUD Refactor:** Converted from procedural `VBoxContainer` to a `Control` root scene with manual placeholder nodes.
-- **Visuals:** Applied `daw_theme.tres`. Adjusted `TowerGrid` (2 columns) and `BuffContainer` (vertical list).
-- **Logic:** `sidebar_hud.gd` updated to reuse existing scene nodes instead of clearing them. Fixed runtime `null` value type error for empty slots.
-- **Layout:** Root nodes set to `Full Rect` anchors with `offset_bottom = -56.0` to respect the `TopBar` height in `GameWindow`.
+- **Loadout System Architecture:** Fully refactored to use strictly typed resources. `LoadoutItem` (Base) -> `TowerData`, `BuffData`, `RelicData`. `LoadoutConfig` now uses typed dictionaries for Inspector drag-and-drop.
+- **Buff Migration:** Created `BuffEffectStandard` and migrated standard buffs (Attack Speed, Slow) to new `BuffData` resources.
+- **Drag-and-Drop Polish:**
+    - New "Ghost Button" system in `SidebarButton.gd` mimics the button appearance during drag.
+    - Drag preview is anchored to the click point and preserves aspect ratio.
+    - Mouse cursor hides during drag and reappears on drop/cancel.
+    - Dedicated `DropZone` overlay ensures reliable drop detection in the game view.
+- **UI Logic:** `SidebarButton` and `SidebarHUD` updated to handle the new `LoadoutItem` types.
 
 ## Signal Maps
-- `GameManager.loadout_stock_changed(tower_data: Resource, new_stock: int)` -> Updates Tower stock labels.
-- `GameManager.relic_state_changed(is_available: bool)` -> Enables/Disables Relic buttons.
-- `GlobalSignals.buff_applied(buff_data: Resource)` -> Triggers cooldown visual on Buff buttons.
+- `GameManager.loadout_stock_changed(tower_data: TowerData, new_stock: int)` -> Updates stock labels in Sidebar.
+- `GlobalSignals.buff_applied(buff_effect: BuffEffectStandard)` -> Triggers visual cooldowns.
+- `BuildManager.tower_selected(tower: TemplateTower)` -> Opens the Tower Inspector.
+- `NOTIFICATION_DRAG_END` -> Cleanly handles cursor restoration and ghost cleanup (in `game_view_dropper.gd` and `sidebar_button.gd`).
 
-## Revised Next Steps
-1. **Create Test Loadout:** Create `res://Resources/Loadouts/test_loadout.tres` (Type: `LoadoutConfig`).
-2. **Populate Data:** Assign `basic_tower_data.tres` and test spells to the resource in the inspector.
-3. **Connect to GameManager:** Load and assign this resource to `GameManager.active_loadout` in its `_ready()` function.
-4. **Verification:** Confirm the SidebarHUD correctly populates icons/text from the real data and stock counts are live.
+## Next Steps (Next Session)
+1. **Connect Buffs to Game View:** Currently, `game_view_dropper.gd` has placeholders for buff application (`build_manager.apply_buff_at`). This needs to be wired up to actually find the target tower and apply the `BuffData.effect`.
+2. **Buff Visual Feedback:** Ensure when dragging a buff, the map/towers highlight valid targets.
+3. **Verification:** Confirm that applying a "Slow" or "Attack Speed" buff correctly modifies the tower's `BuffManager` state.

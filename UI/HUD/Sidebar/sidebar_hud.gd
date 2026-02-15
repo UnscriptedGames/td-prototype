@@ -99,29 +99,24 @@ func populate(loadout: Resource) -> void:
 			
 		_update_or_create_buff(btn, data)
 
-func _update_or_create_relic(existing_btn: Button, relic_data: Resource, index: int) -> void:
+func _update_or_create_relic(existing_btn: Button, relic_data: RelicData, index: int) -> void:
 	var btn = existing_btn
 	if not btn:
 		btn = SIDEBAR_BUTTON_SCRIPT.new()
 		btn.custom_minimum_size = Vector2(80, 80)
 		relic_container.add_child(btn)
 	
-	# Update Properties (Only if script attached or compatible)
 	if btn.get_script() != SIDEBAR_BUTTON_SCRIPT:
 		btn.set_script(SIDEBAR_BUTTON_SCRIPT)
 
-	btn.text = "R%d" % (index + 1)
-	btn.type = "relic"
-	btn.data = relic_data
+	# Use the new setup method
+	if relic_data:
+		btn.setup_relic(relic_data)
+	else:
+		btn.text = "R%d" % (index + 1)
+		btn.disabled = true
 	
-	# Connect Click (Disconnect first to avoid dupes if reused?)
-	if btn.pressed.is_connected(_on_relic_pressed_wrapper):
-		btn.pressed.disconnect(_on_relic_pressed_wrapper)
-	
-	# Use a wrapper or bind? Bind creates a new callable, so checks might fail.
-	# Let's rely on functional connection.
-	# Actually, safely disconnecting anonymous lambdas is hard.
-	# Let's clean signals:
+	# Clean signals
 	var conns = btn.pressed.get_connections()
 	for c in conns:
 		if c.callable.get_object() == self:
@@ -133,9 +128,10 @@ func _update_or_create_relic(existing_btn: Button, relic_data: Resource, index: 
 	if Engine.is_editor_hint():
 		btn.disabled = false
 	else:
-		btn.disabled = GameManager.is_relic_used()
+		# Only enable if we have data AND it's not used
+		btn.disabled = (relic_data == null) or GameManager.is_relic_used()
 
-func _on_relic_pressed_wrapper(): pass # Dummy for signal check logic if needed
+func _on_relic_pressed_wrapper(): pass
 
 func _update_or_create_tower(existing_btn: Button, info) -> void:
 	var btn = existing_btn
@@ -147,9 +143,6 @@ func _update_or_create_tower(existing_btn: Button, info) -> void:
 	if btn.get_script() != SIDEBAR_BUTTON_SCRIPT:
 		btn.set_script(SIDEBAR_BUTTON_SCRIPT)
 		
-	btn.type = "tower"
-	btn.expand_icon = true
-	
 	var lbl = btn.get_node_or_null("StockLabel")
 	if not lbl:
 		lbl = Label.new()
@@ -163,8 +156,7 @@ func _update_or_create_tower(existing_btn: Button, info) -> void:
 	if info:
 		var tower_data = info.data
 		var stock = info.stock
-		btn.data = tower_data
-		btn.text = "T"
+		btn.setup_tower(tower_data)
 		lbl.text = str(stock)
 		btn.set_meta("tower_data", tower_data)
 		btn.disabled = false
@@ -175,7 +167,7 @@ func _update_or_create_tower(existing_btn: Button, info) -> void:
 		btn.flat = false
 		lbl.text = ""
 
-func _update_or_create_buff(existing_btn: Button, card_data: Resource) -> void:
+func _update_or_create_buff(existing_btn: Button, buff_data: BuffData) -> void:
 	var btn = existing_btn
 	if not btn:
 		btn = SIDEBAR_BUTTON_SCRIPT.new()
@@ -185,19 +177,12 @@ func _update_or_create_buff(existing_btn: Button, card_data: Resource) -> void:
 	if btn.get_script() != SIDEBAR_BUTTON_SCRIPT:
 		btn.set_script(SIDEBAR_BUTTON_SCRIPT)
 
-	btn.type = "buff"
-	
-	# Structure Check
+	# Structure Check (HBox, Icon, Label, Bar)
 	var hbox = btn.get_node_or_null("HBox")
 	if not hbox:
-		# If recreating structure, verify existing children
-		# For manual nodes, we might rely on them having this structure.
-		# If procedural, create it.
 		if btn.get_child_count() > 0:
-			# Assume manually created structure, find components
-			hbox = btn.get_child(0) # Assume first child is container
+			hbox = btn.get_child(0)
 			if not hbox is HBoxContainer: hbox = null
-			
 		if not hbox:
 			hbox = HBoxContainer.new()
 			hbox.name = "HBox"
@@ -205,18 +190,14 @@ func _update_or_create_buff(existing_btn: Button, card_data: Resource) -> void:
 			hbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 			btn.add_child(hbox)
 
-	# Ensure internal nodes exists (Icon, Label, Prog)
-	# This part is getting complex for procedural generation vs manual.
-	# Simplification: If manual, assume nodes exist. If procedural, create.
-	
-	var icon = hbox.get_node_or_null("Icon")
-	if not icon:
-		icon = TextureRect.new()
-		icon.name = "Icon"
-		icon.custom_minimum_size = Vector2(48, 48)
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		hbox.add_child(icon)
+	var icon_rect = hbox.get_node_or_null("Icon")
+	if not icon_rect:
+		icon_rect = TextureRect.new()
+		icon_rect.name = "Icon"
+		icon_rect.custom_minimum_size = Vector2(48, 48)
+		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		hbox.add_child(icon_rect)
 		
 	var lbl = hbox.get_node_or_null("Label")
 	if not lbl:
@@ -236,43 +217,51 @@ func _update_or_create_buff(existing_btn: Button, card_data: Resource) -> void:
 		prog.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		hbox.add_child(prog)
 
-	if card_data:
-		lbl.text = "Buff Name"
-		btn.data = card_data
+	if buff_data:
+		btn.setup_buff(buff_data)
+		lbl.text = buff_data.display_name
+		if buff_data.icon:
+			icon_rect.texture = buff_data.icon
 		btn.disabled = false
 	else:
 		lbl.text = "Empty Slot"
 		btn.data = null
 		btn.disabled = true
 
-func _on_loadout_stock_changed(tower_data: Resource, new_stock: int) -> void:
-	# Find button with this tower_data
+func _on_loadout_stock_changed(tower_data: TowerData, new_stock: int) -> void:
 	for child in tower_grid.get_children():
-		if child.get_meta("tower_data", null) == tower_data:
+		if child.has_meta("tower_data") and child.get_meta("tower_data") == tower_data:
 			var lbl = child.get_node_or_null("StockLabel")
 			if lbl: lbl.text = str(new_stock)
-			
-			# Disable if stock 0?
 			if child is Button:
 				child.disabled = (new_stock <= 0)
 
-func _on_buff_applied(buff_data: Resource) -> void:
-	# Find matching button
+func _on_buff_applied(buff_effect: BuffEffectStandard) -> void:
+	# Find matching button by checking if the effect matches
+	# This is tricky because the signal passes the Effect instance, but the button holds Data.
+	# We need a way to link them, or just search by type if unique?
+	# Better: The signal should probably pass the Data, but the Effect is what executes.
+	# For now, let's look for a button whose data.effect matches the effect's script or properties?
+	# Or, if we instantiate effects, we can't match instances.
+	# Fallback: Just trigger visual on the first matching buff type?
 	for child in buff_container.get_children():
-		if child.get("data") == buff_data:
-			var bar = child.find_child("CooldownBar", true, false)
-			if bar and bar is ProgressBar:
-				_start_cooldown_visual(bar, 5.0) # Fixed 5s for now
+		var data = child.get("data") as BuffData
+		if data and data.effect:
+			# Compare script/resource
+			if data.effect.get_script() == buff_effect.get_script():
+				# Close enough for prototype
+				var bar = child.find_child("CooldownBar", true, false)
+				if bar and bar is ProgressBar:
+					_start_cooldown_visual(bar, data.cooldown)
 
 func _on_relic_pressed(btn: Button) -> void:
-	var data = btn.data
+	var data = btn.data as RelicData
+	if not data: return
 	
 	if GameManager.try_use_relic(data):
-		print("Relic Activated!")
-		if data and data.get("effect"): # Use loose get to checking property existence safely
-			var effect = data.effect
-			if effect and effect.has_method("execute"):
-				effect.execute({"source": self, "player_data": GameManager.player_data})
+		print("Relic Activated: %s" % data.display_name)
+		if data.active_effect:
+			data.active_effect.execute({"source": self, "player_data": GameManager.player_data})
 		
 func _on_relic_state_changed(is_available: bool) -> void:
 	for child in relic_container.get_children():

@@ -103,9 +103,12 @@ projectile_scene = ExtResource("3_2d21g")
 shoot_animation = "level_03_shoot"
 idle_animation = "level_03_idle"
 
+
 [resource]
 script = ExtResource("1_njmit")
-tower_name = "Tweeter Tower"
 ghost_texture = ExtResource("1_olgkv")
 levels = Array[ExtResource("2_pcqh6")]([SubResource("Resource_pcqh6"), SubResource("Resource_ew8f0"), SubResource("Resource_adv42"), SubResource("Resource_b6eam"), SubResource("Resource_qg77t"), SubResource("Resource_euqsa"), SubResource("Resource_hbdv3")])
+display_name = "Tweeter Tower"
+icon = ExtResource("1_olgkv")
+tower_scene_path = "res://Entities/Towers/TweeterTower/tweeter_tower.tscn"
 metadata/_custom_type_script = "uid://c8knfpcb8mutu"

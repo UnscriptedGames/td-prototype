@@ -27,8 +27,8 @@ func _process(_delta: float) -> void:
 
 
 ## Applies a buff to the parent tower.
-## @param buff_effect: The BuffTowerEffect resource to apply.
-func apply_buff(buff_effect: BuffTowerEffect) -> void:
+## @param buff_effect: The BuffEffectStandard resource to apply.
+func apply_buff(buff_effect: BuffEffectStandard) -> void:
 	var tower: TemplateTower = get_parent()
 	if not is_instance_valid(tower):
 		push_error("BuffManager cannot find a valid parent tower.")
@@ -88,8 +88,8 @@ func apply_buff(buff_effect: BuffTowerEffect) -> void:
 
 
 ## Called when a buff's timer runs out.
-## @param buff_effect: The BuffTowerEffect resource that has expired.
-func _on_buff_expired(buff_effect: BuffTowerEffect) -> void:
+## @param buff_effect: The BuffEffectStandard resource that has expired.
+func _on_buff_expired(buff_effect: BuffEffectStandard) -> void:
 	var tower: TemplateTower = get_parent()
 	if not is_instance_valid(tower):
 		# Tower might have been destroyed, so just clean up.
@@ -146,7 +146,7 @@ func _on_buff_expired(buff_effect: BuffTowerEffect) -> void:
 
 
 ## Cleans up the buff from the tracking dictionaries and frees the timer.
-func _cleanup_buff(buff_effect: BuffTowerEffect) -> void:
+func _cleanup_buff(buff_effect: BuffEffectStandard) -> void:
 	if _active_buffs.has(buff_effect):
 		var timer = _active_buffs[buff_effect]
 		if is_instance_valid(timer):

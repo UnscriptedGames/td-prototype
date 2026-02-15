@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="LoadoutConfig" format=3 uid="uid://b8j5qj5qj5qj5"]
+
+[ext_resource type="Script" uid="uid://c5qe2pst6l56t" path="res://Core/Data/Loadout/buff_data.gd" id="1_jvtof"]
+[ext_resource type="Script" uid="uid://kbq4ox6nrhtt" path="res://Config/Loadouts/loadout_config.gd" id="1_loadout"]
+[ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="3_5l5xt"]
+[ext_resource type="Resource" uid="uid://earhg57u63kk" path="res://Config/Loadouts/Items/Buffs/buff_attack_speed.tres" id="3_buff_speed"]
+[ext_resource type="Resource" uid="uid://cmisfewa516ij" path="res://Config/Loadouts/Items/Buffs/buff_slow.tres" id="4_buff_slow"]
+[ext_resource type="Script" uid="uid://t3mvxe5km66p" path="res://Core/Data/Loadout/relic_data.gd" id="4_e0l3n"]
+[ext_resource type="Resource" uid="uid://6g7ltfri23b8" path="res://Config/Towers/tweeter_tower_data.tres" id="4_i1jtn"]
+
+[resource]
+script = ExtResource("1_loadout")
+towers = Dictionary[ExtResource("3_5l5xt"), int]({
+ExtResource("4_i1jtn"): 4
+})
+buffs = Array[ExtResource("1_jvtof")]([ExtResource("3_buff_speed"), ExtResource("4_buff_slow")])
+metadata/_custom_type_script = "uid://kbq4ox6nrhtt"

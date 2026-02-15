@@ -103,6 +103,18 @@ func _ready() -> void:
 			var viewport = $MainLayout/WorkspaceSplit/GameViewContainer/SubViewport
 			var container = $MainLayout/WorkspaceSplit/GameViewContainer
 			_build_manager.bind_to_viewport(viewport, container)
+			
+			# Attach Drop Handler via Overlay
+			# We use a child Control because SubViewportContainer has complex input handling
+			var drop_zone = Control.new()
+			drop_zone.name = "DropZone"
+			drop_zone.set_anchors_preset(Control.PRESET_FULL_RECT)
+			drop_zone.mouse_filter = Control.MOUSE_FILTER_PASS # Pass clicks to viewport, but catch drops?
+			# Actually, for drop to work, it must handle it. If Pass, it handles it.
+			
+			container.add_child(drop_zone)
+			drop_zone.set_script(load("res://UI/Layout/game_view_dropper.gd"))
+			drop_zone.setup(_build_manager)
 	
 	# Setup Sidebar HUD
 	# Setup Sidebar HUD
@@ -212,6 +224,10 @@ func _ready() -> void:
 		game_view_container.add_child(_tower_inspector)
 		# Ensure it's above the drop overlay (z-index or order)
 		_tower_inspector.move_to_front()
+		_tower_inspector.visible = false # Hide by default
+		# _tower_inspector.mouse_filter = Control.MOUSE_FILTER_IGNORE # Let it not block drops? 
+		# But it needs to be interactive? 
+		# For now, hiding it should prevent it from blocking if it's the culprit.
 		
 		# Connect to BuildManager actions
 		if _build_manager:
@@ -666,57 +682,5 @@ func _on_volume_button_pressed() -> void:
 
 # --- DRAG AND DROP ---
 
-func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
-	if typeof(data) == TYPE_DICTIONARY and data.get("type") == "card_drag":
-		var container = $MainLayout/WorkspaceSplit/GameViewContainer
-		if container and container.get_global_rect().has_point(get_global_mouse_position()):
-			# Dragging over Game View
-			if _build_manager:
-				# 1. Start Drag if not active
-				if not _build_manager.is_dragging():
-					var item_data = data.get("data")
-					var subtype = data.get("subtype")
-					
-					if subtype == "tower" and item_data is TowerData:
-						if item_data.scene_path:
-							var scene = load(item_data.scene_path)
-							if scene:
-								_build_manager.start_drag_ghost_with_scene(item_data, scene, data.get("drag_id"), data.get("source"))
-					
-					elif subtype == "buff":
-						_build_manager.start_drag_buff(data.get("source"), data.get("drag_id"))
-				
-				# 2. Update Drag
-				# Note: is_dragging() might be false if just started above? 
-				# No, start_drag.. sets _is_dragging = true immediately.
-				if _build_manager.is_dragging():
-					if data.get("subtype") == "buff":
-						_build_manager.update_drag_buff(get_global_mouse_position())
-					else:
-						_build_manager.update_drag_ghost(get_global_mouse_position())
-				
-				# Hide UI Preview while in world
-				if data.get("preview"): data.preview.visible = false
-				return true
-		else:
-			# Dragging over UI
-			if _build_manager and _build_manager.is_dragging():
-				if data.get("subtype") == "buff":
-					_build_manager.cancel_drag_buff()
-				else:
-					_build_manager.cancel_drag_ghost()
-			
-			# Show UI Preview
-			if data.get("preview"): data.preview.visible = true
-			
-			return false
-			
-	return false
-
-func _drop_data(_at_position: Vector2, data: Variant) -> void:
-	if not _build_manager: return
-	
-	if data.get("subtype") == "buff":
-		_build_manager.apply_buff_at(get_global_mouse_position(), data.get("data"))
-	else:
-		_build_manager.validate_and_place()
+# --- DRAG AND DROP ---
+# Logic moved to game_view_dropper.gd attached to GameViewContainer

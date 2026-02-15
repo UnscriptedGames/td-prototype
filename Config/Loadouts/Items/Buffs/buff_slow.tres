@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BuffData" format=3 uid="uid://cmisfewa516ij"]
+
+[ext_resource type="Script" uid="uid://c5qe2pst6l56t" path="res://Core/Data/Loadout/buff_data.gd" id="1_buffdata"]
+[ext_resource type="Script" uid="uid://ymkrrdnlnhv7" path="res://Core/Effects/Buffs/buff_effect_standard.gd" id="2_buffeffect"]
+[ext_resource type="Texture2D" uid="uid://dw4wgcdpl3jav" path="res://Entities/Cards/Assets/slow_buff.png" id="3_icon"]
+[ext_resource type="Script" uid="uid://d1g1t4lju13s1" path="res://Core/Data/StatusEffects/status_effect_data.gd" id="4_status"]
+[ext_resource type="Resource" uid="uid://dlegj6gka2j2q" path="res://Core/Data/StatusEffects/slow.tres" id="5_slow"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_buffeffect")
+duration = 20.0
+status_effects = Array[ExtResource("4_status")]([ExtResource("5_slow")])
+
+[resource]
+script = ExtResource("1_buffdata")
+gold_cost = 10
+effect = SubResource("Resource_effect")
+display_name = "Slow Ammo"
+icon = ExtResource("3_icon")
+description = "Applies Slow effect to tower attacks for 20 seconds."
+allocation_cost = 5
