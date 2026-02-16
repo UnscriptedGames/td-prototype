@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://di4vl01euv8ya"]
+[gd_scene format=3 uid="uid://di4vl01euv8ya"]
 
 [ext_resource type="Script" uid="uid://c8upe7cyry25e" path="res://UI/MainMenu/main_menu.gd" id="1_jld46"]
 
-[node name="MainMenu" type="Control"]
+[node name="MainMenu" type="Control" unique_id=1713731959]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_jld46")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1554922718]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,7 +20,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.176471, 0.176471, 0.176471, 1)
 
-[node name="StartButton" type="Button" parent="."]
+[node name="StartButton" type="Button" parent="." unique_id=114321927]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5

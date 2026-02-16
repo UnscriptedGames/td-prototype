@@ -1,17 +1,17 @@
 [gd_resource type="TileSet" format=3 uid="uid://deanuyo4c5m1j"]
 
-[ext_resource type="Texture2D" uid="uid://33xtf4vk8y5k" path="res://Levels/Tilesets/Assets/tile_maze.png" id="2_p22c8"]
-[ext_resource type="Texture2D" uid="uid://2x7jg7htqj6m" path="res://Levels/Tilesets/Assets/maze_floor.png" id="2_r2swg"]
+[ext_resource type="Texture2D" uid="uid://2x7jg7htqj6m" path="res://Levels/Tilesets/Assets/Maze Floor.png" id="1_p22c8"]
+[ext_resource type="Texture2D" uid="uid://33xtf4vk8y5k" path="res://Levels/Tilesets/Assets/Maze Wall.png" id="2_i3kv2"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_tkscy"]
 resource_name = "Maze Floor"
-texture = ExtResource("2_r2swg")
+texture = ExtResource("1_p22c8")
 texture_region_size = Vector2i(64, 64)
 0:0/0 = 0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_i3kv2"]
 resource_name = "Maze Wall"
-texture = ExtResource("2_p22c8")
+texture = ExtResource("2_i3kv2")
 texture_region_size = Vector2i(64, 64)
 0:0/0 = 0
 0:0/0/custom_data_0 = true

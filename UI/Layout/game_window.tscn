@@ -35,7 +35,6 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("2_theme")
 script = ExtResource("1_layout")
-metadata/_edit_vertical_guides_ = [960.0]
 
 [node name="Background" type="Panel" parent="." unique_id=208253181]
 layout_mode = 1

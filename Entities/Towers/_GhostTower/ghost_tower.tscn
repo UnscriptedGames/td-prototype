@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://d3ilyyujh1y78"]
+
+[ext_resource type="Script" uid="uid://crkprkhmybq47" path="res://Entities/Towers/GhostTower/ghost_tower.gd" id="1_k2vca"]
+
+[node name="GhostTower" type="Node2D" unique_id=144471633]
+z_index = 2
+script = ExtResource("1_k2vca")
+
+[node name="Sprite" type="Sprite2D" parent="." unique_id=1145687257]
+z_index = 1
+
+[node name="Range" type="Area2D" parent="." unique_id=2098854733]
+
+[node name="RangeShape" type="CollisionPolygon2D" parent="Range" unique_id=1751394822]

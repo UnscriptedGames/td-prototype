@@ -1,11 +1,10 @@
-[gd_resource type="Resource" script_class="PlayerData" load_steps=3 format=3 uid="uid://difoceiaufuio"]
+[gd_resource type="Resource" script_class="PlayerData" format=3 uid="uid://difoceiaufuio"]
 
 [ext_resource type="Script" uid="uid://dbsuwqj4fhk0i" path="res://Entities/Players/player_data.gd" id="1_8rqla"]
-[ext_resource type="Resource" uid="uid://bn71y3nnwjlyq" path="res://Config/Decks/player_deck.tres" id="1_b6lc8"]
+[ext_resource type="Script" uid="uid://c5qe2pst6l56t" path="res://Core/Data/Loadout/buff_data.gd" id="1_rxbeg"]
+[ext_resource type="Script" uid="uid://t3mvxe5km66p" path="res://Core/Data/Loadout/relic_data.gd" id="2_vt6tu"]
+[ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="4_y4bs6"]
 
 [resource]
 script = ExtResource("1_8rqla")
-health = 20
 currency = 200
-deck = ExtResource("1_b6lc8")
-hand_size = 5

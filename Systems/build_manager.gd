@@ -10,7 +10,7 @@ signal tower_deselected
 
 enum State {VIEWING, BUILDING_TOWER, TOWER_SELECTED}
 
-@export var ghost_tower_scene: PackedScene ## Set this in the Inspector!
+const GHOST_TOWER_SCENE = preload("res://Entities/Towers/_GhostTower/ghost_tower.tscn")
 # IDs for the selected tower's permanent highlights
 @export var selected_tower_id: int = -1
 @export var selected_range_id: int = -1
@@ -321,8 +321,8 @@ func _enter_build_mode(tower_data: TowerData, tower_scene: PackedScene) -> void:
 	InputManager.set_state(InputManager.State.BUILDING_TOWER) # Notify InputManager
 	GlobalSignals.build_mode_entered.emit()
 
-	if ghost_tower_scene:
-		_ghost_tower = ghost_tower_scene.instantiate()
+	if GHOST_TOWER_SCENE:
+		_ghost_tower = GHOST_TOWER_SCENE.instantiate()
 		
 		# Parenting: Add to the bound viewport if available to match coordinate space.
 		if is_instance_valid(_bound_viewport):

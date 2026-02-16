@@ -2,7 +2,6 @@ extends Node
 
 
 # Signals for communicating changes to other nodes
-signal health_changed(new_health)
 signal currency_changed(new_currency)
 signal wave_changed(current_wave, total_waves)
 signal level_changed(current_level)
@@ -25,8 +24,6 @@ var _is_wave_active: bool = false
 var _game_speed_index: int = 0
 
 # Loadout System
-const LoadoutConfigScript = preload("res://Config/Loadouts/loadout_config.gd")
-var _active_loadout: Resource # Type hint as Resource to avoid cyclic dependency issues or editor delays
 var _loadout_stock: Dictionary = {} # Key: TowerData, Value: int (Current Stock)
 
 signal loadout_stock_changed(tower_data: TowerData, new_stock: int)
@@ -52,8 +49,6 @@ var game_state: GameState:
 var is_wave_active: bool:
 	get: return _is_wave_active
 
-var active_loadout: Resource:
-	get: return _active_loadout
 
 var loadout_stock: Dictionary:
 	get: return _loadout_stock
@@ -63,26 +58,15 @@ var loadout_stock: Dictionary:
 # Loads player data and emits initial signals when the game starts
 func _ready() -> void:
 	_player_data = load("res://Config/Players/player_data.tres")
-	health_changed.emit(_player_data.health)
+	_initialize_loadout_stock()
 	currency_changed.emit(_player_data.currency)
-	
-	# TODO: Remove this temporary test loadout when UI is ready
-	_initialize_test_loadout()
 
-func _initialize_test_loadout() -> void:
-	# Load the actual test loadout resource
-	var test_loadout = load("res://Config/Loadouts/test_loadout.tres")
-	if test_loadout:
-		set_active_loadout(test_loadout)
-	else:
-		push_error("Failed to load test_loadout.tres")
+func _initialize_loadout_stock() -> void:
+	if _player_data:
+		_loadout_stock = _player_data.towers.duplicate()
+		for tower in _loadout_stock:
+			loadout_stock_changed.emit(tower, _loadout_stock[tower])
 
-func set_active_loadout(loadout: Resource) -> void:
-	_active_loadout = loadout
-	_loadout_stock = loadout.towers.duplicate()
-	# Notify listeners
-	for tower in _loadout_stock:
-		loadout_stock_changed.emit(tower, _loadout_stock[tower])
 
 func get_stock(tower_data: TowerData) -> int:
 	return _loadout_stock.get(tower_data, 0)
@@ -108,7 +92,7 @@ func refund_stock(tower_data: TowerData) -> void:
 # Sets the player data and updates health and currency signals
 func set_player_data(data: PlayerData) -> void:
 	_player_data = data
-	health_changed.emit(_player_data.health)
+	_initialize_loadout_stock()
 	currency_changed.emit(_player_data.currency)
 
 
@@ -142,20 +126,6 @@ func remove_currency(amount: int) -> void:
 	if _player_data:
 		_player_data.currency = max(0, _player_data.currency - amount)
 		currency_changed.emit(_player_data.currency)
-
-
-# Damages the player (not below zero) and emits the health_changed signal
-func damage_player(amount: int) -> void:
-	if _player_data:
-		_player_data.health = max(0, _player_data.health - amount)
-		health_changed.emit(_player_data.health)
-
-
-# Heals the player and emits the health_changed signal
-func heal_player(amount: int) -> void:
-	if _player_data:
-		_player_data.health += amount
-		health_changed.emit(_player_data.health)
 
 
 # Toggles the game state between PAUSED and PLAYING
@@ -206,6 +176,7 @@ func reset_state() -> void:
 	# Resets the game state to default values
 	# Reload Player Data to reset health/currency (Ignore Cache to get fresh values)
 	_player_data = ResourceLoader.load("res://Config/Players/player_data.tres", "", ResourceLoader.CACHE_MODE_IGNORE)
+	_initialize_loadout_stock()
 	
 	# Reset Wave counters
 	_current_wave = 0
@@ -219,7 +190,6 @@ func reset_state() -> void:
 	get_tree().paused = false
 	
 	# Emit updates
-	health_changed.emit(_player_data.health)
 	currency_changed.emit(_player_data.currency)
 	wave_changed.emit(_current_wave, _total_waves)
 	wave_status_changed.emit(_is_wave_active)

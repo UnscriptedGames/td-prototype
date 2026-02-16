@@ -71,7 +71,7 @@ var _previous_volume: float = 80.0 # Default fallback
 
 
 # Path to the default level
-const DEFAULT_LEVEL_PATH: String = "res://Levels/TemplateLevel/template_level.tscn"
+const DEFAULT_LEVEL_PATH: String = "res://Levels/_TemplateLevel/template_level.tscn"
 const MAIN_MENU_SCENE_PATH: String = "res://UI/MainMenu/main_menu.tscn"
 
 enum MenuOptions {
@@ -127,18 +127,16 @@ func _ready() -> void:
 		_sidebar_hud = (preload("res://UI/HUD/Sidebar/sidebar_hud.tscn")).instantiate()
 		sidebar_container.add_child(_sidebar_hud)
 	
-	# --- Player Health Integration ---
-	if GameManager.has_signal("health_changed"):
-		GameManager.health_changed.connect(_on_health_changed)
 		
 	# Initialize Gauge
 	# Initialize Gauge
-	if GameManager.player_data:
-		gauge_l.max_value = GameManager.player_data.max_health
-		gauge_r.max_value = GameManager.player_data.max_health
-		_target_damage_value = float(GameManager.player_data.max_health - GameManager.player_data.health)
-		gauge_l.value = (gauge_l.max_value * 0.10) + _target_damage_value
-		gauge_r.value = (gauge_r.max_value * 0.10) + _target_damage_value
+	# Health system removed. Meter update logic pending new design (Threat Meter).
+	# if GameManager.player_data:
+	# 	gauge_l.max_value = GameManager.player_data.max_health
+	# 	gauge_r.max_value = GameManager.player_data.max_health
+	# 	_target_damage_value = float(GameManager.player_data.max_health - GameManager.player_data.health)
+	# 	gauge_l.value = (gauge_l.max_value * 0.10) + _target_damage_value
+	# 	gauge_r.value = (gauge_r.max_value * 0.10) + _target_damage_value
 		
 	
 	# --- Wave Counter Integration ---
@@ -653,12 +651,6 @@ func _notification(what: int) -> void:
 		# Ensure buff/drag state is cleaned up
 		if _build_manager:
 			_build_manager.cancel_drag_buff()
-
-func _on_health_changed(new_health: int) -> void:
-	if is_instance_valid(gauge_l) and GameManager.player_data:
-		# Inverted Logic: Gauge shows "Damage" (Max - Current)
-		# Low Health = High Gauge (Red)
-		_target_damage_value = float(GameManager.player_data.max_health - new_health)
 
 
 func _on_wave_changed(current_wave: int, total_waves: int) -> void:

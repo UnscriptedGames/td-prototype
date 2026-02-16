@@ -15,7 +15,7 @@ extends Control
 const SIDEBAR_BUTTON_SCRIPT = preload("res://UI/HUD/Sidebar/sidebar_button.gd")
 const SIDEBAR_BUTTON_SCENE = preload("res://UI/HUD/Sidebar/sidebar_button.tscn")
 
-@export var preview_loadout: LoadoutConfig: set = _set_preview_loadout
+@export var preview_loadout: PlayerData: set = _set_preview_loadout
 
 func _set_preview_loadout(val):
 	preview_loadout = val
@@ -41,16 +41,16 @@ func _ready() -> void:
 	# Initial Populate - Runtime always clears and rebuilds for now
 	# To support "linked nodes", we would need to map slots to logic.
 	# For this step, runtime will still act as dynamic generation until we refactor further.
-	populate(GameManager.active_loadout)
+	populate(GameManager.player_data)
 
-func populate(loadout: Resource) -> void:
+func populate(player_data: Resource) -> void:
 	# Runtime specific: Clear and rebuild. 
 	# Editor specific: Check if empty before populating?
 	# 1. Relics
 	var relic_children = relic_container.get_children()
 	var relic_count = 3
-	if loadout and "relics" in loadout:
-		relic_count = max(loadout.relics.size(), 3)
+	if player_data and "relics" in player_data:
+		relic_count = max(player_data.relics.size(), 3)
 	
 	for i in range(relic_count):
 		var btn: Button = null
@@ -58,17 +58,17 @@ func populate(loadout: Resource) -> void:
 			btn = relic_children[i]
 		
 		var data = null
-		if loadout and "relics" in loadout and i < loadout.relics.size():
-			data = loadout.relics[i]
+		if player_data and "relics" in player_data and i < player_data.relics.size():
+			data = player_data.relics[i]
 			
 		_update_or_create_relic(btn, data, i)
 
 	# 2. Towers
 	var tower_children = tower_grid.get_children()
 	var tower_items = []
-	if loadout and "towers" in loadout:
-		for t in loadout.towers:
-			tower_items.append({"data": t, "stock": loadout.towers[t]})
+	if player_data and "towers" in player_data:
+		for t in player_data.towers:
+			tower_items.append({"data": t, "stock": player_data.towers[t]})
 	
 	# Ensure min 6 slots
 	var tower_count = max(tower_items.size(), 6)
@@ -87,8 +87,8 @@ func populate(loadout: Resource) -> void:
 	# 3. Buffs
 	var buff_children = buff_container.get_children()
 	var buff_items = []
-	if loadout and "buffs" in loadout: # Corrected from "spells"
-		buff_items = loadout.buffs
+	if player_data and "buffs" in player_data: # Corrected from "spells"
+		buff_items = player_data.buffs
 		
 	var buff_count = max(buff_items.size(), 6)
 	
