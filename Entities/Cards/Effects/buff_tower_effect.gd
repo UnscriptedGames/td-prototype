@@ -6,9 +6,6 @@ extends CardEffect
 
 # --- EXPORT VARIABLES ---
 
-## The gold cost to apply this buff.
-@export var cost: int = 0
-
 ## The duration of the buff in seconds.
 @export var duration: float = 5.0
 
@@ -29,11 +26,6 @@ extends CardEffect
 
 
 # --- VIRTUAL METHOD OVERRIDES ---
-
-## Returns the cost to play the card.
-## @return The cost of the card effect as an integer.
-func get_cost() -> int:
-	return cost
 
 
 ## Executes the buff tower effect by emitting a global signal.

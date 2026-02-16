@@ -7,6 +7,7 @@ class_name TowerData
 ## Note: display_name (from LoadoutItem) replaces tower_name.
 
 @export var ghost_texture: Texture2D
+@export var ghost_scale: Vector2 = Vector2.ONE
 @export var visual_offset: Vector2 = Vector2.ZERO
 
 ## Level-Based Stats

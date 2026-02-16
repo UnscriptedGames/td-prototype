@@ -41,11 +41,12 @@ var _highlighted_tower_for_buff: TemplateTower = null ## NEW: Track tower under 
 
 ## Called when the node enters the scene tree.
 func _ready() -> void:
-	# Connects to the new global signal.
-	GlobalSignals.build_tower_requested.connect(_on_build_tower_requested)
+	if not Engine.is_editor_hint():
+		# Connects to the new global signal.
+		GlobalSignals.build_tower_requested.connect(_on_build_tower_requested)
 
-	# Register with the InputManager
-	InputManager.register_build_manager(self)
+		# Register with the InputManager
+		InputManager.register_build_manager(self)
 
 
 # --- SETUP METHODS ---
@@ -368,6 +369,7 @@ var _current_drag_card: Node = null # Reference to card for visual reset
 ## Public API: Permanently cancels the current drag session.
 ## This prevents the card from being used again until a NEW drag starts.
 func banish_drag_session() -> void:
+	print("BuildManager: banish_drag_session called! Cursor outside valid area?")
 	if _current_drag_id != -1:
 		_banished_drag_ids[_current_drag_id] = true
 	
@@ -457,8 +459,10 @@ func is_buildable_at(map_coords: Vector2i) -> bool:
 var _buff_ghost: Sprite2D = null
 
 func start_drag_buff(card_ref: Node, drag_id: int = -1) -> void:
+	print("BuildManager: start_drag_buff called for %s" % drag_id)
 	# STRICT CHECK: If banished, refuse entirely.
 	if drag_id != -1 and _banished_drag_ids.has(drag_id):
+		print("BuildManager: Drag banished, ignoring.")
 		return
 
 	# Idempotency check: If already dragging this card, don't reset state.
@@ -469,6 +473,9 @@ func start_drag_buff(card_ref: Node, drag_id: int = -1) -> void:
 	_current_drag_card = card_ref
 	_current_drag_id = drag_id
 	
+	# Add grace frames to prevent immediate banishment on boundary check
+	_build_mode_grace_frames = 10
+	
 	# Ensure no tower ghost exists
 	if is_instance_valid(_ghost_tower):
 		_ghost_tower.queue_free()
@@ -476,7 +483,9 @@ func start_drag_buff(card_ref: Node, drag_id: int = -1) -> void:
 		
 	# Create Buff Ghost Cursor (if needed)
 	if not is_instance_valid(_buff_ghost):
+		print("BuildManager: Creating new buff ghost sprite.")
 		_buff_ghost = Sprite2D.new()
+		_buff_ghost.z_index = 4096 # Ensure visibility on top of everything
 		
 		# Load Texture (Robust Fallback)
 		var texture = null
@@ -489,12 +498,11 @@ func start_drag_buff(card_ref: Node, drag_id: int = -1) -> void:
 		if texture:
 			_buff_ghost.texture = texture
 			_buff_ghost.centered = true
-			# _buff_ghost.modulate.a = 0.8 # Optional transparency
+		else:
+			push_warning("Buff cursor texture not found at res://UI/Icons/buff_cursor.png")
 			
-		# Add to PathLayer (so it matches grid coordinates)
-		if is_instance_valid(path_layer):
-			path_layer.add_child(_buff_ghost)
-		elif is_instance_valid(_bound_viewport):
+		# Add to Viewport (match GhostTower behavior)
+		if is_instance_valid(_bound_viewport):
 			_bound_viewport.add_child(_buff_ghost)
 		else:
 			add_child(_buff_ghost)
@@ -510,13 +518,17 @@ func update_drag_buff(screen_position: Vector2) -> void:
 		viewport_pos = screen_position - _bound_container.global_position
 
 	# --- 1. Update Ghost Position (Snapped) ---
-	if is_instance_valid(_buff_ghost) and is_instance_valid(path_layer):
-		var local_pos = path_layer.to_local(viewport_pos) # Convert Viewport Global to Layer Local
-		# Snap to Grid
-		var map_pos = path_layer.local_to_map(local_pos)
-		var snapped_pos = path_layer.map_to_local(map_pos)
-		
-		_buff_ghost.position = snapped_pos
+	if is_instance_valid(_buff_ghost):
+		if is_instance_valid(path_layer):
+			var local_pos = path_layer.to_local(viewport_pos) # Convert Viewport Global to Layer Local
+			# Snap to Grid
+			var map_pos = path_layer.local_to_map(local_pos)
+			var snapped_pos = path_layer.map_to_local(map_pos)
+			
+			# Use global_position to be safe
+			_buff_ghost.global_position = path_layer.to_global(snapped_pos)
+		else:
+			_buff_ghost.position = viewport_pos # Fallback if no path layer
 	
 	# --- 2. Highlight Logic ---
 	# Note: Highlight logic acts on Hitboxes which are likely in Viewport Global space? 
@@ -537,6 +549,7 @@ func update_drag_buff(screen_position: Vector2) -> void:
 			_highlighted_tower_for_buff.modulate = Color(1.2, 1.5, 1.2)
 
 func cancel_drag_buff() -> void:
+	print("BuildManager: cancel_drag_buff called.")
 	if is_instance_valid(_buff_ghost):
 		_buff_ghost.queue_free()
 		_buff_ghost = null
@@ -548,9 +561,14 @@ func cancel_drag_buff() -> void:
 	# We don't unset _is_dragging here because this might be a temporary hover-off.
 	# But if called from banish, banish handles the flags.
 
-func apply_buff_at(screen_position: Vector2, buff_effect: Resource) -> bool:
+func apply_buff_at(screen_position: Vector2, item_data: Resource) -> bool:
 	if not _is_dragging: return false # Banished
 	
+	var buff_data = item_data as BuffData
+	if not buff_data:
+		push_error("BuildManager: apply_buff_at called with invalid data type. Expected BuffData.")
+		return false
+
 	var target_tower = _get_tower_at_position(screen_position)
 	
 	# Cleanup highlight
@@ -562,10 +580,25 @@ func apply_buff_at(screen_position: Vector2, buff_effect: Resource) -> bool:
 	_current_drag_card = null
 	
 	if is_instance_valid(target_tower):
-		# Apply the buff directly
-		if target_tower.has_method("apply_buff"):
-			target_tower.apply_buff(buff_effect)
-			GlobalSignals.buff_applied.emit(buff_effect)
+		# Check Resources
+		if GameManager.player_data.currency < buff_data.gold_cost:
+			print("Not enough gold to apply buff!")
+			return false
+
+		# Create execution context
+		var context = {"tower": target_tower}
+		
+		# Execute the effect
+		if buff_data.effect:
+			buff_data.effect.execute(context)
+			
+			# Consume Resources
+			GameManager.remove_currency(buff_data.gold_cost)
+			
+			GlobalSignals.buff_applied.emit(buff_data)
+			GlobalSignals.card_effect_completed.emit()
 			return true
+		else:
+			push_error("BuffData '%s' has no effect assigned." % buff_data.display_name)
 	
 	return false

@@ -11,17 +11,21 @@ extends Control
 @onready var buff_container: VBoxContainer = %BuffContainer
 
 # Resources
+# Resources
 const SIDEBAR_BUTTON_SCRIPT = preload("res://UI/HUD/Sidebar/sidebar_button.gd")
+const SIDEBAR_BUTTON_SCENE = preload("res://UI/HUD/Sidebar/sidebar_button.tscn")
+
+@export var preview_loadout: LoadoutConfig: set = _set_preview_loadout
+
+func _set_preview_loadout(val):
+	preview_loadout = val
+	if Engine.is_editor_hint() and is_node_ready():
+		populate(preview_loadout)
 
 func _ready() -> void:
 	if Engine.is_editor_hint():
-		# Editor Preview: Ensure we don't clear manual nodes, but verify count
-		# Actually, if manual nodes exist, we might not want to touch them at all unless explicit
-		# populate(null) # Let's NOT auto-populate in editor for now to allow manual edits, 
-		# OR make populate smart enough to not destroy manual nodes.
-		# For now, let's just make sure we don't clear if there are children.
-		if relic_container.get_child_count() == 0:
-			populate(null)
+		# Editor Preview
+		populate(preview_loadout)
 		return
 	
 	# Runtime Only: Connect to GameManager
@@ -83,8 +87,8 @@ func populate(loadout: Resource) -> void:
 	# 3. Buffs
 	var buff_children = buff_container.get_children()
 	var buff_items = []
-	if loadout and "spells" in loadout:
-		buff_items = loadout.spells
+	if loadout and "buffs" in loadout: # Corrected from "spells"
+		buff_items = loadout.buffs
 		
 	var buff_count = max(buff_items.size(), 6)
 	
@@ -115,6 +119,7 @@ func _update_or_create_relic(existing_btn: Button, relic_data: RelicData, index:
 	else:
 		btn.text = "R%d" % (index + 1)
 		btn.disabled = true
+		if btn.stock_label: btn.stock_label.visible = false
 	
 	# Clean signals
 	var conns = btn.pressed.get_connections()
@@ -131,33 +136,26 @@ func _update_or_create_relic(existing_btn: Button, relic_data: RelicData, index:
 		# Only enable if we have data AND it's not used
 		btn.disabled = (relic_data == null) or GameManager.is_relic_used()
 
-func _on_relic_pressed_wrapper(): pass
-
 func _update_or_create_tower(existing_btn: Button, info) -> void:
 	var btn = existing_btn
 	if not btn:
-		btn = SIDEBAR_BUTTON_SCRIPT.new()
+		btn = SIDEBAR_BUTTON_SCENE.instantiate()
 		btn.custom_minimum_size = Vector2(100, 100)
 		tower_grid.add_child(btn)
 		
-	if btn.get_script() != SIDEBAR_BUTTON_SCRIPT:
-		btn.set_script(SIDEBAR_BUTTON_SCRIPT)
+	if not btn is SidebarButton:
+		var new_btn = SIDEBAR_BUTTON_SCENE.instantiate()
+		new_btn.custom_minimum_size = Vector2(100, 100)
+		existing_btn.replace_by(new_btn)
+		btn = new_btn
+		existing_btn.queue_free()
 		
-	var lbl = btn.get_node_or_null("StockLabel")
-	if not lbl:
-		lbl = Label.new()
-		lbl.name = "StockLabel"
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		lbl.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-		lbl.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-		lbl.position = Vector2(70, 75)
-		btn.add_child(lbl)
-	
+
 	if info:
 		var tower_data = info.data
 		var stock = info.stock
 		btn.setup_tower(tower_data)
-		lbl.text = str(stock)
+		btn.set_stock(stock)
 		btn.set_meta("tower_data", tower_data)
 		btn.disabled = false
 	else:
@@ -165,68 +163,40 @@ func _update_or_create_tower(existing_btn: Button, info) -> void:
 		btn.data = null
 		btn.disabled = true
 		btn.flat = false
-		lbl.text = ""
+		if btn.stock_label: btn.stock_label.visible = false
+
 
 func _update_or_create_buff(existing_btn: Button, buff_data: BuffData) -> void:
 	var btn = existing_btn
 	if not btn:
-		btn = SIDEBAR_BUTTON_SCRIPT.new()
-		btn.custom_minimum_size = Vector2(0, 48)
+		btn = SIDEBAR_BUTTON_SCENE.instantiate()
+		# Adjust size for buffs (e.g. smaller or different aspect ratio?)
+		# Let's keep consistent for now or use what was there (height 48)
+		# But sidebar buttons usually square? 
+		# Previous code used HBox 48 height.
+		# Let's try 64x64 or just fit width
+		btn.custom_minimum_size = Vector2(0, 64)
 		buff_container.add_child(btn)
 	
-	if btn.get_script() != SIDEBAR_BUTTON_SCRIPT:
-		btn.set_script(SIDEBAR_BUTTON_SCRIPT)
-
-	# Structure Check (HBox, Icon, Label, Bar)
-	var hbox = btn.get_node_or_null("HBox")
-	if not hbox:
-		if btn.get_child_count() > 0:
-			hbox = btn.get_child(0)
-			if not hbox is HBoxContainer: hbox = null
-		if not hbox:
-			hbox = HBoxContainer.new()
-			hbox.name = "HBox"
-			hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			hbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-			btn.add_child(hbox)
-
-	var icon_rect = hbox.get_node_or_null("Icon")
-	if not icon_rect:
-		icon_rect = TextureRect.new()
-		icon_rect.name = "Icon"
-		icon_rect.custom_minimum_size = Vector2(48, 48)
-		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		hbox.add_child(icon_rect)
-		
-	var lbl = hbox.get_node_or_null("Label")
-	if not lbl:
-		lbl = Label.new()
-		lbl.name = "Label"
-		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		hbox.add_child(lbl)
-		
-	var prog = hbox.get_node_or_null("CooldownBar")
-	if not prog:
-		prog = ProgressBar.new()
-		prog.name = "CooldownBar"
-		prog.show_percentage = false
-		prog.custom_minimum_size = Vector2(100, 10)
-		prog.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		prog.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		hbox.add_child(prog)
+	if not btn is SidebarButton:
+		var new_btn = SIDEBAR_BUTTON_SCENE.instantiate()
+		new_btn.custom_minimum_size = Vector2(0, 64)
+		existing_btn.replace_by(new_btn)
+		btn = new_btn
+		existing_btn.queue_free()
 
 	if buff_data:
 		btn.setup_buff(buff_data)
-		lbl.text = buff_data.display_name
-		if buff_data.icon:
-			icon_rect.texture = buff_data.icon
 		btn.disabled = false
 	else:
-		lbl.text = "Empty Slot"
+		btn.text = "Empty"
+		btn.icon = null
 		btn.data = null
 		btn.disabled = true
+		# Ensure labels are hidden
+
+		if btn.buff_cost_label: btn.buff_cost_label.visible = false
+		if btn.stock_label: btn.stock_label.visible = false
 
 func _on_loadout_stock_changed(tower_data: TowerData, new_stock: int) -> void:
 	for child in tower_grid.get_children():
@@ -236,23 +206,14 @@ func _on_loadout_stock_changed(tower_data: TowerData, new_stock: int) -> void:
 			if child is Button:
 				child.disabled = (new_stock <= 0)
 
-func _on_buff_applied(buff_effect: BuffEffectStandard) -> void:
-	# Find matching button by checking if the effect matches
-	# This is tricky because the signal passes the Effect instance, but the button holds Data.
-	# We need a way to link them, or just search by type if unique?
-	# Better: The signal should probably pass the Data, but the Effect is what executes.
-	# For now, let's look for a button whose data.effect matches the effect's script or properties?
-	# Or, if we instantiate effects, we can't match instances.
-	# Fallback: Just trigger visual on the first matching buff type?
+func _on_buff_applied(buff_data: BuffData) -> void:
+	# Find matching button by data reference
 	for child in buff_container.get_children():
-		var data = child.get("data") as BuffData
-		if data and data.effect:
-			# Compare script/resource
-			if data.effect.get_script() == buff_effect.get_script():
-				# Close enough for prototype
-				var bar = child.find_child("CooldownBar", true, false)
-				if bar and bar is ProgressBar:
-					_start_cooldown_visual(bar, data.cooldown)
+		var btn_data = child.get("data") as BuffData
+		if btn_data == buff_data:
+			if child.has_method("show_cooldown"):
+				child.show_cooldown(buff_data.cooldown)
+			return
 
 func _on_relic_pressed(btn: Button) -> void:
 	var data = btn.data as RelicData

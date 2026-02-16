@@ -7,11 +7,13 @@
 [ext_resource type="Resource" uid="uid://cmisfewa516ij" path="res://Config/Loadouts/Items/Buffs/buff_slow.tres" id="4_buff_slow"]
 [ext_resource type="Script" uid="uid://t3mvxe5km66p" path="res://Core/Data/Loadout/relic_data.gd" id="4_e0l3n"]
 [ext_resource type="Resource" uid="uid://6g7ltfri23b8" path="res://Config/Towers/tweeter_tower_data.tres" id="4_i1jtn"]
+[ext_resource type="Resource" uid="uid://bojj6xdad27bq" path="res://Config/Towers/archer_tower_data.tres" id="8_e0l3n"]
 
 [resource]
 script = ExtResource("1_loadout")
 towers = Dictionary[ExtResource("3_5l5xt"), int]({
-ExtResource("4_i1jtn"): 4
+ExtResource("4_i1jtn"): 4,
+ExtResource("8_e0l3n"): 3
 })
 buffs = Array[ExtResource("1_jvtof")]([ExtResource("3_buff_speed"), ExtResource("4_buff_slow")])
 metadata/_custom_type_script = "uid://kbq4ox6nrhtt"

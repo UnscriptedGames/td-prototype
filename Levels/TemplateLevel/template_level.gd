@@ -59,6 +59,10 @@ var _spawn_timer: float = 0.0
 ## 6. Duration for individual pad animations (shrink/scale).
 @export var step6_pad_anim_duration: float = 0.5
 
+## Signals
+signal opening_sequence_started
+signal opening_sequence_finished
+
 ## Built-in Methods
 
 func _ready() -> void:
@@ -95,6 +99,23 @@ func _ready() -> void:
 	else:
 		# Ensure everything is visible if sequence is skipped
 		if maze_renderer: maze_renderer.reveal_ratio = 1.0
+		# We must defer this call until the cache is built? 
+		# No, _paths is built AFTER this block. We must defer or move cache build up.
+		# Actually, _paths and _lane_map rely on children existing.
+		# Let's see... the BFS relies on `_paths`.
+		# `_paths` is populated in Lines 104-128 (approx).
+		# This block is Lines 99-103.
+		# So `_paths` is empty here!
+		
+		# FIX: Move logic or defer call.
+		# Since _ready executes top to bottom, let's defer it to next frame to be safe, 
+		# or move cache building up?
+		# Moving cache building up is safer. 
+		# But wait, lines 104+ are just below.
+		# So if we defer call, it will be fine.
+		call_deferred("_remove_background_tiles_under_path", false)
+		
+		opening_sequence_finished.emit()
 
 	# Cache Path2D nodes using "Paths/Name" keys for quick lookup.
 	var paths_node := $Paths as Node2D
@@ -468,6 +489,8 @@ func _start_opening_sequence() -> void:
 		maze_renderer.reveal_ratio = 0.0
 		maze_renderer.transition_progress = 0.0
 	
+	opening_sequence_started.emit()
+	
 	# 2. Sequence
 	var tween = create_tween()
 	
@@ -527,9 +550,13 @@ func _start_dissolve_sequence() -> void:
 	tween.tween_callback(func():
 		maze_renderer.transition_layer_path = NodePath()
 		maze_renderer.reveal_mode = maze_renderer.RevealMode.LINEAR # Reset for gameplay
+		opening_sequence_finished.emit()
 	)
 
 func _start_path_flow_dissolve() -> void:
+	_remove_background_tiles_under_path(true)
+
+func _remove_background_tiles_under_path(animate: bool = true) -> void:
 	if not background_renderer or not maze_renderer:
 		return
 		
@@ -579,7 +606,13 @@ func _start_path_flow_dissolve() -> void:
 				visited[next] = current_dist + 1
 				queue.append(next)
 				
-	# 4. Animate
+	# 4. Animate or Instant
+	
+	if not animate:
+		for cell in visited.keys():
+			background_renderer.animate_hide_cell(cell, 0.0)
+		return
+	
 	# Create a tween to hide background cells along the path
 	var tween = create_tween()
 	
@@ -592,15 +625,6 @@ func _start_path_flow_dissolve() -> void:
 	for cell in visited.keys():
 		var dist = visited[cell]
 		var delay = float(dist) * step_delay
-		
-		# We can't use tween_callback with specific delays easily in a loop without a parallel/sequence mess
-		# Better to use tween_method or just a timer?
-		# Actually, tween.parallel() with tween_callback doesn't allow individual delays easily.
-		# But we can use a separate purely parallel tween structure or just schedule specific calls.
-		
-		# Best approach for massive number of calls:
-		# Use a method that takes a time and checks against elapsed? No.
-		# Use typical godot trick: tween.parallel().tween_callback().set_delay()
 		
 		# Duration for individual cell shrink
 		var shrink_duration = step6_pad_anim_duration

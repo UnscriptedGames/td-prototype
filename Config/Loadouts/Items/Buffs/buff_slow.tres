@@ -13,7 +13,8 @@ status_effects = Array[ExtResource("4_status")]([ExtResource("5_slow")])
 
 [resource]
 script = ExtResource("1_buffdata")
-gold_cost = 10
+cooldown = 5.0
+gold_cost = 5
 effect = SubResource("Resource_effect")
 display_name = "Slow Ammo"
 icon = ExtResource("3_icon")

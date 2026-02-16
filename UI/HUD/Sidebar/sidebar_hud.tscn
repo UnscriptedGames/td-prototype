@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://ds8umjuw8hog5"]
 
 [ext_resource type="Script" uid="uid://7e4udq4ay12s" path="res://UI/HUD/Sidebar/sidebar_hud.gd" id="1_sidebar"]
-[ext_resource type="Script" uid="uid://5ouc3ovyc52m" path="res://UI/HUD/Sidebar/sidebar_button.gd" id="2_sidebar_btn"]
+[ext_resource type="PackedScene" uid="uid://dfk8x4v5y2q1w" path="res://UI/HUD/Sidebar/sidebar_button.tscn" id="2_sidebar_btn"]
 [ext_resource type="Theme" uid="uid://dpov18qpoqhlb" path="res://UI/Themes/daw_theme.tres" id="3_theme"]
 
-[node name="SidebarHUD" type="Control" unique_id=1985774278]
+[node name="SidebarHUD" type="Control" unique_id=2042718903]
 custom_minimum_size = Vector2(320, 0)
 layout_mode = 3
 anchors_preset = 9
@@ -14,7 +14,7 @@ grow_vertical = 2
 theme = ExtResource("3_theme")
 script = ExtResource("1_sidebar")
 
-[node name="Background" type="Panel" parent="." unique_id=483801662]
+[node name="Background" type="Panel" parent="." unique_id=72761720]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,7 +23,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"SideBarPanel"
 
-[node name="DesignGuide" type="ReferenceRect" parent="." unique_id=1917795478]
+[node name="DesignGuide" type="ReferenceRect" parent="." unique_id=1876530237]
 editor_description = "Visual guide for editor only"
 layout_mode = 1
 anchors_preset = 15
@@ -36,7 +36,7 @@ mouse_filter = 2
 border_color = Color(0.988235, 0.415686, 0.0352941, 0.439216)
 border_width = 2.0
 
-[node name="Layout" type="VBoxContainer" parent="." unique_id=19484168]
+[node name="Layout" type="VBoxContainer" parent="." unique_id=909875305]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -45,456 +45,183 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 10
 
-[node name="RelicLabelMargin" type="MarginContainer" parent="Layout" unique_id=779841509]
+[node name="RelicLabelMargin" type="MarginContainer" parent="Layout" unique_id=128433836]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 15
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 5
 
-[node name="Label" type="Label" parent="Layout/RelicLabelMargin" unique_id=1987742435]
+[node name="Label" type="Label" parent="Layout/RelicLabelMargin" unique_id=2033400554]
 layout_mode = 2
 text = "Relics"
 horizontal_alignment = 1
 
-[node name="RelicSeparator" type="MarginContainer" parent="Layout" unique_id=245097303]
+[node name="RelicSeparator" type="MarginContainer" parent="Layout" unique_id=314413154]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 0
 
-[node name="HSeparator" type="HSeparator" parent="Layout/RelicSeparator" unique_id=1177897920]
+[node name="HSeparator" type="HSeparator" parent="Layout/RelicSeparator" unique_id=1595531182]
 layout_mode = 2
 
-[node name="RelicMargin" type="MarginContainer" parent="Layout" unique_id=2080777473]
+[node name="RelicMargin" type="MarginContainer" parent="Layout" unique_id=147806880]
 layout_mode = 2
-theme_override_constants/margin_left = 10
+theme_override_constants/margin_left = 18
 theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
+theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 5
 
-[node name="RelicContainer" type="HBoxContainer" parent="Layout/RelicMargin" unique_id=1020838610]
+[node name="RelicContainer" type="HBoxContainer" parent="Layout/RelicMargin" unique_id=2053909547]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 18
 alignment = 1
 
-[node name="Relic1" type="Button" parent="Layout/RelicMargin/RelicContainer" unique_id=1037229797]
+[node name="Relic1" parent="Layout/RelicMargin/RelicContainer" unique_id=803097779 instance=ExtResource("2_sidebar_btn")]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 text = "R1"
-script = ExtResource("2_sidebar_btn")
 
-[node name="Relic2" type="Button" parent="Layout/RelicMargin/RelicContainer" unique_id=896706697]
+[node name="Relic2" parent="Layout/RelicMargin/RelicContainer" unique_id=1382382770 instance=ExtResource("2_sidebar_btn")]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 text = "R2"
-script = ExtResource("2_sidebar_btn")
 
-[node name="Relic3" type="Button" parent="Layout/RelicMargin/RelicContainer" unique_id=1031206355]
+[node name="Relic3" parent="Layout/RelicMargin/RelicContainer" unique_id=1487435513 instance=ExtResource("2_sidebar_btn")]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 text = "R3"
-script = ExtResource("2_sidebar_btn")
 
-[node name="TowerLabelMargin" type="MarginContainer" parent="Layout" unique_id=850732385]
+[node name="TowerLabelMargin" type="MarginContainer" parent="Layout" unique_id=924634891]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 5
 
-[node name="Label" type="Label" parent="Layout/TowerLabelMargin" unique_id=948942277]
+[node name="Label" type="Label" parent="Layout/TowerLabelMargin" unique_id=574862757]
 layout_mode = 2
 text = "Towers"
 horizontal_alignment = 1
 
-[node name="TowerSeparator" type="MarginContainer" parent="Layout" unique_id=1599723825]
+[node name="TowerSeparator" type="MarginContainer" parent="Layout" unique_id=1614860997]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="HSeparator" type="HSeparator" parent="Layout/TowerSeparator" unique_id=260312589]
+[node name="HSeparator" type="HSeparator" parent="Layout/TowerSeparator" unique_id=194872291]
 layout_mode = 2
 
-[node name="TowerMargin" type="MarginContainer" parent="Layout" unique_id=555103748]
+[node name="TowerMargin" type="MarginContainer" parent="Layout" unique_id=1046976503]
 layout_mode = 2
 theme_override_constants/margin_left = 18
-theme_override_constants/margin_right = 10
+theme_override_constants/margin_right = 18
 
-[node name="TowerGrid" type="GridContainer" parent="Layout/TowerMargin" unique_id=1204540275]
+[node name="TowerGrid" type="GridContainer" parent="Layout/TowerMargin" unique_id=1855889378]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/h_separation = 18
 theme_override_constants/v_separation = 18
 columns = 2
 
-[node name="Tower1" type="Button" parent="Layout/TowerMargin/TowerGrid" unique_id=405977983]
-custom_minimum_size = Vector2(133, 100)
-layout_mode = 2
-text = "T"
-expand_icon = true
-script = ExtResource("2_sidebar_btn")
-
-[node name="StockLabel" type="Label" parent="Layout/TowerMargin/TowerGrid/Tower1" unique_id=90487592]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -43.0
-offset_top = -35.0
-offset_right = -13.0
-offset_bottom = -10.0
-grow_horizontal = 0
-grow_vertical = 0
-text = "0"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Tower2" type="Button" parent="Layout/TowerMargin/TowerGrid" unique_id=795905919]
-custom_minimum_size = Vector2(133, 100)
-layout_mode = 2
-text = "T"
-expand_icon = true
-script = ExtResource("2_sidebar_btn")
-
-[node name="StockLabel" type="Label" parent="Layout/TowerMargin/TowerGrid/Tower2" unique_id=2037503842]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -43.0
-offset_top = -35.0
-offset_right = -13.0
-offset_bottom = -10.0
-grow_horizontal = 0
-grow_vertical = 0
-text = "0"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Tower3" type="Button" parent="Layout/TowerMargin/TowerGrid" unique_id=1074368428]
+[node name="Tower1" parent="Layout/TowerMargin/TowerGrid" unique_id=229961523 instance=ExtResource("2_sidebar_btn")]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-text = "T"
-expand_icon = true
-script = ExtResource("2_sidebar_btn")
+disabled = true
 
-[node name="StockLabel" type="Label" parent="Layout/TowerMargin/TowerGrid/Tower3" unique_id=1187014123]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -43.0
-offset_top = -35.0
-offset_right = -13.0
-offset_bottom = -10.0
-grow_horizontal = 0
-grow_vertical = 0
-text = "0"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Tower4" type="Button" parent="Layout/TowerMargin/TowerGrid" unique_id=1720286800]
+[node name="Tower2" parent="Layout/TowerMargin/TowerGrid" unique_id=2109474580 instance=ExtResource("2_sidebar_btn")]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-text = "T"
-expand_icon = true
-script = ExtResource("2_sidebar_btn")
+disabled = true
 
-[node name="StockLabel" type="Label" parent="Layout/TowerMargin/TowerGrid/Tower4" unique_id=299162263]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -43.0
-offset_top = -35.0
-offset_right = -13.0
-offset_bottom = -10.0
-grow_horizontal = 0
-grow_vertical = 0
-text = "0"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Tower5" type="Button" parent="Layout/TowerMargin/TowerGrid" unique_id=318427563]
+[node name="Tower3" parent="Layout/TowerMargin/TowerGrid" unique_id=1238563514 instance=ExtResource("2_sidebar_btn")]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-text = "T"
-expand_icon = true
-script = ExtResource("2_sidebar_btn")
+disabled = true
 
-[node name="StockLabel" type="Label" parent="Layout/TowerMargin/TowerGrid/Tower5" unique_id=1575516239]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -43.0
-offset_top = -35.0
-offset_right = -13.0
-offset_bottom = -10.0
-grow_horizontal = 0
-grow_vertical = 0
-text = "0"
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="Tower6" type="Button" parent="Layout/TowerMargin/TowerGrid" unique_id=1916589366]
+[node name="Tower4" parent="Layout/TowerMargin/TowerGrid" unique_id=1315053022 instance=ExtResource("2_sidebar_btn")]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-text = "T"
-expand_icon = true
-script = ExtResource("2_sidebar_btn")
+disabled = true
 
-[node name="StockLabel" type="Label" parent="Layout/TowerMargin/TowerGrid/Tower6" unique_id=824169782]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -43.0
-offset_top = -35.0
-offset_right = -13.0
-offset_bottom = -10.0
-grow_horizontal = 0
-grow_vertical = 0
-text = "0"
-horizontal_alignment = 2
-vertical_alignment = 2
+[node name="Tower5" parent="Layout/TowerMargin/TowerGrid" unique_id=898847702 instance=ExtResource("2_sidebar_btn")]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+disabled = true
 
-[node name="BuffLabelMargin" type="MarginContainer" parent="Layout" unique_id=374582874]
+[node name="Tower6" parent="Layout/TowerMargin/TowerGrid" unique_id=1394230303 instance=ExtResource("2_sidebar_btn")]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+disabled = true
+
+[node name="BuffLabelMargin" type="MarginContainer" parent="Layout" unique_id=1343397168]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 5
 
-[node name="Label" type="Label" parent="Layout/BuffLabelMargin" unique_id=586054950]
+[node name="Label" type="Label" parent="Layout/BuffLabelMargin" unique_id=1485924018]
 layout_mode = 2
 text = "Buffs"
 horizontal_alignment = 1
 
-[node name="BuffSeparator" type="MarginContainer" parent="Layout" unique_id=1259129984]
+[node name="BuffSeparator" type="MarginContainer" parent="Layout" unique_id=1579930519]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="HSeparator" type="HSeparator" parent="Layout/BuffSeparator" unique_id=1270244830]
+[node name="HSeparator" type="HSeparator" parent="Layout/BuffSeparator" unique_id=617823827]
 layout_mode = 2
 
-[node name="BuffMargin" type="MarginContainer" parent="Layout" unique_id=1704922485]
+[node name="BuffMargin" type="MarginContainer" parent="Layout" unique_id=1808850358]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_right = 10
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 10
 
-[node name="BuffContainer" type="VBoxContainer" parent="Layout/BuffMargin" unique_id=1356675852]
+[node name="BuffContainer" type="VBoxContainer" parent="Layout/BuffMargin" unique_id=1448487458]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Buff1" type="Button" parent="Layout/BuffMargin/BuffContainer" unique_id=1007658309]
+[node name="Buff1" parent="Layout/BuffMargin/BuffContainer" unique_id=1120250884 instance=ExtResource("2_sidebar_btn")]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-script = ExtResource("2_sidebar_btn")
+disabled = true
+text = "Empty"
 
-[node name="HBox" type="HBoxContainer" parent="Layout/BuffMargin/BuffContainer/Buff1" unique_id=1919112095]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="Icon" type="TextureRect" parent="Layout/BuffMargin/BuffContainer/Buff1/HBox" unique_id=1158994156]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-mouse_filter = 2
-expand_mode = 1
-
-[node name="Label" type="Label" parent="Layout/BuffMargin/BuffContainer/Buff1/HBox" unique_id=1357861643]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Empty Slot"
-
-[node name="CooldownBar" type="ProgressBar" parent="Layout/BuffMargin/BuffContainer/Buff1/HBox" unique_id=732198869]
-custom_minimum_size = Vector2(100, 10)
-layout_mode = 2
-size_flags_vertical = 4
-mouse_filter = 2
-show_percentage = false
-
-[node name="Buff2" type="Button" parent="Layout/BuffMargin/BuffContainer" unique_id=1119110540]
+[node name="Buff2" parent="Layout/BuffMargin/BuffContainer" unique_id=1016582254 instance=ExtResource("2_sidebar_btn")]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-script = ExtResource("2_sidebar_btn")
+disabled = true
+text = "Empty"
 
-[node name="HBox" type="HBoxContainer" parent="Layout/BuffMargin/BuffContainer/Buff2" unique_id=771050675]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="Icon" type="TextureRect" parent="Layout/BuffMargin/BuffContainer/Buff2/HBox" unique_id=1754949538]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-mouse_filter = 2
-expand_mode = 1
-
-[node name="Label" type="Label" parent="Layout/BuffMargin/BuffContainer/Buff2/HBox" unique_id=2049654653]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Empty Slot"
-
-[node name="CooldownBar" type="ProgressBar" parent="Layout/BuffMargin/BuffContainer/Buff2/HBox" unique_id=1892546874]
-custom_minimum_size = Vector2(100, 10)
-layout_mode = 2
-size_flags_vertical = 4
-mouse_filter = 2
-show_percentage = false
-
-[node name="Buff3" type="Button" parent="Layout/BuffMargin/BuffContainer" unique_id=1286555970]
+[node name="Buff3" parent="Layout/BuffMargin/BuffContainer" unique_id=852748825 instance=ExtResource("2_sidebar_btn")]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-script = ExtResource("2_sidebar_btn")
+disabled = true
+text = "Empty"
 
-[node name="HBox" type="HBoxContainer" parent="Layout/BuffMargin/BuffContainer/Buff3" unique_id=417885137]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="Icon" type="TextureRect" parent="Layout/BuffMargin/BuffContainer/Buff3/HBox" unique_id=735673424]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-mouse_filter = 2
-expand_mode = 1
-
-[node name="Label" type="Label" parent="Layout/BuffMargin/BuffContainer/Buff3/HBox" unique_id=1558433861]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Empty Slot"
-
-[node name="CooldownBar" type="ProgressBar" parent="Layout/BuffMargin/BuffContainer/Buff3/HBox" unique_id=212149720]
-custom_minimum_size = Vector2(100, 10)
-layout_mode = 2
-size_flags_vertical = 4
-mouse_filter = 2
-show_percentage = false
-
-[node name="Buff4" type="Button" parent="Layout/BuffMargin/BuffContainer" unique_id=168818037]
+[node name="Buff4" parent="Layout/BuffMargin/BuffContainer" unique_id=464691629 instance=ExtResource("2_sidebar_btn")]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-script = ExtResource("2_sidebar_btn")
+disabled = true
+text = "Empty"
 
-[node name="HBox" type="HBoxContainer" parent="Layout/BuffMargin/BuffContainer/Buff4" unique_id=1025427923]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="Icon" type="TextureRect" parent="Layout/BuffMargin/BuffContainer/Buff4/HBox" unique_id=909732038]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-mouse_filter = 2
-expand_mode = 1
-
-[node name="Label" type="Label" parent="Layout/BuffMargin/BuffContainer/Buff4/HBox" unique_id=557985947]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Empty Slot"
-
-[node name="CooldownBar" type="ProgressBar" parent="Layout/BuffMargin/BuffContainer/Buff4/HBox" unique_id=503326291]
-custom_minimum_size = Vector2(100, 10)
-layout_mode = 2
-size_flags_vertical = 4
-mouse_filter = 2
-show_percentage = false
-
-[node name="Buff5" type="Button" parent="Layout/BuffMargin/BuffContainer" unique_id=634417639]
+[node name="Buff5" parent="Layout/BuffMargin/BuffContainer" unique_id=591320484 instance=ExtResource("2_sidebar_btn")]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-script = ExtResource("2_sidebar_btn")
+disabled = true
+text = "Empty"
 
-[node name="HBox" type="HBoxContainer" parent="Layout/BuffMargin/BuffContainer/Buff5" unique_id=1545815248]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="Icon" type="TextureRect" parent="Layout/BuffMargin/BuffContainer/Buff5/HBox" unique_id=1202442168]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-mouse_filter = 2
-expand_mode = 1
-
-[node name="Label" type="Label" parent="Layout/BuffMargin/BuffContainer/Buff5/HBox" unique_id=1053577193]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Empty Slot"
-
-[node name="CooldownBar" type="ProgressBar" parent="Layout/BuffMargin/BuffContainer/Buff5/HBox" unique_id=1356092476]
-custom_minimum_size = Vector2(100, 10)
-layout_mode = 2
-size_flags_vertical = 4
-mouse_filter = 2
-show_percentage = false
-
-[node name="Buff6" type="Button" parent="Layout/BuffMargin/BuffContainer" unique_id=1994476066]
+[node name="Buff6" parent="Layout/BuffMargin/BuffContainer" unique_id=178423355 instance=ExtResource("2_sidebar_btn")]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-script = ExtResource("2_sidebar_btn")
-
-[node name="HBox" type="HBoxContainer" parent="Layout/BuffMargin/BuffContainer/Buff6" unique_id=1620138113]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="Icon" type="TextureRect" parent="Layout/BuffMargin/BuffContainer/Buff6/HBox" unique_id=362096189]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-mouse_filter = 2
-expand_mode = 1
-
-[node name="Label" type="Label" parent="Layout/BuffMargin/BuffContainer/Buff6/HBox" unique_id=1403377307]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Empty Slot"
-
-[node name="CooldownBar" type="ProgressBar" parent="Layout/BuffMargin/BuffContainer/Buff6/HBox" unique_id=1682759060]
-custom_minimum_size = Vector2(100, 10)
-layout_mode = 2
-size_flags_vertical = 4
-mouse_filter = 2
-show_percentage = false
+disabled = true
+text = "Empty"

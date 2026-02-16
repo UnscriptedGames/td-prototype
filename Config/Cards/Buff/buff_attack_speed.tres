@@ -7,7 +7,6 @@
 
 [sub_resource type="Resource" id="Resource_un1fe"]
 script = ExtResource("1_fgppg")
-cost = 5
 duration = 10.0
 fire_rate_increase = 5.0
 metadata/_custom_type_script = "uid://clgj0ibwjjwrv"
@@ -16,4 +15,6 @@ metadata/_custom_type_script = "uid://clgj0ibwjjwrv"
 script = ExtResource("4_kvu2o")
 front_texture = ExtResource("3_55fmx")
 effect = SubResource("Resource_un1fe")
+gold_cost = 5
+cooldown = 10.0
 metadata/_custom_type_script = "uid://drvh5madwcotk"

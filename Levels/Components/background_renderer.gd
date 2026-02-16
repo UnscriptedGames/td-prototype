@@ -159,6 +159,10 @@ func animate_hide_cell(coords: Vector2i, duration: float = 0.5) -> void:
 	if _hidden_cells.has(coords):
 		return
 		
+	if duration <= 0.001:
+		set_cell_hidden(coords, true)
+		return
+		
 	# Create a tween to shrink the cell
 	var tween = create_tween()
 	# Changed to Cubic Out for smoother, more visible shrinking (responsive to duration)

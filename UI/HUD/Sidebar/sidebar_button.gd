@@ -1,3 +1,4 @@
+@tool
 class_name SidebarButton
 extends Button
 
@@ -10,14 +11,62 @@ func setup_tower(tower_data: TowerData) -> void:
 	icon = tower_data.icon
 	text = ""
 	tooltip_text = tower_data.display_name
-	expand_icon = true
-	icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+@onready var buff_cost_label: Label = $BuffCostLabel
+@onready var stock_label: Label = $StockLabel
+@onready var cooldown_overlay: TextureProgressBar = $CooldownOverlay
+
+const COOLDOWN_TINT = Color(0, 0, 0, 0.75)
+
+func _ready() -> void:
+	# Ensure overlay is set up correctly (in case scene defaults are different)
+	if cooldown_overlay:
+		cooldown_overlay.visible = false
+		cooldown_overlay.fill_mode = TextureProgressBar.FILL_LEFT_TO_RIGHT
+		
+		# Create the texture if not present (runtime generation for simple solid color)
+		if not cooldown_overlay.texture_progress:
+			var img = Image.create(1, 1, false, Image.FORMAT_RGBA8)
+			img.fill(Color.WHITE)
+			cooldown_overlay.texture_progress = ImageTexture.create_from_image(img)
+			
+		cooldown_overlay.tint_progress = COOLDOWN_TINT
+
+# Old setup_tower removed
+
+	
+	# Hide buff labels
+	if buff_cost_label: buff_cost_label.visible = false
+	
+	# Show stock label (will need to update value separate via set_stock)
+	if stock_label:
+		stock_label.visible = true
+		stock_label.text = "0" # Default
+
+func set_stock(amount: int) -> void:
+	if stock_label:
+		stock_label.text = str(amount)
 
 func setup_buff(buff_data: BuffData) -> void:
 	data = buff_data
 	type = "buff"
-	# Icon is handled by parent container (SidebarHUD) for buffs currently,
-	# but we should support it here too.
+	
+	# Use icon if available, otherwise just text
+	if buff_data.icon:
+		icon = buff_data.icon
+		expand_icon = true
+		icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	
+	# Always set text to display name (user request)
+	text = buff_data.display_name
+	
+	tooltip_text = "%s\n%s" % [buff_data.display_name, buff_data.description]
+	
+	if buff_cost_label:
+		buff_cost_label.text = str(buff_data.gold_cost)
+		buff_cost_label.visible = true
+		
+	if stock_label:
+		stock_label.visible = false
 
 func setup_relic(relic_data: RelicData) -> void:
 	data = relic_data
@@ -27,10 +76,35 @@ func setup_relic(relic_data: RelicData) -> void:
 		text = ""
 	else:
 		text = "R"
+	
+	# Hide buff specific labels
+	if buff_cost_label: buff_cost_label.visible = false
+	if stock_label: stock_label.visible = false
+
+var _is_on_cooldown: bool = false
+
+func show_cooldown(duration: float) -> void:
+	if not cooldown_overlay: return
+	
+	_is_on_cooldown = true
+	cooldown_overlay.max_value = 100
+	cooldown_overlay.value = 100
+	cooldown_overlay.visible = true
+	
+	var tween = create_tween()
+	tween.tween_property(cooldown_overlay, "value", 0, duration)
+	tween.tween_callback(func():
+		cooldown_overlay.visible = false
+		_is_on_cooldown = false
+		print("SidebarButton: Cooldown finished.")
+	)
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	print("SidebarButton: Drag Started")
 	if not data: return null
+	if _is_on_cooldown:
+		print("SidebarButton: Drag prevented (Cooldown active).")
+		return null
 	
 	# Create Ghost Button Preview
 	var preview = Panel.new()

@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="TowerData" format=3 uid="uid://6g7ltfri23b8"]
 
+[ext_resource type="Texture2D" uid="uid://ojmiwbm0hei0" path="res://Entities/Towers/TweeterTower/Assets/image.png" id="1_c7y3c"]
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_njmit"]
 [ext_resource type="Texture2D" uid="uid://dkobvkiebrfk2" path="res://Entities/Towers/TweeterTower/Assets/tweeter.png" id="1_olgkv"]
 [ext_resource type="Script" uid="uid://cajll6x5mfyy4" path="res://Entities/Towers/_TemplateTower/tower_level_data.gd" id="2_pcqh6"]
@@ -103,12 +104,12 @@ projectile_scene = ExtResource("3_2d21g")
 shoot_animation = "level_03_shoot"
 idle_animation = "level_03_idle"
 
-
 [resource]
 script = ExtResource("1_njmit")
-ghost_texture = ExtResource("1_olgkv")
+ghost_texture = ExtResource("1_c7y3c")
+ghost_scale = Vector2(0.1, 0.1)
 levels = Array[ExtResource("2_pcqh6")]([SubResource("Resource_pcqh6"), SubResource("Resource_ew8f0"), SubResource("Resource_adv42"), SubResource("Resource_b6eam"), SubResource("Resource_qg77t"), SubResource("Resource_euqsa"), SubResource("Resource_hbdv3")])
+tower_scene_path = "res://Entities/Towers/TweeterTower/tweeter_tower.tscn"
 display_name = "Tweeter Tower"
 icon = ExtResource("1_olgkv")
-tower_scene_path = "res://Entities/Towers/TweeterTower/tweeter_tower.tscn"
 metadata/_custom_type_script = "uid://c8knfpcb8mutu"

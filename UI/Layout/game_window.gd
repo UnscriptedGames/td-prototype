@@ -580,6 +580,36 @@ func _wire_up_level(level_instance: Node) -> void:
 		else:
 			printerr("Failed to find required level nodes for BuildManager.")
 
+	# Wire up opening sequence signals
+	if level_instance is TemplateLevel:
+		var level = level_instance as TemplateLevel
+		if not level.opening_sequence_started.is_connected(_on_opening_sequence_started):
+			level.opening_sequence_started.connect(_on_opening_sequence_started)
+		if not level.opening_sequence_finished.is_connected(_on_opening_sequence_finished):
+			level.opening_sequence_finished.connect(_on_opening_sequence_finished)
+			
+		# Check if we should lock immediately
+		if level.play_opening_sequence:
+			_set_ui_interaction(false)
+		else:
+			_set_ui_interaction(true)
+
+func _on_opening_sequence_started() -> void:
+	_set_ui_interaction(false)
+
+func _on_opening_sequence_finished() -> void:
+	_set_ui_interaction(true)
+
+func _set_ui_interaction(enabled: bool) -> void:
+	# Toggle Sidebar and Topbar interaction
+	var top_bar = $MainLayout/TopBar
+	var left_sidebar = $MainLayout/WorkspaceSplit/LeftSidebar
+	
+	if top_bar:
+		_set_container_input_state(top_bar, enabled)
+	if left_sidebar:
+		_set_container_input_state(left_sidebar, enabled)
+
 func _set_container_mouse_ignore_recursive(node: Node, allow_buttons: bool = true) -> void:
 	if node is Control:
 		# If it's a structural container (Panel, Box, Margin), ignore mouse.

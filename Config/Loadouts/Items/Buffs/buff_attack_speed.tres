@@ -12,6 +12,7 @@ fire_rate_increase = 5.0
 
 [resource]
 script = ExtResource("1_buffdata")
+gold_cost = 10
 effect = SubResource("Resource_effect")
 display_name = "Attack Speed"
 icon = ExtResource("3_icon")
