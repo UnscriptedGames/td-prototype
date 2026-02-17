@@ -253,24 +253,26 @@ Towers are the player's primary defence. Each is themed around audio/music produ
 equipment.
 
 ### Confirmed Concepts
-| Tower | Projectile | Notes |
-|:---|:---|:---|
-| **Record Player** | Vinyl records | Physical spinning disc projectile |
-| **Speaker Tower** | AoE pulse sound waves | Area-of-effect damage |
-| **Vacuum Tube** | Capacitor charges | Likely single-target, high damage |
+| Tower | Archetype | Attack | Notes |
+|:---|:---|:---|:---|
+| **Turntable** | Projectile DPS | Vinyl records | Workhorse tower. Formerly "Record Player." |
+| **Monitor** | AoE Damage | Sound wave pulses | Formerly "Speaker Tower." |
+| **Subwoofer** | Crowd Control | Bass frequency slow | Enabler — minimal damage, strong slow. |
+| **Compressor** | Anti-Tank | % amplitude reduction | Formerly "Vacuum Tube" (reframed as device). |
+| **Delay Pedal** | Damage-over-Time | Echo damage ticks | Tag-and-forget sustained pressure. |
+| **Tuning Fork** | Burst / Sniper | Resonance strike | Slow charge, massive single hit. |
+| **Equalizer** | Debuff / Support | Frequency filtering | Amplifies other towers' damage. |
+| **Theremin** | Sustained Beam | Ramp-up laser | Damage increases with lock-on time. |
 
 ### Design Direction
-- Towers should evoke **real audio equipment** — turntables, amplifiers, mixers,
-	synthesisers, microphones, etc.
-- Attack types should feel like natural extensions of the equipment (a speaker *pulses*,
-	a turntable *spins* discs, a microphone *feeds back*).
-- Additional tower concepts will be developed collaboratively as design progresses.
-
-> [!TIP]
-> Future tower ideas to explore: Mixer Tower (debuff/slow via EQ filtering), Synthesiser
-> Tower (configurable waveform attacks), Microphone Tower (feedback loop damage-over-time),
-> Compressor Tower (reduces enemy "amplitude"/health faster at low HP), Delay Pedal Tower
-> (echo/repeat attacks).
+- **Roster Target:** 6–8 unique towers, each filling a distinct TD archetype.
+- Towers must pass the litmus test: the attack behaviour should feel like a natural
+	extension of the equipment.
+- **Upgrade System:** 3 tiers × 2 choices per tier. Visual changes are per-tier
+	(not per-choice) to manage art budget.
+- Detailed designs are in individual `Knowledge/tower_design_*.md` documents.
+- See `Knowledge/towers_brief.md` for the full roster, synergy map, and trimming
+	guidance.
 
 ---
 
@@ -316,7 +318,10 @@ future design sessions and playtesting:
 	separate upgrade currency?
 - [ ] **Unlock Economy:** Full mapping of what unlocks where (towers, buffs, relics, AP).
 - [ ] **Enemy Variants:** Detailed design for shielded, resistant, and other enemy types.
-- [ ] **Tower Roster:** Full list of tower types, stats, and upgrade paths.
+- [x] **Tower Roster:** 8 tower concepts confirmed. See `Knowledge/towers_brief.md`.
+	Individual tower specs in `Knowledge/tower_design_*.md`. Stats TBD via playtesting.
+- [ ] **Upgrade Branching:** Can the player mix upgrade choices across tiers (e.g.,
+	Tier 1A + Tier 2B), or must they commit to a single path?
 - [ ] **Relic Design:** Specific passive/active ability designs for each relic.
 - [ ] **Buff Design:** Specific buff effects, costs, and cooldown values.
 - [ ] **Final Stage Mechanics:** Does the custom song selection affect gameplay, or is it
