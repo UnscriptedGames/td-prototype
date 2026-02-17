@@ -7,7 +7,7 @@ var build_manager: BuildManager
 var data: TowerData
 var path_layer: TileMapLayer
 var highlight_layer: TileMapLayer
-var highlight_ids: Dictionary
+var highlight_ids: Dictionary = {}
 
 ## Node References
 @onready var sprite: Sprite2D = $Sprite
@@ -46,11 +46,6 @@ func initialize(
 		push_error("GhostTower is missing its TowerData!")
 		queue_free()
 		return
-
-	sprite.texture = data.ghost_texture # Apply the ghost sprite texture.
-	sprite.position = data.visual_offset # Apply any visual offset to line up with the tile centre.
-	_generate_range_polygon() # Precompute the range polygon so preview renders immediately.
-
 
 	sprite.texture = data.ghost_texture # Apply the ghost sprite texture.
 	sprite.position = data.visual_offset # Apply any visual offset to line up with the tile centre.
@@ -115,7 +110,6 @@ func get_range_points() -> PackedVector2Array:
 	return _range_points
 
 
-## Calculates and sets the points for the range polygon.
 ## Calculates and sets the points for the range polygon.
 func _generate_range_polygon() -> void:
 	var points: PackedVector2Array = []

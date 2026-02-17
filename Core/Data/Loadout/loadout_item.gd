@@ -6,6 +6,7 @@ extends Resource
 
 # --- EXPORT VARIABLES ---
 
+@export_group("Display")
 ## The user-facing name of the item.
 @export var display_name: String = "Item Name"
 
@@ -15,6 +16,7 @@ extends Resource
 ## A brief description for tooltips.
 @export_multiline var description: String = ""
 
+@export_group("Settings")
 ## The "Loadout Points" required to equip this item.
 @export var allocation_cost: int = 10
 

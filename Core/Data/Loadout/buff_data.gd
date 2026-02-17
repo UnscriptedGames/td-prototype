@@ -5,6 +5,7 @@ extends LoadoutItem
 
 # --- EXPORT VARIABLES ---
 
+@export_group("Buff Settings")
 ## Time in seconds before the buff can be used again.
 @export var cooldown: float = 10.0
 

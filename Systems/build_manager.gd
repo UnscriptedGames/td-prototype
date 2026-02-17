@@ -3,14 +3,17 @@ class_name BuildManager
 extends Node2D
 
 ## Manages the tower building process, including ghost towers and placement validation.
+##
+## Handles the "Ghost" tower during placement, validating grid coordinates against
+## the path layer, and managing drag-and-drop interactions for both towers and buffs.
 
-signal tower_selected
+signal tower_selected(tower: TemplateTower)
 signal tower_deselected
-# REMOVED old tower_placed signal
 
 enum State {VIEWING, BUILDING_TOWER, TOWER_SELECTED}
 
 const GHOST_TOWER_SCENE = preload("res://Entities/Towers/_GhostTower/ghost_tower.tscn")
+
 # IDs for the selected tower's permanent highlights
 @export var selected_tower_id: int = -1
 @export var selected_range_id: int = -1
@@ -24,20 +27,21 @@ const GHOST_TOWER_SCENE = preload("res://Entities/Towers/_GhostTower/ghost_tower
 var state: State = State.VIEWING
 var _ghost_tower: Node2D
 var _selected_tower: TemplateTower
-var _is_placing: bool = false ## NEW: Prevents cancel signal on successful placement.
-var _occupied_build_tiles: Dictionary = {}
-var _pending_tower_scene: PackedScene ## Coupelled from TowerData to avoid circular dependencies.
+var _is_placing: bool = false ## Prevents cancel signal on successful placement.
+var _occupied_build_tiles: Dictionary[Vector2i, Node2D] = {}
+var _pending_tower_scene: PackedScene ## Decoupled from TowerData to avoid circular dependencies.
 
 ## Node References
-# These are now dynamic to support scene changing.
 var towers_container: Node2D
 var highlight_layer: TileMapLayer
 var path_layer: TileMapLayer
 
 var _bound_viewport: Viewport
 var _bound_container: Control
-var _is_dragging: bool = false ## NEW: Track drag state to prevent auto-exit
-var _highlighted_tower_for_buff: TemplateTower = null ## NEW: Track tower under mouse for buffing
+var _is_dragging: bool = false ## Track drag state to prevent auto-exit
+var _highlighted_tower_for_buff: TemplateTower = null ## Track tower under mouse for buffing
+var _build_mode_grace_frames: int = 0
+
 
 ## Called when the node enters the scene tree.
 func _ready() -> void:
@@ -53,7 +57,7 @@ func _ready() -> void:
 
 ## Binds the manager to a specific viewport for physics queries.
 ## @param viewport: The SubViewport containing the game world.
-## @param container: The Control (SubViewportContainer) holding the viewport, used for coordinate offsets.
+## @param container: The Control (SubViewportContainer) holding the viewport.
 func bind_to_viewport(viewport: Viewport, container: Control) -> void:
 	_bound_viewport = viewport
 	_bound_container = container
@@ -61,6 +65,9 @@ func bind_to_viewport(viewport: Viewport, container: Control) -> void:
 
 
 ## Updates references to level-specific nodes (called when level loads).
+## @param new_path_layer: The TileMapLayer used for path/grid validation.
+## @param new_highlight_layer: The TileMapLayer used for visual feedback.
+## @param new_towers_container: The Node2D parent for tower instances.
 func update_level_references(new_path_layer: TileMapLayer, new_highlight_layer: TileMapLayer, new_towers_container: Node2D) -> void:
 	path_layer = new_path_layer
 	highlight_layer = new_highlight_layer
@@ -69,7 +76,6 @@ func update_level_references(new_path_layer: TileMapLayer, new_highlight_layer: 
 	_deselect_current_tower()
 	_occupied_build_tiles.clear()
 	print("BuildManager level references updated.")
-var _build_mode_grace_frames: int = 0
 
 
 ## Called every frame. Checks for inputs and ensures Drag liveness.
@@ -86,8 +92,8 @@ func _process(_delta: float) -> void:
 		if is_instance_valid(_bound_container):
 			# Convert mouse position to the Container's local space
 			# This handles the mismatch between Global/Screen and Viewport/Local coordinates
-			var local_mouse = _bound_container.get_local_mouse_position()
-			var local_rect = Rect2(Vector2.ZERO, _bound_container.get_size())
+			var local_mouse: Vector2 = _bound_container.get_local_mouse_position()
+			var local_rect: Rect2 = Rect2(Vector2.ZERO, _bound_container.get_size())
 			
 			if not local_rect.has_point(local_mouse):
 				banish_drag_session() # Use new universal banish
@@ -101,10 +107,8 @@ func _process(_delta: float) -> void:
 
 # --- PUBLIC INPUT HANDLERS (Called by InputManager) ---
 
-
-# --- PUBLIC INPUT HANDLERS (Called by InputManager) ---
-
 ## Handles input while in build mode. Returns true if the input was handled.
+## @param event: The input event to process.
 func handle_build_input(event: InputEvent) -> bool:
 	if state != State.BUILDING_TOWER:
 		return false
@@ -122,6 +126,7 @@ func handle_build_input(event: InputEvent) -> bool:
 
 
 ## Handles input for selecting and deselecting towers.
+## @param event: The input event to process.
 func handle_selection_input(event: InputEvent) -> bool:
 	if state == State.BUILDING_TOWER:
 		return false
@@ -166,6 +171,8 @@ func get_selected_tower_sell_value() -> int:
 	return int(ceil(total_cost * 0.80))
 
 
+## Validates the current ghost placement and places the tower if valid.
+## Checks cost, stock, and grid occupancy.
 func validate_and_place() -> bool:
 	if state != State.BUILDING_TOWER:
 		return false
@@ -198,7 +205,7 @@ func validate_and_place() -> bool:
 	# Success
 	_is_placing = true
 	var range_points: PackedVector2Array = _ghost_tower.get_range_points()
-	place_tower(tower_data, _ghost_tower.global_position, range_points)
+	_place_tower(tower_data, _ghost_tower.global_position, range_points)
 	_exit_build_mode()
 	return true
 
@@ -239,7 +246,7 @@ func _on_target_priority_changed(priority: TargetPriority.Priority) -> void:
 
 # --- PRIVATE METHODS ---
 
-func place_tower(tower_data: TowerData, build_position: Vector2, range_points: PackedVector2Array) -> void:
+func _place_tower(tower_data: TowerData, build_position: Vector2, range_points: PackedVector2Array) -> void:
 	if not _pending_tower_scene:
 		push_error("Attempted to place an invalid tower scene. _pending_tower_scene is null.")
 		return
@@ -307,6 +314,7 @@ func _get_tower_at_position(screen_position: Vector2) -> TemplateTower:
 	
 	for result in results:
 		var collider: Node = result.collider
+		# Check for "Hitbox" specifically
 		if collider.name == "Hitbox" and collider.get_parent() is TemplateTower:
 			return collider.get_parent()
 			
@@ -360,8 +368,6 @@ func _exit_build_mode() -> void:
 
 # --- DRAG AND DROP SUPPORT ---
 
-# --- DRAG AND DROP SUPPORT ---
-
 var _current_drag_id: int = -1
 var _banished_drag_ids: Dictionary = {} # Using Dict for fast lookup
 var _current_drag_card: Node = null # Reference to card for visual reset
@@ -386,6 +392,7 @@ func banish_drag_session() -> void:
 	_exit_build_mode()
 	cancel_drag_buff()
 
+## Checks if the given drag ID has been banished.
 func is_drag_banished(drag_id: int) -> bool:
 	return drag_id != -1 and _banished_drag_ids.has(drag_id)
 
@@ -393,6 +400,10 @@ func is_dragging() -> bool:
 	return _is_dragging
 
 ## Starts the ghost tower drag logic.
+## @param tower_data: resource for the tower to build.
+## @param tower_scene: scene to instantiate later.
+## @param drag_id: unique ID for this drag session.
+## @param card_ref: origin card node.
 func start_drag_ghost_with_scene(tower_data: TowerData, tower_scene: PackedScene, drag_id: int = -1, card_ref: Node = null) -> void:
 	# STRICT CHECK: If banished, refuse entirely.
 	if drag_id != -1 and _banished_drag_ids.has(drag_id):
@@ -410,10 +421,13 @@ func start_drag_ghost_with_scene(tower_data: TowerData, tower_scene: PackedScene
 		
 	_enter_build_mode(tower_data, tower_scene)
 	
+## Cancels a ghost drag operation.
 func cancel_drag_ghost() -> void:
 	if state == State.BUILDING_TOWER:
 		_exit_build_mode()
 
+## Updates the ghost tower's position during a drag.
+## @param screen_position: The mouse position in screen coordinates.
 func update_drag_ghost(screen_position: Vector2) -> void:
 	# STRICT CHECK: If not dragging (because banished or cancelled), ignore updates.
 	if not _is_dragging:
@@ -438,11 +452,8 @@ func update_drag_ghost(screen_position: Vector2) -> void:
 		else:
 			_ghost_tower.global_position = local_pos
 
-# _banish_current_drag removed (replaced by banish_drag_session)
 
-## Validates current ghost placement and places tower if valid.
-## Called by Drag and Drop system on drop.
-
+## Returns true if the given map coordinates are valid for building.
 func is_buildable_at(map_coords: Vector2i) -> bool:
 	if not is_instance_valid(path_layer):
 		return false
@@ -458,6 +469,9 @@ func is_buildable_at(map_coords: Vector2i) -> bool:
 
 var _buff_ghost: Sprite2D = null
 
+## Starts dragging a buff card.
+## @param card_ref: The origin card node.
+## @param drag_id: Unique session ID.
 func start_drag_buff(card_ref: Node, drag_id: int = -1) -> void:
 	print("BuildManager: start_drag_buff called for %s" % drag_id)
 	# STRICT CHECK: If banished, refuse entirely.
@@ -507,6 +521,8 @@ func start_drag_buff(card_ref: Node, drag_id: int = -1) -> void:
 		else:
 			add_child(_buff_ghost)
 
+## Updates the buff ghost position and highlights validity.
+## @param screen_position: Mouse position in screen coordinates.
 func update_drag_buff(screen_position: Vector2) -> void:
 	# STRICT CHECK: If not dragging (banished), ignore updates.
 	if not _is_dragging:
@@ -548,6 +564,7 @@ func update_drag_buff(screen_position: Vector2) -> void:
 		if is_instance_valid(_highlighted_tower_for_buff):
 			_highlighted_tower_for_buff.modulate = Color(1.2, 1.5, 1.2)
 
+## Cancels the current buff drag session.
 func cancel_drag_buff() -> void:
 	print("BuildManager: cancel_drag_buff called.")
 	if is_instance_valid(_buff_ghost):
@@ -561,15 +578,18 @@ func cancel_drag_buff() -> void:
 	# We don't unset _is_dragging here because this might be a temporary hover-off.
 	# But if called from banish, banish handles the flags.
 
+## Applies the buff at the given position if a valid tower is present.
+## @param screen_position: Mouse position in screen coordinates.
+## @param item_data: The BuffData resource to apply.
 func apply_buff_at(screen_position: Vector2, item_data: Resource) -> bool:
 	if not _is_dragging: return false # Banished
 	
-	var buff_data = item_data as BuffData
+	var buff_data: BuffData = item_data as BuffData
 	if not buff_data:
 		push_error("BuildManager: apply_buff_at called with invalid data type. Expected BuffData.")
 		return false
 
-	var target_tower = _get_tower_at_position(screen_position)
+	var target_tower: TemplateTower = _get_tower_at_position(screen_position)
 	
 	# Cleanup highlight
 	if is_instance_valid(_highlighted_tower_for_buff):
@@ -586,7 +606,7 @@ func apply_buff_at(screen_position: Vector2, item_data: Resource) -> bool:
 			return false
 
 		# Create execution context
-		var context = {"tower": target_tower}
+		var context: Dictionary = {"tower": target_tower}
 		
 		# Execute the effect
 		if buff_data.effect:

@@ -1,6 +1,12 @@
 class_name TargetPriorityInspector
 extends PanelContainer
 
+## Sub-panel for selecting a tower's target priority.
+##
+## Displays a list of radio-style CheckButtons representing the available
+## targeting strategies. Emits [signal priority_changed] when the user
+## selects a new option.
+
 signal priority_changed(priority: TargetPriority.Priority)
 
 @onready var most_progress_check: CheckButton = $Content/VBox/MostProgress
@@ -12,16 +18,18 @@ signal priority_changed(priority: TargetPriority.Priority)
 var _check_buttons: Array[CheckButton] = []
 
 func _ready() -> void:
+	# Cache all priority buttons for batch operations.
 	_check_buttons = [
-		most_progress_check, least_progress_check, strongest_check, weakest_check, lowest_health_check
+		most_progress_check, least_progress_check, strongest_check,
+		weakest_check, lowest_health_check
 	]
 	
-	for btn in _check_buttons:
+	for btn: CheckButton in _check_buttons:
 		btn.toggled.connect(_on_toggled)
 
 func set_priority(priority: TargetPriority.Priority) -> void:
-	# Block signals to avoid feedback loop
-	for btn in _check_buttons:
+	# Updates the visual state to reflect the given priority without emitting signals.
+	for btn: CheckButton in _check_buttons:
 		btn.set_block_signals(true)
 		btn.button_pressed = false
 		
@@ -32,13 +40,15 @@ func set_priority(priority: TargetPriority.Priority) -> void:
 		TargetPriority.Priority.WEAKEST_ENEMY: weakest_check.button_pressed = true
 		TargetPriority.Priority.LOWEST_HEALTH: lowest_health_check.button_pressed = true
 		
-	for btn in _check_buttons:
+	for btn: CheckButton in _check_buttons:
 		btn.set_block_signals(false)
 
 func _on_toggled(toggled_on: bool) -> void:
-	if not toggled_on: return
-
-	var priority = TargetPriority.Priority.MOST_PROGRESS
+	# Maps the currently-pressed button to its priority enum and emits.
+	if not toggled_on:
+		return
+	
+	var priority: TargetPriority.Priority = TargetPriority.Priority.MOST_PROGRESS
 	
 	if most_progress_check.button_pressed: priority = TargetPriority.Priority.MOST_PROGRESS
 	elif least_progress_check.button_pressed: priority = TargetPriority.Priority.LEAST_PROGRESS

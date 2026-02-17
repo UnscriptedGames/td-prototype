@@ -26,8 +26,8 @@ var targets: int
 var attack_modifiers: Array[AttackModifierData] = []
 var status_effects: Array[StatusEffectData] = []
 var projectile_scene: PackedScene
-var shoot_animation: String
-var idle_animation: String
+var shoot_animation: StringName
+var idle_animation: StringName
 
 var _highlight_layer: TileMapLayer
 var _highlight_tower_source_id: int = -1
@@ -272,20 +272,21 @@ func _attack() -> void:
 	_targets_last_known_positions.clear()
 	for target in _current_targets:
 		if is_instance_valid(target):
-			var target_point_node = target.find_child("TargetPoint")
-			if is_instance_valid(target_point_node):
-				_targets_last_known_positions.append(target_point_node.global_position)
+			# Optimization: Use the cached target_point node if available, otherwise fallback to enemy position.
+			# This removes the need for find_child() every frame.
+			if is_instance_valid(target.target_point):
+				_targets_last_known_positions.append(target.target_point.global_position)
 			else:
 				_targets_last_known_positions.append(target.global_position)
 	
-	var anim_name: String = shoot_animation
+	var anim_name: StringName = shoot_animation
 	
-	var animation: Animation = animation_player.get_animation(anim_name)
-	if not animation:
+	if not animation_player.has_animation(anim_name):
 		push_error("Animation '%s' not found in AnimationPlayer." % anim_name)
 		_is_firing = false # Reset firing state to avoid getting stuck
 		return
 		
+	var animation: Animation = animation_player.get_animation(anim_name)
 	var anim_duration: float = animation.length
 	var cooldown_duration: float = fire_rate_timer.wait_time
 	
@@ -305,10 +306,7 @@ func _on_animation_finished(_anim_name: StringName) -> void:
 		_is_firing = false
 
 
-func _spawn_projectile() -> void:
-	_spawn_projectiles()
-
-
+# Called via AnimationPlayer method track
 func _spawn_projectiles() -> void:
 	for i in range(min(_current_targets.size(), _targets_last_known_positions.size())):
 		var target = _current_targets[i]
@@ -358,11 +356,10 @@ func upgrade_path(level_index: int) -> void:
 	_is_firing = false
 
 	# Debug: Log current stats
-	print("--- Tower Upgrade ---")
-	print("Before - Range: %d, Damage: %d, Fire Rate: %.2f, Proj. Speed: %d, Targets: %d" % [tower_range, damage, fire_rate, projectile_speed, targets])
-
-	# Debug: Log upgrade stats
-	print("Upgrade - Range: %d, Damage: %d, Fire Rate: %.2f, Proj. Speed: %d, Targets: %d" % [upgrade_data.tower_range, upgrade_data.damage, upgrade_data.fire_rate, upgrade_data.projectile_speed, upgrade_data.targets])
+	if OS.is_debug_build():
+		print("--- Tower Upgrade ---")
+		print("Before - Range: %d, Damage: %d, Fire Rate: %.2f, Proj. Speed: %d, Targets: %d" % [tower_range, damage, fire_rate, projectile_speed, targets])
+		print("Upgrade - Range: %d, Damage: %d, Fire Rate: %.2f, Proj. Speed: %d, Targets: %d" % [upgrade_data.tower_range, upgrade_data.damage, upgrade_data.fire_rate, upgrade_data.projectile_speed, upgrade_data.targets])
 
 	# Apply upgrade stats
 	tower_level = upgrade_data.tower_level
@@ -398,8 +395,9 @@ func upgrade_path(level_index: int) -> void:
 	idle_animation = upgrade_data.idle_animation
 
 	# Debug: Log new stats
-	print("After - Range: %d, Damage: %d, Fire Rate: %.2f, Proj. Speed: %d, Targets: %d" % [tower_range, damage, fire_rate, projectile_speed, targets])
-	print("--------------------")
+	if OS.is_debug_build():
+		print("After - Range: %d, Damage: %d, Fire Rate: %.2f, Proj. Speed: %d, Targets: %d" % [tower_range, damage, fire_rate, projectile_speed, targets])
+		print("--------------------")
 
 	_apply_level_stats()
 	_update_range_polygon()

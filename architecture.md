@@ -53,6 +53,7 @@ To maximise the AI Pro 5-hour refresh window (250 requests):
 | Element | Style | Example |
 | :--- | :--- | :--- |
 | File/Scene Names | snake_case | `enemy_spawner.gd` |
+| Folder Names | PascalCase | `UI/MainMenu` |
 | Class Names | PascalCase | `class_name EnemySpawner` |
 | Node Names | PascalCase | `MainCamera` |
 | Functions/Vars | snake_case | `func deal_damage()` |

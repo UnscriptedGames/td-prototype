@@ -10,11 +10,11 @@ signal buff_ended
 
 # A dictionary to keep track of active buffs and their associated timers.
 # The key is the BuffTowerEffect resource instance, and the value is the Timer node.
-var _active_buffs: Dictionary = {}
+var _active_buffs: Dictionary[BuffEffectStandard, Timer] = {}
 
 # A dictionary to store the original status effects that were replaced by a buff.
 # The key is the BuffTowerEffect, and the value is the original StatusEffectData.
-var _stashed_status_effects: Dictionary = {}
+var _stashed_status_effects: Dictionary[StatusEffectData.EffectType, StatusEffectData] = {}
 
 
 func _process(_delta: float) -> void:

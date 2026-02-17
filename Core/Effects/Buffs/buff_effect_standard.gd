@@ -5,6 +5,7 @@ extends BuffEffect
 
 # --- EXPORT VARIABLES ---
 
+@export_group("Stats")
 ## The duration of the buff in seconds.
 @export var duration: float = 5.0
 
@@ -20,6 +21,7 @@ extends BuffEffect
 ## The number of additional targets the tower can attack simultaneously.
 @export var extra_targets: int = 0
 
+@export_group("Status")
 ## An array of status effects to be temporarily applied to the tower's attacks.
 @export var status_effects: Array[StatusEffectData] = []
 

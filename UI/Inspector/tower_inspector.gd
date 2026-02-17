@@ -1,10 +1,13 @@
+## Inspector panel for the currently selected tower. Displays stats, upgrade
+## buttons, sell action, target priority sub-inspector, and buff progress bar.
+## Anchors itself relative to the tower's screen position.
 class_name TowerInspector
 extends PanelContainer
 
 signal sell_tower_requested
 signal target_priority_changed(priority: TargetPriority.Priority)
 
-# -- Node References --
+# Stat Labels
 @onready var tower_name_label: Label = $Content/VBox/Stats/TowerNameLabel
 @onready var tower_level_label: Label = $Content/VBox/Stats/TowerLevelLabel
 @onready var range_label: Label = $Content/VBox/Stats/RangeLabel
@@ -22,8 +25,7 @@ signal target_priority_changed(priority: TargetPriority.Priority)
 @onready var upgrade_buttons_container: GridContainer = $Content/VBox/Stats/UpgradeGrid
 @onready var sell_button: Button = $Content/VBox/Stats/SellButton
 
-# Sub-Inspector
-# Use PanelContainer to avoid cyclic reference/parser delay
+# Sub-Inspector (typed loose to avoid cyclic reference)
 @onready var priority_inspector: PanelContainer = $TargetPriorityInspector
 
 # Layout State
@@ -31,72 +33,74 @@ signal target_priority_changed(priority: TargetPriority.Priority)
 
 var _selected_tower: TemplateTower
 const ANCHOR_MARGIN: int = 80
-const GAP: int = 10 # Gap between main inspector and priority inspector
-const INSPECTOR_OPACITY: float = 0.85 # 15% Transparency
+const GAP: int = 10
+const INSPECTOR_OPACITY: float = 0.85
 
 var _is_docked_left: bool = false
 
+
 func _ready() -> void:
-	# Set Transparency
+	# Set transparency
 	self.self_modulate.a = INSPECTOR_OPACITY
 	if is_instance_valid(priority_inspector):
 		priority_inspector.self_modulate.a = INSPECTOR_OPACITY
-		# Detach from PanelContainer layout to allow manual positioning
+		# Detach from layout to allow manual positioning
 		priority_inspector.set_as_top_level(true)
 
-	# Connect Self Actions
+	# Connect actions
 	sell_button.pressed.connect(_on_sell_button_pressed)
 	priority_button.pressed.connect(_on_priority_button_pressed)
-	
-	# Connect Upgrade Buttons
-	for child in upgrade_buttons_container.get_children():
+
+	# Connect upgrade buttons
+	for child: Node in upgrade_buttons_container.get_children():
 		if child is Button:
 			child.pressed.connect(_on_upgrade_button_pressed.bind(child))
-	
-	# Connect Sub-Inspector Signal
+
+	# Connect sub-inspector signal
 	if priority_inspector.has_signal("priority_changed"):
 		priority_inspector.priority_changed.connect(_on_priority_changed)
-	
-	# Listen to Global Changes
+
+	# Listen to currency changes for upgrade affordability
 	GameManager.currency_changed.connect(_on_currency_changed)
-	
-	# Init State
+
+	# Init state
 	visible = false
 	priority_inspector.visible = false
 
-# ... (rest of file) ...
 
-
+## Disconnects the currency signal to prevent orphan connections.
 func _exit_tree() -> void:
 	GameManager.currency_changed.disconnect(_on_currency_changed)
 
-# --- Public API ---
 
+## Sets the inspected tower, connecting/disconnecting upgrade and buff
+## signals as needed. Pass null to hide the inspector.
 func set_tower(tower: TemplateTower) -> void:
-	# Disconnect old
+	# Disconnect old tower signals
 	if is_instance_valid(_selected_tower):
 		if _selected_tower.upgraded.is_connected(_update_ui):
 			_selected_tower.upgraded.disconnect(_update_ui)
 		if _selected_tower.stats_changed.is_connected(_update_ui):
 			_selected_tower.stats_changed.disconnect(_update_ui)
-			
-		var old_buff = _selected_tower.get_node_or_null("BuffManager")
+
+		var old_buff: Node = _selected_tower.get_node_or_null("BuffManager")
 		if is_instance_valid(old_buff):
-			if old_buff.buff_started.is_connected(_on_buff_started): old_buff.buff_started.disconnect(_on_buff_started)
-			if old_buff.buff_progress.is_connected(_on_buff_progress): old_buff.buff_progress.disconnect(_on_buff_progress)
-			if old_buff.buff_ended.is_connected(_on_buff_ended): old_buff.buff_ended.disconnect(_on_buff_ended)
+			if old_buff.buff_started.is_connected(_on_buff_started):
+				old_buff.buff_started.disconnect(_on_buff_started)
+			if old_buff.buff_progress.is_connected(_on_buff_progress):
+				old_buff.buff_progress.disconnect(_on_buff_progress)
+			if old_buff.buff_ended.is_connected(_on_buff_ended):
+				old_buff.buff_ended.disconnect(_on_buff_ended)
 
 	_selected_tower = tower
-	
-	# Reset Sub-Inspector
 	priority_inspector.visible = false
-	
+
 	if is_instance_valid(_selected_tower):
-		# Connect new
+		# Connect new tower signals
 		_selected_tower.upgraded.connect(_update_ui)
 		_selected_tower.stats_changed.connect(_update_ui)
-		
-		var new_buff = _selected_tower.get_node_or_null("BuffManager")
+
+		var new_buff: Node = _selected_tower.get_node_or_null("BuffManager")
 		if is_instance_valid(new_buff):
 			new_buff.buff_started.connect(_on_buff_started)
 			new_buff.buff_progress.connect(_on_buff_progress)
@@ -104,219 +108,231 @@ func set_tower(tower: TemplateTower) -> void:
 			new_buff.resend_state()
 		else:
 			buff_bar.visible = false
-			
-		# Initial Update
+
 		_update_ui()
 		visible = true
 	else:
 		visible = false
 
-func update_anchor(viewport_size: Vector2, tower_global_position: Vector2, map_coords: Vector2i = Vector2i(-1, -1)) -> void:
+
+## Positions the inspector relative to the tower's screen position. Uses
+## grid coordinates to determine left/right and top/bottom docking, with a
+## screen-centre fallback when map_coords are unavailable.
+func update_anchor(
+	viewport_size: Vector2,
+	tower_global_position: Vector2,
+	map_coords: Vector2i = Vector2i(-1, -1)
+) -> void:
 	if not visible: return
-	
-	# Determine Direction based on Grid Coordinates (Preferred)
-	# Fallback to Screen Center if map_coords are invalid (not provided)
-	
-	var is_docked_left: bool = false # Inspector on Left (Tower on Right)
-	var is_docked_top: bool = false # Inspector anchors Top (Grows Down) (Tower on Top)
-	
+
+	var is_docked_left: bool = false
+	var is_docked_top: bool = false
+
 	if map_coords.x != -1:
-		# Grid Logic (0-indexed)
-		# Rows 1-8 (Index 0-7) -> Open Down (Anchor Top)
-		# Rows 9-16 (Index 8-15) -> Open Up (Anchor Bottom)
+		# Grid: rows 0–7 → dock top, rows 8–15 → dock bottom
 		is_docked_top = map_coords.y < 8
-		
-		# Cols 1-12 (Index 0-11) -> Open Right (Inspector Right of Tower)
-		# Cols 13-24 (Index 12-23) -> Open Left (Inspector Left of Tower)
-		# Note: is_docked_left means the INSPECTOR is on the left.
+		# Grid: cols 0–11 → dock right, cols 12–23 → dock left
 		is_docked_left = map_coords.x >= 12
 	else:
-		# Fallback Screen Logic
+		# Fallback: screen-centre split
 		is_docked_left = tower_global_position.x > (viewport_size.x * 0.5)
 		is_docked_top = tower_global_position.y < (viewport_size.y * 0.5)
-	
-	# We need to position 'self' (Tower Inspector)
-	# Coordinates must be local to our Parent because we are a Child Control.
-	var parent_global_pos = get_parent().global_position
-	
-	var target_global_x = 0.0
-	var target_global_y = 0.0
-	
-	var my_width = size.x
-	var my_height = size.y
-	
-	# Store state for child popup
+
+	var parent_global_pos: Vector2 = get_parent().global_position
+
+	var target_global_x: float = 0.0
+	var target_global_y: float = 0.0
+	var my_width: float = size.x
+	var my_height: float = size.y
+
 	_is_docked_left = is_docked_left
-	
-	# Horizontal Logic
+
+	# Horizontal: place inspector on the opposite side of the tower
 	if is_docked_left:
-		# Inspector to LEFT of Tower
 		target_global_x = tower_global_position.x - my_width - ANCHOR_MARGIN
 	else:
-		# Inspector to RIGHT of Tower
 		target_global_x = tower_global_position.x + ANCHOR_MARGIN
-		
-	# Vertical Logic
+
+	# Vertical: grow downward from top or upward from bottom
 	if is_docked_top:
-		# Grow DOWN (Anchor Top)
 		target_global_y = tower_global_position.y
 	else:
-		# Grow UP (Anchor Bottom)
 		target_global_y = tower_global_position.y - my_height
-	
-	# Convert Global to Local
-	var target_pos = Vector2(target_global_x, target_global_y) - parent_global_pos
-	
-	# Animate Main
+
+	# Convert global to parent-local coordinates
+	var target_pos: Vector2 = Vector2(target_global_x, target_global_y) - parent_global_pos
+
+	# Animate slide
 	if _tween: _tween.kill()
 	_tween = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
 	_tween.set_parallel(true)
-	
 	_tween.tween_property(self, "position", target_pos, 0.3)
-	
-	# Update Priority Inspector (Global Position)
+
+	# Update priority inspector position if visible
 	if priority_inspector.visible:
 		_update_popup_position(true, Vector2(target_global_x, target_global_y))
 
-func _update_popup_position(animate: bool, override_base_pos: Variant = null) -> void:
-	# Base position: Default to current global if no override provided
-	var base_pos = global_position
+
+## Positions the priority sub-inspector adjacent to the main inspector.
+## Uses global coordinates since the sub-inspector is set as top-level.
+func _update_popup_position(
+	animate: bool, override_base_pos: Variant = null
+) -> void:
+	var base_pos: Vector2 = global_position
 	if override_base_pos != null:
 		base_pos = override_base_pos
-		
-	# Sync Height
+
+	# Sync height with main inspector
 	priority_inspector.custom_minimum_size.y = size.y
 	priority_inspector.size.y = size.y
-	
-	var offset_x = 0.0
-	
+
+	var offset_x: float = 0.0
+
 	if _is_docked_left:
-		# Inspector is LEFT. Popup to LEFT (Outward).
+		# Popup extends further left (outward)
 		offset_x = - priority_inspector.size.x - GAP
 	else:
-		# Inspector is RIGHT. Popup to RIGHT (Outward).
+		# Popup extends further right (outward)
 		offset_x = size.x + GAP
-		
-	var target_global_pos = base_pos + Vector2(offset_x, 0)
-	
+
+	var target_global_pos: Vector2 = base_pos + Vector2(offset_x, 0)
+
 	if animate and _tween:
 		_tween.tween_property(priority_inspector, "position", target_global_pos, 0.3)
 	else:
 		priority_inspector.position = target_global_pos
 
 
-# --- UI Updates ---
-
+## Refreshes all stat labels, modifiers, effects, and upgrade button states
+## from the selected tower's current data.
 func _update_ui() -> void:
 	if not is_instance_valid(_selected_tower): return
-	
-	# Stats
-	var data = _selected_tower.data
+
+	var data: TowerData = _selected_tower.data
 	tower_name_label.text = data.tower_name
-	tower_level_label.text = "Level: %s" % (data.levels[_selected_tower.current_level].upgrade_name if _selected_tower.current_level < data.levels.size() else "Max")
+
 	if _selected_tower.current_level == 0:
 		tower_level_label.text = "Level: Basic"
-	
+	elif _selected_tower.current_level < data.levels.size():
+		tower_level_label.text = "Level: %s" % data.levels[_selected_tower.current_level].upgrade_name
+	else:
+		tower_level_label.text = "Level: Max"
+
 	range_label.text = "Range: %d" % _selected_tower.tower_range
 	damage_label.text = "Damage: %d" % _selected_tower.damage
 	fire_rate_label.text = "Fire Rate: %.2f" % _selected_tower.fire_rate
 	projectile_speed_label.text = "Projectile Speed: %d" % _selected_tower.projectile_speed
-	
-	var modifiers = []
+
+	var modifiers: Array[String] = []
 	if _selected_tower.has_attack_modifier("aoe_projectile"): modifiers.append("AoE")
 	if _selected_tower.has_attack_modifier("attack_flying"): modifiers.append("Flying")
 	attack_modifier_label.text = "Attack Modifiers: " + (", ".join(modifiers) if modifiers else "None")
-	
-	var effects = []
-	for effect in _selected_tower.status_effects:
+
+	var effects: Array[String] = []
+	for effect: Variant in _selected_tower.status_effects:
 		effects.append(StatusEffectData.EffectType.keys()[effect.effect_type])
 	status_effects_label.text = "Status Effects: " + (", ".join(effects) if effects else "None")
-		
+
 	max_targets_label.text = "Max Targets: %d" % _selected_tower.targets
-	
-	# Update Sub-Inspector Data
+
+	# Update sub-inspector data
 	priority_inspector.set_priority(_selected_tower.target_priority)
-	
-	# Updates
+
 	_update_upgrade_buttons()
 	_update_sell_button()
 
+
+## Updates upgrade button labels, enabled states, and colour tints based on
+## the tower's current tier, purchased upgrades, and player currency.
 func _update_upgrade_buttons() -> void:
 	if not is_instance_valid(_selected_tower): return
-	
-	var tower_data = _selected_tower.data
-	var current_tier = _selected_tower.upgrade_tier
-	var purchased = _selected_tower.upgrade_path_indices
-	
-	var children = upgrade_buttons_container.get_children()
-	for i in range(children.size()):
-		var btn = children[i] as Button
+
+	var tower_data: TowerData = _selected_tower.data
+	var current_tier: int = _selected_tower.upgrade_tier
+	var purchased: Array = _selected_tower.upgrade_path_indices
+
+	var children: Array[Node] = upgrade_buttons_container.get_children()
+	for i: int in range(children.size()):
+		var btn: Button = children[i] as Button
 		if not btn: continue
-		
-		# Assuming 2 buttons per tier logic from original
-		var level_index = i + 1
-		
+
+		var level_index: int = i + 1
+
 		if level_index < tower_data.levels.size():
-			var level_data = tower_data.levels[level_index]
-			var cost = level_data.cost
-			
+			var level_data: Resource = tower_data.levels[level_index]
+			var cost: int = level_data.cost
+
 			btn.text = "%s (%dg)" % [level_data.upgrade_name, cost]
-			
-			var is_purchased = level_index in purchased
-			var is_available = (int(i / 2.0) == current_tier)
-			var can_afford = GameManager.player_data.can_afford(cost)
-			
+
+			var is_purchased: bool = level_index in purchased
+			var is_available: bool = (int(i / 2.0) == current_tier)
+			var can_afford: bool = GameManager.player_data.can_afford(cost)
+
 			if is_purchased:
 				btn.disabled = true
-				btn.modulate = Color(0.2, 0.8, 0.2) # Green tint
+				btn.modulate = Color(0.2, 0.8, 0.2)
 			elif is_available:
 				btn.disabled = not can_afford
 				btn.modulate = Color.WHITE
 			else:
 				btn.disabled = true
-				btn.modulate = Color(0.5, 0.5, 0.5) # Dim
+				btn.modulate = Color(0.5, 0.5, 0.5)
 		else:
 			btn.text = "-"
 			btn.disabled = true
 
+
+## Updates the sell button label with the tower's current sell value.
 func _update_sell_button() -> void:
-	# Basic logic
-	var build_manager = get_tree().get_first_node_in_group("build_manager")
+	var build_manager: Node = get_tree().get_first_node_in_group("build_manager")
 	if build_manager:
-		var val = build_manager.get_selected_tower_sell_value()
+		var val: int = build_manager.get_selected_tower_sell_value()
 		sell_button.text = "Sell (%dg)" % val
 
-# --- Signal Handlers ---
 
+## Toggles the target priority sub-inspector visibility.
 func _on_priority_button_pressed() -> void:
 	priority_inspector.visible = not priority_inspector.visible
 	if priority_inspector.visible:
 		_update_popup_position(false)
 
+
+## Forwards the priority change from the sub-inspector to listeners.
 func _on_priority_changed(new_priority: TargetPriority.Priority) -> void:
-	emit_signal("target_priority_changed", new_priority)
+	target_priority_changed.emit(new_priority)
 
+
+## Emits the sell signal for the BuildManager to handle.
 func _on_sell_button_pressed() -> void:
-	emit_signal("sell_tower_requested")
+	sell_tower_requested.emit()
 
+
+## Triggers an upgrade on the selected tower at the button's index.
 func _on_upgrade_button_pressed(button: Button) -> void:
-	var index = upgrade_buttons_container.get_children().find(button)
+	var index: int = upgrade_buttons_container.get_children().find(button)
 	if index != -1 and is_instance_valid(_selected_tower):
-		var level_index = index + 1
+		var level_index: int = index + 1
 		_selected_tower.upgrade_path(level_index)
-		# UI updates via signal callback from tower
 
+
+## Refreshes upgrade button affordability when the player's currency changes.
 func _on_currency_changed(_val: int) -> void:
 	if visible:
 		_update_upgrade_buttons()
 
+
+## Shows the buff bar and sets its max value when a buff begins.
 func _on_buff_started(duration: float) -> void:
 	buff_bar.max_value = duration
 	buff_bar.value = duration
 	buff_bar.visible = true
 
+
+## Updates the buff bar progress as the buff ticks.
 func _on_buff_progress(time: float) -> void:
 	buff_bar.value = time
 
+
+## Hides the buff bar when the buff expires.
 func _on_buff_ended() -> void:
 	buff_bar.visible = false

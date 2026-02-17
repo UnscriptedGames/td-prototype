@@ -1,8 +1,14 @@
 extends Area2D
 class_name TemplateProjectile
 
+## Base class for all projectiles in the game.
+## Handles movement to target, collision detection, and applying damage/effects.
+
+## Public Properties
 var speed: float
 var damage: int = 0
+
+## Internal State
 var _target: TemplateEnemy
 var _last_known_position: Vector2
 var _aoe_projectile: bool = false
@@ -18,13 +24,13 @@ func _physics_process(delta: float) -> void:
 	if speed <= 0:
 		return
 
-	var target_position := _last_known_position
+	var target_position: Vector2 = _last_known_position
 	
 	# If the target is still valid and moving, update its last known position.
 	if is_instance_valid(_target) and _target.state == TemplateEnemy.State.MOVING:
-		var target_point_node = _target.find_child("TargetPoint")
-		if is_instance_valid(target_point_node):
-			target_position = target_point_node.global_position
+		# Optimization: Use the cached target_point node directly.
+		if is_instance_valid(_target.target_point):
+			target_position = _target.target_point.global_position
 		else:
 			target_position = _target.global_position
 		_last_known_position = target_position
@@ -32,23 +38,40 @@ func _physics_process(delta: float) -> void:
 	# Always move towards the last known position.
 	global_position = global_position.move_toward(target_position, speed * delta)
 
-	# If we've reached the destination, return to the pool.
+	# If we've reached the destination...
 	if global_position.is_equal_approx(_last_known_position):
-		_return_to_pool()
+		if _aoe_projectile:
+			# If it's an AOE projectile, we trigger the explosion here.
+			_detonate_aoe()
+			_return_to_pool()
+		else:
+			# Standard projectiles just disappear if they reach the point without hitting anything 
+			# (e.g. target died or moved too fast, though homing usually handles moving).
+			# For homing projectiles, area_entered handles the hit.
+			# If we reach here, we missed or target is gone.
+			_return_to_pool()
 
 
 ## Called by the tower that fires the projectile.
 func initialize(target_enemy: TemplateEnemy, damage_amount: int, projectile_speed: float, use_aoe_behavior: bool, status_effects: Array[StatusEffectData] = []) -> void:
 	_target = target_enemy
-	# Call the helper function to set up common properties.
-	_initialize_common(damage_amount, projectile_speed, use_aoe_behavior, status_effects)
 	
-	# Set the initial destination from the target enemy.
-	var target_point_node = _target.find_child("TargetPoint")
-	if is_instance_valid(target_point_node):
-		_last_known_position = target_point_node.global_position
+	# Set simple properties
+	damage = damage_amount
+	speed = projectile_speed
+	_aoe_projectile = use_aoe_behavior
+	_status_effects = status_effects.duplicate() if status_effects else []
+	_is_returning = false
+	
+	# Set the initial destination from the target enemy using the optimized lookup.
+	if is_instance_valid(_target.target_point):
+		_last_known_position = _target.target_point.global_position
 	else:
 		_last_known_position = _target.global_position
+	
+	# Activation
+	set_physics_process(true)
+	hitbox.disabled = false
 	
 	# Connect the signal for direct hits.
 	if not area_entered.is_connected(_on_area_entered):
@@ -58,25 +81,18 @@ func initialize(target_enemy: TemplateEnemy, damage_amount: int, projectile_spee
 ## Called by the tower for a "dud" shot when the target is already dead.
 func initialize_dud_shot(destination: Vector2, damage_amount: int, projectile_speed: float, use_aoe_behavior: bool, status_effects: Array[StatusEffectData] = []) -> void:
 	_target = null
-	# Call the helper function to set up common properties.
-	_initialize_common(damage_amount, projectile_speed, use_aoe_behavior, status_effects)
-	# Set the destination directly.
-	_last_known_position = destination
-
-
-## Private: Handles setup tasks common to both initialize functions.
-func _initialize_common(damage_amount: int, projectile_speed: float, use_aoe_behavior: bool, status_effects: Array[StatusEffectData] = []) -> void:
+	
+	# Set simple properties
 	damage = damage_amount
 	speed = projectile_speed
 	_aoe_projectile = use_aoe_behavior
-	# We must duplicate the array to prevent modifying the tower's original array
-	# when this projectile is reset in the object pool.
-	if status_effects:
-		_status_effects = status_effects.duplicate()
-	else:
-		_status_effects = []
+	_status_effects = status_effects.duplicate() if status_effects else []
 	_is_returning = false
 	
+	# Set the destination directly.
+	_last_known_position = destination
+	
+	# Activation
 	set_physics_process(true)
 	hitbox.disabled = false
 
@@ -97,29 +113,17 @@ func reset() -> void:
 	hitbox.disabled = true
 
 
-## Called when the projectile collides with another area. Only used for homing projectiles.
+## Called when the projectile collides with another area. Only used for single-target impacts.
+## AOE projectiles ignore this lookup and detonate on arrival.
 func _on_area_entered(area: Area2D) -> void:
 	if _aoe_projectile or _is_returning:
 		return
 
 	var enemy := area.get_parent() as TemplateEnemy
+	
+	# Only hit the specific target we were aiming for
 	if enemy == _target:
-		# Do not apply effects or damage to enemies that are not in the MOVING state.
-		# This prevents hitting enemies that are already dying or have reached the goal.
-		if enemy.state != TemplateEnemy.State.MOVING:
-			return
-
-		hitbox.set_deferred("disabled", true)
-		enemy.health -= damage
-
-		# If the damage just dealt killed the enemy, its state will now be DYING.
-		# We must not apply status effects to a dying enemy, as this can interrupt
-		# and pause their death animation.
-		if enemy.state == TemplateEnemy.State.DYING:
-			return
-
-		for effect in _status_effects:
-			enemy.apply_status_effect(effect)
+		_apply_damage_and_effects(enemy)
 		_return_to_pool()
 
 
@@ -129,24 +133,30 @@ func _detonate_aoe() -> void:
 	
 	for area in overlapping_areas:
 		var enemy := area.get_parent() as TemplateEnemy
-		if not is_instance_valid(enemy):
-			continue
+		if is_instance_valid(enemy):
+			_apply_damage_and_effects(enemy)
 
-		# Do not apply effects or damage to enemies that are not in the MOVING state.
-		# This prevents hitting enemies that are already dying or have reached the goal.
-		if enemy.state != TemplateEnemy.State.MOVING:
-			continue
 
-		enemy.health -= damage
+## Helper logic to apply damage and effects to a single enemy.
+func _apply_damage_and_effects(enemy: TemplateEnemy) -> void:
+	# Do not apply effects or damage to enemies that are not in the MOVING state.
+	if enemy.state != TemplateEnemy.State.MOVING:
+		return
 
-		# If the damage just dealt killed the enemy, its state will now be DYING.
-		# We must not apply status effects to a dying enemy, as this can interrupt
-		# and pause their death animation.
-		if enemy.state == TemplateEnemy.State.DYING:
-			continue
+	# Only single-target projectiles disable their hitbox on impact here.
+	# AOE projectiles keep it open to find all overlaps, then deactivate when returning to pool.
+	if not _aoe_projectile:
+		hitbox.set_deferred("disabled", true)
+	
+	enemy.health -= damage
 
-		for effect in _status_effects:
-			enemy.apply_status_effect(effect)
+	# If dead, don't apply status effects.
+	if enemy.state == TemplateEnemy.State.DYING:
+		return
+
+	for effect in _status_effects:
+		enemy.apply_status_effect(effect)
+
 
 func _return_to_pool() -> void:
 	if _is_returning:

@@ -5,11 +5,13 @@ extends LoadoutItem
 
 # --- EXPORT VARIABLES ---
 
+@export_group("Relic Effects")
 ## The passive bonus always active while this relic is equipped.
 @export var passive_effect: RelicEffect
 
 ## The powerful ability triggered by the user.
 @export var active_effect: RelicEffect
 
+@export_group("Cost")
 ## Gold required to trigger the active ability.
 @export var gold_cost: int = 0

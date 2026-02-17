@@ -4,8 +4,8 @@ extends Area2D
 class_name TemplateEnemy
 
 ## Signals
-signal died(enemy, reward_amount) # Emitted when the enemy dies
-signal reached_end_of_path(enemy) # Emitted when the enemy reaches the end of a path
+signal died(enemy: TemplateEnemy, reward_amount: int) # Emitted when the enemy dies
+signal reached_end_of_path(enemy: TemplateEnemy) # Emitted when the enemy reaches the end of a path
 
 
 ## Enums
@@ -16,8 +16,22 @@ enum State {
 }
 
 
+## Inner Classes
+class ActiveStatusEffect:
+	var data: StatusEffectData
+	var duration: float
+	var initial_duration: float
+	var tick_timer: float = 0.0
+
+	func _init(p_data: StatusEffectData) -> void:
+		data = p_data
+		duration = p_data.duration
+		initial_duration = p_data.duration
+		tick_timer = 0.0
+
+
 ## Static Caches
-static var _valid_variants_cache: Dictionary = {} # Cache for valid variants per enemy type
+static var _valid_variants_cache: Dictionary[String, Array] = {} # Cache for valid variants per enemy type
 
 
 ## Exported Data
@@ -53,16 +67,16 @@ var _has_reached_end: bool = false # True if enemy reached end of path
 
 
 ## Status Effect State
-var _active_status_effects: Dictionary = {} # Key: EffectType, Value: Dictionary of effect data
+var _active_status_effects: Dictionary[StatusEffectData.EffectType, ActiveStatusEffect] = {}
 var _speed_modifier: float = 1.0 # Multiplier for the enemy's speed
 var _is_stunned: bool = false # Is the enemy currently stunned?
 
 
 ## Node References
-## Node References
 @onready var sprite := $Sprite as Sprite2D # Wave visual node
 @onready var animation := $Animation as AnimatedSprite2D # Death animation node
 @onready var hitbox := $PositionShape as CollisionShape2D # Hitbox node
+@onready var target_point: Node2D = $TargetPoint if has_node("TargetPoint") else self # Target point for towers
 @onready var shadow_panel := $Shadow as Panel # Shadow visual node
 @onready var progress_bar_container := $ProgressBarContainer as VBoxContainer
 @onready var health_bar := $ProgressBarContainer/HealthBar as TextureProgressBar # Health bar node
@@ -72,7 +86,7 @@ var _is_stunned: bool = false # Is the enemy currently stunned?
 
 
 ## Private Properties
-var _effect_bars: Dictionary = {} # Maps EffectType to its ProgressBar
+var _effect_bars: Dictionary[StatusEffectData.EffectType, ProgressBar] = {} # Maps EffectType to its ProgressBar
 
 
 ## Public Properties
@@ -383,12 +397,8 @@ func apply_status_effect(effect: StatusEffectData) -> void:
 
 	# If the effect is not already active, add it.
 	if not _active_status_effects.has(effect_type):
-		_active_status_effects[effect_type] = {
-			"data": effect,
-			"duration": effect.duration,
-			"initial_duration": effect.duration, # Store for progress bar calculation
-			"tick_timer": 0.0
-		}
+		_active_status_effects[effect_type] = ActiveStatusEffect.new(effect)
+		
 		# Handle initial application for certain effects
 		match effect_type:
 			StatusEffectData.EffectType.SLOW: _recalculate_speed()
@@ -433,7 +443,7 @@ func _process_status_effects(delta: float) -> void:
 	if _active_status_effects.is_empty():
 		return
 
-	var effects_to_remove = []
+	var effects_to_remove: Array[StatusEffectData.EffectType] = []
 	for effect_type in _active_status_effects:
 		var effect = _active_status_effects[effect_type]
 		var effect_bar = _effect_bars[effect_type]
@@ -455,7 +465,7 @@ func _process_status_effects(delta: float) -> void:
 
 	# Remove expired effects
 	for effect_type in effects_to_remove:
-		if _effect_bars.has(effect_type) and _effect_bars[effect_type]:
+		if _effect_bars.has(effect_type) and is_instance_valid(_effect_bars[effect_type]):
 			_effect_bars[effect_type].visible = false
 
 		_active_status_effects.erase(effect_type)
@@ -468,19 +478,19 @@ func _process_status_effects(delta: float) -> void:
 				animation.play()
 
 
-func _handle_dot_effect(effect_data, delta) -> void:
-	effect_data.tick_timer += delta
-	if effect_data.tick_timer >= effect_data.data.tick_rate:
-		effect_data.tick_timer -= effect_data.data.tick_rate
-		health -= effect_data.data.damage_per_tick
+func _handle_dot_effect(effect: ActiveStatusEffect, delta: float) -> void:
+	effect.tick_timer += delta
+	if effect.tick_timer >= effect.data.tick_rate:
+		effect.tick_timer -= effect.data.tick_rate
+		health -= effect.data.damage_per_tick
 
 
-func _handle_slow_effect(_effect_data, _delta) -> void:
+func _handle_slow_effect(_effect: ActiveStatusEffect, _delta: float) -> void:
 	# The effect is applied on addition/removal, so nothing to do here per frame.
 	pass
 
 
-func _handle_stun_effect(_effect_data, _delta) -> void:
+func _handle_stun_effect(_effect: ActiveStatusEffect, _delta: float) -> void:
 	# The effect is handled by checking _is_stunned in _process.
 	pass
 
