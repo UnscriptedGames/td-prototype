@@ -1,24 +1,34 @@
 # Handover
 
 ## Next Session
-- Guide the developer through implementing the Turntable tower in Godot. Review
-  `Knowledge/tower_design_turntable.md` for the full design spec (visuals, upgrade
-  tree, projectile, stats framework).
-- Help design and create the required art assets (tower sprites for 4 tiers,
-  vinyl record projectile, impact effects).
-- First implementation steps: scene architecture, base tower script, targeting
-  logic, projectile scene.
+- Continue refining AI image generation prompts for the **turntable tone arm**
+  and **vinyl record** assets. Use the established art direction: modern
+  semi-realistic, dark charcoal base with neon teal accents, chunky slab 3D
+  depth, solid pink background for keying, and 1024×1024 output.
+- Apply the same mipmap + Linear Mipmap texture filter settings to new assets.
+- Re-enable the Vinyl and ToneArm child sprites in `turntable_tower.tscn`
+  (currently `visible = false`) once new assets are ready.
 
 ## Context
-- `Knowledge/towers_brief.md` was created this session — the full 8-tower roster
-  design covering archetypes, synergies, and trimming guidance.
-- `Knowledge/tower_design_turntable.md` was created this session — the detailed
-  Turntable tower design spec (visuals, upgrade tree, projectile, audio/animation
-  notes, stat framework).
-- `Knowledge/turntable_tiers_reference.png` was saved — concept art showing all
-  4 visual tiers of the Turntable tower.
-- The Turntable is confirmed as the workhorse tower (Projectile DPS archetype).
-- Visual tiers are designed for 64×64 readability: Shape → Colour → Size → New
-  element.
-- Upgrade system: 3 tiers × 2 choices per tier, shared visuals within each tier.
-- Proposed `game_brief.md` updates were presented but not yet applied.
+- **Turntable tower is fully functional:** fires vinyl record projectiles at
+  enemies, tone arm sweep animation via tweens, vinyl spin in `_process()`.
+- **Bugs fixed this session:**
+  - `super._process(delta)` was missing in `turntable_tower.gd` — state machine
+    was never running.
+  - Typed array crash in `template_projectile.gd` — `.assign()` replaces
+    `.duplicate()` for typed arrays.
+  - `NodePath` syntax in `test_wave_01.tres` — must use `NodePath("...")` not
+    `&"..."` in `.tres` files.
+  - Invalid UID in `block_enemy_data.tres` — removed hand-written bogus UID.
+  - `idle_animation` and `shoot_animation` cleared in `turntable_data.tres` —
+    Turntable uses tweens, not AnimationPlayer.
+- **Ghost tower offset simplified:** `visual_offset` renamed to
+  `ghost_texture_offset` in `tower_data.gd`. Ghost computes game-space position
+  via `ghost_texture_offset * ghost_scale` automatically.
+- **Art direction established and documented** in `game_brief.md` Section 11:
+  modern semi-realistic style, neon teal accents, slab depth, mipmaps required.
+- **Texture quality:** Enable mipmaps on import + set `Linear Mipmap` filter on
+  downscaled Sprite2D nodes. Deck sprite scaled from 0.065 → 0.075.
+- **Test enemy (BlockEnemy)** and test wave are functional for debugging.
+- **Animation guideline** added to `game_brief.md`: AnimationPlayer for simple
+  towers, tweens for dynamic/reactive towers like Turntable.

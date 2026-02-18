@@ -48,7 +48,7 @@ func initialize(
 		return
 
 	sprite.texture = data.ghost_texture # Apply the ghost sprite texture.
-	sprite.position = data.visual_offset # Apply any visual offset to line up with the tile centre.
+	sprite.position = data.ghost_texture_offset * data.ghost_scale # Compute game-space offset from texture-space values.
 	sprite.scale = data.ghost_scale
 	_generate_range_polygon() # Precompute the range polygon so preview renders immediately.
 

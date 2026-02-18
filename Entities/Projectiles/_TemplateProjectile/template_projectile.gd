@@ -60,7 +60,7 @@ func initialize(target_enemy: TemplateEnemy, damage_amount: int, projectile_spee
 	damage = damage_amount
 	speed = projectile_speed
 	_aoe_projectile = use_aoe_behavior
-	_status_effects = status_effects.duplicate() if status_effects else []
+	_status_effects.assign(status_effects if status_effects else [])
 	_is_returning = false
 	
 	# Set the initial destination from the target enemy using the optimized lookup.
@@ -86,7 +86,7 @@ func initialize_dud_shot(destination: Vector2, damage_amount: int, projectile_sp
 	damage = damage_amount
 	speed = projectile_speed
 	_aoe_projectile = use_aoe_behavior
-	_status_effects = status_effects.duplicate() if status_effects else []
+	_status_effects.assign(status_effects if status_effects else [])
 	_is_returning = false
 	
 	# Set the destination directly.

@@ -8,7 +8,7 @@ class_name TowerData
 
 @export var ghost_texture: Texture2D
 @export var ghost_scale: Vector2 = Vector2.ONE
-@export var visual_offset: Vector2 = Vector2.ZERO
+@export var ghost_texture_offset: Vector2 = Vector2.ZERO
 
 ## Level-Based Stats
 @export var levels: Array[TowerLevelData] = []

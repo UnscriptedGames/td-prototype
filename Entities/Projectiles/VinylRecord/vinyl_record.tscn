@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Entities/Projectiles/VinylRecord/vinyl_record.gd" id="1_proj"]
+[ext_resource type="Texture2D" uid="uid://d0i8v3jd6wn0a" path="res://Entities/Towers/Turntable/Assets/turntable_projectile.png" id="2_vinyl"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hit"]
+radius = 8.0
+
+[node name="VinylRecord" type="Area2D"]
+collision_layer = 8
+collision_mask = 4
+script = ExtResource("1_proj")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+scale = Vector2(0.036, 0.036)
+texture = ExtResource("2_vinyl")
+
+[node name="HitboxShape" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_hit")

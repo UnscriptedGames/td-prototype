@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://Entities/Enemies/_TemplateEnemy/template_enemy_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+max_health = 50
+speed = 60.0
+reward = 5
+damage = 1
+is_flying = false
+max_path_offset = 32.0
+variants = Array[String](["block"])
+required_actions = Array[String](["die"])

@@ -1,7 +1,7 @@
 # Game Brief — TD-Prototype
 
 **Version:** 0.1 (Living Document)
-**Last Updated:** 2026-02-17
+**Last Updated:** 2026-02-18
 
 ## 1. Game Identity
 
@@ -270,6 +270,10 @@ equipment.
 	extension of the equipment.
 - **Upgrade System:** 3 tiers × 2 choices per tier. Visual changes are per-tier
 	(not per-choice) to manage art budget.
+- **Animation Approach:** Towers with simple idle/shoot cycles use
+	`AnimationPlayer` (keyframe-driven). Towers with dynamic, reactive animations
+	(e.g., Turntable's tone arm sweep) use code-driven `Tweens`. Both systems may
+	coexist in a single tower.
 - Detailed designs are in individual `Knowledge/tower_design_*.md` documents.
 - See `Knowledge/towers_brief.md` for the full roster, synergy map, and trimming
 	guidance.
@@ -302,6 +306,19 @@ The entire interface is modelled after professional DAW software.
 | Stages | Songs |
 | Stem levels | Individual tracks/stems |
 | Enhanced map tiles | Amped Tiles / High Voltage |
+
+### Art Direction for Assets
+- **Style:** Modern, clean semi-realistic digital illustration. Not retro, not
+	cartoon, no thick outlines. Smooth gradients with subtle material shading.
+- **Colour Palette:** Dark charcoal base with neon teal/cyan accent lighting,
+	matching the maze tile aesthetic. High contrast to read clearly at small scale.
+- **3D Depth:** All assets rendered with a "chunky slab" depth — lighter highlight
+	on top/left edges, darker shadow on bottom/right (app-icon style).
+- **Texture Import:** Enable mipmaps on all tower/projectile textures; use
+	`Linear Mipmap` texture filter on downscaled sprites.
+- **Design-for-Scale:** Assets are generated at 1024×1024 and downscaled via
+	`Sprite2D.scale` in-engine. Fine details (e.g., vinyl grooves) should be bold
+	enough to survive the downscale.
 
 ---
 

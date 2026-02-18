@@ -4,7 +4,11 @@
 [ext_resource type="Script" uid="uid://c5qe2pst6l56t" path="res://Core/Data/Loadout/buff_data.gd" id="1_rxbeg"]
 [ext_resource type="Script" uid="uid://t3mvxe5km66p" path="res://Core/Data/Loadout/relic_data.gd" id="2_vt6tu"]
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="4_y4bs6"]
+[ext_resource type="Resource" path="res://Config/Towers/turntable_data.tres" id="5_vt6tu"]
 
 [resource]
 script = ExtResource("1_8rqla")
 currency = 200
+towers = Dictionary[ExtResource("4_y4bs6"), int]({
+ExtResource("5_vt6tu"): 3
+})

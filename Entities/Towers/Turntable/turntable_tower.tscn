@@ -1,0 +1,60 @@
+[gd_scene format=3 uid="uid://b1jgdjhyn0gy0"]
+
+[ext_resource type="Script" uid="uid://dxv2fyy4ppo5f" path="res://Entities/Towers/Turntable/turntable_tower.gd" id="1_tower"]
+[ext_resource type="Script" uid="uid://cxv8nopqo05b7" path="res://Entities/Towers/_TemplateTower/buff_manager.gd" id="2_buff"]
+[ext_resource type="Texture2D" uid="uid://c1jh7qpvj6fn0" path="res://Entities/Towers/Turntable/Assets/turntable_deck.png" id="3_deck"]
+[ext_resource type="Texture2D" uid="uid://d0i8v3jd6wn0a" path="res://Entities/Towers/Turntable/Assets/turntable_projectile.png" id="4_vinyl"]
+[ext_resource type="Texture2D" uid="uid://c60m7x2fwtphw" path="res://Entities/Towers/Turntable/Assets/turntable_arm.png" id="5_arm"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_62wyb"]
+size = Vector2(50.6289, 49.728024)
+
+[node name="TurntableTower" type="Node2D" unique_id=389982142]
+y_sort_enabled = true
+script = ExtResource("1_tower")
+
+[node name="BuffManager" type="Node" parent="." unique_id=585860621]
+script = ExtResource("2_buff")
+
+[node name="Sprite" type="Sprite2D" parent="." unique_id=1020754235]
+texture_filter = 4
+scale = Vector2(0.075, 0.075)
+texture = ExtResource("3_deck")
+offset = Vector2(-25, -25)
+
+[node name="Vinyl" type="Sprite2D" parent="Sprite" unique_id=1731499582]
+visible = false
+position = Vector2(-70.68371, -41.57862)
+scale = Vector2(0.55, 0.55)
+texture = ExtResource("4_vinyl")
+
+[node name="ToneArm" type="Sprite2D" parent="Sprite" unique_id=1325312030]
+visible = false
+position = Vector2(247.53995, -213.03)
+rotation = 0.42760566
+scale = Vector2(0.65, 0.65)
+texture = ExtResource("5_arm")
+offset = Vector2(-13, 232)
+
+[node name="Range" type="Area2D" parent="." unique_id=87047208]
+z_index = -1
+collision_mask = 2
+
+[node name="RangeShape" type="CollisionPolygon2D" parent="Range" unique_id=799460198]
+polygon = PackedVector2Array(-256, -256, 256, -256, 256, 256, -256, 256)
+
+[node name="Hitbox" type="Area2D" parent="." unique_id=665489613]
+
+[node name="HitboxShape" type="CollisionShape2D" parent="Hitbox" unique_id=612138468]
+position = Vector2(-1.5635948, -2.082655)
+shape = SubResource("RectangleShape2D_62wyb")
+
+[node name="FireRateTimer" type="Timer" parent="." unique_id=1312613150]
+one_shot = true
+
+[node name="Muzzle" type="Marker2D" parent="." unique_id=1300993736]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=520706068]
+
+[connection signal="area_entered" from="Range" to="." method="_on_range_area_entered"]
+[connection signal="area_exited" from="Range" to="." method="_on_range_area_exited"]

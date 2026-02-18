@@ -1,0 +1,90 @@
+[gd_scene format=3 uid="uid://dj2xubaiwg7dq"]
+
+[ext_resource type="Script" uid="uid://dyh5v6ie1rsy6" path="res://Entities/Enemies/BlockEnemy/block_enemy.gd" id="1_block"]
+[ext_resource type="Texture2D" uid="uid://cw6payn2hyg8m" path="res://Entities/Enemies/_TemplateEnemy/Assets/bar_shadow_round_outline_small.png" id="2_bar_under"]
+[ext_resource type="Texture2D" uid="uid://efm7vnhsuk84" path="res://Entities/Enemies/_TemplateEnemy/Assets/bar_round_small.png" id="3_bar_fill"]
+[ext_resource type="StyleBox" uid="uid://6m1q8jw2p6hi" path="res://UI/Themes/Styleboxes/new_style_stun_flat.tres" id="4_stun"]
+[ext_resource type="StyleBox" uid="uid://c1kyee8pg41dh" path="res://UI/Themes/Styleboxes/stylebox_dot_bar.tres" id="5_dot"]
+[ext_resource type="StyleBox" uid="uid://djt88h8lsiqgx" path="res://UI/Themes/Styleboxes/stylebox_slow_bar.tres" id="6_slow"]
+[ext_resource type="Resource" path="res://Config/Enemies/block_enemy_data.tres" id="7_data"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shadow"]
+bg_color = Color(0, 0, 0, 0.6)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+anti_aliasing = false
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pos"]
+size = Vector2(32, 32)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hit"]
+size = Vector2(32, 32)
+
+[node name="BlockEnemy" type="Area2D" unique_id=1927320038]
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("1_block")
+data = ExtResource("7_data")
+
+[node name="Shadow" type="Panel" parent="." unique_id=1320996303]
+offset_left = -16.0
+offset_top = -16.0
+offset_right = 16.0
+offset_bottom = 16.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_shadow")
+
+[node name="Sprite" type="Sprite2D" parent="." unique_id=884492799]
+
+[node name="Animation" type="AnimatedSprite2D" parent="." unique_id=1150788026]
+visible = false
+
+[node name="PositionShape" type="CollisionShape2D" parent="." unique_id=626494365]
+shape = SubResource("RectangleShape2D_pos")
+
+[node name="Hitbox" type="Area2D" parent="." unique_id=2025834745]
+collision_layer = 4
+collision_mask = 0
+
+[node name="HitboxShape" type="CollisionShape2D" parent="Hitbox" unique_id=1042330435]
+shape = SubResource("RectangleShape2D_hit")
+
+[node name="ProgressBarContainer" type="VBoxContainer" parent="." unique_id=1688581500]
+offset_left = -48.0
+offset_top = -40.0
+offset_right = 48.0
+offset_bottom = -2.0
+theme_override_constants/separation = 6
+alignment = 2
+
+[node name="StunBar" type="ProgressBar" parent="ProgressBarContainer" unique_id=696669758]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/fill = ExtResource("4_stun")
+value = 50.0
+show_percentage = false
+
+[node name="SlowBar" type="ProgressBar" parent="ProgressBarContainer" unique_id=2061338951]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/fill = ExtResource("6_slow")
+value = 50.0
+show_percentage = false
+
+[node name="DotBar" type="ProgressBar" parent="ProgressBarContainer" unique_id=584098895]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/fill = ExtResource("5_dot")
+value = 50.0
+show_percentage = false
+
+[node name="HealthBar" type="TextureProgressBar" parent="ProgressBarContainer" unique_id=1799216879]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+value = 50.0
+texture_under = ExtResource("2_bar_under")
+texture_progress = ExtResource("3_bar_fill")
+
+[node name="TargetPoint" type="Marker2D" parent="." unique_id=393940126]

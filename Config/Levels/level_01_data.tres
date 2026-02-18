@@ -1,7 +1,10 @@
 [gd_resource type="Resource" script_class="LevelData" format=3 uid="uid://sct6jvx6tm1y"]
 
+[ext_resource type="Script" uid="uid://dg4clj8lt54w6" path="res://Core/Data/Waves/wave_data.gd" id="2_rm4rq"]
 [ext_resource type="Script" uid="uid://bcm5msgk0utl6" path="res://Levels/_TemplateLevel/template_data.gd" id="5_iqjng"]
+[ext_resource type="Resource" path="res://Config/Waves/test_wave_01.tres" id="6_wave"]
 
 [resource]
 script = ExtResource("5_iqjng")
+waves = Array[ExtResource("2_rm4rq")]([ExtResource("6_wave")])
 metadata/_custom_type_script = "uid://bcm5msgk0utl6"
