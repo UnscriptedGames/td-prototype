@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://dfk8x4v5y2q1w"]
 
 [ext_resource type="Script" uid="uid://5ouc3ovyc52m" path="res://UI/HUD/Sidebar/sidebar_button.gd" id="1_x8y4z"]
+[ext_resource type="Texture2D" uid="uid://b55t3rooperu6" path="res://UI/HUD/Sidebar/Assets/sidebar_tower_button.png" id="2_4k7rj"]
 
-[sub_resource type="Image" id="Image_hpbu7"]
+[sub_resource type="Image" id="Image_4k7rj"]
 data = {
 "data": PackedByteArray(255, 255, 255, 255),
 "format": "RGBA8",
@@ -12,21 +13,39 @@ data = {
 }
 
 [sub_resource type="ImageTexture" id="ImageTexture_4k7rj"]
-image = SubResource("Image_hpbu7")
+image = SubResource("Image_4k7rj")
 
 [node name="SidebarButton" type="Button" unique_id=2058311730]
 clip_contents = true
-custom_minimum_size = Vector2(0, 64)
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+custom_minimum_size = Vector2(133, 100)
+offset_right = 133.0
+offset_bottom = 100.0
 size_flags_horizontal = 3
 expand_icon = true
 script = ExtResource("1_x8y4z")
 
-[node name="BuffCostLabel" type="Label" parent="." unique_id=1860624578]
+[node name="BackgroundRect" type="TextureRect" parent="." unique_id=686878489]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_4k7rj")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="IconRect" type="TextureRect" parent="." unique_id=-384569050]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.631
+anchor_bottom = 1.0
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CostLabel" type="Label" parent="." unique_id=1860624578]
 visible = false
 layout_mode = 1
 anchors_preset = 3
@@ -34,15 +53,15 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -43.0
-offset_top = -35.0
-offset_right = -13.0
-offset_bottom = -10.0
+offset_left = -40.0
+offset_top = -38.0
+offset_right = -10.0
+offset_bottom = -13.0
 grow_horizontal = 0
 grow_vertical = 0
-text = "999"
-horizontal_alignment = 2
-vertical_alignment = 2
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="StockLabel" type="Label" parent="." unique_id=27858377]
 layout_mode = 1
@@ -51,10 +70,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -43.0
-offset_top = -35.0
-offset_right = -13.0
-offset_bottom = -10.0
+offset_left = -40.0
+offset_top = -86.0
+offset_right = -10.0
+offset_bottom = -61.0
 grow_horizontal = 0
 grow_vertical = 0
 text = "0"

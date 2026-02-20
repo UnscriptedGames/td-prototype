@@ -338,6 +338,14 @@ func _spawn_projectiles() -> void:
 				has_attack_modifier("aoe_projectile"),
 				status_effects
 			)
+		
+		_on_projectile_spawned(projectile)
+
+
+## Virtual method: Called immediately after a projectile is spawned and initialized.
+## Override in derived towers to apply custom visuals or logic (e.g. scaling).
+func _on_projectile_spawned(_projectile: TemplateProjectile) -> void:
+	pass
 
 
 func upgrade_path(level_index: int) -> void:

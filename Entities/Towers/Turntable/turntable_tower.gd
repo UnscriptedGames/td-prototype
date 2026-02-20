@@ -11,28 +11,34 @@ class_name TurntableTower
 ## tone arm sweep animation rather than AnimationPlayer tracks.
 
 
-# --- CONSTANTS ---
+# --- ARM ANIMATION ---
 
-## Tone arm resting angle in radians (~24.5 degrees).
-const ARM_REST_ANGLE: float = deg_to_rad(24.5)
+@export_group("Arm Animation")
 
-## Tone arm sweep angle in radians (~98 degrees).
-const ARM_SWEEP_ANGLE: float = deg_to_rad(98.0)
+## Tone arm resting angle in degrees.
+@export_range(0.0, 180.0, 0.5, "degrees") var arm_rest_angle_deg: float = 14.0
+
+## Tone arm sweep angle in degrees.
+@export_range(0.0, 180.0, 0.5, "degrees") var arm_sweep_angle_deg: float = 95.0
 
 ## Duration of the forward sweep in seconds.
-const ARM_SWEEP_DURATION: float = 0.12
+@export_range(0.01, 2.0, 0.01, "suffix:s") var arm_sweep_duration: float = 0.12
 
 ## Duration of the return sweep in seconds.
-const ARM_RETURN_DURATION: float = 0.25
+@export_range(0.01, 2.0, 0.01, "suffix:s") var arm_return_duration: float = 0.25
+
+# --- VINYL ANIMATION ---
+
+@export_group("Vinyl Animation")
 
 ## Duration for the vinyl fade-out when fired.
-const VINYL_FADE_OUT_DURATION: float = 0.08
+@export_range(0.01, 1.0, 0.01, "suffix:s") var vinyl_fade_out_duration: float = 0.08
 
 ## Duration for the vinyl fade-in when a new record loads.
-const VINYL_FADE_IN_DURATION: float = 0.2
+@export_range(0.01, 1.0, 0.01, "suffix:s") var vinyl_fade_in_duration: float = 0.2
 
 ## Idle vinyl rotation speed in radians per second.
-const VINYL_SPIN_SPEED: float = TAU * 0.5
+@export_range(0.0, 20.0, 0.1, "radians_as_degrees") var vinyl_spin_speed: float = TAU * 0.5
 
 
 # --- NODE REFERENCES ---
@@ -48,13 +54,13 @@ var _fire_tween: Tween
 
 func _ready() -> void:
 	super._ready()
-	tone_arm.rotation = ARM_REST_ANGLE
+	tone_arm.rotation = deg_to_rad(arm_rest_angle_deg)
 
 
 func _process(delta: float) -> void:
 	super._process(delta)
 	if vinyl:
-		vinyl.rotation += VINYL_SPIN_SPEED * delta
+		vinyl.rotation += vinyl_spin_speed * delta
 
 
 # --- ATTACK OVERRIDE ---
@@ -94,7 +100,7 @@ func _attack() -> void:
 	# 1. Sweep the tone arm from rest to peak.
 	_fire_tween.tween_property(
 		tone_arm, "rotation",
-		ARM_SWEEP_ANGLE, ARM_SWEEP_DURATION
+		deg_to_rad(arm_sweep_angle_deg), arm_sweep_duration
 	).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
 
 	# 2. At the peak: spawn projectiles and fade out the vinyl.
@@ -104,7 +110,7 @@ func _attack() -> void:
 	# 3. Return the tone arm to rest.
 	_fire_tween.tween_property(
 		tone_arm, "rotation",
-		ARM_REST_ANGLE, ARM_RETURN_DURATION
+		deg_to_rad(arm_rest_angle_deg), arm_return_duration
 	).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_CUBIC)
 
 	# 4. Fade the vinyl back in (new record loaded).
@@ -122,7 +128,7 @@ func _attack() -> void:
 func _fade_out_vinyl() -> void:
 	var fade_tween: Tween = create_tween()
 	fade_tween.tween_property(
-		vinyl, "modulate:a", 0.0, VINYL_FADE_OUT_DURATION
+		vinyl, "modulate:a", 0.0, vinyl_fade_out_duration
 	)
 
 
@@ -132,5 +138,16 @@ func _fade_in_vinyl() -> void:
 	vinyl.rotation = 0.0
 	var fade_tween: Tween = create_tween()
 	fade_tween.tween_property(
-		vinyl, "modulate:a", 1.0, VINYL_FADE_IN_DURATION
+		vinyl, "modulate:a", 1.0, vinyl_fade_in_duration
 	)
+
+
+# --- PROJECTILE SYNC ---
+
+## Syncs the projectile's scale to match the vinyl's current global scale.
+## This ensures the fired record looks exactly the same size as the one on the deck.
+func _on_projectile_spawned(projectile: TemplateProjectile) -> void:
+	# We use global_scale to account for the tower's own scale (0.075) and the vinyl's relative scale.
+	# Applying this to the projectile's sprite ensures a 1:1 visual match.
+	if is_instance_valid(projectile.sprite) and is_instance_valid(vinyl):
+		projectile.sprite.global_scale = vinyl.global_scale

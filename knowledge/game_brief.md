@@ -320,6 +320,15 @@ The entire interface is modelled after professional DAW software.
 	`Sprite2D.scale` in-engine. Fine details (e.g., vinyl grooves) should be bold
 	enough to survive the downscale.
 
+### The Timeline (New Feature)
+- **Concept:** A visual representation of the music track's progress and upcoming events.
+- **Playhead:** A red vertical line that scans left-to-right across the Level Viewport.
+- **Duration Sync:** The scan duration matches the exact length of the current stem's audio track.
+- **Spawn Markers:** Visual indicators along the top of the viewport (or bottom of the top bar)
+	that align with specific timestamps in the track, alerting the player to incoming enemy waves.
+- **Goal:** Reinforces the connection between the audio and the gameplay, acting as a functional
+	"sheet music" or "sequencer" view for the player.
+
 ---
 
 ## 12. Open Design Questions

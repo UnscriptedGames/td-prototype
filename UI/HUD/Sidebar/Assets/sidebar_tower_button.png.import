@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bvtvmbf1x50c5"
-path="res://.godot/imported/turntable_arm.png-66a181d633af83ae050cbcff0a2bb5ef.ctex"
+uid="uid://b55t3rooperu6"
+path="res://.godot/imported/sidebar_tower_button.png-719dac60e5b83ab456b1b24b4af0cf3c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Entities/Towers/Turntable/Assets/turntable_arm.png"
-dest_files=["res://.godot/imported/turntable_arm.png-66a181d633af83ae050cbcff0a2bb5ef.ctex"]
+source_file="res://UI/HUD/Sidebar/Assets/sidebar_tower_button.png"
+dest_files=["res://.godot/imported/sidebar_tower_button.png-719dac60e5b83ab456b1b24b4af0cf3c.ctex"]
 
 [params]
 
@@ -23,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

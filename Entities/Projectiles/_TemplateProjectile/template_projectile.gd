@@ -17,6 +17,7 @@ var _is_returning: bool = false
 
 ## Node References
 @onready var hitbox: CollisionShape2D = $HitboxShape
+@onready var sprite: Sprite2D = $Sprite
 
 
 func _physics_process(delta: float) -> void:

@@ -190,7 +190,7 @@ func _update_or_create_buff(existing_btn: Button, buff_data: BuffData) -> void:
 		btn.icon = null
 		btn.data = null
 		btn.disabled = true
-		if btn.buff_cost_label: btn.buff_cost_label.visible = false
+		if btn.cost_label: btn.cost_label.visible = false
 		if btn.stock_label: btn.stock_label.visible = false
 
 
@@ -199,10 +199,9 @@ func _update_or_create_buff(existing_btn: Button, buff_data: BuffData) -> void:
 func _on_loadout_stock_changed(tower_data: TowerData, new_stock: int) -> void:
 	for child: Node in tower_grid.get_children():
 		if child.has_meta("tower_data") and child.get_meta("tower_data") == tower_data:
-			var lbl: Label = child.get_node_or_null("StockLabel")
-			if lbl: lbl.text = str(new_stock)
-			if child is Button:
-				child.disabled = (new_stock <= 0)
+			var btn: SidebarButton = child as SidebarButton
+			if btn:
+				btn.set_stock(new_stock)
 
 
 ## Triggers the cooldown visual on the matching buff button when a buff is

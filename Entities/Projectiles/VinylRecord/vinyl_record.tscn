@@ -1,19 +1,20 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://be7klmaru7fkn"]
 
-[ext_resource type="Script" path="res://Entities/Projectiles/VinylRecord/vinyl_record.gd" id="1_proj"]
-[ext_resource type="Texture2D" uid="uid://d0i8v3jd6wn0a" path="res://Entities/Towers/Turntable/Assets/turntable_projectile.png" id="2_vinyl"]
+[ext_resource type="Script" uid="uid://c8gqwc8h185i3" path="res://Entities/Projectiles/VinylRecord/vinyl_record.gd" id="1_proj"]
+[ext_resource type="Texture2D" uid="uid://bd62q1oc803v1" path="res://Entities/Towers/Turntable/Assets/turntable_projectile.png" id="2_kkuu6"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_hit"]
 radius = 8.0
 
-[node name="VinylRecord" type="Area2D"]
+[node name="VinylRecord" type="Area2D" unique_id=904366304]
 collision_layer = 8
 collision_mask = 4
 script = ExtResource("1_proj")
 
-[node name="Sprite" type="Sprite2D" parent="."]
+[node name="Sprite" type="Sprite2D" parent="." unique_id=308266742]
+texture_filter = 4
 scale = Vector2(0.036, 0.036)
-texture = ExtResource("2_vinyl")
+texture = ExtResource("2_kkuu6")
 
-[node name="HitboxShape" type="CollisionShape2D" parent="."]
+[node name="HitboxShape" type="CollisionShape2D" parent="." unique_id=55514520]
 shape = SubResource("CircleShape2D_hit")

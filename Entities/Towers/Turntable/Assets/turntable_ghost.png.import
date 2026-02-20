@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bvtvmbf1x50c5"
-path="res://.godot/imported/turntable_arm.png-66a181d633af83ae050cbcff0a2bb5ef.ctex"
+uid="uid://br3rbui5g0mo5"
+path="res://.godot/imported/turntable_ghost.png-0541628dcaeca72be20b49cdc3bdc1ab.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Entities/Towers/Turntable/Assets/turntable_arm.png"
-dest_files=["res://.godot/imported/turntable_arm.png-66a181d633af83ae050cbcff0a2bb5ef.ctex"]
+source_file="res://Entities/Towers/Turntable/Assets/turntable_ghost.png"
+dest_files=["res://.godot/imported/turntable_ghost.png-0541628dcaeca72be20b49cdc3bdc1ab.ctex"]
 
 [params]
 

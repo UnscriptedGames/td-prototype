@@ -1,10 +1,11 @@
 [gd_resource type="Resource" script_class="TowerData" format=3 uid="uid://dmu3wepomcyo3"]
 
-[ext_resource type="Texture2D" uid="uid://c1jh7qpvj6fn0" path="res://Entities/Towers/Turntable/Assets/turntable_deck.png" id="1_0i8xh"]
+[ext_resource type="Texture2D" uid="uid://br3rbui5g0mo5" path="res://Entities/Towers/Turntable/Assets/turntable_ghost.png" id="1_lc6hu"]
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_tower_data"]
 [ext_resource type="Script" uid="uid://bvwum7tqhcpwg" path="res://Core/Data/AttackModifiers/attack_modifier_data.gd" id="2_daaxe"]
+[ext_resource type="Texture2D" uid="uid://btsakhne4uhj" path="res://Entities/Towers/Turntable/Assets/sidebar_tower_turntable.png" id="2_lc6hu"]
 [ext_resource type="Script" uid="uid://cajll6x5mfyy4" path="res://Entities/Towers/_TemplateTower/tower_level_data.gd" id="2_level_data"]
-[ext_resource type="PackedScene" path="res://Entities/Projectiles/VinylRecord/vinyl_record.tscn" id="3_projectile"]
+[ext_resource type="PackedScene" uid="uid://be7klmaru7fkn" path="res://Entities/Projectiles/VinylRecord/vinyl_record.tscn" id="3_projectile"]
 [ext_resource type="Script" uid="uid://d1g1t4lju13s1" path="res://Core/Data/StatusEffects/status_effect_data.gd" id="4_0i8xh"]
 
 [sub_resource type="Resource" id="base_level"]
@@ -18,12 +19,12 @@ idle_animation = &""
 
 [resource]
 script = ExtResource("1_tower_data")
-ghost_texture = ExtResource("1_0i8xh")
+ghost_texture = ExtResource("1_lc6hu")
 ghost_scale = Vector2(0.075, 0.075)
 ghost_texture_offset = Vector2(-25, -25)
 levels = Array[ExtResource("2_level_data")]([SubResource("base_level")])
 tower_scene_path = "res://Entities/Towers/Turntable/turntable_tower.tscn"
 display_name = "Turntable"
-icon = ExtResource("1_0i8xh")
+icon = ExtResource("2_lc6hu")
 description = "The workhorse tower. Fires vinyl records at enemies. Cheap, reliable single-target damage."
 allocation_cost = 5

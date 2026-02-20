@@ -12,8 +12,10 @@ extends Button
 var data: LoadoutItem
 var type: String = "tower"
 var _is_on_cooldown: bool = false
+var _current_stock: int = 0
 
-@onready var buff_cost_label: Label = $BuffCostLabel
+@onready var icon_rect: TextureRect = $IconRect
+@onready var cost_label: Label = $CostLabel
 @onready var stock_label: Label = $StockLabel
 @onready var cooldown_overlay: TextureProgressBar = $CooldownOverlay
 
@@ -34,26 +36,45 @@ func _ready() -> void:
 		cooldown_overlay.tint_progress = COOLDOWN_TINT
 	
 	# Set default label visibility.
-	if buff_cost_label:
-		buff_cost_label.visible = false
+	if cost_label:
+		cost_label.visible = false
 	if stock_label:
 		stock_label.visible = true
 		stock_label.text = "0"
+	
+	# Clear the button's built-in icon to avoid duplication/offset issues.
+	icon = null
 
 
 func setup_tower(tower_data: TowerData) -> void:
 	# Configures this button for a tower item.
 	data = tower_data
 	type = "tower"
-	icon = tower_data.icon
+	if icon_rect:
+		# Use the ghost texture (composite image) for the tower icon in the sidebar.
+		if tower_data.ghost_texture:
+			icon_rect.texture = tower_data.ghost_texture
+		else:
+			icon_rect.texture = tower_data.icon
 	text = ""
 	tooltip_text = tower_data.display_name
+	
+	if cost_label and not tower_data.levels.is_empty():
+		cost_label.text = str(tower_data.levels[0].cost)
+		cost_label.visible = true
+	elif cost_label:
+		cost_label.visible = false
 
 
 func set_stock(amount: int) -> void:
 	# Updates the stock count label.
+	_current_stock = amount
+	
 	if stock_label:
 		stock_label.text = str(amount)
+	
+	# Visually dim the button if out of stock?
+	modulate.a = 0.5 if amount <= 0 else 1.0
 
 
 func setup_buff(buff_data: BuffData) -> void:
@@ -61,17 +82,17 @@ func setup_buff(buff_data: BuffData) -> void:
 	data = buff_data
 	type = "buff"
 	
-	if buff_data.icon:
-		icon = buff_data.icon
-		expand_icon = true
-		icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	if buff_data.icon and icon_rect:
+		icon_rect.texture = buff_data.icon
+		# Buff icons might need different alignment/scaling if they aren't square?
+		# For now, we assume they fit the same slot.
 	
 	text = buff_data.display_name
 	tooltip_text = "%s\n%s" % [buff_data.display_name, buff_data.description]
 	
-	if buff_cost_label:
-		buff_cost_label.text = str(buff_data.gold_cost)
-		buff_cost_label.visible = true
+	if cost_label:
+		cost_label.text = str(buff_data.gold_cost)
+		cost_label.visible = true
 	if stock_label:
 		stock_label.visible = false
 
@@ -80,14 +101,16 @@ func setup_relic(relic_data: RelicData) -> void:
 	# Configures this button for a relic item.
 	data = relic_data
 	type = "relic"
-	if relic_data.icon:
-		icon = relic_data.icon
+	if relic_data.icon and icon_rect:
+		icon_rect.texture = relic_data.icon
 		text = ""
 	else:
+		if icon_rect:
+			icon_rect.texture = null
 		text = "R"
 	
-	if buff_cost_label:
-		buff_cost_label.visible = false
+	if cost_label:
+		cost_label.visible = false
 	if stock_label:
 		stock_label.visible = false
 
@@ -111,49 +134,39 @@ func show_cooldown(duration: float) -> void:
 
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
-	# Builds a ghost preview Panel matching this button's size and icon,
+	# Builds a ghost preview showing only the icon texture (semi-transparent)
 	# then returns the card_drag payload dictionary.
 	if not data:
 		return null
 	if _is_on_cooldown:
 		return null
 	
-	# Ghost Panel — mimics the button's appearance during the drag.
-	var preview: Panel = Panel.new()
-	var btn_size: Vector2 = self.size
-	preview.custom_minimum_size = btn_size
-	preview.size = btn_size
-	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Prevent dragging if out of stock (only applies to towers).
+	if type == "tower" and _current_stock <= 0:
+		return null
 	
-	# Style: dark rounded rect with a thin border.
-	var style: StyleBoxFlat = StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.1, 0.1, 0.9)
-	style.corner_radius_top_left = 8
-	style.corner_radius_top_right = 8
-	style.corner_radius_bottom_left = 8
-	style.corner_radius_bottom_right = 8
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
-	style.border_color = Color(0.3, 0.3, 0.3)
-	preview.add_theme_stylebox_override("panel", style)
-	
-	# Icon texture — fills the panel, centred and aspect-preserved.
-	var icon_rect: TextureRect = TextureRect.new()
-	icon_rect.custom_minimum_size = btn_size
-	icon_rect.size = btn_size
-	icon_rect.position = Vector2.ZERO
-	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	
-	if data.icon:
-		icon_rect.texture = data.icon
+	# Determine the drag texture from the IconRect (same source as the sidebar display).
+	var drag_texture: Texture2D = null
+	if icon_rect and icon_rect.texture:
+		drag_texture = icon_rect.texture
+	elif data.icon:
+		drag_texture = data.icon
 	elif data is TowerData and data.ghost_texture:
-		icon_rect.texture = data.ghost_texture
+		drag_texture = data.ghost_texture
 	
-	preview.add_child(icon_rect)
+	if not drag_texture:
+		return null
+	
+	# Ghost icon — just the icon texture, semi-transparent, matching the IconRect size.
+	var icon_size: Vector2 = icon_rect.size if icon_rect else self.size
+	var preview: TextureRect = TextureRect.new()
+	preview.custom_minimum_size = icon_size
+	preview.size = icon_size
+	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview.texture = drag_texture
+	preview.modulate = Color(1.0, 1.0, 1.0, 0.75)
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
 	# Offset container — keeps the cursor aligned to where the user clicked.
 	var offset_root: Control = Control.new()
