@@ -356,7 +356,7 @@ func _on_enemy_finished_path(enemy: TemplateEnemy) -> void:
 	
 	if not source_path:
 		enemy.reached_goal()
-		GameManager.damage_player(enemy.data.damage)
+		GameManager.add_peak_volume(enemy.health)
 		_active_enemy_count -= 1
 		_check_wave_completion()
 		return
@@ -368,7 +368,7 @@ func _on_enemy_finished_path(enemy: TemplateEnemy) -> void:
 	
 	if branches.is_empty():
 		# Terminal path — enemy has reached the goal.
-		GameManager.damage_player(enemy.data.damage)
+		GameManager.add_peak_volume(enemy.health)
 		enemy.reached_goal()
 		_active_enemy_count -= 1
 		_check_wave_completion()
@@ -381,7 +381,7 @@ func _on_enemy_finished_path(enemy: TemplateEnemy) -> void:
 	if not next_source_path:
 		push_error("Invalid branch path from %s to %s" % [source_path.name, next_path_nodepath])
 		enemy.reached_goal()
-		GameManager.damage_player(enemy.data.damage)
+		GameManager.add_peak_volume(enemy.health)
 		_active_enemy_count -= 1
 		_check_wave_completion()
 		return

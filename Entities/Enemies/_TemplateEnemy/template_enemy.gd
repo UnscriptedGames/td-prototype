@@ -1,3 +1,4 @@
+@tool
 extends Area2D
 
 ## Template Enemy: Common logic for all enemy types
@@ -30,10 +31,6 @@ class ActiveStatusEffect:
 		tick_timer = 0.0
 
 
-## Static Caches
-static var _valid_variants_cache: Dictionary[String, Array] = {} # Cache for valid variants per enemy type
-
-
 ## Exported Data
 @export var data: EnemyData # Enemy data resource
 
@@ -62,7 +59,6 @@ var _health: int # Current health
 var lane_index: int = 0 # The specific lane index this enemy is following
 var _variant: String = "" # Current variant name
 var _last_direction: String = "south_west" # Last animation direction
-var _last_flip_h: bool = false # Last horizontal flip state
 var _has_reached_end: bool = false # True if enemy reached end of path
 
 
@@ -73,7 +69,7 @@ var _is_stunned: bool = false # Is the enemy currently stunned?
 
 
 ## Node References
-@onready var sprite := $Sprite as Sprite2D # Wave visual node
+@onready var sprite: CanvasItem = $Sprite as CanvasItem # Wave visual node (Sprite2D or TextureRect)
 @onready var animation := $Animation as AnimatedSprite2D # Death animation node
 @onready var hitbox := $PositionShape as CollisionShape2D # Hitbox node
 @onready var target_point: Node2D = $TargetPoint if has_node("TargetPoint") else self # Target point for towers
@@ -117,73 +113,23 @@ func _ready() -> void:
 			bar.visible = false
 
 	# Configure stats
-	max_health = data.max_health
-	speed = data.speed
-	reward = data.reward
-
-	# Validate and select a variant
-	var data_key: String = data.resource_path
-	var valid_variants: Array = []
-	if _valid_variants_cache.has(data_key):
-		valid_variants = _valid_variants_cache[data_key]
+	if data:
+		max_health = data.max_health
+		speed = data.speed
+		reward = data.reward
 	else:
-		valid_variants = _validate_and_cache_variants()
+		push_error("EnemyData is not assigned!")
+		return
 
-	if not valid_variants.is_empty():
-		_variant = valid_variants.pick_random()
-	else:
-		push_error("No valid variants found for '%s'. Disabling enemy." % data_key)
-		set_process(false)
-		visible = false
-
-
-	if data.wave_texture:
-		sprite.texture = data.wave_texture
-		if sprite.material:
-			(sprite.material as ShaderMaterial).set_shader_parameter("scroll_speed", data.scroll_speed)
-	# -------------------------
-
+	# Duplicate the material so every enemy gets its own unique shader instance.
+	# Otherwise, fast and slow enemies on screen simultaneously will fight over
+	# the exact same shader parameters and cause massive flickering.
+	if sprite and sprite.material is ShaderMaterial:
+		sprite.material = sprite.material.duplicate()
 
 	# Set the initial state
-	reset()
-
-
-## Validates all variants in the EnemyData resource
-func _validate_and_cache_variants() -> Array:
-	var valid_variants: Array = []
-	
-	if not data.animations:
-		push_error("EnemyData resource '%s' is missing an animation resource." % data.resource_path)
-		return []
-
-	animation.sprite_frames = data.animations
-
-	# Loop through all possible variants (e.g., "green", "purple")
-	for variant_name in data.variants:
-		var is_variant_fully_valid: bool = true
-		# Loop through all required actions for that variant
-		for action in data.required_actions:
-			# Only validate death animations now, as movement is shader-based
-			if action == "move": continue
-			
-			# Check for death animation (flip agnostic usually, but we check direction just in case)
-			# Actually, death animations are still directional in the current setup
-			var anim_sw_name: String = "%s_%s_south_west" % [variant_name, action]
-			var anim_nw_name: String = "%s_%s_north_west" % [variant_name, action]
-
-			if not animation.sprite_frames.has_animation(anim_sw_name):
-				push_error("Validation failed for '%s': Missing animation '%s'." % [data.resource_path, anim_sw_name])
-				is_variant_fully_valid = false
-
-			if not animation.sprite_frames.has_animation(anim_nw_name):
-				push_error("Validation failed for '%s': Missing animation '%s'." % [data.resource_path, anim_nw_name])
-				is_variant_fully_valid = false
-		# If after all checks, the variant is still valid, add it to our list
-		if is_variant_fully_valid:
-			valid_variants.append(variant_name)
-	# Store the result in the cache and return it
-	_valid_variants_cache[data.resource_path] = valid_variants
-	return valid_variants
+	if not Engine.is_editor_hint():
+		reset()
 
 
 ## Handles enemy death, gives a reward, and plays death animation
@@ -191,10 +137,6 @@ func die() -> void:
 	if state == State.DYING:
 		return
 	state = State.DYING
-
-	# If the enemy is a flying type, make it "fall" to the ground for its death animation
-	if data and data.is_flying:
-		z_index = 0
 
 	emit_signal("died", self, reward)
 
@@ -210,10 +152,6 @@ func reached_goal() -> void:
 		return
 	state = State.REACHED_GOAL
 	
-	# If the enemy is a flying type, make it "fall" to the ground
-	if data and data.is_flying:
-		z_index = 0
-		
 	if not animation.animation_finished.is_connected(_on_death_animation_finished):
 		animation.animation_finished.connect(_on_death_animation_finished)
 
@@ -223,6 +161,16 @@ func reached_goal() -> void:
 
 ## Handles movement and animation each frame
 func _process(delta: float) -> void:
+	# Keep the shader scrolling accurate inside the editor based on the data!
+	if Engine.is_editor_hint():
+		if data and sprite and sprite.material is ShaderMaterial:
+			var mat: ShaderMaterial = sprite.material as ShaderMaterial
+			mat.set_shader_parameter("use_unscaled_time", true)
+			var speed_mult: float = data.scroll_speed
+			mat.set_shader_parameter("unscaled_time", (float(Time.get_ticks_msec()) / 1000.0) * speed_mult)
+			mat.set_shader_parameter("rect_size", sprite.size)
+		return
+
 	_process_status_effects(delta)
 
 	if state == State.DYING:
@@ -261,16 +209,22 @@ func _process(delta: float) -> void:
 
 		# Determine animation direction based on movement vector (Tangent)
 		var anim_dir: String = "north_west" if tangent.y < 0 else "south_west"
-		var flip_h: bool = tangent.x > 0
 
 		# Store the last direction for the death animation
 		if path_follow.progress < path.curve.get_baked_length() - 1.0:
 			_last_direction = anim_dir
-			_last_flip_h = flip_h
 			
-		# Wave Visual: Just flip based on direction
-		if sprite:
-			sprite.flip_h = flip_h
+		# Wave Visual: Update unscaled time and enable visibility
+		if sprite and sprite.material is ShaderMaterial:
+			var mat: ShaderMaterial = sprite.material as ShaderMaterial
+			mat.set_shader_parameter("use_unscaled_time", true)
+			
+			# We deleted the 'scroll_speed' uniform from the shader to keep EnemyData
+			# as the single source of truth. So we just multiply the time ourselves here!
+			var speed_mult: float = data.scroll_speed if data else 1.0
+			mat.set_shader_parameter("unscaled_time", (float(Time.get_ticks_msec()) / 1000.0) * speed_mult)
+			mat.set_shader_parameter("rect_size", sprite.size)
+				
 			# Enable visibility now that we are positioned correctly
 			if not sprite.visible:
 				sprite.visible = true
@@ -278,7 +232,7 @@ func _process(delta: float) -> void:
 					shadow_panel.visible = true
  
 		# Play the moving animation
-		_play_animation("move", anim_dir, flip_h)
+		_play_animation("move", anim_dir)
 
 		# Check if the enemy has reached the end of the path
 		if not _has_reached_end and path_follow.progress >= path.curve.get_baked_length():
@@ -287,15 +241,12 @@ func _process(delta: float) -> void:
 
 
 ## Plays the specified animation for the current variant
-func _play_animation(action: String, direction: String, flip_h: bool = false) -> void:
+func _play_animation(action: String, direction: String) -> void:
 	var animation_name: String = _variant + "_" + action + "_" + direction
 	if animation:
 		# ONLY play the animation if it's not already the current one.
 		if animation.animation != animation_name:
 			animation.play(animation_name)
-		
-		# We can still update the flip value every frame.
-		animation.flip_h = flip_h
 
 
 ## Plays the common death sequence.
@@ -316,7 +267,6 @@ func _play_death_sequence(action_name: String) -> void:
 	var animation_name: String = "%s_%s_%s" % [_variant, action_name, _last_direction]
 	if animation and animation.sprite_frames.has_animation(animation_name):
 		animation.play(animation_name)
-		animation.flip_h = _last_flip_h
 	else:
 		# If no animation is found, cleanup immediately.
 		_return_to_pool_and_cleanup()

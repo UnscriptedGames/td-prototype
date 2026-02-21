@@ -67,14 +67,16 @@
 
 ## 3. The Peak Meter
 
-The Peak Meter is the central performance indicator, styled as a DAW-standard VU/peak meter
-with a three-colour gradient.
+The Peak Meter is the central performance indicator and survival mechanic, styled as a 
+DAW-standard VU/peak meter with a three-colour gradient and smooth, unscaled animation.
 
 ### How It Works
 - Divided into three zones: **Green** (bottom), **Yellow** (middle), **Red** (top).
 - When an enemy reaches the end of the maze (the goal), its **remaining health** is added
 	to the Peak Meter's cumulative total, pushing the needle upward.
 - The meter **resets between each stem level**.
+- **Unscaled Animation:** The meter's visual movement is decoupled from game speed 
+  (Fast Forward), ensuring smooth UI feedback even at 4x speed.
 
 ### Performance Grades
 | Meter Zone at Wave End | Stem Quality Unlocked |
@@ -84,8 +86,8 @@ with a three-colour gradient.
 | **Red** | **Abomination** — A nightmarish version (goat screams, distortion, chaos). |
 
 ### Fail State
-- If the Peak Meter **completely fills** (tops out past red) before the wave is complete,
-	the level is **failed** and must be replayed.
+- **Clipping:** If the Peak Meter hits 100% capacity (tops out past red), the signal 
+  "clips," and the level is immediately **failed**.
 - During the **Boss Wave (Wave 6)**, the Peak Meter is a pure survival mechanic — there is
 	no stem quality to grade. The player must prevent the meter from filling while defeating
 	the mini boss.
@@ -221,7 +223,7 @@ before entering a stage.
 
 ## 9. Enemy Design — "The Waveforms"
 
-Enemies are visualised as **audio waveform tracks** moving along the maze paths.
+Enemies are modular **audio waveform tracks** defined by `EnemyData` resources.
 
 ### Core Visual Identity
 - Enemies appear as animated waveform shapes (sine, square, sawtooth, etc.).
@@ -232,6 +234,13 @@ Enemies are visualised as **audio waveform tracks** moving along the maze paths.
 ### Movement
 - Enemies follow paths in **4 cardinal directions** (North, South, East, West).
 - No sprite flipping or rotation is applied during movement.
+- **Editor Preview:** Visuals are driven by `@tool` scripts, allowing real-time 
+  previews of wave scrolling directly in the Godot inspector.
+
+### Visual Configuration (via Shader)
+- **Single Source of Truth:** `EnemyData` defines the `wave_texture` and `scroll_speed`.
+- **Geometry:** The shader supports mathematical `corner_radius_px` (to match 3D shadows) 
+  and anti-aliased `border_width` with custom colors, applied natively to the waveform.
 
 ### Planned Variant Types (TBD)
 - **Shielded Waveforms:** Enemies with a protective barrier that must be broken before

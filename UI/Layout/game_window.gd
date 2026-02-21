@@ -159,6 +159,11 @@ func _setup_signal_connections() -> void:
 	if GameManager.has_signal("game_state_changed"):
 		GameManager.game_state_changed.connect(_on_game_state_changed)
 
+	# Peak Meter display
+	if GameManager.has_signal("peak_meter_changed"):
+		GameManager.peak_meter_changed.connect(_on_peak_changed)
+		_on_peak_changed(GameManager.current_peak, GameManager.MAX_PEAK)
+
 	# Wave active/idle
 	if GameManager.has_signal("wave_status_changed"):
 		GameManager.wave_status_changed.connect(_on_wave_status_changed)
@@ -237,6 +242,11 @@ func _setup_level() -> void:
 ## Animates performance meters with smoothed jitter and peak-hold indicators.
 func _process(delta: float) -> void:
 	if not is_instance_valid(gauge_l) or not is_instance_valid(gauge_r): return
+	
+	# We want UI meters to animate smoothly even if the game is fast-forwarding,
+	# so we get the raw, unscaled delta time by removing the time_scale multiplier.
+	var time_scale: float = Engine.time_scale
+	var unscaled_delta: float = delta / time_scale if time_scale > 0.0 else 0.0
 
 	# 1. Update Noise (simulate live signal jitter for "analogue" feel)
 	var max_v: float = gauge_l.max_value
@@ -250,8 +260,8 @@ func _process(delta: float) -> void:
 	if abs(_noise_val_diff - _noise_target_diff) < 0.05:
 		_noise_target_diff = randf_range(-1.0, 1.0)
 
-	_noise_val_common = lerp(_noise_val_common, _noise_target_common, delta * JITTER_SPEED)
-	_noise_val_diff = lerp(_noise_val_diff, _noise_target_diff, delta * JITTER_SPEED)
+	_noise_val_common = lerp(_noise_val_common, _noise_target_common, unscaled_delta * JITTER_SPEED)
+	_noise_val_diff = lerp(_noise_val_diff, _noise_target_diff, unscaled_delta * JITTER_SPEED)
 
 	# Final offsets: L = Common + Diff, R = Common - Diff
 	var common_offset: float = _noise_val_common * noise_amp_val
@@ -263,19 +273,19 @@ func _process(delta: float) -> void:
 	# 2. Lerp towards target value (display = 10% base + damage)
 	var base_fill: float = max_v * 0.10
 	var final_target: float = base_fill + _target_damage_value
-	var smooth_speed: float = 7.0 * delta
+	var smooth_speed: float = 7.0 * unscaled_delta
 
 	# L Channel
 	var smoothed_l: float = lerp(gauge_l.value, final_target, smooth_speed)
 	var final_l: float = smoothed_l + _meter_noise_offset_l
 	gauge_l.value = clamp(final_l, 0.0, max_v)
-	_update_peak_hold(final_l, delta, true)
+	_update_peak_hold(final_l, unscaled_delta, true)
 
 	# R Channel
 	var smoothed_r: float = lerp(gauge_r.value, final_target, smooth_speed)
 	var final_r: float = smoothed_r + _meter_noise_offset_r
 	gauge_r.value = clamp(final_r, 0.0, max_v)
-	_update_peak_hold(final_r, delta, false)
+	_update_peak_hold(final_r, unscaled_delta, false)
 
 
 ## Updates peak-hold indicator position for one channel. The peak value is
@@ -619,6 +629,13 @@ func _on_wave_changed(current_wave: int, total_waves: int) -> void:
 func _on_gain_changed(new_gain: int) -> void:
 	if is_instance_valid(gain_label):
 		gain_label.text = "Gain: %d dB" % new_gain
+
+
+## Updates the peak meter visual target.
+func _on_peak_changed(current: float, max_val: float) -> void:
+	if max_val > 0.0 and is_instance_valid(gauge_l):
+		# We reserve the first 10% for base fill, so map 0-max to 0-90%.
+		_target_damage_value = (current / max_val) * (gauge_l.max_value * 0.90)
 
 
 ## Converts the volume slider's 0–100 linear range to dB and applies it to

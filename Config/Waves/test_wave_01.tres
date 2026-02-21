@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dg4clj8lt54w6" path="res://Core/Data/Waves/wave_data.gd" id="1_wave"]
 [ext_resource type="Script" uid="uid://c6sd68ghkditp" path="res://Core/Data/Waves/spawn_instruction.gd" id="2_spawn"]
-[ext_resource type="PackedScene" uid="uid://dj2xubaiwg7dq" path="res://Entities/Enemies/BlockEnemy/block_enemy.tscn" id="3_enemy"]
+[ext_resource type="PackedScene" uid="uid://dj2xubaiwg7dq" path="res://Entities/Enemies/BasicEnemy/basic_enemy.tscn" id="3_enemy"]
 
 [sub_resource type="Resource" id="spawn_01"]
 script = ExtResource("2_spawn")

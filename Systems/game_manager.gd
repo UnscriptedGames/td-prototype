@@ -15,9 +15,10 @@ signal game_speed_changed(new_speed: float)
 signal start_wave_requested
 signal loadout_stock_changed(tower_data: TowerData, new_stock: int)
 signal relic_state_changed(is_available: bool)
+signal peak_meter_changed(current: float, max_val: float)
 
 enum GameState {PAUSED, PLAYING}
-const SPEED_STEPS: Array[float] = [1.0, 1.25, 1.5, 2.0, 4.0]
+var speed_steps: Array[float] = [1.0, 2.0, 4.0, 12.0]
 
 # Player and level state variables
 var _player_data: PlayerData
@@ -28,6 +29,9 @@ var _total_waves: int = 0
 var _game_state: GameState = GameState.PLAYING
 var _is_wave_active: bool = false
 var _game_speed_index: int = 0
+var _current_peak: float = 0.0
+
+const MAX_PEAK: float = 100.0
 
 # Loadout System
 # Key: TowerData, Value: int (Current Stock)
@@ -59,6 +63,9 @@ var game_state: GameState:
 
 var is_wave_active: bool:
 	get: return _is_wave_active
+
+var current_peak: float:
+	get: return _current_peak
 
 var loadout_stock: Dictionary:
 	get: return _loadout_stock
@@ -142,6 +149,14 @@ func remove_currency(amount: int) -> void:
 		_player_data.currency = max(0, _player_data.currency - amount)
 		currency_changed.emit(_player_data.currency)
 
+## Adds volume to the peak meter, representing leaked enemies.
+func add_peak_volume(amount: float) -> void:
+	_current_peak += amount
+	if _current_peak >= MAX_PEAK:
+		_current_peak = MAX_PEAK
+		# TODO: Trigger Game Over or clipping event if desired
+	peak_meter_changed.emit(_current_peak, MAX_PEAK)
+
 
 # --- Transport Controls ---
 
@@ -169,7 +184,7 @@ func set_game_state(new_state: GameState) -> void:
 
 ## Increases game speed to the next step.
 func step_speed_up() -> void:
-	if _game_speed_index < SPEED_STEPS.size() - 1:
+	if _game_speed_index < speed_steps.size() - 1:
 		_game_speed_index += 1
 		_update_time_scale()
 
@@ -180,7 +195,7 @@ func step_speed_down() -> void:
 		_update_time_scale()
 
 func _update_time_scale() -> void:
-	var new_speed: float = SPEED_STEPS[_game_speed_index]
+	var new_speed: float = speed_steps[_game_speed_index]
 	Engine.time_scale = new_speed
 	game_speed_changed.emit(new_speed)
 
@@ -203,13 +218,18 @@ func reset_state() -> void:
 	# Reset Game State
 	_game_state = GameState.PLAYING
 	_game_speed_index = 0
-	Engine.time_scale = SPEED_STEPS[0]
+	_current_peak = 0.0
+	if speed_steps.size() > 0:
+		Engine.time_scale = speed_steps[0]
+	else:
+		Engine.time_scale = 1.0
 	get_tree().paused = false
 	
 	# Emit updates
 	currency_changed.emit(_player_data.currency)
 	wave_changed.emit(_current_wave, _total_waves)
 	wave_status_changed.emit(_is_wave_active)
+	peak_meter_changed.emit(_current_peak, MAX_PEAK)
 	_reset_relic_state()
 
 

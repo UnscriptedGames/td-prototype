@@ -24,3 +24,9 @@ To prevent the gradient from "stretching" or "squashing" as the value changes:
 
 ### 3. Theme Cleanup
 - Legacy styles like `MeterBorder` and `MeterPanel` have been removed in favor of this nested container + shader approach.
+
+### 4. Unscaled Animation Handling
+To ensure standard DAW-style meter responsiveness even when the game is fast-forwarding (e.g., 4x speed):
+- The `game_window.gd` script calculates an `unscaled_delta`: 
+  `delta / Engine.time_scale if time_scale > 0.0 else 0.0`.
+- The `lerp` for the meter needle uses this unscaled value, preventing the UI from becoming hyper-fast or jittery during high-speed wave playback.

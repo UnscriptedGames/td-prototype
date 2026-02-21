@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://d0c8dqw3das1v"]
+
+[ext_resource type="Shader" uid="uid://x56nahiwpnca" path="res://Entities/Enemies/_TemplateEnemy/template_enemy.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/scroll_speed = 1.0
+shader_parameter/unscaled_time = 0.0
+shader_parameter/use_unscaled_time = false

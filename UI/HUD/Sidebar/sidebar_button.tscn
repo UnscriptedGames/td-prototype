@@ -1,9 +1,8 @@
 [gd_scene format=3 uid="uid://dfk8x4v5y2q1w"]
 
 [ext_resource type="Script" uid="uid://5ouc3ovyc52m" path="res://UI/HUD/Sidebar/sidebar_button.gd" id="1_x8y4z"]
-[ext_resource type="Texture2D" uid="uid://b55t3rooperu6" path="res://UI/HUD/Sidebar/Assets/sidebar_tower_button.png" id="2_4k7rj"]
 
-[sub_resource type="Image" id="Image_4k7rj"]
+[sub_resource type="Image" id="Image_hpbu7"]
 data = {
 "data": PackedByteArray(255, 255, 255, 255),
 "format": "RGBA8",
@@ -13,7 +12,7 @@ data = {
 }
 
 [sub_resource type="ImageTexture" id="ImageTexture_4k7rj"]
-image = SubResource("Image_4k7rj")
+image = SubResource("Image_hpbu7")
 
 [node name="SidebarButton" type="Button" unique_id=2058311730]
 clip_contents = true
@@ -31,7 +30,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("2_4k7rj")
 expand_mode = 1
 stretch_mode = 5
 

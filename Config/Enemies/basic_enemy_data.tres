@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://dgpqmmi5k2cx5"]
+
+[ext_resource type="Script" uid="uid://b5ta2srmrxkqa" path="res://Entities/Enemies/_TemplateEnemy/template_enemy_data.gd" id="1_data"]
+[ext_resource type="Texture2D" uid="uid://ctdck6jqtvtnq" path="res://Entities/Enemies/BasicEnemy/Assets/enemy_basic_full.png" id="2_texture"]
+
+[resource]
+script = ExtResource("1_data")
+max_health = 50
+reward = 5
+wave_texture = ExtResource("2_texture")
+scroll_speed = 0.5

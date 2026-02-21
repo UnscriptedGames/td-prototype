@@ -15,6 +15,7 @@ var _is_on_cooldown: bool = false
 var _current_stock: int = 0
 
 @onready var icon_rect: TextureRect = $IconRect
+@onready var background_rect: TextureRect = $BackgroundRect
 @onready var cost_label: Label = $CostLabel
 @onready var stock_label: Label = $StockLabel
 @onready var cooldown_overlay: TextureProgressBar = $CooldownOverlay
@@ -59,6 +60,9 @@ func setup_tower(tower_data: TowerData) -> void:
 	text = ""
 	tooltip_text = tower_data.display_name
 	
+	if background_rect:
+		background_rect.texture = preload("res://UI/HUD/Sidebar/Assets/sidebar_tower_button.png")
+	
 	if cost_label and not tower_data.levels.is_empty():
 		cost_label.text = str(tower_data.levels[0].cost)
 		cost_label.visible = true
@@ -90,6 +94,9 @@ func setup_buff(buff_data: BuffData) -> void:
 	text = buff_data.display_name
 	tooltip_text = "%s\n%s" % [buff_data.display_name, buff_data.description]
 	
+	if background_rect:
+		background_rect.texture = null
+	
 	if cost_label:
 		cost_label.text = str(buff_data.gold_cost)
 		cost_label.visible = true
@@ -108,6 +115,9 @@ func setup_relic(relic_data: RelicData) -> void:
 		if icon_rect:
 			icon_rect.texture = null
 		text = "R"
+	
+	if background_rect:
+		background_rect.texture = null
 	
 	if cost_label:
 		cost_label.visible = false
