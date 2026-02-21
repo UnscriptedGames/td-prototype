@@ -22,11 +22,13 @@ Enemies are data-driven. A single logic scene handles all waveform enemies by lo
    > Unlike legacy systems, "Damage" is no longer a variable. Enemies deal damage to the **Peak Meter** equal to their **remaining health** when they leak!
 
 ## 3. Customizing Geometry (Shader)
-To change the physical appearance of the waveform (rounding or borders) for a specific enemy:
-1. Open the enemy scene (e.g., `BasicEnemy.tscn`).
-2. Select the `Sprite` node and go to the **Material** section.
-3. Adjust **Corner Radius Px** to match your shadow node (Default: 7px).
-4. Adjust **Border Width** and **Border Color** to give the waveform a hard outline.
+To change the base physical appearance of the waveform (rounding or borders) for ALL enemies:
+1. Open the shared material: `Entities/Enemies/_TemplateEnemy/template_enemy_material.tres`.
+2. Adjust **Corner Radius Px** to globally match shadow nodes (Default: 7px).
+3. Adjust **Border Width** and **Border Color** to define the universal outline.
+
+> [!NOTE]
+> Because all enemies share this material for performance, these values are global. Unique per-enemy visual traits (like scroll speed and glitch intensity) are strictly handled via code using `instance_shader_parameters`.
 
 ## 4. Spawning
 Enemies are spawned by the `SpawnManager` using their `.tres` file path. The system handles all material duplication and stat-loading automatically.

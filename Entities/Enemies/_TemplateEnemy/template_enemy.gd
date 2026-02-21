@@ -121,15 +121,17 @@ func _ready() -> void:
 		push_error("EnemyData is not assigned!")
 		return
 
-	# Duplicate the material so every enemy gets its own unique shader instance.
-	# Otherwise, fast and slow enemies on screen simultaneously will fight over
-	# the exact same shader parameters and cause massive flickering.
-	if sprite and sprite.material is ShaderMaterial:
-		sprite.material = sprite.material.duplicate()
-
 	# Set the initial state
 	if not Engine.is_editor_hint():
 		reset()
+
+func _exit_tree() -> void:
+	# Disconnect dynamic signals when the enemy is unexpectedly removed from the tree
+	# Note: We do not disconnect 'died' or 'reached_end_of_path' here because they are
+	# expected to be connected by the spawn manager and stay assigned unless explicitly disconnected
+	# by the listener when cleaning up.
+	if animation and animation.animation_finished.is_connected(_on_death_animation_finished):
+		animation.animation_finished.disconnect(_on_death_animation_finished)
 
 
 ## Handles enemy death, gives a reward, and plays death animation
@@ -164,11 +166,10 @@ func _process(delta: float) -> void:
 	# Keep the shader scrolling accurate inside the editor based on the data!
 	if Engine.is_editor_hint():
 		if data and sprite and sprite.material is ShaderMaterial:
-			var mat: ShaderMaterial = sprite.material as ShaderMaterial
-			mat.set_shader_parameter("use_unscaled_time", true)
 			var speed_mult: float = data.scroll_speed
-			mat.set_shader_parameter("unscaled_time", (float(Time.get_ticks_msec()) / 1000.0) * speed_mult)
-			mat.set_shader_parameter("rect_size", sprite.size)
+			var computed_time: float = (float(Time.get_ticks_msec()) / 1000.0) * speed_mult
+			(sprite.material as ShaderMaterial).set_shader_parameter("use_unscaled_time", true)
+			sprite.set_instance_shader_parameter("unscaled_time", computed_time)
 		return
 
 	_process_status_effects(delta)
@@ -198,9 +199,9 @@ func _process(delta: float) -> void:
 		var path: Path2D = path_follow.get_parent() as Path2D
 		var baked_length: float = path.curve.get_baked_length()
 		
-		var p1 = path.curve.sample_baked(path_follow.progress)
-		var p2 = path.curve.sample_baked(min(path_follow.progress + 10.0, baked_length))
-		var tangent = (p2 - p1).normalized()
+		var point_current = path.curve.sample_baked(path_follow.progress)
+		var point_ahead = path.curve.sample_baked(min(path_follow.progress + 10.0, baked_length))
+		var tangent = (point_ahead - point_current).normalized()
 		if tangent == Vector2.ZERO: tangent = Vector2.DOWN
 
 		# 4. Apply position directly from path follow (Lane System handles offset)
@@ -216,14 +217,13 @@ func _process(delta: float) -> void:
 			
 		# Wave Visual: Update unscaled time and enable visibility
 		if sprite and sprite.material is ShaderMaterial:
-			var mat: ShaderMaterial = sprite.material as ShaderMaterial
-			mat.set_shader_parameter("use_unscaled_time", true)
+			(sprite.material as ShaderMaterial).set_shader_parameter("use_unscaled_time", true)
 			
 			# We deleted the 'scroll_speed' uniform from the shader to keep EnemyData
 			# as the single source of truth. So we just multiply the time ourselves here!
 			var speed_mult: float = data.scroll_speed if data else 1.0
-			mat.set_shader_parameter("unscaled_time", (float(Time.get_ticks_msec()) / 1000.0) * speed_mult)
-			mat.set_shader_parameter("rect_size", sprite.size)
+			var computed_time: float = (float(Time.get_ticks_msec()) / 1000.0) * speed_mult
+			sprite.set_instance_shader_parameter("unscaled_time", computed_time)
 				
 			# Enable visibility now that we are positioned correctly
 			if not sprite.visible:
@@ -276,8 +276,15 @@ func _play_death_sequence(action_name: String) -> void:
 func _update_health_bar() -> void:
 	if not health_bar:
 		return
-	_ensure_bar_is_visible(health_bar)
-	health_bar.value = float(_health) / float(max_health) * 100.0
+	
+	# Keep the old progress bar disabled so it doesn't overlap the new shader effect!
+	# _ensure_bar_is_visible(health_bar)
+	# health_bar.value = ratio * 100.0
+	
+	var ratio: float = float(_health) / float(max_health)
+	
+	if sprite:
+		sprite.set_instance_shader_parameter("health_ratio", ratio)
 
 
 ## Resets the enemy to its initial state
@@ -290,6 +297,7 @@ func reset() -> void:
 	# Reset Visuals
 	if sprite:
 		sprite.visible = false # Logic in _process will enable it once positioned
+		sprite.set_instance_shader_parameter("health_ratio", 1.0)
 	if shadow_panel:
 		shadow_panel.visible = false
 	if animation:
@@ -329,7 +337,8 @@ func is_dying() -> bool:
 func _ensure_bar_is_visible(bar: Control) -> void:
 	# Helper to ensure the container and the specific bar are visible.
 	if not progress_bar_container.visible:
-		progress_bar_container.visible = true
+		pass # Disabled while testing shader health visuals
+		# progress_bar_container.visible = true
 	if not bar.visible:
 		bar.visible = true
 
@@ -463,9 +472,9 @@ func _return_to_pool_and_cleanup() -> void:
 	# Store a reference to the temporary PathFollow2D parent
 	var temp_path_follow := path_follow
 	
-	# Return this enemy to the pool (which will reparent it)
-	ObjectPoolManager.return_object(self)
+	# Return this enemy to the pool (which will reparent it) using call_deferred to avoid physics frame flushes
+	ObjectPoolManager.call_deferred("return_object", self)
 	
 	# Now that the enemy has been reparented, we can return the old PathFollow2D to its pool
 	if is_instance_valid(temp_path_follow):
-		ObjectPoolManager.return_node(temp_path_follow)
+		ObjectPoolManager.call_deferred("return_node", temp_path_follow)

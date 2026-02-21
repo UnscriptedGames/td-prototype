@@ -197,8 +197,6 @@ func _find_new_target() -> void:
 		func(enemy: TemplateEnemy) -> bool:
 			if not enemy.state == TemplateEnemy.State.MOVING:
 				return false
-			if enemy.data.is_flying and not has_attack_modifier("attack_flying"):
-				return false
 			return true
 	)
 	

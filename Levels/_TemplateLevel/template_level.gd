@@ -148,22 +148,22 @@ func _ready() -> void:
 			var previous_tangent: Vector2 = Vector2.ZERO
 			
 			if predecessor and predecessor.curve.point_count >= 2:
-				var p_last: Vector2 = predecessor.curve.get_point_position(
+				var point_last: Vector2 = predecessor.curve.get_point_position(
 					predecessor.curve.point_count - 1
 				)
-				var p_prev: Vector2 = predecessor.curve.get_point_position(
+				var point_previous: Vector2 = predecessor.curve.get_point_position(
 					predecessor.curve.point_count - 2
 				)
-				previous_tangent = (p_last - p_prev).normalized()
+				previous_tangent = (point_last - point_previous).normalized()
 			
 			# Check successors for start-stitching.
 			var next_tangents: Array[Vector2] = []
 			var successors: Array = successor_map.get(source_path, [])
 			for successor: Path2D in successors:
 				if successor.curve.point_count >= 2:
-					var p0: Vector2 = successor.curve.get_point_position(0)
-					var p1: Vector2 = successor.curve.get_point_position(1)
-					var segment_tangent: Vector2 = (p1 - p0).normalized()
+					var segment_start: Vector2 = successor.curve.get_point_position(0)
+					var segment_end: Vector2 = successor.curve.get_point_position(1)
+					var segment_tangent: Vector2 = (segment_end - segment_start).normalized()
 					next_tangents.append(segment_tangent)
 			
 			for i: int in range(lane_profile.size()):
@@ -208,7 +208,8 @@ func _process(delta: float) -> void:
 		_process_spawn_queue(delta)
 
 func _exit_tree() -> void:
-	pass
+	if GameManager.start_wave_requested.is_connected(_on_next_wave_requested):
+		GameManager.start_wave_requested.disconnect(_on_next_wave_requested)
 
 
 ## Public Methods

@@ -4,6 +4,8 @@
 
 [resource]
 shader = ExtResource("1_shader")
-shader_parameter/scroll_speed = 1.0
-shader_parameter/unscaled_time = 0.0
-shader_parameter/use_unscaled_time = false
+shader_parameter/use_unscaled_time = true
+shader_parameter/corner_radius_px = 7.0
+shader_parameter/rect_size = Vector2(32, 32)
+shader_parameter/border_width = 0.50000002375
+shader_parameter/border_color = Color(0, 0, 0, 0.6)

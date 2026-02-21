@@ -1,7 +1,7 @@
 # Game Brief — TD-Prototype
 
 **Version:** 0.1 (Living Document)
-**Last Updated:** 2026-02-18
+**Last Updated:** 2026-02-21
 
 ## 1. Game Identity
 
@@ -227,26 +227,26 @@ Enemies are modular **audio waveform tracks** defined by `EnemyData` resources.
 
 ### Core Visual Identity
 - Enemies appear as animated waveform shapes (sine, square, sawtooth, etc.).
-- The **amplitude** of the waveform represents the enemy's **current health**.
-- As the enemy takes damage, its amplitude **decreases** (the wave flattens).
+- Enemy **health** is represented by a **glitch/distortion shader effect**, mimicking a degraded audio signal.
+- As the enemy takes damage, its waveform experiences increasingly severe horizontal signal tearing and RGB chromatic aberration.
+- Color vibrancy and opacity are intentionally preserved at 100% until death to ensure the visual remains striking.
 - When health reaches zero, the waveform **flatlines** and the enemy disappears.
 
 ### Movement
 - Enemies follow paths in **4 cardinal directions** (North, South, East, West).
 - No sprite flipping or rotation is applied during movement.
-- **Editor Preview:** Visuals are driven by `@tool` scripts, allowing real-time 
+- **Editor Preview:** Visuals are driven by `@tool` scripts, allowing real-time
   previews of wave scrolling directly in the Godot inspector.
 
 ### Visual Configuration (via Shader)
-- **Single Source of Truth:** `EnemyData` defines the `wave_texture` and `scroll_speed`.
-- **Geometry:** The shader supports mathematical `corner_radius_px` (to match 3D shadows) 
-  and anti-aliased `border_width` with custom colors, applied natively to the waveform.
+- **Shared Material Optimization:** All enemies share a single base `.tres` `ShaderMaterial`. Unique per-enemy properties (like animation time and `health_ratio`) are driven by Godot 4's `instance_shader_parameters` to minimise draw calls and memory overhead.
+- **Geometry:** The shader calculates a mathematically perfect `corner_radius_px` and anti-aliased `border_width` via a Signed Distance Field.
 
 ### Planned Variant Types (TBD)
 - **Shielded Waveforms:** Enemies with a protective barrier that must be broken before
-	health damage applies.
+    health damage applies.
 - **Resistant Waveforms:** Enemies with damage type resistances (e.g., immune to
-	compression/EQ effects).
+    compression/EQ effects).
 - Additional variant types will be designed to fit the audio/music theme as development
 	progresses.
 

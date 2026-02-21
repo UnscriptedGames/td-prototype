@@ -2,13 +2,13 @@
 
 [ext_resource type="Script" uid="uid://dn5ojjf3sabmn" path="res://Entities/Enemies/BasicEnemy/basic_enemy.gd" id="1_block"]
 [ext_resource type="Texture2D" uid="uid://cw6payn2hyg8m" path="res://Entities/Enemies/_TemplateEnemy/Assets/bar_shadow_round_outline_small.png" id="2_bar_under"]
-[ext_resource type="Shader" uid="uid://x56nahiwpnca" path="res://Entities/Enemies/_TemplateEnemy/template_enemy.gdshader" id="3_71dc2"]
 [ext_resource type="Texture2D" uid="uid://efm7vnhsuk84" path="res://Entities/Enemies/_TemplateEnemy/Assets/bar_round_small.png" id="3_bar_fill"]
 [ext_resource type="StyleBox" uid="uid://6m1q8jw2p6hi" path="res://UI/Themes/Styleboxes/new_style_stun_flat.tres" id="4_stun"]
 [ext_resource type="StyleBox" uid="uid://c1kyee8pg41dh" path="res://UI/Themes/Styleboxes/stylebox_dot_bar.tres" id="5_dot"]
 [ext_resource type="StyleBox" uid="uid://djt88h8lsiqgx" path="res://UI/Themes/Styleboxes/stylebox_slow_bar.tres" id="6_slow"]
 [ext_resource type="Resource" uid="uid://dgpqmmi5k2cx5" path="res://Config/Enemies/basic_enemy_data.tres" id="7_data"]
 [ext_resource type="Texture2D" uid="uid://ctdck6jqtvtnq" path="res://Entities/Enemies/BasicEnemy/Assets/enemy_basic_full.png" id="9_texture"]
+[ext_resource type="Material" uid="uid://d0c8dqw3das1v" path="res://Entities/Enemies/_TemplateEnemy/template_enemy_material.tres" id="10_material"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shadow"]
 bg_color = Color(0, 0, 0, 0.6)
@@ -17,15 +17,6 @@ corner_radius_top_right = 7
 corner_radius_bottom_right = 7
 corner_radius_bottom_left = 7
 anti_aliasing = false
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_jt82t"]
-shader = ExtResource("3_71dc2")
-shader_parameter/unscaled_time = 2147.6625
-shader_parameter/use_unscaled_time = true
-shader_parameter/corner_radius_px = 7.0
-shader_parameter/rect_size = Vector2(32, 32)
-shader_parameter/border_width = 0.50000002375
-shader_parameter/border_color = Color(0.106236584, 0.10623657, 0.10623657, 0.8156863)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pos"]
 size = Vector2(32, 32)
@@ -50,7 +41,8 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_shadow")
 [node name="Sprite" type="TextureRect" parent="." unique_id=1411516142]
 texture_filter = 4
 texture_repeat = 2
-material = SubResource("ShaderMaterial_jt82t")
+material = ExtResource("10_material")
+instance_shader_parameters/unscaled_time = 155.391
 custom_minimum_size = Vector2(32, 32)
 offset_left = -16.0
 offset_top = -16.0
