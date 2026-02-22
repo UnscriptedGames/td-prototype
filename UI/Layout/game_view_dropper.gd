@@ -17,12 +17,12 @@ func setup(bm: BuildManager) -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
-	# Evaluates whether the dragged payload is a valid card_drag and forwards
+	# Evaluates whether the dragged payload is a valid loadout_drag and forwards
 	# hover updates to BuildManager. Returns true while a drag is active.
 	if not build_manager:
 		return false
 	
-	if typeof(data) == TYPE_DICTIONARY and data.get("type") == "card_drag":
+	if typeof(data) == TYPE_DICTIONARY and data.get("type") == "loadout_drag":
 		# Initialise the drag ghost on first entry.
 		if not build_manager.is_dragging():
 			var item_data: LoadoutItem = data.get("data")

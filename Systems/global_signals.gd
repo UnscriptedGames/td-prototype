@@ -29,14 +29,14 @@ signal hand_condense_requested
 ## Emitted by a card-handling system (e.g., BuildManager) when the player
 ## SUCCESSFULLY completes the card's action.
 @warning_ignore("unused_signal")
-signal card_effect_completed
+signal loadout_effect_completed
 
 ## Emitted by a card-handling system (e.g., BuildManager) when the player
 ## ABORTS the card's action.
 @warning_ignore("unused_signal")
-signal card_effect_cancelled
+signal loadout_effect_cancelled
 
 ## Emitted when a buff is successfully applied to a tower.
-## @param buff_data: The CardData or Effect resource of the buff.
+## @param buff_data: The LoadoutData or Effect resource of the buff.
 @warning_ignore("unused_signal")
 signal buff_applied(buff_data)

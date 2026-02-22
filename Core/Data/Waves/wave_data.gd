@@ -9,6 +9,10 @@ extends Resource
 ## Multiplies rewards for this wave.
 @export var reward_multiplier: float = 1.0
 
+## The percentage of the wave's total enemy health required to fill the peak meter.
+## e.g., 0.20 means 20% of the wave leaking causes failure.
+@export var clip_tolerance: float = 0.20
+
 ## True if this is a boss wave.
 @export var is_boss_wave: bool = false
 

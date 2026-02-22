@@ -20,7 +20,7 @@ A Level Data file binds all waves and tower restrictions together.
 1.  In the FileSystem dock, right-click your desired folder (e.g., `Config/Levels`).
 2.  Select **Create New > Resource..**.
 3.  Search for and select **LevelData**.
-4.  Save it as `level_name_data.tres`.
+4.  Save it as `level_name_config.tres`.
 5.  In the Inspector:
     -   **Available Towers**: Add elements to this array for each tower type allowed in this level (e.g., Archer, Magic, Bomb).
     -   **Waves**: This is where you will link your individual wave resources.
@@ -40,6 +40,7 @@ Each level contains multiple waves. Each wave is its own file to allow for easy 
     -   **Start Delay**: The time (in seconds) to wait before this wave begins.
     -   **Reward Multiplier**: Adjusts the gold/currency reward for this specific wave.
     -   **Is Boss Wave**: Check this if special boss logic or UI should trigger.
+    -   **Clip Tolerance**: The percentage of wave health allowed before failure (e.g., `0.20` = 20%).
     -   **Spawns**: An array where you will add individual spawn instructions.
 
 ---
@@ -54,7 +55,7 @@ Spawn Instructions are usually kept **local** to the Wave file (Sub-resources) r
 3.  Click the empty slot for the new element and select **New SpawnInstruction**.
 4.  Click the newly created `SpawnInstruction` to expand its properties:
     -   **Enemy Scene**: Drag and drop the enemy `.tscn` file (e.g., `goblin_enemy.tscn`).
-    -   **Path**: Enter the **NodePath** relative to the level's `Paths` node (e.g., `Paths/Spawn01`).
+    -   **Spawn Tile**: Enter the Vector2i coordinates for the spawn (e.g., `0, 8`).
     -   **Count**: How many enemies of this type spawn in this specific instruction.
     -   **Enemy Delay**: The gap (in seconds) between each individual enemy spawning in this group.
     -   **Start Delay**: How long to wait *within the wave* before this specific spawn starts.
@@ -69,5 +70,6 @@ Spawn Instructions are usually kept **local** to the Wave file (Sub-resources) r
 
 ### 💡 Best Practices
 -   **Sequential Timing**: Use `Start Delay` in `WaveData` to provide "breather" time between waves. 
--   **Path Checking**: Ensure the `Path` NodePath matches the name of a `Path2D` node nested under the `Paths` node in your Level scene.
--   **Naming Convention**: Use `level01_wave01.tres` style naming for clear sorting.
+-   **Goal Action**: When an enemy reaches a **Weighted Target** (Goal), it triggers the `reached_goal` function.
+-   **Damage**: The player takes damage based on the enemy's **remaining health** which is added to the Peak Meter.
+-   **Naming Convention**: Use `level01_wave01_config.tres` style naming for clear sorting.

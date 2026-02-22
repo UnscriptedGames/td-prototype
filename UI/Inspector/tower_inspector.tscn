@@ -1,148 +1,160 @@
-[gd_scene load_steps=4 format=3 uid="uid://c8l7d6f5h4j3k"]
+[gd_scene format=3 uid="uid://c8l7d6f5h4j3k"]
 
-[ext_resource type="Script" path="res://UI/Inspector/tower_inspector.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://bn6w0bej70he7" path="res://UI/Inspector/tower_inspector.gd" id="1_script"]
 [ext_resource type="Theme" uid="uid://dpov18qpoqhlb" path="res://UI/Themes/daw_theme.tres" id="2_theme"]
-[ext_resource type="PackedScene" path="res://UI/Inspector/target_priority_inspector.tscn" id="3_prio"]
+[ext_resource type="PackedScene" uid="uid://b2n3m4k5j6l7" path="res://UI/Inspector/target_priority_inspector.tscn" id="3_prio"]
 
-[node name="TowerInspector" type="PanelContainer"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.10980392, 0.11372549, 0.12156863, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.3, 0.3, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="TowerInspector" type="PanelContainer" unique_id=486975210]
 custom_minimum_size = Vector2(240, 0)
 offset_right = 240.0
 offset_bottom = 400.0
-mouse_filter = 0
 theme = ExtResource("2_theme")
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 script = ExtResource("1_script")
 
-[node name="TargetPriorityInspector" parent="." instance=ExtResource("3_prio")]
+[node name="TargetPriorityInspector" parent="." unique_id=385160227 instance=ExtResource("3_prio")]
 visible = false
 top_level = true
 layout_mode = 2
-mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 
-[node name="Content" type="MarginContainer" parent="."]
+[node name="Content" type="MarginContainer" parent="." unique_id=1064375873]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="VBox" type="VBoxContainer" parent="Content"]
+[node name="VBox" type="VBoxContainer" parent="Content" unique_id=1316165829]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="Stats" type="VBoxContainer" parent="Content/VBox"]
+[node name="Stats" type="VBoxContainer" parent="Content/VBox" unique_id=1392363294]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="TowerNameLabel" type="Label" parent="Content/VBox/Stats"]
+[node name="TowerNameLabel" type="Label" parent="Content/VBox/Stats" unique_id=2077879094]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
 text = "Archer Tower"
 horizontal_alignment = 1
 
-[node name="TowerLevelLabel" type="Label" parent="Content/VBox/Stats"]
+[node name="TowerLevelLabel" type="Label" parent="Content/VBox/Stats" unique_id=1425554729]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 14
 text = "Level"
 horizontal_alignment = 1
 
-[node name="RangeLabel" type="Label" parent="Content/VBox/Stats"]
+[node name="RangeLabel" type="Label" parent="Content/VBox/Stats" unique_id=926701063]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Range: 150"
 
-[node name="DamageLabel" type="Label" parent="Content/VBox/Stats"]
+[node name="DamageLabel" type="Label" parent="Content/VBox/Stats" unique_id=1583931790]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Damage: 10"
 
-[node name="FireRateLabel" type="Label" parent="Content/VBox/Stats"]
+[node name="FireRateLabel" type="Label" parent="Content/VBox/Stats" unique_id=841653194]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Fire Rate: 1.0"
 
-[node name="ProjectileSpeedLabel" type="Label" parent="Content/VBox/Stats"]
+[node name="ProjectileSpeedLabel" type="Label" parent="Content/VBox/Stats" unique_id=313566621]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Projectile Speed: 300"
 
-[node name="AttackModifiersLabel" type="Label" parent="Content/VBox/Stats"]
+[node name="AttackModifiersLabel" type="Label" parent="Content/VBox/Stats" unique_id=1039688350]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Attack Modifiers: None"
 autowrap_mode = 2
 
-[node name="StatusEffectsLabel" type="Label" parent="Content/VBox/Stats"]
+[node name="StatusEffectsLabel" type="Label" parent="Content/VBox/Stats" unique_id=1502496355]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Status Effects: None"
 autowrap_mode = 2
 
-[node name="MaxTargetsLabel" type="Label" parent="Content/VBox/Stats"]
+[node name="MaxTargetsLabel" type="Label" parent="Content/VBox/Stats" unique_id=1934307564]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Max Targets: 1"
 
-[node name="Spacer" type="Control" parent="Content/VBox/Stats"]
+[node name="Spacer" type="Control" parent="Content/VBox/Stats" unique_id=1994395965]
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
-[node name="BuffBar" type="ProgressBar" parent="Content/VBox/Stats"]
+[node name="BuffBar" type="ProgressBar" parent="Content/VBox/Stats" unique_id=172822622]
 custom_minimum_size = Vector2(0, 15)
 layout_mode = 2
 show_percentage = false
 
-[node name="Spacer2" type="Control" parent="Content/VBox/Stats"]
+[node name="Spacer2" type="Control" parent="Content/VBox/Stats" unique_id=424464542]
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
-[node name="TargetPriorityButton" type="Button" parent="Content/VBox/Stats"]
+[node name="TargetPriorityButton" type="Button" parent="Content/VBox/Stats" unique_id=1784136452]
 layout_mode = 2
 text = "Target Priority"
 
-[node name="UpgradeGrid" type="GridContainer" parent="Content/VBox/Stats"]
+[node name="UpgradeGrid" type="GridContainer" parent="Content/VBox/Stats" unique_id=1178653340]
 layout_mode = 2
 theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 8
 columns = 2
 
-[node name="Btn1" type="Button" parent="Content/VBox/Stats/UpgradeGrid"]
+[node name="Btn1" type="Button" parent="Content/VBox/Stats/UpgradeGrid" unique_id=732429721]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "Upgrade 1"
 
-[node name="Btn2" type="Button" parent="Content/VBox/Stats/UpgradeGrid"]
+[node name="Btn2" type="Button" parent="Content/VBox/Stats/UpgradeGrid" unique_id=1722272396]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "Upgrade 2"
 
-[node name="Btn3" type="Button" parent="Content/VBox/Stats/UpgradeGrid"]
+[node name="Btn3" type="Button" parent="Content/VBox/Stats/UpgradeGrid" unique_id=296669629]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "Upgrade 3"
 
-[node name="Btn4" type="Button" parent="Content/VBox/Stats/UpgradeGrid"]
+[node name="Btn4" type="Button" parent="Content/VBox/Stats/UpgradeGrid" unique_id=653269619]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "Upgrade 4"
 
-[node name="Btn5" type="Button" parent="Content/VBox/Stats/UpgradeGrid"]
+[node name="Btn5" type="Button" parent="Content/VBox/Stats/UpgradeGrid" unique_id=430684816]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "Upgrade 5"
 
-[node name="Btn6" type="Button" parent="Content/VBox/Stats/UpgradeGrid"]
+[node name="Btn6" type="Button" parent="Content/VBox/Stats/UpgradeGrid" unique_id=866307159]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "Upgrade 6"
 
-[node name="SellButton" type="Button" parent="Content/VBox/Stats"]
+[node name="SellButton" type="Button" parent="Content/VBox/Stats" unique_id=2097071696]
 layout_mode = 2
 text = "Sell Tower"

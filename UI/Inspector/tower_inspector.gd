@@ -34,16 +34,12 @@ signal target_priority_changed(priority: TargetPriority.Priority)
 var _selected_tower: TemplateTower
 const ANCHOR_MARGIN: int = 80
 const GAP: int = 10
-const INSPECTOR_OPACITY: float = 0.85
 
 var _is_docked_left: bool = false
 
 
 func _ready() -> void:
-	# Set transparency
-	self.self_modulate.a = INSPECTOR_OPACITY
 	if is_instance_valid(priority_inspector):
-		priority_inspector.self_modulate.a = INSPECTOR_OPACITY
 		# Detach from layout to allow manual positioning
 		priority_inspector.set_as_top_level(true)
 

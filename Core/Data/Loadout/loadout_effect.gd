@@ -1,4 +1,4 @@
-class_name CardEffect
+class_name LoadoutEffect
 extends Resource
 
 ## @description A base resource for all card abilities.
@@ -13,7 +13,7 @@ extends Resource
 ## @return The cost of the card effect as an integer.
 func get_cost() -> int:
 	# Prints a warning if the base method is ever called directly.
-	push_warning("Base CardEffect get_cost() method called. This should be overridden.")
+	push_warning("Base LoadoutEffect get_cost() method called. This should be overridden.")
 	# Returns a default value of 0 if not implemented by a child class.
 	return 0
 
@@ -23,4 +23,4 @@ func get_cost() -> int:
 ## @param context: A dictionary containing targeting and state info.
 func execute(_context: Dictionary) -> void:
 	# Prints a warning if the base method is ever called directly.
-	push_warning("Base CardEffect execute() method called. This should be overridden.")
+	push_warning("Base LoadoutEffect execute() method called. This should be overridden.")

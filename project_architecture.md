@@ -39,7 +39,7 @@ This document complements **`architecture.md`** (the Agent Persona/Workflow) by 
 ## 4. Systems Overview
 
 ### 4.1. Cards & Deck
-**Resources:** `CardData`, `DeckData`
+**Resources:** `LoadoutData`, `LoadoutData`
 - **BuildTowerEffect:** Links to `TowerData` + `TowerScene`. Places a permanent structure.
 - **BuffTowerEffect:** Links to stats/status effects. Applies temporary buffs to existing towers.
 - **Hand Logic:** Controlled by `CardsHUD`. Can be "Condensed" (minimized) or "Expanded".

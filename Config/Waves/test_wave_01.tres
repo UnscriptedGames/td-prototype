@@ -3,15 +3,28 @@
 [ext_resource type="Script" uid="uid://dg4clj8lt54w6" path="res://Core/Data/Waves/wave_data.gd" id="1_wave"]
 [ext_resource type="Script" uid="uid://c6sd68ghkditp" path="res://Core/Data/Waves/spawn_instruction.gd" id="2_spawn"]
 [ext_resource type="PackedScene" uid="uid://dj2xubaiwg7dq" path="res://Entities/Enemies/BasicEnemy/basic_enemy.tscn" id="3_enemy"]
+[ext_resource type="Script" uid="uid://cwhwoc5lm1of7" path="res://Core/Data/Waves/weighted_target.gd" id="4_w70wb"]
+
+[sub_resource type="Resource" id="Resource_r2eih"]
+script = ExtResource("4_w70wb")
+goal_tile = Vector2i(20, 15)
+metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
+
+[sub_resource type="Resource" id="Resource_w70wb"]
+script = ExtResource("4_w70wb")
+goal_tile = Vector2i(24, 3)
+metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
 
 [sub_resource type="Resource" id="spawn_01"]
 script = ExtResource("2_spawn")
 enemy_scene = ExtResource("3_enemy")
-path = NodePath("Paths/Spawn01")
-count = 5
+spawn_tile = Vector2i(2, -1)
+count = 6
 enemy_delay = 1.5
 start_delay = 0.5
+weighted_targets = Array[ExtResource("4_w70wb")]([SubResource("Resource_r2eih"), SubResource("Resource_w70wb")])
 
 [resource]
 script = ExtResource("1_wave")
+clip_tolerance = 0.5
 spawns = Array[ExtResource("2_spawn")]([SubResource("spawn_01")])

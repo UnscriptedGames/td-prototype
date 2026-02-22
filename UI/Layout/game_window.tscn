@@ -14,10 +14,13 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_peak"]
 shader = ExtResource("9_peak_shader")
+shader_parameter/color_sub = Color(0.84313726, 0.87058824, 0.8745098, 0.44705883)
 shader_parameter/color_start = Color(0.3019608, 0.73333335, 0.41568628, 0.95686275)
 shader_parameter/color_mid = Color(0.7604822, 0.6599067, 0.33715135, 0.96800005)
 shader_parameter/color_end = Color(0.59261936, 0.17558163, 0.106126174, 0.95600003)
-shader_parameter/mid_point = 0.5
+shader_parameter/threshold_zero = 0.0476
+shader_parameter/threshold_low = 0.3619
+shader_parameter/threshold_high = 0.6761
 shader_parameter/total_width = 350.0
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bar_bg"]
@@ -87,7 +90,7 @@ flat = true
 layout_mode = 2
 
 [node name="Spacer2" type="Control" parent="MainLayout/TopBar/Content" unique_id=62018420]
-custom_minimum_size = Vector2(70, 0)
+custom_minimum_size = Vector2(43, 0)
 layout_mode = 2
 
 [node name="PerformanceMeterContainer" type="PanelContainer" parent="MainLayout/TopBar/Content" unique_id=1077080360]
@@ -103,11 +106,11 @@ alignment = 1
 
 [node name="HealthLabel" type="Label" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=182939402]
 layout_mode = 2
-text = "Integrity:"
+text = "Distortion:"
 vertical_alignment = 1
 
 [node name="Spacer5" type="Control" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=836429443]
-custom_minimum_size = Vector2(10, 0)
+custom_minimum_size = Vector2(1, 0)
 layout_mode = 2
 
 [node name="MeterVBox" type="VBoxContainer" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=532243765]
@@ -133,7 +136,39 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/background = SubResource("StyleBoxEmpty_bar_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_white")
+min_value = -5.0
+value = -5.0
 show_percentage = false
+
+[node name="Marker0" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL" unique_id=111111111]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 16.66
+offset_right = 18.66
+grow_vertical = 2
+color = Color(0.2, 0.2, 0.2, 0.8)
+
+[node name="Marker33" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL" unique_id=222222222]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 126.66
+offset_right = 128.66
+grow_vertical = 2
+color = Color(0.2, 0.2, 0.2, 0.8)
+
+[node name="Marker66" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL" unique_id=333333333]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 236.66
+offset_right = 238.66
+grow_vertical = 2
+color = Color(0.2, 0.2, 0.2, 0.8)
 
 [node name="PeakLineL" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL" unique_id=2027420559]
 custom_minimum_size = Vector2(2, 0)
@@ -164,7 +199,39 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/background = SubResource("StyleBoxEmpty_bar_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_white")
+min_value = -5.0
+value = -5.0
 show_percentage = false
+
+[node name="Marker0" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR" unique_id=444444444]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 16.66
+offset_right = 18.66
+grow_vertical = 2
+color = Color(0.2, 0.2, 0.2, 0.8)
+
+[node name="Marker33" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR" unique_id=555555555]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 126.66
+offset_right = 128.66
+grow_vertical = 2
+color = Color(0.2, 0.2, 0.2, 0.8)
+
+[node name="Marker66" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR" unique_id=666666666]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 236.66
+offset_right = 238.66
+grow_vertical = 2
+color = Color(0.2, 0.2, 0.2, 0.8)
 
 [node name="PeakLineR" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR" unique_id=632731713]
 custom_minimum_size = Vector2(2, 0)
@@ -178,8 +245,17 @@ grow_horizontal = 0
 grow_vertical = 2
 color = Color(0.5137255, 0.5137255, 0.5137255, 1)
 
+[node name="Spacer6" type="Control" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=888135602]
+custom_minimum_size = Vector2(1, 0)
+layout_mode = 2
+
+[node name="IntegrityValueLabel" type="Label" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=987654321]
+layout_mode = 2
+text = "100%"
+vertical_alignment = 1
+
 [node name="Spacer4" type="Control" parent="MainLayout/TopBar/Content" unique_id=92806510]
-custom_minimum_size = Vector2(70, 0)
+custom_minimum_size = Vector2(43, 0)
 layout_mode = 2
 
 [node name="VSeparator5" type="VSeparator" parent="MainLayout/TopBar/Content" unique_id=1709007433]
@@ -230,7 +306,7 @@ custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
-value = 80.0
+value = 100.0
 
 [node name="VSeparator2" type="VSeparator" parent="MainLayout/TopBar/Content" unique_id=84059687]
 layout_mode = 2
@@ -322,7 +398,7 @@ stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="MainLayout/WorkspaceSplit/GameViewContainer" unique_id=135730004]
 handle_input_locally = false
-size = Vector2i(1600, 1024)
+size = Vector2i(1602, 1024)
 render_target_update_mode = 4
 
 [node name="MainMenuConfirmation" type="ConfirmationDialog" parent="." unique_id=1158682758]

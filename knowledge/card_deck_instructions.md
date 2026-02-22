@@ -4,12 +4,12 @@ This document explains how to create cards, configure their effects, and assembl
 
 ## 1. Creating a Card
 
-Cards are `CardData` resources that link visual assets to functional effects.
+Cards are `LoadoutData` resources that link visual assets to functional effects.
 
 ### Step-by-Step
 1.  **Create Resource**:
     -   Right-click in `Config/Cards` (choose the appropriate subfolder like `Build` or `Buff`).
-    -   Select **Create New > Resource..** and choose **CardData**.
+    -   Select **Create New > Resource..** and choose **LoadoutData**.
 2.  **Assign Visuals**:
     -   Assign the `front_texture` (the illustration on the card).
 3.  **Assign Effect**:
@@ -39,17 +39,17 @@ Used to temporarily boost a tower's performance.
 
 ## 3. Assembling a Deck
 
-A deck is a `DeckData` resource that stores a collection of cards.
+A deck is a `LoadoutData` resource that stores a collection of cards.
 
 ### Step-by-Step
 1.  **Create Resource**:
     -   Right-click in `Config/Decks`.
-    -   Select **Create New > Resource..** and choose **DeckData**.
+    -   Select **Create New > Resource..** and choose **LoadoutData**.
 2.  **Visuals**:
     -   Assign the `card_back_texture` (used for all cards in this deck).
 3.  **Add Cards**:
     -   Expand the **Cards** array.
-    -   Drag and drop your `CardData` (`.tres`) files into the array elements.
+    -   Drag and drop your `LoadoutData` (`.tres`) files into the array elements.
     -   You can add multiple copies of the same card.
 
 ---

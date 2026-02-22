@@ -20,8 +20,8 @@ func get_total_allocation_cost() -> int:
 	var total_cost: int = 0
 	
 	# Calculate Relic Costs
-	for card_data in relics:
-		total_cost += card_data.allocation_cost
+	for loadout_data in relics:
+		total_cost += loadout_data.allocation_cost
 	
 	# Calculate Tower Costs
 	for tower_data in towers:
@@ -30,8 +30,8 @@ func get_total_allocation_cost() -> int:
 			total_cost += tower_data.allocation_cost * quantity
 			
 	# Calculate Buff Costs
-	for card_data in buffs:
-		total_cost += card_data.allocation_cost
+	for loadout_data in buffs:
+		total_cost += loadout_data.allocation_cost
 	
 	return total_cost
 

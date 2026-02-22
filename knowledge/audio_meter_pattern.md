@@ -19,8 +19,10 @@ Because `StyleBoxTexture` (used for gradients) does not support individual corne
 ### 2. Static Gradient Shader
 To prevent the gradient from "stretching" or "squashing" as the value changes:
 - A custom shader (`peak_meter.gdshader`) uses `VERTEX.x` relative to `total_width` to map colors.
-- This creates a "reveal" effect where the gradient appears static beneath the bar's value.
-- **Controls**: The shader exposes `color_start`, `color_mid`, and `color_end` as uniforms for easy editor-side configuration.
+- **4-Tier Gradient:** Supports `color_sub` (Grey/White), `color_start` (Green), `color_mid` (Yellow), and `color_end` (Red).
+- **Sub-Floor Mapping:** The physical bar represents a span of **105 units** (-5.0 to 100.0). Shader thresholds (`threshold_zero`, `threshold_low`, `threshold_high`) are adjusted to align with physical segment markers.
+- **Reveal Effect:** The gradient appears static beneath the bar's value.
+- **Peak Hold Pinning:** The peak hold line is strictly locked to the tracked gameplay value without decay or jitter, providing a sharp "truth" indicator above the noisy fill.
 
 ### 3. Theme Cleanup
 - Legacy styles like `MeterBorder` and `MeterPanel` have been removed in favor of this nested container + shader approach.

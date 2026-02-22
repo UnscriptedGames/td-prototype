@@ -272,7 +272,7 @@ func _place_tower(tower_data: TowerData, build_position: Vector2, range_points: 
 	GameManager.remove_currency(build_cost)
 
 	# Announce that the card effect was successfully completed.
-	GlobalSignals.card_effect_completed.emit()
+	GlobalSignals.loadout_effect_completed.emit()
 
 
 func _select_tower(tower: TemplateTower) -> void:
@@ -359,7 +359,7 @@ func _exit_build_mode() -> void:
 	
 	# If we are NOT successfully placing a tower, it means this was a cancellation.
 	if not _is_placing:
-		GlobalSignals.card_effect_cancelled.emit()
+		GlobalSignals.loadout_effect_cancelled.emit()
 
 	if is_instance_valid(_ghost_tower):
 		_ghost_tower.queue_free()
@@ -370,7 +370,7 @@ func _exit_build_mode() -> void:
 
 var _current_drag_id: int = -1
 var _banished_drag_ids: Dictionary = {} # Using Dict for fast lookup
-var _current_drag_card: Node = null # Reference to card for visual reset
+var _current_draggable_loadout: Node = null # Reference to card for visual reset
 
 ## Public API: Permanently cancels the current drag session.
 ## This prevents the card from being used again until a NEW drag starts.
@@ -380,13 +380,13 @@ func banish_drag_session() -> void:
 		_banished_drag_ids[_current_drag_id] = true
 	
 	# Reset card visuals
-	if is_instance_valid(_current_drag_card) and _current_drag_card.has_method("reset_drag_visuals"):
-		_current_drag_card.reset_drag_visuals()
+	if is_instance_valid(_current_draggable_loadout) and _current_draggable_loadout.has_method("reset_drag_visuals"):
+		_current_draggable_loadout.reset_drag_visuals()
 		
 	# Clean up local state
 	_is_dragging = false
 	_current_drag_id = -1
-	_current_drag_card = null
+	_current_draggable_loadout = null
 	
 	# Clean up ghosts/highlights
 	_exit_build_mode()
@@ -411,7 +411,7 @@ func start_drag_ghost_with_scene(tower_data: TowerData, tower_scene: PackedScene
 		
 	_is_dragging = true ## Enable drag mode
 	_current_drag_id = drag_id
-	_current_drag_card = card_ref
+	_current_draggable_loadout = card_ref
 	
 	if state == State.BUILDING_TOWER:
 		if _ghost_tower and _ghost_tower.data == tower_data:
@@ -480,11 +480,11 @@ func start_drag_buff(card_ref: Node, drag_id: int = -1) -> void:
 		return
 
 	# Idempotency check: If already dragging this card, don't reset state.
-	if _is_dragging and _current_drag_card == card_ref:
+	if _is_dragging and _current_draggable_loadout == card_ref:
 		return
 
 	_is_dragging = true
-	_current_drag_card = card_ref
+	_current_draggable_loadout = card_ref
 	_current_drag_id = drag_id
 	
 	# Add grace frames to prevent immediate banishment on boundary check
@@ -597,7 +597,7 @@ func apply_buff_at(screen_position: Vector2, item_data: Resource) -> bool:
 		_highlighted_tower_for_buff = null
 	
 	_is_dragging = false
-	_current_drag_card = null
+	_current_draggable_loadout = null
 	
 	if is_instance_valid(target_tower):
 		# Check Resources
@@ -616,7 +616,7 @@ func apply_buff_at(screen_position: Vector2, item_data: Resource) -> bool:
 			GameManager.remove_currency(buff_data.gold_cost)
 			
 			GlobalSignals.buff_applied.emit(buff_data)
-			GlobalSignals.card_effect_completed.emit()
+			GlobalSignals.loadout_effect_completed.emit()
 			return true
 		else:
 			push_error("BuffData '%s' has no effect assigned." % buff_data.display_name)

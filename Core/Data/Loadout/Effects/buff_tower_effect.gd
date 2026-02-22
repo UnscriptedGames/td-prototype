@@ -1,5 +1,5 @@
 class_name BuffTowerEffect
-extends CardEffect
+extends LoadoutEffect
 
 ## @description An effect that applies a temporary buff to a single, targeted
 ## tower, enhancing its combat statistics and/or granting status effects.
@@ -42,4 +42,4 @@ func execute(context: Dictionary) -> void:
 	target_tower.apply_buff(self)
 
 	# Since this effect is instantaneous, we immediately signal its completion.
-	GlobalSignals.card_effect_completed.emit()
+	GlobalSignals.loadout_effect_completed.emit()

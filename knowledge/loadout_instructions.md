@@ -15,11 +15,11 @@ Since the UI is not yet built (Phase 2), you must create Loadouts in the Godot I
 1.  Open `test_loadout.tres` in the Inspector.
 2.  **Towers Map:**
     *   Click to add entries.
-    *   **Key:** Drag a `TowerData` resource (e.g., `Entities/Towers/tower_gun_data.tres`).
+    *   **Key:** Drag a `TowerData` resource (e.g., `Entities/Towers/tower_gun_config.tres`).
     *   **Value:** Set the Integer Quantity (e.g., `5`). This is your **Stock**.
 3.  **Spells Array:**
     *   Add elements.
-    *   Drag `CardData` resources (e.g., `Config/Cards/card_fireball.tres`).
+    *   Drag `LoadoutData` resources (e.g., `Config/Cards/card_fireball.tres`).
 
 ## 2. Using the Loadout (In-Game)
 *   **Building:** You can only build towers if you have Stock remaining.

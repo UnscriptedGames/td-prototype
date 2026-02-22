@@ -1,7 +1,7 @@
 extends SceneTree
 
 func _init():
-	var data = load("res://Config/Enemies/basic_enemy_data.tres")
+	var data = load("res://Config/Enemies/basic_enemy_config.tres")
 	print("--- BASIC ENEMY DATA ---")
 	print("wave_texture: ", data.wave_texture)
 	print("scroll_speed: ", data.scroll_speed)

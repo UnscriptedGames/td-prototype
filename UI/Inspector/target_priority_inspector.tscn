@@ -5,11 +5,24 @@
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_priority"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.12, 0.12, 0.12, 0.95)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.3, 0.3, 1)
+
 [node name="TargetPriorityInspector" type="PanelContainer"]
 custom_minimum_size = Vector2(200, 0)
 offset_right = 200.0
 offset_bottom = 240.0
 theme = ExtResource("2_theme")
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 script = ExtResource("1_script")
 
 [node name="Content" type="MarginContainer" parent="."]

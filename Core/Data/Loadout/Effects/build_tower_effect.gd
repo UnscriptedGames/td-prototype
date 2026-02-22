@@ -1,5 +1,5 @@
 class_name BuildTowerEffect
-extends CardEffect
+extends LoadoutEffect
 
 ## @description An effect that requests the BuildManager to start the tower
 ## placement process for a specific tower.

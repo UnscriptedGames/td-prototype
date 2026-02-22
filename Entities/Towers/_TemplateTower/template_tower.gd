@@ -221,9 +221,11 @@ func _find_new_target() -> void:
 func _sort_enemies(enemies: Array) -> void:
 	match target_priority:
 		TargetPriority.Priority.MOST_PROGRESS:
-			enemies.sort_custom(func(a, b): return a.path_follow.progress > b.path_follow.progress)
+			# Smallest distance remaining = further along the path
+			enemies.sort_custom(func(a, b): return a.get_remaining_distance() < b.get_remaining_distance())
 		TargetPriority.Priority.LEAST_PROGRESS:
-			enemies.sort_custom(func(a, b): return a.path_follow.progress < b.path_follow.progress)
+			# Largest distance remaining = least along the path
+			enemies.sort_custom(func(a, b): return a.get_remaining_distance() > b.get_remaining_distance())
 		TargetPriority.Priority.STRONGEST_ENEMY:
 			enemies.sort_custom(func(a, b): return a.max_health > b.max_health)
 		TargetPriority.Priority.WEAKEST_ENEMY:

@@ -30,8 +30,7 @@ var _game_state: GameState = GameState.PLAYING
 var _is_wave_active: bool = false
 var _game_speed_index: int = 0
 var _current_peak: float = 0.0
-
-const MAX_PEAK: float = 100.0
+var _current_max_peak: float = 100.0 # Will be updated dynamically per wave
 
 # Loadout System
 # Key: TowerData, Value: int (Current Stock)
@@ -67,6 +66,9 @@ var is_wave_active: bool:
 var current_peak: float:
 	get: return _current_peak
 
+var max_peak: float:
+	get: return _current_max_peak
+
 var loadout_stock: Dictionary:
 	get: return _loadout_stock
 
@@ -74,7 +76,7 @@ var loadout_stock: Dictionary:
 # --- Lifecycle ---
 
 func _ready() -> void:
-	_player_data = load("res://Config/Players/player_data.tres")
+	_player_data = load("res://Config/Players/player_config.tres")
 	_initialize_loadout_stock()
 	if _player_data:
 		currency_changed.emit(_player_data.currency)
@@ -133,9 +135,42 @@ func set_level(level_index: int, data: LevelData) -> void:
 	wave_changed.emit(_current_wave, _total_waves)
 
 ## Updates the current wave and emits the wave_changed signal.
-func set_wave(wave_index: int) -> void:
+func set_wave(wave_index: int, wave_data: WaveData = null) -> void:
 	_current_wave = wave_index
+	_calculate_wave_max_peak(wave_data)
+	_current_peak = 0.0 # Reset peak meter at start of stem per design doc
+	peak_meter_changed.emit(_current_peak, _current_max_peak)
 	wave_changed.emit(_current_wave, _total_waves)
+
+## Calculates the 100% capacity of the peak meter based on total wave health.
+func _calculate_wave_max_peak(wave: WaveData) -> void:
+	if not wave:
+		_current_max_peak = 100.0
+		return
+		
+	var total_wave_health: int = 0
+	for instruction in wave.spawns:
+		if instruction and instruction.enemy_scene:
+			# Instantiate purely to extract max_health without hardcoding
+			var temp_state = instruction.enemy_scene.instantiate()
+			if temp_state:
+				var hp: int = 0
+				if "data" in temp_state and temp_state.data != null:
+					hp = temp_state.data.max_health
+				elif "max_health" in temp_state:
+					hp = temp_state.max_health
+					
+				total_wave_health += (hp * instruction.count)
+			temp_state.free()
+			
+	if total_wave_health > 0:
+		_current_max_peak = float(total_wave_health) * wave.clip_tolerance
+	else:
+		_current_max_peak = 100.0 # Failsafe
+		
+	if OS.is_debug_build():
+		print("--- Wave Start ---")
+		print("Max Peak Capability for Wave: ", _current_max_peak)
 
 ## Adds currency to the player and emits the currency_changed signal.
 func add_currency(amount: int) -> void:
@@ -152,10 +187,13 @@ func remove_currency(amount: int) -> void:
 ## Adds volume to the peak meter, representing leaked enemies.
 func add_peak_volume(amount: float) -> void:
 	_current_peak += amount
-	if _current_peak >= MAX_PEAK:
-		_current_peak = MAX_PEAK
+	if _current_peak >= _current_max_peak:
+		_current_peak = _current_max_peak
 		# TODO: Trigger Game Over or clipping event if desired
-	peak_meter_changed.emit(_current_peak, MAX_PEAK)
+	peak_meter_changed.emit(_current_peak, _current_max_peak)
+	
+	if OS.is_debug_build():
+		print("Enemy Reached Goal! Current Peak: ", _current_peak, " / ", _current_max_peak)
 
 
 # --- Transport Controls ---
@@ -207,7 +245,7 @@ func wave_completed() -> void:
 ## Resets the game state to default values (e.g. for restarting level).
 func reset_state() -> void:
 	# Reload Player Data to reset health/currency
-	_player_data = ResourceLoader.load("res://Config/Players/player_data.tres", "", ResourceLoader.CACHE_MODE_IGNORE)
+	_player_data = ResourceLoader.load("res://Config/Players/player_config.tres", "", ResourceLoader.CACHE_MODE_IGNORE)
 	_initialize_loadout_stock()
 	
 	# Reset Wave counters
@@ -229,7 +267,7 @@ func reset_state() -> void:
 	currency_changed.emit(_player_data.currency)
 	wave_changed.emit(_current_wave, _total_waves)
 	wave_status_changed.emit(_is_wave_active)
-	peak_meter_changed.emit(_current_peak, MAX_PEAK)
+	peak_meter_changed.emit(_current_peak, _current_max_peak)
 	_reset_relic_state()
 
 

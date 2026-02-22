@@ -47,11 +47,9 @@
 └─────────────────────────────────────────────────────────┘
 ```
 
-1. **The Studio (Pre-Game):** Player configures their Loadout — selecting Towers, Buffs,
+1. **The Studio (Pre-Game):** Player configures their Loadout — selecting Towers, Spells,
 	 and Relics within their Allocation Point budget.
-2. **Stem Select:** Player chooses which stem level to play next within the stage. A
-	 "Producer's Cut" suggested order is displayed (Rhythm → Bass → Harmony → Melody →
-	 Vocals) to guide newer players, while experienced players may tackle stems in any order.
+2. **Stem Select:** Player chooses which stem level to play next within the stage. 
 3. **The Live Set (In-Game):** Player places towers and defends the maze against waveform
 	 enemies. The Peak Meter tracks performance.
 4. **Stem Unlock:** Based on Peak Meter position at wave end, the player unlocks a Good,
@@ -71,12 +69,13 @@ The Peak Meter is the central performance indicator and survival mechanic, style
 DAW-standard VU/peak meter with a three-colour gradient and smooth, unscaled animation.
 
 ### How It Works
-- Divided into three zones: **Green** (bottom), **Yellow** (middle), **Red** (top).
-- When an enemy reaches the end of the maze (the goal), its **remaining health** is added
-	to the Peak Meter's cumulative total, pushing the needle upward.
-- The meter **resets between each stem level**.
-- **Unscaled Animation:** The meter's visual movement is decoupled from game speed 
-  (Fast Forward), ensuring smooth UI feedback even at 4x speed.
+- **Distortion Metaphor:** The meter measures signal distortion (0% to 100%). It counts **up** as performance degrades.
+- **Sub-Floor Noise:** The meter starts at **-5%**. The range from -5% to 0% is the "Sub-Floor"—a dedicated grey/white segment that jitters to indicate an active signal even at 0% distortion.
+- **Visual Segments:** The track is physically segmented by markers at **0, 33, and 66** for threshold clarity.
+- **Zoning:** Green (0-33%), Yellow (33-66%), Red (66-100%).
+- **Peak Hold Pinning:** A bright peak-hold line sits strictly on the player's current distortion level without jitter, providing a ground-truth measurement.
+- **Collision Logic:** When an enemy reaches the goal, its **remaining health** is added to the total.
+- **Unscaled Animation:** UI feedback remains smooth regardless of game speed scale.
 
 ### Performance Grades
 | Meter Zone at Wave End | Stem Quality Unlocked |
@@ -86,8 +85,8 @@ DAW-standard VU/peak meter with a three-colour gradient and smooth, unscaled ani
 | **Red** | **Abomination** — A nightmarish version (goat screams, distortion, chaos). |
 
 ### Fail State
-- **Clipping:** If the Peak Meter hits 100% capacity (tops out past red), the signal 
-  "clips," and the level is immediately **failed**.
+- **Dynamic Clipping:** Failure is not a fixed number. It is calculated per-wave based on **Enemy Roster Health × Wave Clip Tolerance**. 
+- If the Distortion hits 100% capacity (past 1.0 on the calculated scale), the signal "clips," and the level is immediately **failed**.
 - During the **Boss Wave (Wave 6)**, the Peak Meter is a pure survival mechanic — there is
 	no stem quality to grade. The player must prevent the meter from filling while defeating
 	the mini boss.
@@ -157,8 +156,9 @@ A library/collection system that stores all unlocked stem variants.
 
 ## 7. Loadout System — "The Studio"
 
-The Loadout replaces the legacy card/deck system. Players configure their available tools
-before entering a stage.
+The Loadout replaces the legacy card/deck system. We use a **Data vs. Configuration** paradigm:
+- **Data Structures (`loadout_data.gd`):** Scripts defining the rules and stats for an action.
+- **Configurations (`*_config.tres`):** Resource files containing specific values for designers to tweak.
 
 ### Allocation Points (AP)
 - The hard budget for what a player can bring into a stage.
@@ -232,11 +232,12 @@ Enemies are modular **audio waveform tracks** defined by `EnemyData` resources.
 - Color vibrancy and opacity are intentionally preserved at 100% until death to ensure the visual remains striking.
 - When health reaches zero, the waveform **flatlines** and the enemy disappears.
 
-### Movement
-- Enemies follow paths in **4 cardinal directions** (North, South, East, West).
-- No sprite flipping or rotation is applied during movement.
-- **Editor Preview:** Visuals are driven by `@tool` scripts, allowing real-time
-  previews of wave scrolling directly in the Godot inspector.
+### Movement & Navigation
+- **Grid-Based (AStarGrid2D):** Enemies no longer follow fixed geometric splines. Instead, they find the shortest path through the maze using a 24x16 grid.
+- **Weighted Targets:** Spawners can define multiple "Goal Tiles" with proportional weightings (e.g., 50% of enemies go to Goal A, 50% to Goal B).
+- **Sub-Stepping Math:** Movement is calculated via a path-consumption loop. This ensures stability at high game speeds (up to 12x) and prevents enemies from "clipping" through walls at corners without needing heavy physics bodies.
+- **Visual Directions:** Enemies follow paths in **4 cardinal directions**. No sprite flipping or rotation is applied.
+- **Editor Preview:** Visuals are driven by `@tool` scripts, allowing real-time previews of wave scrolling directly in the Godot inspector.
 
 ### Visual Configuration (via Shader)
 - **Shared Material Optimization:** All enemies share a single base `.tres` `ShaderMaterial`. Unique per-enemy properties (like animation time and `health_ratio`) are driven by Godot 4's `instance_shader_parameters` to minimise draw calls and memory overhead.
@@ -295,9 +296,10 @@ The entire interface is modelled after professional DAW software.
 
 ### Layout (1536×1024 Native, Scaled to 1920×1080)
 - **Top Bar:** Global stats (Peak Meter, Gold, Wave counter) and Volume Control.
-- **Left Sidebar:** Loadout rack — Tower buttons (with stock counts), Buff slots (with
+- **Left Sidebar:** Loadout rack — Tower buttons (with stock counts), Spell slots (with
 	cooldown bars), Relic slots.
 - **Right Panel:** Tower Inspector / Selection details.
+- **High-Contrast Popups:** The Tower Inspector uses a solid, high-opacity background (`~95%`) specifically to mirror DAW "floating plugin" aesthetics and ensure stats are readable over the complex maze geometry.
 - **Centre:** The Level Viewport (24×16 tiles @ 64px) — the maze/battlefield.
 
 ### DAW Metaphor Mapping

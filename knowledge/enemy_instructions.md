@@ -12,7 +12,7 @@ Enemies are data-driven. A single logic scene handles all waveform enemies by lo
 ## 1. Creating the Enemy Configuration
 1. Right-click your enemy config folder (e.g., `Config/Enemies/`).
 2. Select **Create New Resource** and search for `EnemyData`.
-3. Save it with a descriptive name (e.g., `heavy_bass_data.tres`).
+3. Save it with a descriptive name (e.g., `heavy_bass_config.tres`).
 
 ## 2. Setting Visuals (The Waveform)
 1. In the Inspector for your new `.tres` file, assign the **Wave Texture** (the waveform image).
@@ -31,4 +31,4 @@ To change the base physical appearance of the waveform (rounding or borders) for
 > Because all enemies share this material for performance, these values are global. Unique per-enemy visual traits (like scroll speed and glitch intensity) are strictly handled via code using `instance_shader_parameters`.
 
 ## 4. Spawning
-Enemies are spawned by the `SpawnManager` using their `.tres` file path. The system handles all material duplication and stat-loading automatically.
+Enemies are spawned by the `SpawnManager` using their `.tres` file path. The `SpawnManager` now uses **AStarGrid2D** navigation to direct enemies towards **Weighted Targets** (Goals).

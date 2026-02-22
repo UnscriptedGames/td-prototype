@@ -5,18 +5,18 @@ This document explains how to configure the player's starting state and general 
 ## Architecture Overview
 
 The player state is defined by a single `PlayerData` resource. At game startup, the `GameManager` (found in `Systems/game_manager.gd`) looks for this specific file:
-`res://Config/Players/player_data.tres`
+`res://Config/Players/player_config.tres`
 
 ---
 
 ## 1. Configuring Player Stats
 
-Open `res://Config/Players/player_data.tres` in the Inspector to modify the following:
+Open `res://Config/Players/player_config.tres` in the Inspector to modify the following:
 
 -   **Health**: The player's starting health points. When an enemy reaches the goal, this is reduced by the enemy's damage stat.
 -   **Currency**: The starting gold/currency available for building towers, upgrading, and playing cards.
 -   **Hand Size**: The maximum number of cards the player can hold in their hand at once.
--   **Deck**: The `DeckData` resource that will be used for this game session.
+-   **Deck**: The `LoadoutData` resource that will be used for this game session.
 
 ---
 
@@ -28,7 +28,7 @@ If you want to create different "Player Classes" or difficulty modes (e.g., "Har
 2.  Configure your desired stats.
 3.  **How to swap**:
     -   In a production game, you would swap these via a menu.
-    -   In this prototype, you can change which file `GameManager.gd` loads in its `_ready()` function, or simply edit the default `player_data.tres`.
+    -   In this prototype, you can change which file `GameManager.gd` loads in its `_ready()` function, or simply edit the default `player_config.tres`.
 
 ---
 

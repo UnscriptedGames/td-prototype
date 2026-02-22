@@ -145,7 +145,7 @@ func show_cooldown(duration: float) -> void:
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	# Builds a ghost preview showing only the icon texture (semi-transparent)
-	# then returns the card_drag payload dictionary.
+	# then returns the loadout_drag payload dictionary.
 	if not data:
 		return null
 	if _is_on_cooldown:
@@ -191,7 +191,7 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	var drag_id: int = Time.get_ticks_msec() + get_instance_id()
 	
 	return {
-		"type": "card_drag",
+		"type": "loadout_drag",
 		"subtype": type,
 		"data": data,
 		"drag_id": drag_id,

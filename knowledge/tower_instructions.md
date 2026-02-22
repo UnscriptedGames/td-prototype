@@ -78,14 +78,14 @@ The `TemplateTower.gd` script does NOT automatically spawn projectiles. It waits
 
 ## 5. Creating the Card (Bridge to Gameplay)
 
-The tower scene is **not** linked directly on `TowerData`. It is linked via a **CardData** resource with a **BuildTowerEffect**. See `card_deck_instructions.md` for full steps.
+The tower scene is **not** linked directly on `TowerData`. It is linked via a **LoadoutData** resource with a **BuildTowerEffect**. See `card_deck_instructions.md` for full steps.
 
-1.  Create a **CardData** resource in `Config/Cards/Build`.
+1.  Create a **LoadoutData** resource in `Config/Cards/Build`.
 2.  In its **Effect** slot, create a **New BuildTowerEffect**.
 3.  On the `BuildTowerEffect`, assign:
     -   `tower_data`: Your `.tres` TowerData resource.
     -   `tower_scene`: Your tower's `.tscn` scene.
-4.  Add the `CardData` to a **DeckData** resource and link it to `PlayerData`.
+4.  Add the `LoadoutData` to a **LoadoutData** resource and link it to `PlayerData`.
 
 ---
 
@@ -95,4 +95,4 @@ The tower scene is **not** linked directly on `TowerData`. It is linked via a **
 -   **Range Issues?** Tower range is defined in the `TowerLevelData`. If you change it, the square grid highlight will automatically adjust.
 -   **Y-Offset**: Use the `visual_offset` in `TowerData` to shift the ghost tower during placement if it doesn't align with the 64×64 grid correctly.
 -   **Upgrades**: The game supports branching upgrades. The indices in the `levels` array determine the order shown in the UI.
--   **Tower Not in Sidebar?** Ensure the `CardData` is in a `DeckData` that is linked to the active `PlayerData`.
+-   **Tower Not in Sidebar?** Ensure the `LoadoutData` is in a `LoadoutData` that is linked to the active `PlayerData`.

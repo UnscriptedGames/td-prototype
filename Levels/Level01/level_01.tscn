@@ -1,17 +1,15 @@
 [gd_scene format=4 uid="uid://da4wggnk44ip2"]
 
 [ext_resource type="PackedScene" uid="uid://bir7iuxfukxsb" path="res://Levels/_TemplateLevel/template_level.tscn" id="1_sm372"]
-[ext_resource type="Resource" uid="uid://sct6jvx6tm1y" path="res://Config/Levels/level_01_data.tres" id="2_5muv1"]
+[ext_resource type="Resource" uid="uid://sct6jvx6tm1y" path="res://Config/Levels/level_01_config.tres" id="2_5muv1"]
 [ext_resource type="Script" uid="uid://0x3lyn1cjhr1" path="res://Levels/_Components/Resources/maze_tile_style.gd" id="3_2nk17"]
 [ext_resource type="Shader" uid="uid://dxdrp5juv3u7u" path="res://Levels/_Components/matte_surface.gdshader" id="3_fgavm"]
 [ext_resource type="TileSet" uid="uid://deanuyo4c5m1j" path="res://Levels/Tilesets/path_tileset.tres" id="3_vkb5y"]
 [ext_resource type="TileSet" uid="uid://dq71bx8v7hske" path="res://Levels/Tilesets/highlight_tileset.tres" id="4_5muv1"]
-[ext_resource type="SpriteFrames" uid="uid://bkwi0pcvvdulg" path="res://Levels/Level01/level_1_animations.tres" id="5_fgavm"]
-[ext_resource type="Script" uid="uid://dql3pw67f5uhe" path="res://Levels/_TemplateLevel/path_data.gd" id="6"]
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_5muv1"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_2nk17"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5muv1"]
 shader = ExtResource("3_fgavm")
 shader_parameter/noise_strength = 0.01
 shader_parameter/gradient_strength = 0.05
@@ -24,24 +22,6 @@ side_color = Color(0.101960786, 0.101960786, 0.10980392, 1)
 glow_color = Color(0.011669541, 0.34371462, 0.26125944, 1)
 glow_opacity = 1.0
 metadata/_custom_type_script = "uid://0x3lyn1cjhr1"
-
-[sub_resource type="Curve2D" id="Curve2D_h4a6w"]
-_data = {
-"points": PackedVector2Array(0, 0, 0, 0, 160, -32, 0, 0, 0, 0, 160, 864, 0, 0, 0, 0, 416, 864, 0, 0, 0, 0, 416, 288, 0, 0, 0, 0, 672, 288, 0, 0, 0, 0, 672, 864, 0, 0, 0, 0, 928, 864, 0, 0, 0, 0, 928, 672, 0, 0, 0, 0, 1184, 672)
-}
-point_count = 9
-
-[sub_resource type="Curve2D" id="Curve2D_End01"]
-_data = {
-"points": PackedVector2Array(0, 0, 0, 0, 1184, 672, 0, 0, 0, 0, 1184, 224, 0, 0, 0, 0, 1568, 224)
-}
-point_count = 3
-
-[sub_resource type="Curve2D" id="Curve2D_End02"]
-_data = {
-"points": PackedVector2Array(0, 0, 0, 0, 1184, 672, 0, 0, 0, 0, 1312, 672, 0, 0, 0, 0, 1312, 992)
-}
-point_count = 3
 
 [node name="Level01" unique_id=853479160 node_paths=PackedStringArray("background_renderer", "maze_renderer", "song_layer") instance=ExtResource("1_sm372")]
 level_data = ExtResource("2_5muv1")
@@ -65,7 +45,7 @@ texture = SubResource("CanvasTexture_5muv1")
 
 [node name="BackgroundRenderer" parent="TileMaps" parent_id_path=PackedInt32Array(1301297614) index="0" unique_id=1621264932]
 visible = true
-material = SubResource("ShaderMaterial_2nk17")
+material = SubResource("ShaderMaterial_5muv1")
 noise_strength = 0.01
 gradient_strength = 0.05
 button_color = Color(0.17254902, 0.17254902, 0.20784314, 1)
@@ -103,38 +83,3 @@ tile_set = ExtResource("4_5muv1")
 
 [node name="Enemies" parent="Entities" parent_id_path=PackedInt32Array(334363663) index="2" unique_id=1241534722]
 y_sort_enabled = true
-
-[node name="Spawn01" type="Path2D" parent="Paths" parent_id_path=PackedInt32Array(1401139811) index="0" unique_id=711947826]
-curve = SubResource("Curve2D_h4a6w")
-script = ExtResource("6")
-branches = Array[NodePath]([NodePath("../End01"), NodePath("../End02")])
-
-[node name="End01" type="Path2D" parent="Paths" parent_id_path=PackedInt32Array(1401139811) index="1" unique_id=1548293934]
-curve = SubResource("Curve2D_End01")
-
-[node name="End02" type="Path2D" parent="Paths" parent_id_path=PackedInt32Array(1401139811) index="2" unique_id=397210930]
-curve = SubResource("Curve2D_End02")
-
-[node name="Animations" parent="." index="5" unique_id=1582348548]
-visible = false
-y_sort_enabled = true
-
-[node name="Smoke" type="AnimatedSprite2D" parent="Animations" index="0" unique_id=635213099]
-y_sort_enabled = true
-position = Vector2(863, 906)
-sprite_frames = ExtResource("5_fgavm")
-animation = &"smoke"
-autoplay = "smoke"
-frame_progress = 0.510573
-offset = Vector2(0, -70)
-
-[node name="Flame" type="AnimatedSprite2D" parent="Animations" index="1" unique_id=1575510447]
-z_index = 1
-y_sort_enabled = true
-position = Vector2(864, 904.7)
-scale = Vector2(1.4, 1.4)
-sprite_frames = ExtResource("5_fgavm")
-animation = &"flames"
-autoplay = "flames"
-frame_progress = 0.113154
-offset = Vector2(0, -20)

@@ -60,6 +60,15 @@ var lane_index: int = 0 # The specific lane index this enemy is following
 var _variant: String = "" # Current variant name
 var _last_direction: String = "south_west" # Last animation direction
 var _has_reached_end: bool = false # True if enemy reached end of path
+var _wander_offset: Vector2 = Vector2.ZERO # Organic offset
+
+# AStar Navigation State
+var _astar_grid: AStarGrid2D
+var _target_tile: Vector2i
+var _current_path: PackedVector2Array
+var _current_path_index: int = 0
+var _velocity: Vector2 = Vector2.ZERO
+var _time_lived: float = 0.0 # Time since spawn to drive organic wobble
 
 
 ## Status Effect State
@@ -86,7 +95,7 @@ var _effect_bars: Dictionary[StatusEffectData.EffectType, ProgressBar] = {} # Ma
 
 
 ## Public Properties
-var path_follow: PathFollow2D # PathFollow2D node for movement
+var path_follow: Node2D # Kept for signature compatibility if something expects node, but unused for motion. Better to remove later if safe.
 
 
 ## Called when the enemy enters the scene tree
@@ -161,6 +170,58 @@ func reached_goal() -> void:
 	_play_death_sequence("die")
 
 
+## Assigns the navigation context so the enemy can calculate its path
+func set_navigation_context(grid: AStarGrid2D, start_tile: Vector2i, target: Vector2i) -> void:
+	_astar_grid = grid
+	_target_tile = target
+	
+	if _astar_grid:
+		var r: Rect2i = _astar_grid.region
+		
+		# Clamp points to the grid's strictly defined region to prevent out of bounds crashes
+		var safe_start: Vector2i = Vector2i(
+			clampi(start_tile.x, r.position.x, r.end.x - 1),
+			clampi(start_tile.y, r.position.y, r.end.y - 1)
+		)
+		
+		var safe_target: Vector2i = Vector2i(
+			clampi(_target_tile.x, r.position.x, r.end.x - 1),
+			clampi(_target_tile.y, r.position.y, r.end.y - 1)
+		)
+		
+		_current_path = _astar_grid.get_point_path(safe_start, safe_target)
+		
+		# Skip first point if it's the tile we're already standing on
+		_current_path_index = 0
+		if _current_path.size() > 0 and global_position.distance_to(_current_path[0]) < 10.0:
+			_current_path_index = 1
+		
+		# Assign a random wander offset to keep movement organic but firmly inside the tile
+		var cell_size = _astar_grid.cell_size
+		_wander_offset = Vector2(
+			randf_range(-cell_size.x * 0.15, cell_size.x * 0.15),
+			randf_range(-cell_size.y * 0.15, cell_size.y * 0.15)
+		)
+
+
+## Returns the estimated total distance remaining to reach the end of the path
+func get_remaining_distance() -> float:
+	if _current_path.size() == 0:
+		return 0.0
+		
+	var remaining: float = 0.0
+	
+	if _current_path_index < _current_path.size():
+		# Distance to the next waypoint
+		remaining += global_position.distance_to(_current_path[_current_path_index])
+		
+	# Distance of all subsequent waypoints
+	for i: int in range(_current_path_index, _current_path.size() - 1):
+		remaining += _current_path[i].distance_to(_current_path[i + 1])
+		
+	return remaining
+
+
 ## Handles movement and animation each frame
 func _process(delta: float) -> void:
 	# Keep the shader scrolling accurate inside the editor based on the data!
@@ -173,6 +234,7 @@ func _process(delta: float) -> void:
 		return
 
 	_process_status_effects(delta)
+	_time_lived += delta
 
 	if state == State.DYING:
 		return
@@ -182,62 +244,88 @@ func _process(delta: float) -> void:
 		# We might want to play a "stunned" animation here in the future.
 		return
 
-	if path_follow and is_instance_valid(path_follow.get_parent()):
-		# Disable built-in rotation to prevent sprite spinning, we handle direction manually
-		if path_follow.rotates:
-			path_follow.rotates = false
-		
-		# Reset internal offset properties to avoiding fighting our manual logic
-		path_follow.v_offset = 0.0
-		path_follow.h_offset = 0.0
-
-		# Move the follower along the path
-		path_follow.progress += speed * _speed_modifier * delta
-		
-		# Sample current path for animation direction
-		# Since we are on a generated lane, we can just use the path's tangent directly or sample ahead slightly
-		var path: Path2D = path_follow.get_parent() as Path2D
-		var baked_length: float = path.curve.get_baked_length()
-		
-		var point_current = path.curve.sample_baked(path_follow.progress)
-		var point_ahead = path.curve.sample_baked(min(path_follow.progress + 10.0, baked_length))
-		var tangent = (point_ahead - point_current).normalized()
-		if tangent == Vector2.ZERO: tangent = Vector2.DOWN
-
-		# 4. Apply position directly from path follow (Lane System handles offset)
-		global_position = path_follow.global_position
-		# --------------------------------
-
-		# Determine animation direction based on movement vector (Tangent)
-		var anim_dir: String = "north_west" if tangent.y < 0 else "south_west"
-
-		# Store the last direction for the death animation
-		if path_follow.progress < path.curve.get_baked_length() - 1.0:
-			_last_direction = anim_dir
-			
-		# Wave Visual: Update unscaled time and enable visibility
-		if sprite and sprite.material is ShaderMaterial:
-			(sprite.material as ShaderMaterial).set_shader_parameter("use_unscaled_time", true)
-			
-			# We deleted the 'scroll_speed' uniform from the shader to keep EnemyData
-			# as the single source of truth. So we just multiply the time ourselves here!
-			var speed_mult: float = data.scroll_speed if data else 1.0
-			var computed_time: float = (float(Time.get_ticks_msec()) / 1000.0) * speed_mult
-			sprite.set_instance_shader_parameter("unscaled_time", computed_time)
-				
-			# Enable visibility now that we are positioned correctly
-			if not sprite.visible:
-				sprite.visible = true
-				if shadow_panel:
-					shadow_panel.visible = true
- 
-		# Play the moving animation
-		_play_animation("move", anim_dir)
-
-		# Check if the enemy has reached the end of the path
-		if not _has_reached_end and path_follow.progress >= path.curve.get_baked_length():
+	if _current_path.size() == 0 or _current_path_index >= _current_path.size():
+		if not _has_reached_end:
 			_has_reached_end = true
 			emit_signal("reached_end_of_path", self)
+		return
+
+	# Determine current target waypoint
+	var target_waypoint: Vector2 = _current_path[_current_path_index] + _wander_offset
+
+	# Desired steering velocity
+	var desired_velocity: Vector2 = (target_waypoint - global_position).normalized() * speed * _speed_modifier
+	
+	# Smoothly interpolate velocity to curve corners (using the existing constant, clamped to 1.0 to prevent high speed extrapolation)
+	if _velocity == Vector2.ZERO:
+		_velocity = desired_velocity
+	else:
+		_velocity = _velocity.lerp(desired_velocity, min(1.0, delta * CORNER_SMOOTHING))
+		
+	# Add a sine-wave wobble perpendicular to the velocity
+	var wobble_amplitude: float = data.wobble_amplitude if data else 8.0
+	var wobble_frequency: float = data.wobble_frequency if data else 3.0
+	var speed_factor: float = _speed_modifier # Slow down wobble if the enemy is slowed
+	
+	# Calculate perpendicular normal (-y, x) of the normalized current velocity
+	var move_dir: Vector2 = _velocity.normalized()
+	var perp_dir: Vector2 = Vector2(-move_dir.y, move_dir.x)
+	var wobble_offset: Vector2 = perp_dir * sin(_time_lived * wobble_frequency * speed_factor) * wobble_amplitude
+	
+	var frame_velocity: Vector2 = _velocity + wobble_offset
+	var distance_to_move: float = frame_velocity.length() * delta
+	var move_direction: Vector2 = frame_velocity.normalized()
+	
+	var current_pos: Vector2 = global_position
+	
+	# Sub-stepping loop for fast game speeds
+	while distance_to_move > 0.0 and _current_path_index < _current_path.size():
+		target_waypoint = _current_path[_current_path_index] + _wander_offset
+		var dist_to_target: float = current_pos.distance_to(target_waypoint)
+		
+		# Sub-step check: Would this move instantly blow past the waypoint?
+		if distance_to_move >= dist_to_target:
+			# Yes! Move EXACTLY to the waypoint corner to prevent wall clipping
+			current_pos = target_waypoint
+			distance_to_move -= dist_to_target
+			_current_path_index += 1
+			# For the remaining distance, we must redirect towards the NEXT waypoint
+			if _current_path_index < _current_path.size():
+				move_direction = (_current_path[_current_path_index] + _wander_offset - current_pos).normalized()
+		else:
+			# Normal movement frame, or the last sub-step of a fast frame
+			current_pos += move_direction * distance_to_move
+			# If dist_to_target is within 12 pixels, we gracefully say it matched for smooth turning next frame (1x speed)
+			if current_pos.distance_to(target_waypoint) <= 12.0:
+				_current_path_index += 1
+			distance_to_move = 0.0
+			break
+			
+	global_position = current_pos
+
+	# Determine animation direction based on mathematical velocity
+	var anim_dir: String = "north_west" if _velocity.y < 0 else "south_west"
+
+	# Store the last direction for the death animation
+	if _current_path_index < _current_path.size() - 1:
+		_last_direction = anim_dir
+		
+	# Wave Visual: Update unscaled time and enable visibility
+	if sprite and sprite.material is ShaderMaterial:
+		(sprite.material as ShaderMaterial).set_shader_parameter("use_unscaled_time", true)
+		
+		var speed_mult: float = data.scroll_speed if data else 1.0
+		var computed_time: float = (float(Time.get_ticks_msec()) / 1000.0) * speed_mult
+		sprite.set_instance_shader_parameter("unscaled_time", computed_time)
+			
+		# Enable visibility now that we are positioned correctly
+		if not sprite.visible:
+			sprite.visible = true
+			if shadow_panel:
+				shadow_panel.visible = true
+ 
+	# Play the moving animation
+	_play_animation("move", anim_dir)
 
 
 ## Plays the specified animation for the current variant
@@ -307,10 +395,11 @@ func reset() -> void:
 	# Reset state and pathing
 	state = State.MOVING
 	_has_reached_end = false
-	if is_instance_valid(path_follow):
-		path_follow.progress = 0.0
-		# Initialize rotation derived from path to prevent "swoop" on spawn
-		pass
+	_current_path.clear()
+	_current_path_index = 0
+	_velocity = Vector2.ZERO
+	_wander_offset = Vector2.ZERO
+	_time_lived = 0.0
 
 	# Reset status effects
 	_active_status_effects.clear()
@@ -467,14 +556,7 @@ func _on_death_animation_finished() -> void:
 	_return_to_pool_and_cleanup()
 
 
-## Handles returning the object to the pool and cleaning up its temporary parent
+## Handles returning the object to the pool and cleaning up
 func _return_to_pool_and_cleanup() -> void:
-	# Store a reference to the temporary PathFollow2D parent
-	var temp_path_follow := path_follow
-	
-	# Return this enemy to the pool (which will reparent it) using call_deferred to avoid physics frame flushes
+	# Return this enemy to the pool using call_deferred to avoid physics frame flushes
 	ObjectPoolManager.call_deferred("return_object", self)
-	
-	# Now that the enemy has been reparented, we can return the old PathFollow2D to its pool
-	if is_instance_valid(temp_path_follow):
-		ObjectPoolManager.call_deferred("return_node", temp_path_follow)

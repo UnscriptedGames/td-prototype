@@ -18,6 +18,7 @@ extends Control
 @onready var gauge_r: ProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR
 @onready var peak_line_l: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL/PeakLineL
 @onready var peak_line_r: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR/PeakLineR
+@onready var integrity_label: Label = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/IntegrityValueLabel
 
 # Window Controls
 @onready var btn_minimize: Button = $MainLayout/TopBar/Content/WindowControls/MinimizeButton
@@ -49,14 +50,7 @@ var _target_damage_value: float = 0.0
 var _meter_noise_offset_l: float = 0.0
 var _meter_noise_offset_r: float = 0.0
 
-# Peak Hold State
-var _peak_val_l: float = 0.0
-var _peak_val_r: float = 0.0
-var _peak_hold_timer_l: float = 0.0
-var _peak_hold_timer_r: float = 0.0
-const PEAK_HOLD_TIME: float = 0.75
-const PEAK_DECAY_RATE: float = 25.0 # dB/sec equivalent
-
+# (Peak Hold State removed as it is now pinned strictly to actual damage)
 # Jitter Settings
 const JITTER_SPEED: float = 20.0 # How fast the noise fluctuates (Higher = Faster)
 const JITTER_AMPLITUDE: float = 0.01 # 2% of max value
@@ -162,7 +156,7 @@ func _setup_signal_connections() -> void:
 	# Peak Meter display
 	if GameManager.has_signal("peak_meter_changed"):
 		GameManager.peak_meter_changed.connect(_on_peak_changed)
-		_on_peak_changed(GameManager.current_peak, GameManager.MAX_PEAK)
+		_on_peak_changed(GameManager.current_peak, GameManager.max_peak)
 
 	# Wave active/idle
 	if GameManager.has_signal("wave_status_changed"):
@@ -270,61 +264,38 @@ func _process(delta: float) -> void:
 	_meter_noise_offset_l = common_offset + diff_offset
 	_meter_noise_offset_r = common_offset - diff_offset
 
-	# 2. Lerp towards target value (display = 10% base + damage)
-	var base_fill: float = max_v * 0.10
-	var final_target: float = base_fill + _target_damage_value
+	# 2. Lerp towards target value
+	# The bar fill targets 2.5% below the true value, with +/- 2.5% jitter.
+	var bar_target: float = _target_damage_value - 2.5
 	var smooth_speed: float = 7.0 * unscaled_delta
 
 	# L Channel
-	var smoothed_l: float = lerp(gauge_l.value, final_target, smooth_speed)
-	var final_l: float = smoothed_l + _meter_noise_offset_l
-	gauge_l.value = clamp(final_l, 0.0, max_v)
-	_update_peak_hold(final_l, unscaled_delta, true)
+	var smoothed_l: float = lerp(gauge_l.value, bar_target, smooth_speed)
+	var final_l: float = clamp(smoothed_l + _meter_noise_offset_l, -5.0, _target_damage_value)
+	gauge_l.value = final_l
+	_update_peak_hold(_target_damage_value, true)
 
 	# R Channel
-	var smoothed_r: float = lerp(gauge_r.value, final_target, smooth_speed)
-	var final_r: float = smoothed_r + _meter_noise_offset_r
-	gauge_r.value = clamp(final_r, 0.0, max_v)
-	_update_peak_hold(final_r, unscaled_delta, false)
+	var smoothed_r: float = lerp(gauge_r.value, bar_target, smooth_speed)
+	var final_r: float = clamp(smoothed_r + _meter_noise_offset_r, -5.0, _target_damage_value)
+	gauge_r.value = final_r
+	_update_peak_hold(_target_damage_value, false)
 
 
-## Updates peak-hold indicator position for one channel. The peak value is
-## held for PEAK_HOLD_TIME seconds, then decays linearly.
-func _update_peak_hold(current_val: float, delta: float, is_left: bool) -> void:
-	var peak_val: float = _peak_val_l if is_left else _peak_val_r
-	var timer: float = _peak_hold_timer_l if is_left else _peak_hold_timer_r
+## Updates peak-hold indicator position for one channel.
+## This is now strictly pinned to the actual damage taken.
+func _update_peak_hold(target_val: float, is_left: bool) -> void:
 	var line: ColorRect = peak_line_l if is_left else peak_line_r
 
 	if not is_instance_valid(gauge_l): return
-	var max_v: float = gauge_l.max_value
-
-	# Push peak upward when signal exceeds current peak
-	if current_val > peak_val:
-		peak_val = current_val
-		timer = PEAK_HOLD_TIME
-	else:
-		if timer > 0:
-			timer -= delta
-		else:
-			peak_val -= PEAK_DECAY_RATE * delta
-
-		# Clamp to prevent falling below current signal
-		if peak_val < current_val:
-			peak_val = current_val
-
-	# Write back to correct channel
-	if is_left:
-		_peak_val_l = peak_val
-		_peak_hold_timer_l = timer
-	else:
-		_peak_val_r = peak_val
-		_peak_hold_timer_r = timer
 
 	# Update visual position of peak line
+	# Progress bar physical range is -5 to 100 (total span 105).
+	# To place the line correctly, map target_val (-5 to 100) to 0.0 - 1.0 physical width.
 	if is_instance_valid(line) and is_instance_valid(line.get_parent()):
 		var width: float = line.get_parent().size.x - line.size.x
 		if width > 0:
-			var pct: float = clamp(peak_val / max_v, 0.0, 1.0)
+			var pct: float = clamp((target_val + 5.0) / 105.0, 0.0, 1.0)
 			line.position.x = width * pct
 
 
@@ -634,8 +605,12 @@ func _on_gain_changed(new_gain: int) -> void:
 ## Updates the peak meter visual target.
 func _on_peak_changed(current: float, max_val: float) -> void:
 	if max_val > 0.0 and is_instance_valid(gauge_l):
-		# We reserve the first 10% for base fill, so map 0-max to 0-90%.
-		_target_damage_value = (current / max_val) * (gauge_l.max_value * 0.90)
+		var true_pct: float = min(100.0, (current / max_val) * 100.0)
+		_target_damage_value = true_pct
+		
+		if is_instance_valid(integrity_label):
+			var distortion_pct: int = max(0, floor(true_pct))
+			integrity_label.text = "%d%%" % distortion_pct
 
 
 ## Converts the volume slider's 0–100 linear range to dB and applies it to

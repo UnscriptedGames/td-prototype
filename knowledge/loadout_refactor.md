@@ -1,6 +1,6 @@
 # Loadout System Refactor: "The Studio" & "The Live Set"
-**Status:** DRAFT (Phase 1 Design)  
-**Date:** 2026-02-13  
+**Status:** IMPLEMENTED (Phase 1)  
+**Date:** 2026-02-22  
 **Context:** Shifting core gameplay from "Reactionary Deckbuilding" to "Deliberate Loadout Strategy".
 
 ## 1. Core Concept: The "DAW" Metaphor
@@ -66,7 +66,10 @@ Passive modifiers that alter global rules or specific tower types.
         2.  **Middle:** Towers (Grid, 2 cols x 3 rows). Shows Stock.
         3.  **Bottom:** Buffs (VBox, 4-6 slots). Rack Units with Cooldown bars.
 
-## 5. Technical Architecture Changes
--   **Remove:** `DeckData`, `CardDrawing` logic.
--   **Refactor:** `GameManager` to hold `LoadoutData` (Dictionary of Active Items).
--   **New Resource:** `LoadoutConfig` (Resource) to save/load user presets.
+## 5. Technical Architecture
+- **Location:** `Core/Data/Loadout/`
+- **Base Script:** `loadout_data.gd` (Base class for all Actions).
+- **Relic Logic:** `relic_data.gd`.
+- **Buff Logic:** `buff_data.gd`.
+- **Effect System:** `loadout_effect.gd` + `Effects/` subdirectory.
+- **Resource Naming:** Instances are named `*_config.tres` to distinguish them from scripts.

@@ -20,9 +20,9 @@ extends Node2D
 var _current_wave_index: int = 0
 var _spawning: bool = false
 var _active_enemy_count: int = 0
-var _paths: Dictionary[String, Path2D] = {}
-var _lane_map: Dictionary[String, Array] = {} # SourcePathKey -> Array[Path2D]
-var _lane_to_source_map: Dictionary[Path2D, Path2D] = {} # GeneratedLane -> LogicalSourcePath
+
+# AStarGrid2D Navigation
+var _astar_grid: AStarGrid2D
 
 # Spawn Queue System
 var _spawn_queue: Array[Dictionary] = []
@@ -97,110 +97,18 @@ func _ready() -> void:
 		# Ensure everything is visible if sequence is skipped.
 		if maze_renderer:
 			maze_renderer.reveal_ratio = 1.0
-		# Defer because _paths is populated below and isn't ready yet.
+		# Initialize navigation immediately if there's no sequence.
+		call_deferred("_initialize_navigation_grid")
 		call_deferred("_remove_background_tiles_under_path", false)
 		opening_sequence_finished.emit()
 
-	# Cache Path2D nodes using "Paths/Name" keys for quick lookup.
-	var paths_node: Node2D = $Paths as Node2D
-	
-	# Build predecessor/successor maps for path stitching.
-	var predecessor_map: Dictionary[Path2D, Path2D] = {}
-	var successor_map: Dictionary[Path2D, Array] = {}
-	
-	for child: Node in paths_node.get_children():
-		if child is Path2D and child.name.find("Lane") == -1:
-			var source_path: Path2D = child as Path2D
-			var key_string: String = "%s/%s" % [paths_node.name, source_path.name]
-			_paths[key_string] = source_path
-			
-			# Check branches to populate connectivity maps.
-			var branches: Array = []
-			if "branches" in source_path:
-				branches = source_path.branches
-			
-			for branch_path_node: NodePath in branches:
-				var branch_node: Path2D = source_path.get_node_or_null(branch_path_node) as Path2D
-				if branch_node:
-					predecessor_map[branch_node] = source_path
-					
-					if not successor_map.has(source_path):
-						successor_map[source_path] = []
-					successor_map[source_path].append(branch_node)
-	
-	# Generate a global lane offset profile (sorted L->R).
-	var lane_profile: Array[float] = []
-	for i: int in range(lane_count):
-		var offset: float = randf_range(-max_lane_offset, max_lane_offset)
-		lane_profile.append(offset)
-	lane_profile.sort()
-	
-	# Generate parallel lane curves for every source path.
-	for child: Node in paths_node.get_children():
-		if child is Path2D and child.name.find("Lane") == -1:
-			var source_path: Path2D = child as Path2D
-			var key_string: String = "%s/%s" % [paths_node.name, source_path.name]
-			
-			var lanes: Array[Path2D] = []
-			
-			# Check if we have a predecessor for end-stitching.
-			var predecessor: Path2D = predecessor_map.get(source_path)
-			var previous_tangent: Vector2 = Vector2.ZERO
-			
-			if predecessor and predecessor.curve.point_count >= 2:
-				var point_last: Vector2 = predecessor.curve.get_point_position(
-					predecessor.curve.point_count - 1
-				)
-				var point_previous: Vector2 = predecessor.curve.get_point_position(
-					predecessor.curve.point_count - 2
-				)
-				previous_tangent = (point_last - point_previous).normalized()
-			
-			# Check successors for start-stitching.
-			var next_tangents: Array[Vector2] = []
-			var successors: Array = successor_map.get(source_path, [])
-			for successor: Path2D in successors:
-				if successor.curve.point_count >= 2:
-					var segment_start: Vector2 = successor.curve.get_point_position(0)
-					var segment_end: Vector2 = successor.curve.get_point_position(1)
-					var segment_tangent: Vector2 = (segment_end - segment_start).normalized()
-					next_tangents.append(segment_tangent)
-			
-			for i: int in range(lane_profile.size()):
-				var offset: float = lane_profile[i]
-				var lane_name: String = "%s_Lane_%d" % [source_path.name, i]
-				var new_curve: Curve2D
-				
-				if is_zero_approx(offset):
-					new_curve = source_path.curve.duplicate()
-				else:
-					new_curve = LaneGenerator.generate_parallel_curve(
-						source_path, offset, previous_tangent, next_tangents
-					)
-				
-				if new_curve:
-					var lane_path: Path2D = Path2D.new()
-					lane_path.name = lane_name
-					lane_path.curve = new_curve
-					paths_node.add_child(lane_path)
-					
-					var lane_key: String = "%s/%s" % [paths_node.name, lane_name]
-					_paths[lane_key] = lane_path
-					lanes.append(lane_path)
-					
-					# Map this generated lane back to its logical source path.
-					_lane_to_source_map[lane_path] = source_path
-			
-			_lane_map[key_string] = lanes
-	
+
 	# Register level metadata so the HUD shows total waves.
+
 	if level_data:
 		GameManager.set_level(level_number, level_data)
 	
 	GameManager.start_wave_requested.connect(_on_next_wave_requested)
-	
-	# Pool Initialisation
-	ObjectPoolManager.create_node_pool("PathFollow2D", 50)
 
 func _process(delta: float) -> void:
 	# Processes the spawn queue each frame.
@@ -219,10 +127,8 @@ func _start_wave(wave_index: int) -> void:
 	if wave_index >= level_data.waves.size():
 		return
 	
-	GameManager.set_wave(wave_index + 1)
-	
-	_current_wave_index = wave_index
 	var wave: WaveData = level_data.waves[wave_index] as WaveData
+	GameManager.set_wave(wave_index + 1, wave)
 	if wave:
 		_spawning = true
 		_active_enemy_count = 0
@@ -246,7 +152,8 @@ func _spawn_wave(wave: WaveData) -> void:
 			master_timeline.append({
 				"time": current_time,
 				"scene": instruction.enemy_scene,
-				"path": instruction.path
+				"spawn_tile": instruction.spawn_tile,
+				"weighted_targets": instruction.weighted_targets
 			})
 			current_time += instruction.enemy_delay
 	
@@ -274,52 +181,67 @@ func _process_spawn_queue(delta: float) -> void:
 
 
 func _spawn_queued_enemy(event: Dictionary) -> void:
-	# Resolves path + lane for a queued spawn event and creates the enemy.
-	var path_key: String = str(event["path"])
-	var path_node: Path2D = _paths.get(path_key, null) as Path2D
+	# Use the explicit coordinate from the Weighted Spawn Instruction
+	var start_tile: Vector2i = event.get("spawn_tile", Vector2i.ZERO)
 	
-	var lanes: Array = _lane_map.get(path_key, [])
-	var lane_idx: int = -1
+	# Try to safely resolve the exact world coordinate of the center of that tile
+	var spawn_position: Vector2 = Vector2.ZERO
+	if maze_renderer:
+		var layer_node = maze_renderer.get_node_or_null(maze_renderer.source_layer_path)
+		if layer_node is TileMapLayer:
+			var local_pos = layer_node.map_to_local(start_tile)
+			spawn_position = layer_node.to_global(local_pos)
+		else:
+			push_error("Failed to resolve spawn_position: maze layer not found.")
+			return
 	
-	if lanes.size() > 0:
-		lane_idx = randi() % lanes.size()
-		path_node = lanes[lane_idx]
+	# Wait for AStar to be ready if it isn't
+	if not _astar_grid:
+		_initialize_navigation_grid()
+		
+	# Resolve Target
+	var target_tile: Vector2i = Vector2i.ZERO # Default/fallback
+	var weighted_targets: Array = event.get("weighted_targets", [])
 	
-	if path_node:
-		var enemy: TemplateEnemy = _spawn_enemy(event["scene"], path_node)
-		if enemy:
-			enemy.lane_index = lane_idx
-	else:
-		push_error("Path not found for queued spawn: %s" % path_key)
+	if not weighted_targets.is_empty():
+		var total_weight: float = 0.0
+		for wt: WeightedTarget in weighted_targets:
+			if wt: total_weight += wt.weight
+			
+		var random_val: float = randf_range(0.0, total_weight)
+		var cumulative: float = 0.0
+		
+		for wt: WeightedTarget in weighted_targets:
+			if not wt: continue
+			cumulative += wt.weight
+			if random_val <= cumulative:
+				target_tile = wt.goal_tile
+				break
+	elif _astar_grid:
+		# Fallback if the user hasn't set up the new WeightedTargets yet
+		var region: Rect2i = _astar_grid.region
+		target_tile = Vector2i(region.end.x - 1, region.position.y + int(region.size.y / 2.0))
+	
+	_spawn_enemy(event["scene"], spawn_position, start_tile, target_tile)
 
 
-func _spawn_enemy(enemy_scene: PackedScene, path_node: Path2D) -> TemplateEnemy:
-	# Instantiates one enemy and attaches a PathFollow2D for curve-based movement.
+func _spawn_enemy(enemy_scene: PackedScene, spawn_position: Vector2, start_tile: Vector2i, target_tile: Vector2i) -> TemplateEnemy:
 	var enemies_container: Node2D = entities.get_node("Enemies") as Node2D
 	
 	var enemy: TemplateEnemy = ObjectPoolManager.get_object(enemy_scene) as TemplateEnemy
 	if not is_instance_valid(enemy):
 		return null
 	
-	var path_follow: PathFollow2D = ObjectPoolManager.get_pooled_node("PathFollow2D") as PathFollow2D
-	if not is_instance_valid(path_follow):
-		push_error("Failed to get a PathFollow2D from the pool.")
-		path_follow = PathFollow2D.new()
-	
-	path_follow.rotates = false
-	path_follow.loop = false
-	path_node.add_child(path_follow)
-	
-	enemy.path_follow = path_follow
-	
 	enemies_container.add_child(enemy)
 	enemy.reset()
-	enemy.global_position = path_node.global_position
+	enemy.global_position = spawn_position
 	
 	# Enable visibility only AFTER positioning to prevent (0,0) flash.
 	enemy.visible = true
 	_active_enemy_count += 1
 	
+	# Provide navigation context explicitly
+	enemy.set_navigation_context(_astar_grid, start_tile, target_tile)
 	enemy.set_process(true)
 	
 	if not enemy.reached_end_of_path.is_connected(_on_enemy_finished_path):
@@ -338,79 +260,14 @@ func _on_enemy_died(_enemy: TemplateEnemy, reward_amount: int) -> void:
 
 
 func _on_enemy_finished_path(enemy: TemplateEnemy) -> void:
-	# Handles path completion: either damages the player (terminal path) or
-	# transitions the enemy onto the next branch, preserving lane index.
+	# Goal reached logic
 	if not is_instance_valid(enemy):
 		return
 	
-	var path_follow: PathFollow2D = enemy.path_follow as PathFollow2D
-	if not is_instance_valid(path_follow):
-		push_error("Enemy missing path_follow reference.")
-		return
-	
-	var current_path_node: Path2D = path_follow.get_parent() as Path2D
-	
-	# Look up the logical source path via the lane-to-source map.
-	# If the enemy is on a generated lane, we need the source to check branches.
-	# If it's already on a source path (no lanes), use it directly.
-	var source_path: Path2D = _lane_to_source_map.get(current_path_node, current_path_node)
-	
-	if not source_path:
-		enemy.reached_goal()
-		GameManager.add_peak_volume(enemy.health)
-		_active_enemy_count -= 1
-		_check_wave_completion()
-		return
-	
-	# Check branches on the logical source path.
-	var branches: Array = []
-	if "branches" in source_path:
-		branches = source_path.branches
-	
-	if branches.is_empty():
-		# Terminal path — enemy has reached the goal.
-		GameManager.add_peak_volume(enemy.health)
-		enemy.reached_goal()
-		_active_enemy_count -= 1
-		_check_wave_completion()
-		return
-	
-	# Pick a random branch and resolve its node.
-	var next_path_nodepath: NodePath = branches.pick_random() as NodePath
-	var next_source_path: Path2D = source_path.get_node_or_null(next_path_nodepath) as Path2D
-	
-	if not next_source_path:
-		push_error("Invalid branch path from %s to %s" % [source_path.name, next_path_nodepath])
-		enemy.reached_goal()
-		GameManager.add_peak_volume(enemy.health)
-		_active_enemy_count -= 1
-		_check_wave_completion()
-		return
-	
-	# Find the corresponding lane on the next source path.
-	var next_path_key: String = "%s/%s" % [$Paths.name, next_source_path.name]
-	var next_lanes: Array = _lane_map.get(next_path_key, [])
-	
-	var target_lane_path: Path2D = next_source_path
-	if next_lanes.size() > 0:
-		if enemy.lane_index >= 0 and enemy.lane_index < next_lanes.size():
-			target_lane_path = next_lanes[enemy.lane_index]
-		else:
-			target_lane_path = next_lanes.pick_random()
-	
-	# Transition enemy onto the new path.
-	enemy.prepare_for_new_path()
-	
-	var new_path_follow: PathFollow2D = ObjectPoolManager.get_pooled_node("PathFollow2D") as PathFollow2D
-	if not is_instance_valid(new_path_follow):
-		new_path_follow = PathFollow2D.new()
-	
-	new_path_follow.rotates = false
-	new_path_follow.loop = false
-	target_lane_path.add_child(new_path_follow)
-	
-	enemy.path_follow = new_path_follow
-	ObjectPoolManager.return_node(path_follow)
+	GameManager.add_peak_volume(enemy.health)
+	enemy.reached_goal()
+	_active_enemy_count -= 1
+	_check_wave_completion()
 
 
 func _on_next_wave_requested() -> void:
@@ -497,8 +354,42 @@ func _start_dissolve_sequence() -> void:
 	)
 
 func _start_path_flow_dissolve() -> void:
-	# Triggers the BFS-based background removal alongside the dissolve.
+	# Starts the background removal alongside the dissolve.
+	_initialize_navigation_grid()
 	_remove_background_tiles_under_path(true)
+
+func _initialize_navigation_grid() -> void:
+	if _astar_grid:
+		return
+		
+	var layer_node: Node = maze_renderer.get_node_or_null(maze_renderer.source_layer_path)
+	if not layer_node is TileMapLayer:
+		push_error("Cannot initialize AStarGrid2D: maze layer not found.")
+		return
+		
+	var maze_layer := layer_node as TileMapLayer
+	var used_rect := maze_layer.get_used_rect()
+	
+	_astar_grid = AStarGrid2D.new()
+	_astar_grid.region = used_rect
+	_astar_grid.cell_size = maze_layer.tile_set.tile_size
+	_astar_grid.offset = _astar_grid.cell_size / 2.0
+	_astar_grid.default_compute_heuristic = AStarGrid2D.HEURISTIC_MANHATTAN
+	_astar_grid.default_estimate_heuristic = AStarGrid2D.HEURISTIC_MANHATTAN
+	_astar_grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_NEVER
+	_astar_grid.update()
+	
+	# Make only the floor tiles walkable
+	for x in range(used_rect.position.x, used_rect.position.x + used_rect.size.x):
+		for y in range(used_rect.position.y, used_rect.position.y + used_rect.size.y):
+			var cell = Vector2i(x, y)
+			var source_id = maze_layer.get_cell_source_id(cell)
+			if source_id == floor_tile_id:
+				_astar_grid.set_point_solid(cell, false)
+			else:
+				_astar_grid.set_point_solid(cell, true)
+	
+	print("AStarGrid2D Navigation Initialized for ", used_rect)
 
 func _remove_background_tiles_under_path(animate: bool = true) -> void:
 	# BFS flood-fill from Spawn01's start point, hiding background pads under the path.
@@ -511,13 +402,30 @@ func _remove_background_tiles_under_path(animate: bool = true) -> void:
 		return
 	var maze_layer: TileMapLayer = layer_node as TileMapLayer
 	
-	# Determine BFS start point from Spawn01's first curve point.
-	var start_coords: Vector2i = Vector2i(0, 8)
-	var spawn_path: Path2D = _paths.get("%s/Spawn01" % $Paths.name) as Path2D
-	if spawn_path and spawn_path.curve.point_count > 0:
-		var start_local: Vector2 = spawn_path.curve.get_point_position(0) + spawn_path.position
-		var map_pos: Vector2 = maze_layer.to_local(to_global(start_local))
-		start_coords = maze_layer.local_to_map(map_pos)
+	# Instant hide bypasses BFS entirely to ensure all disconnected paths are cleared
+	if not animate:
+		for cell: Vector2i in maze_layer.get_used_cells():
+			if maze_layer.get_cell_source_id(cell) == floor_tile_id:
+				background_renderer.animate_hide_cell(cell, 0.0)
+		return
+		
+	# Find a valid floor tile to start the BFS, scanning from left to right.
+	var start_coords: Vector2i = Vector2i.ZERO
+	var used_rect: Rect2i = maze_layer.get_used_rect()
+	var found_start: bool = false
+	
+	for x in range(used_rect.position.x, used_rect.position.x + used_rect.size.x):
+		for y in range(used_rect.position.y, used_rect.position.y + used_rect.size.y):
+			var cell: Vector2i = Vector2i(x, y)
+			if maze_layer.get_cell_source_id(cell) == floor_tile_id:
+				start_coords = cell
+				found_start = true
+				break
+		if found_start:
+			break
+			
+	if not found_start:
+		return
 	
 	# BFS flood-fill: find all connected floor tiles.
 	var bfs_queue: Array[Vector2i] = [start_coords]
@@ -542,12 +450,7 @@ func _remove_background_tiles_under_path(animate: bool = true) -> void:
 				visited[next_cell] = current_dist + 1
 				bfs_queue.append(next_cell)
 	
-	# Instant hide or animated sequential shrink.
-	if not animate:
-		for cell: Vector2i in visited.keys():
-			background_renderer.animate_hide_cell(cell, 0.0)
-		return
-	
+	# Animated sequential shrink.
 	var tween: Tween = create_tween()
 	var step_delay: float = 0.05
 	if max_distance > 0:
