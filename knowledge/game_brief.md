@@ -112,8 +112,8 @@ DAW-standard VU/peak meter with a three-colour gradient and smooth, unscaled ani
 	the ability to play stems in any order for that stage (for replays and codex hunting).
 
 ### Layered Playback
-- While playing Stem Level N, stems 1 through N-1 play in the background at their
-	earned quality.
+- While playing Stem Level N, the current active stem plays in the foreground and dynamically shifts its audio quality (Good/Average/Abomination) in real-time as the Peak Meter rises.
+- Previously completed stems (1 through N-1) play in the background layered over it at their permanently locked, earned quality.
 - On the Boss Wave, all 5 stems play simultaneously — the player hears the full song they
 	assembled.
 
@@ -194,9 +194,10 @@ The Loadout replaces the legacy card/deck system. We use a **Data vs. Configurat
 	it for the boss?
 
 ### Loadout Scope
-- **Current thinking:** Loadouts are locked to a full stage (all 5 stems + boss), not
-	per-stem. This prevents tedious reconfiguration between stem levels and reinforces the
-	"prepare in the Studio, perform in the Live Set" metaphor.
+- **Current thinking:** The loadout is strictly locked for the entirety of a Stage (all 5 stems + boss) to reinforce the "prepare in the Studio, perform in the Live Set" metaphor. This prevents tedious reconfiguration between stem levels.
+- To prevent player frustration at the Boss Wave due to a locked loadout, two safety mechanisms are employed:
+  - **Universal Viability:** Every tower can technically damage every enemy (soft counters). No boss is mathematically impossible to beat, just harder if brought the wrong tools.
+  - **The Setlist Preview:** The Studio UI explicitly shows the upcoming challenges (e.g., 'Warning: Heavy Shielded Enemies incoming') before the player confirms their loadout, ensuring failure feels like a tactical error rather than an unfair trick.
 
 ---
 
@@ -349,8 +350,6 @@ future design sessions and playtesting:
 
 - [ ] **Gold Scope:** Does gold persist across stem levels within a stage, or reset per
 	stem? (Current lean: per-stem reset.)
-- [ ] **Loadout Scope:** Loadouts locked per stage or changeable between stems? (Current
-	lean: locked per stage.)
 - [ ] **AP Growth:** How does the player's maximum AP increase? Fixed per stage, or a
 	separate upgrade currency?
 - [ ] **Unlock Economy:** Full mapping of what unlocks where (towers, buffs, relics, AP).

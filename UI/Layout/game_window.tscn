@@ -14,7 +14,7 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_peak"]
 shader = ExtResource("9_peak_shader")
-shader_parameter/color_sub = Color(0.84313726, 0.87058824, 0.8745098, 0.44705883)
+shader_parameter/color_sub = Color(0.3019608, 0.73333335, 0.41568628, 0.95686275)
 shader_parameter/color_start = Color(0.3019608, 0.73333335, 0.41568628, 0.95686275)
 shader_parameter/color_mid = Color(0.7604822, 0.6599067, 0.33715135, 0.96800005)
 shader_parameter/color_end = Color(0.59261936, 0.17558163, 0.106126174, 0.95600003)
@@ -90,8 +90,9 @@ flat = true
 layout_mode = 2
 
 [node name="Spacer2" type="Control" parent="MainLayout/TopBar/Content" unique_id=62018420]
-custom_minimum_size = Vector2(43, 0)
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.5
 
 [node name="PerformanceMeterContainer" type="PanelContainer" parent="MainLayout/TopBar/Content" unique_id=1077080360]
 custom_minimum_size = Vector2(225, 22)
@@ -255,8 +256,9 @@ text = "100%"
 vertical_alignment = 1
 
 [node name="Spacer4" type="Control" parent="MainLayout/TopBar/Content" unique_id=92806510]
-custom_minimum_size = Vector2(43, 0)
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.5
 
 [node name="VSeparator5" type="VSeparator" parent="MainLayout/TopBar/Content" unique_id=1709007433]
 layout_mode = 2
@@ -312,8 +314,8 @@ value = 100.0
 layout_mode = 2
 
 [node name="Spacer3" type="Control" parent="MainLayout/TopBar/Content" unique_id=1173521741]
-custom_minimum_size = Vector2(110, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="WaveInfoPanel" type="PanelContainer" parent="MainLayout/TopBar/Content" unique_id=1437747474]
 custom_minimum_size = Vector2(350, 32)
@@ -345,8 +347,8 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="RightSpacer" type="Control" parent="MainLayout/TopBar/Content" unique_id=829581726]
-custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="VSeparator4" type="VSeparator" parent="MainLayout/TopBar/Content" unique_id=106271809]
 layout_mode = 2
@@ -398,7 +400,7 @@ stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="MainLayout/WorkspaceSplit/GameViewContainer" unique_id=135730004]
 handle_input_locally = false
-size = Vector2i(1602, 1024)
+size = Vector2i(1600, 1024)
 render_target_update_mode = 4
 
 [node name="MainMenuConfirmation" type="ConfirmationDialog" parent="." unique_id=1158682758]

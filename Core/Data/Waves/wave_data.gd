@@ -18,3 +18,13 @@ extends Resource
 
 ## List of enemy spawn instructions.
 @export var spawns: Array[SpawnInstruction] = []
+
+@export_group("Stem Audio")
+## High quality layer (0-33% distortion)
+@export var stem_audio_good: AudioStream
+
+## Average quality layer (33-66% distortion)
+@export var stem_audio_avg: AudioStream
+
+## Abomination quality layer (66-100% distortion)
+@export var stem_audio_bad: AudioStream
