@@ -284,7 +284,10 @@ equipment.
 - **Animation Approach:** Towers with simple idle/shoot cycles use
 	`AnimationPlayer` (keyframe-driven). Towers with dynamic, reactive animations
 	(e.g., Turntable's tone arm sweep) use code-driven `Tweens`. Both systems may
-	coexist in a single tower.
+	coexist in a single tower. For large-scale grid elements (e.g., Background 
+	Renderer), prefer `draw_texture_rect` batching combined with `Tweens` over 
+	mass-instantiating Nodes or complex `_draw` geometry to stay within 
+	performance budgets.
 - Detailed designs are in individual `Knowledge/tower_design_*.md` documents.
 - See `Knowledge/towers_brief.md` for the full roster, synergy map, and trimming
 	guidance.
@@ -331,6 +334,12 @@ The entire interface is modelled after professional DAW software.
 - **Design-for-Scale:** Assets are generated at 1024×1024 and downscaled via
 	`Sprite2D.scale` in-engine. Fine details (e.g., vinyl grooves) should be bold
 	enough to survive the downscale.
+- **Grayscale Modulation Pattern:** Grid assets and UI elements are designed as 
+	pure grayscale templates. This allows for dynamic, high-performance 
+	color-tinting via `modulate` or `self_modulate` in-engine.
+	- **White / Light Grey:** High-luminance areas (LEDs/Glow).
+	- **Mid-Grey:** Diffuse material surface (Silicone/Metal).
+	- **Dark / Charcoal:** Permanent 3D shadows and extrusions.
 
 ### The Timeline (New Feature)
 - **Concept:** A visual representation of the music track's progress and upcoming events.
@@ -341,9 +350,25 @@ The entire interface is modelled after professional DAW software.
 - **Goal:** Reinforces the connection between the audio and the gameplay, acting as a functional
 	"sheet music" or "sequencer" view for the player.
 
+### The Opening Sequence
+- **The Writing Grid:** The `SongLayer` uses a 1:1 mapping with the background 28×28 pad grid. Large writing tiles are used to display song titles or messages across the pads.
+- **The Column Swipe:** The opening sequence uses a `SWIPE_RIGHT` transition mode. `SongLayer` tiles (28px) disappear as a leading wave, followed by the `MazeLayer` buttons (84px) appearing with a fixed `swipe_gap` (~15% screen width), creating a rhythmic "wipe" that resolves into the level view.
+
 ---
 
-## 12. Open Design Questions
+## 12. State Management — "The Frozen Studio"
+
+### Pause Philosophy
+The pause state acts as a "Strategic Planning" mode. The music/action freezes, but the player remains active within the "DAW" environment.
+
+### Selective Interactivity
+- **Permitted:** Tower selection, changing Target Priority, and interacting with background pads (animations/hovers).
+- **Blocked:** Placing new towers, selling, or upgrading. This prevents permanent/destructive tactical decisions while the simulation is frozen.
+- **Audio Sync:** Background music stems are strictly synchronized to the game's pause state via `stream_paused`, ensuring the track resumes exactly in sync with the gameplay exactly where it left off.
+
+---
+
+## 13. Open Design Questions
 
 The following items are acknowledged as **not yet finalised** and will be resolved through
 future design sessions and playtesting:

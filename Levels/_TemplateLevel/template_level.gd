@@ -70,6 +70,9 @@ signal opening_sequence_finished
 ## Built-in Methods
 
 func _ready() -> void:
+	# Ensure game entities pause even though the parent SubViewport is ALWAYS.
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+
 	# Auto-detect renderers if not assigned via inspector.
 	if not background_renderer:
 		background_renderer = find_child("BackgroundRenderer", true, false)
@@ -99,6 +102,7 @@ func _ready() -> void:
 			maze_renderer.reveal_ratio = 1.0
 		# Initialize navigation immediately if there's no sequence.
 		call_deferred("_initialize_navigation_grid")
+		call_deferred("_validate_spawn_data")
 		call_deferred("_remove_background_tiles_under_path", false)
 		opening_sequence_finished.emit()
 
@@ -221,6 +225,15 @@ func _spawn_queued_enemy(event: Dictionary) -> void:
 		# Fallback if the user hasn't set up the new WeightedTargets yet
 		var region: Rect2i = _astar_grid.region
 		target_tile = Vector2i(region.end.x - 1, region.position.y + int(region.size.y / 2.0))
+	
+	# Runtime validation: skip spawn if either tile is not walkable.
+	var grid_region: Rect2i = _astar_grid.region
+	if not grid_region.has_point(start_tile) or _astar_grid.is_point_solid(start_tile):
+		push_warning("Skipping enemy spawn: spawn_tile %s is not walkable." % start_tile)
+		return
+	if not grid_region.has_point(target_tile) or _astar_grid.is_point_solid(target_tile):
+		push_warning("Skipping enemy spawn: target_tile %s is not walkable." % target_tile)
+		return
 	
 	_spawn_enemy(event["scene"], spawn_position, start_tile, target_tile)
 
@@ -356,6 +369,7 @@ func _start_dissolve_sequence() -> void:
 func _start_path_flow_dissolve() -> void:
 	# Starts the background removal alongside the dissolve.
 	_initialize_navigation_grid()
+	_validate_spawn_data()
 	_remove_background_tiles_under_path(true)
 
 func _initialize_navigation_grid() -> void:
@@ -391,6 +405,44 @@ func _initialize_navigation_grid() -> void:
 	
 	print("AStarGrid2D Navigation Initialized for ", used_rect)
 
+
+func _validate_spawn_data() -> void:
+	# Validates all spawn and goal tiles against the navigation grid at load time.
+	if not _astar_grid or not level_data:
+		return
+	
+	var region: Rect2i = _astar_grid.region
+	
+	for wave_idx: int in range(level_data.waves.size()):
+		var wave: WaveData = level_data.waves[wave_idx] as WaveData
+		if not wave:
+			continue
+		
+		for inst_idx: int in range(wave.spawns.size()):
+			var instruction: SpawnInstruction = wave.spawns[inst_idx] as SpawnInstruction
+			if not instruction:
+				continue
+			
+			# Validate spawn_tile
+			var st: Vector2i = instruction.spawn_tile
+			if not region.has_point(st) or _astar_grid.is_point_solid(st):
+				push_warning(
+					"Wave %d, Instruction %d: spawn_tile %s is not walkable!"
+					% [wave_idx + 1, inst_idx + 1, st]
+				)
+			
+			# Validate all weighted goal tiles
+			for wt_idx: int in range(instruction.weighted_targets.size()):
+				var wt: WeightedTarget = instruction.weighted_targets[wt_idx]
+				if not wt:
+					continue
+				var gt: Vector2i = wt.goal_tile
+				if not region.has_point(gt) or _astar_grid.is_point_solid(gt):
+					push_warning(
+						"Wave %d, Instruction %d, Target %d: goal_tile %s is not walkable!"
+						% [wave_idx + 1, inst_idx + 1, wt_idx + 1, gt]
+					)
+
 func _remove_background_tiles_under_path(animate: bool = true) -> void:
 	# BFS flood-fill from Spawn01's start point, hiding background pads under the path.
 	# When 'animate' is true, cells shrink sequentially along the BFS wavefront.
@@ -406,7 +458,7 @@ func _remove_background_tiles_under_path(animate: bool = true) -> void:
 	if not animate:
 		for cell: Vector2i in maze_layer.get_used_cells():
 			if maze_layer.get_cell_source_id(cell) == floor_tile_id:
-				background_renderer.animate_hide_cell(cell, 0.0)
+				_hide_background_subcells(cell, 0.0)
 		return
 		
 	# Find a valid floor tile to start the BFS, scanning from left to right.
@@ -462,5 +514,16 @@ func _remove_background_tiles_under_path(animate: bool = true) -> void:
 		var shrink_duration: float = step6_pad_anim_duration
 		
 		tween.parallel().tween_callback(func() -> void:
-			background_renderer.animate_hide_cell(cell, shrink_duration)
+			_hide_background_subcells(cell, shrink_duration)
 		).set_delay(delay)
+
+func _hide_background_subcells(maze_cell: Vector2i, duration: float) -> void:
+	# A 96x96 maze cell maps to nine 32x32 background cells (a 3x3 grid).
+	# Calculate the top-left background cell.
+	var bg_start_x: int = maze_cell.x * 3
+	var bg_start_y: int = maze_cell.y * 3
+	
+	# Hide all nine sub-cells.
+	for dx in range(3):
+		for dy in range(3):
+			background_renderer.animate_hide_cell(Vector2i(bg_start_x + dx, bg_start_y + dy), duration)

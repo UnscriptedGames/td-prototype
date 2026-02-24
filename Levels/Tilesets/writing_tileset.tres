@@ -1,0 +1,12 @@
+[gd_resource type="TileSet" format=3 uid="uid://lcs2qipbyflc"]
+
+[ext_resource type="Texture2D" uid="uid://dg4q5kgj70v5s" path="res://Levels/Tilesets/Assets/writing_tile.png" id="1_q2d61"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_6qlnn"]
+texture = ExtResource("1_q2d61")
+texture_region_size = Vector2i(28, 28)
+0:0/0 = 0
+
+[resource]
+tile_size = Vector2i(28, 28)
+sources/5 = SubResource("TileSetAtlasSource_6qlnn")

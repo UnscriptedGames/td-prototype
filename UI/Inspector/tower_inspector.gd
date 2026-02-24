@@ -59,6 +59,9 @@ func _ready() -> void:
 	# Listen to currency changes for upgrade affordability
 	GameManager.currency_changed.connect(_on_currency_changed)
 
+	# Listen to game state for disabling sell/upgrade while paused
+	GameManager.game_state_changed.connect(_on_game_state_changed)
+
 	# Init state
 	visible = false
 	priority_inspector.visible = false
@@ -67,6 +70,7 @@ func _ready() -> void:
 ## Disconnects the currency signal to prevent orphan connections.
 func _exit_tree() -> void:
 	GameManager.currency_changed.disconnect(_on_currency_changed)
+	GameManager.game_state_changed.disconnect(_on_game_state_changed)
 
 
 ## Sets the inspected tower, connecting/disconnecting upgrade and buff
@@ -267,7 +271,7 @@ func _update_upgrade_buttons() -> void:
 			if is_purchased:
 				btn.disabled = true
 				btn.modulate = Color(0.2, 0.8, 0.2)
-			elif is_available:
+			elif is_available and GameManager.game_state != GameManager.GameState.PAUSED:
 				btn.disabled = not can_afford
 				btn.modulate = Color.WHITE
 			else:
@@ -284,6 +288,7 @@ func _update_sell_button() -> void:
 	if build_manager:
 		var val: int = build_manager.get_selected_tower_sell_value()
 		sell_button.text = "Sell (%dg)" % val
+	sell_button.disabled = (GameManager.game_state == GameManager.GameState.PAUSED)
 
 
 ## Toggles the target priority sub-inspector visibility.
@@ -315,6 +320,13 @@ func _on_upgrade_button_pressed(button: Button) -> void:
 func _on_currency_changed(_val: int) -> void:
 	if visible:
 		_update_upgrade_buttons()
+
+
+## Refreshes interactive elements when the game state changes (pause/play).
+func _on_game_state_changed(_new_state: GameManager.GameState) -> void:
+	if visible:
+		_update_upgrade_buttons()
+		_update_sell_button()
 
 
 ## Shows the buff bar and sets its max value when a buff begins.

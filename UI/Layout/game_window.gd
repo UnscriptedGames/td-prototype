@@ -187,14 +187,15 @@ func _setup_input_propagation() -> void:
 
 	var viewport_container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewContainer
 	if viewport_container:
-		# GameWindow is PROCESS_MODE_ALWAYS for UI; game container must be PAUSABLE
-		viewport_container.process_mode = Node.PROCESS_MODE_PAUSABLE
+		# ALWAYS so clicks reach BuildManager even while paused.
+		# Game entities remain PAUSABLE by default via their own process_mode.
+		viewport_container.process_mode = Node.PROCESS_MODE_ALWAYS
 		viewport_container.mouse_filter = Control.MOUSE_FILTER_PASS
 
 		if viewport_container.get_child_count() > 0:
 			var vp: SubViewport = viewport_container.get_child(0) as SubViewport
 			assert(vp != null)
-			vp.process_mode = Node.PROCESS_MODE_PAUSABLE
+			vp.process_mode = Node.PROCESS_MODE_ALWAYS
 
 	# Allow drag data to fall through containers (prevents "Forbidden" cursor)
 	var top_bar: PanelContainer = $MainLayout/TopBar

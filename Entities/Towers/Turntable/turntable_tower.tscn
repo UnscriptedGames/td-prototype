@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://bvtvmbf1x50c5" path="res://Entities/Towers/Turntable/Assets/turntable_arm.png" id="5_arm"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_62wyb"]
-size = Vector2(50.6289, 49.728024)
+size = Vector2(65, 65)
 
 [node name="TurntableTower" type="Node2D" unique_id=389982142]
 y_sort_enabled = true
@@ -20,19 +20,19 @@ script = ExtResource("2_buff")
 
 [node name="Sprite" type="Sprite2D" parent="." unique_id=1020754235]
 texture_filter = 4
-scale = Vector2(0.075, 0.075)
+scale = Vector2(0.0984, 0.0984)
 texture = ExtResource("3_deck")
-offset = Vector2(-25, -25)
+offset = Vector2(-33, -33)
 
 [node name="Vinyl" type="Sprite2D" parent="Sprite" unique_id=1731499582]
 texture_filter = 4
-position = Vector2(-94.47916, -44.166664)
+position = Vector2(-101.626015, -50.813007)
 scale = Vector2(0.47027656, 0.47027656)
 texture = ExtResource("4_vinyl")
 offset = Vector2(-0.09326172, 0.2630539)
 
 [node name="ToneArm" type="Sprite2D" parent="Sprite" unique_id=1325312030]
-position = Vector2(196.56198, -266.14435)
+position = Vector2(193.08945, -264.22763)
 rotation = 0.2443461
 scale = Vector2(0.38, 0.38)
 texture = ExtResource("5_arm")
@@ -50,14 +50,14 @@ polygon = PackedVector2Array(-256, -256, 256, -256, 256, 256, -256, 256)
 visible = false
 
 [node name="HitboxShape" type="CollisionShape2D" parent="Hitbox" unique_id=612138468]
-position = Vector2(-1.5635948, -2.082655)
+position = Vector2(-2.5, -3.499999)
 shape = SubResource("RectangleShape2D_62wyb")
 
 [node name="FireRateTimer" type="Timer" parent="." unique_id=1312613150]
 one_shot = true
 
 [node name="Muzzle" type="Marker2D" parent="." unique_id=1300993736]
-position = Vector2(-7.1012497, -3.3009987)
+position = Vector2(-10, -5)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=520706068]
 

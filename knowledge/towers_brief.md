@@ -1,7 +1,7 @@
 # Tower Design Brief — TD-Prototype
 
 **Version:** 0.1 (Living Document)
-**Last Updated:** 2026-02-18
+**Last Updated:** 2026-02-25
 
 ## 1. Design Philosophy
 
@@ -14,6 +14,9 @@ litmus test:
 The attack behaviour must feel like a **natural extension of the equipment** — a speaker
 *pulses*, a compressor *squashes*, a delay pedal *echoes*. If the mechanic doesn't map
 intuitively to the gear, it's the wrong fit.
+
+### Core Mechanics
+- **Target Priority Swapping:** Every tower supports real-time priority swapping (Closest, Strongest, Most Progress, etc.). This UI remains active during the paused state to encourage tactical adjustment.
 
 ### Target Roster
 - **6–8 unique towers** covering a range of attack types, effects, and upgrade paths.

@@ -8,8 +8,12 @@ class_name BackgroundRenderer
 ## Handles visuals for press animations, color randomization, and glowing effects.
 
 @export_group("Grid")
-@export var grid_width: int = 25
-@export var grid_height: int = 16
+@export var grid_width: int = 48
+@export var grid_height: int = 30
+@export var tile_size: Vector2 = Vector2(32, 32):
+	set(value):
+		tile_size = value
+		queue_redraw()
 
 @export_group("Visuals")
 @export_range(0.0, 1.0) var noise_strength: float = 0.05:
@@ -22,58 +26,14 @@ class_name BackgroundRenderer
 		gradient_strength = value
 		_update_shader_params()
 
-@export var button_color: Color = Color("2e2e30"): # Dark grey for pads
+@export var button_color: Color = Color("2e2e30"): # Base idle color
 	set(value):
 		button_color = value
 		queue_redraw()
 
-@export var side_color: Color = Color("1a1a1c"): # Darker shade for sides
+@export var tile_texture: Texture2D:
 	set(value):
-		side_color = value
-		queue_redraw()
-
-@export var glow_color: Color = Color("4b4b50"): # Subtle glow
-	set(value):
-		glow_color = value
-		queue_redraw()
-
-@export var glow_opacity: float = 0.4: # Base opacity for the glow layers
-	set(value):
-		glow_opacity = value
-		queue_redraw()
-
-@export var glow_steps: int = 3: # Number of concentric layers
-	set(value):
-		glow_steps = value
-		queue_redraw()
-
-@export var glow_step_size: float = 2.0: # Distance between layers
-	set(value):
-		glow_step_size = value
-		queue_redraw()
-
-@export var custom_glow_radius: float = -1.0: # -1.0 = Auto (based on button radius), >= 0 = Custom
-	set(value):
-		custom_glow_radius = value
-		queue_redraw()
-
-@export var inner_padding: float = 5.0: # Distance from edge for the glow
-	set(value):
-		inner_padding = value
-		queue_redraw()
-
-@export_range(0.0, 1.0) var button_scale: float = 0.85:
-	set(value):
-		button_scale = value
-		queue_redraw()
-@export var corner_radius: float = 8.0:
-	set(value):
-		corner_radius = value
-		queue_redraw()
-
-@export var depth_offset: Vector2 = Vector2(0, 10):
-	set(value):
-		depth_offset = value
+		tile_texture = value
 		queue_redraw()
 
 @export var enabled: bool = true:
@@ -89,33 +49,11 @@ var _pad_colors: Dictionary[Vector2i, Color] = {} # Coords(Vector2i) -> Color
 var _color_timers: Dictionary[Vector2i, Tween] = {} # Coords(Vector2i) -> Tween (Timer)
 var _hidden_cells: Dictionary[Vector2i, bool] = {} # Coords(Vector2i) -> bool
 var _cell_scales: Dictionary[Vector2i, float] = {} # Coords(Vector2i) -> float (Scale multiplier)
-var _style_box_pool: Dictionary[Array, StyleBoxFlat] = {} # Key: {color, radius} -> StyleBoxFlat
-
 func _ready() -> void:
-	_preload_style_boxes()
+	if not Engine.is_editor_hint():
+		process_mode = Node.PROCESS_MODE_ALWAYS
 	_setup_material()
 	queue_redraw()
-
-func _preload_style_boxes() -> void:
-	# Pre-populate pool with known/common styles to prevent stutter.
-	_style_box_pool.clear()
-	
-	# Cache main/side colors
-	_create_style_box(button_color, corner_radius)
-	_create_style_box(side_color, corner_radius)
-	
-	# Cache default glows
-	if inner_padding > 0 and glow_opacity > 0:
-		var glow_col: Color = glow_color
-		glow_col.a = glow_opacity
-		for i: int in range(glow_steps):
-			var current_padding: float = inner_padding + (i * glow_step_size)
-			var inner_radius: float = 0.0
-			if custom_glow_radius >= 0.0:
-				inner_radius = max(0.0, custom_glow_radius - (i * glow_step_size))
-			else:
-				inner_radius = max(0.0, corner_radius - current_padding)
-			_create_style_box(glow_col, inner_radius)
 
 func _setup_material() -> void:
 	# Loads and applies the matte surface shader.
@@ -187,9 +125,7 @@ func _input(event: InputEvent) -> void:
 		return
 		
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		# Manual global-to-map conversion (Tile Size = 64x64)
 		var local_pos: Vector2 = to_local(get_global_mouse_position())
-		var tile_size: Vector2 = Vector2(64, 64)
 		var grid_x: int = int(floor(local_pos.x / tile_size.x))
 		var grid_y: int = int(floor(local_pos.y / tile_size.y))
 		var coords: Vector2i = Vector2i(grid_x, grid_y)
@@ -283,37 +219,13 @@ func _animate_pad(coords: Vector2i, target_value: float) -> void:
 	)
 
 func _draw() -> void:
-	if not enabled:
+	if not enabled or tile_texture == null:
 		return
 		
-	# 1. Tile Size Fixed
-	var tile_size: Vector2i = Vector2i(64, 64)
-	
 	# Setup material in Editor/Runtime if missing
 	if not material:
 		_setup_material()
 	
-	# 2. Pre-create StyleBoxes to avoid allocation spam
-	var sb_face: StyleBoxFlat = _create_style_box(button_color, corner_radius)
-	var sb_side: StyleBoxFlat = _create_style_box(side_color, corner_radius)
-	var sb_glows: Array[StyleBoxFlat] = []
-	
-	if inner_padding > 0 and glow_opacity > 0:
-		for i: int in range(glow_steps):
-			var current_padding: float = inner_padding + (i * glow_step_size)
-			var inner_radius: float = 0.0
-			if custom_glow_radius >= 0.0:
-				inner_radius = max(0.0, custom_glow_radius - (i * glow_step_size))
-			else:
-				inner_radius = max(0.0, corner_radius - current_padding)
-			
-			var glow_col: Color = glow_color
-			glow_col.a = glow_opacity
-			
-			var sb: StyleBoxFlat = _create_style_box(glow_col, inner_radius)
-			sb_glows.append(sb)
-
-	# 3. Iterate all grid cells
 	for x: int in range(grid_width):
 		for y: int in range(grid_height):
 			var coords: Vector2i = Vector2i(x, y)
@@ -321,169 +233,28 @@ func _draw() -> void:
 			# Hidden Check
 			if _hidden_cells.has(coords):
 				continue
-			
-			# Determine Colors for this pad
-			var current_face_sb: StyleBoxFlat = sb_face
-			var current_side_sb: StyleBoxFlat = sb_side
-			var current_side_color: Color = side_color
-			var current_glow_sbs: Array[StyleBoxFlat] = sb_glows
-			
+				
+			# 1. Determine Color
+			var tile_color: Color = button_color
 			if _pad_colors.has(coords):
-				var base_col: Color = _pad_colors[coords]
-				current_face_sb = _create_style_box(base_col, corner_radius)
+				tile_color = _pad_colors[coords]
 				
-				var darkened_col: Color = base_col.darkened(0.65)
-				current_side_color = darkened_col
-				current_side_sb = _create_style_box(darkened_col, corner_radius)
-				
-				# Generate custom glow stack for coloured pad
-				current_glow_sbs = []
-				var lightened_col: Color = base_col.lightened(0.5)
-				lightened_col.a = glow_opacity
-				
-				if inner_padding > 0 and glow_opacity > 0:
-					for i: int in range(glow_steps):
-						var current_padding: float = inner_padding + (i * glow_step_size)
-						var inner_radius: float = 0.0
-						if custom_glow_radius >= 0.0:
-							inner_radius = max(0.0, custom_glow_radius - (i * glow_step_size))
-						else:
-							inner_radius = max(0.0, corner_radius - current_padding)
-						
-						var sb: StyleBoxFlat = _create_style_box(lightened_col, inner_radius)
-						current_glow_sbs.append(sb)
-
-			# Calculate geometry
-			var cell_center: Vector2 = Vector2(coords * tile_size) + (Vector2(tile_size) / 2.0)
+			# 2. Determine Scale & Animation state
+			var cell_center: Vector2 = (Vector2(coords) * tile_size) + (tile_size / 2.0)
+			var base_size := Vector2(28, 28)
 			
-			var full_size: Vector2 = Vector2(tile_size)
-			# Available size accounts for shadow depth so Scale 1.0 fits without overlap
-			var available_size: Vector2 = (full_size - depth_offset.abs()).max(Vector2.ZERO)
-			
-			# Apply per-cell scale animation
 			var cell_scale_mult: float = _cell_scales.get(coords, 1.0)
-			var draw_size: Vector2 = available_size * button_scale * cell_scale_mult
-			
-			# Animation Logic
 			var press_ratio: float = _pressed_states.get(coords, 0.0)
-			var current_depth_offset: Vector2 = depth_offset * (1.0 - press_ratio)
 			
-			var resting_pos: Vector2 = cell_center - (draw_size * 0.5) + (-depth_offset * 0.5)
-			var pressed_pos: Vector2 = cell_center - (draw_size * 0.5)
-			var offset_pos: Vector2 = resting_pos.lerp(pressed_pos, press_ratio)
+			# Shrink the pad entirely based on press ratio (1.0 = normal, 0.8 = fully pressed)
+			var press_scale: float = lerpf(1.0, 0.8, press_ratio)
+			var draw_size: Vector2 = base_size * cell_scale_mult * press_scale
 			
-			var face_rect: Rect2 = Rect2(offset_pos, draw_size)
-			var back_rect: Rect2 = face_rect
-			back_rect.position += current_depth_offset
+			# Shift pad down slightly when pressed
+			var y_offset: float = lerpf(0.0, 4.0, press_ratio)
 			
-			# Draw Extrusion (Manual implementation using pre-cached side stylebox)
-			if current_depth_offset.length_squared() > 0.1:
-				_draw_extrusion_optimized(face_rect, back_rect, current_side_color, current_side_sb, current_depth_offset)
+			var draw_pos: Vector2 = cell_center - (draw_size / 2.0) + Vector2(0, y_offset)
+			var face_rect: Rect2 = Rect2(draw_pos, draw_size)
 			
-			# Draw Face
-			draw_style_box(current_face_sb, face_rect)
-			
-			# Draw Inner Glows
-			for i: int in range(current_glow_sbs.size()):
-				var current_padding: float = inner_padding + (i * glow_step_size)
-				var inner_rect: Rect2 = face_rect.grow(-current_padding)
-				if inner_rect.size.x > 0 and inner_rect.size.y > 0:
-					draw_style_box(current_glow_sbs[i], inner_rect)
-
-func _draw_extrusion_optimized(front: Rect2, back: Rect2, color: Color, sb_back: StyleBoxFlat, effective_depth: Vector2) -> void:
-	# Draws the 3D extrusion connecting the front face to the back face.
-	# Uses a "pill" technique for corners and quads for sides to ensure a watertight mesh.
-	var r: float = min(corner_radius, min(front.size.x, front.size.y) * 0.5)
-	
-	# Draw Back Face
-	draw_style_box(sb_back, back)
-	
-	# Calculate Tangents
-	# These points represent the start/end of the straight edges on the rounded rectangle.
-	
-	# Front Face Tangents
-	var f_tl_h: Vector2 = Vector2(front.position.x + r, front.position.y)
-	var f_tr_h: Vector2 = Vector2(front.end.x - r, front.position.y)
-	var f_bl_h: Vector2 = Vector2(front.position.x + r, front.end.y)
-	var f_br_h: Vector2 = Vector2(front.end.x - r, front.end.y)
-	var f_tl_v: Vector2 = Vector2(front.position.x, front.position.y + r)
-	var f_bl_v: Vector2 = Vector2(front.position.x, front.end.y - r)
-	var f_tr_v: Vector2 = Vector2(front.end.x, front.position.y + r)
-	var f_br_v: Vector2 = Vector2(front.end.x, front.end.y - r)
-	
-	# Back Face Tangents
-	var b_tl_h: Vector2 = Vector2(back.position.x + r, back.position.y)
-	var b_tr_h: Vector2 = Vector2(back.end.x - r, back.position.y)
-	var b_bl_h: Vector2 = Vector2(back.position.x + r, back.end.y)
-	var b_br_h: Vector2 = Vector2(back.end.x - r, back.end.y)
-	var b_tl_v: Vector2 = Vector2(back.position.x, back.position.y + r)
-	var b_bl_v: Vector2 = Vector2(back.position.x, back.end.y - r)
-	var b_tr_v: Vector2 = Vector2(back.end.x, back.position.y + r)
-	var b_br_v: Vector2 = Vector2(back.end.x, back.end.y - r)
-	
-	# Draw Corner Pills
-	# Connects the rounded corners of front and back faces with a thick line.
-	var c_tl: Vector2 = Vector2(front.position.x + r, front.position.y + r)
-	draw_line(c_tl, c_tl + effective_depth, color, r * 2.0)
-	var c_tr: Vector2 = Vector2(front.end.x - r, front.position.y + r)
-	draw_line(c_tr, c_tr + effective_depth, color, r * 2.0)
-	var c_br: Vector2 = Vector2(front.end.x - r, front.end.y - r)
-	draw_line(c_br, c_br + effective_depth, color, r * 2.0)
-	var c_bl: Vector2 = Vector2(front.position.x + r, front.end.y - r)
-	draw_line(c_bl, c_bl + effective_depth, color, r * 2.0)
-	
-	# Draw Side Quads
-	# Connects the straight edges between front and back.
-	_draw_triangle_quad(f_tl_h, f_tr_h, b_tr_h, b_tl_h, color)
-	_draw_triangle_quad(f_br_h, f_bl_h, b_bl_h, b_br_h, color)
-	_draw_triangle_quad(f_bl_v, f_tl_v, b_tl_v, b_bl_v, color)
-	_draw_triangle_quad(f_tr_v, f_br_v, b_br_v, b_tr_v, color)
-
-func _draw_triangle_quad(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2, color: Color) -> void:
-	# Splits Quad (P1, P2, P3, P4) into two triangles: (P1, P2, P3) and (P1, P3, P4).
-	# Safely skips degenerate triangles (zero area) to avoid triangulation errors.
-	if p1 == p2 or p1 == p3 or p2 == p3:
-		# Degenerate first triangle
-		pass
-	else:
-		_draw_safe_triangle(p1, p2, p3, color)
-		
-	if p1 == p3 or p1 == p4 or p3 == p4:
-		# Degenerate second triangle
-		pass
-	else:
-		_draw_safe_triangle(p1, p3, p4, color)
-
-func _draw_safe_triangle(a: Vector2, b: Vector2, c: Vector2, color: Color) -> void:
-	# Draws a single triangle with winding checks.
-	# Calculate signed area 
-	# Area = 0.5 * |(xB*yA - xA*yB) + (xC*yB - xB*yC) + (xA*yC - xC*yA)|
-	var area: float = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y)
-	
-	# Force consistent winding (CCW) to prevent potential backface culling
-	if area < 0:
-		var temp: Vector2 = b
-		b = c
-		c = temp
-		area = - area
-	
-	if area > 0.1: # Threshold to ignore degenerate/collinear triangles
-		draw_polygon([a, b, c], [color])
-
-func _create_style_box(color: Color, radius: float) -> StyleBoxFlat:
-	# Caching wrapper for StyleBoxes to prevent excessive allocation.
-	var key: Array = [color, radius]
-	
-	if _style_box_pool.has(key):
-		return _style_box_pool[key]
-		
-	# Create new
-	var sb: StyleBoxFlat = StyleBoxFlat.new()
-	sb.bg_color = color
-	sb.set_corner_radius_all(int(radius))
-	sb.corner_detail = 4
-	sb.anti_aliasing = true
-	
-	# Cache
-	_style_box_pool[key] = sb
-	return sb
+			# 3. Draw!
+			draw_texture_rect(tile_texture, face_rect, false, tile_color)

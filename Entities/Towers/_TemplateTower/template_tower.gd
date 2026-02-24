@@ -67,6 +67,10 @@ func _ready() -> void:
 	animation_player.animation_finished.connect(_on_animation_finished)
 	_projectiles_container = get_tree().get_first_node_in_group("projectiles_container")
 
+	# Keep the hitbox active during pause so towers can be selected via physics queries.
+	if hitbox:
+		hitbox.process_mode = Node.PROCESS_MODE_ALWAYS
+
 
 func _process(_delta: float) -> void:
 	match state:

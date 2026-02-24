@@ -10,12 +10,12 @@
 
 [sub_resource type="Resource" id="Resource_r2eih"]
 script = ExtResource("4_w70wb")
-goal_tile = Vector2i(20, 15)
+goal_tile = Vector2i(14, 11)
 metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
 
 [sub_resource type="Resource" id="Resource_w70wb"]
 script = ExtResource("4_w70wb")
-goal_tile = Vector2i(24, 3)
+goal_tile = Vector2i(18, 3)
 metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
 
 [sub_resource type="Resource" id="spawn_01"]

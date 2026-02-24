@@ -46,6 +46,7 @@ var _build_mode_grace_frames: int = 0
 ## Called when the node enters the scene tree.
 func _ready() -> void:
 	if not Engine.is_editor_hint():
+		process_mode = Node.PROCESS_MODE_ALWAYS
 		# Connects to the new global signal.
 		GlobalSignals.build_tower_requested.connect(_on_build_tower_requested)
 
@@ -111,6 +112,10 @@ func _process(_delta: float) -> void:
 ## @param event: The input event to process.
 func handle_build_input(event: InputEvent) -> bool:
 	if state != State.BUILDING_TOWER:
+		return false
+
+	# Block placement while paused
+	if GameManager.game_state == GameManager.GameState.PAUSED:
 		return false
 
 	var is_cancel: bool = event.is_action_pressed("ui_cancel") or ((event is InputEventMouseButton) and event.button_index == MOUSE_BUTTON_RIGHT and event.is_pressed())
@@ -221,6 +226,10 @@ func _on_build_tower_requested(tower_data: TowerData, tower_scene: PackedScene) 
 
 func _on_sell_tower_requested() -> void:
 	if not is_instance_valid(_selected_tower):
+		return
+
+	# Block selling while paused
+	if GameManager.game_state == GameManager.GameState.PAUSED:
 		return
 
 	var map_coords: Vector2i = path_layer.local_to_map(_selected_tower.global_position)

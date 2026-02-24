@@ -27,10 +27,16 @@ class_name MazeRenderer
 @export var grid_width: int = 25 # Match BackgroundRenderer default
 
 enum RevealMode {LINEAR, CENTER_OUT}
+enum TransitionMode {DISSOLVE, SWIPE_RIGHT}
 
 @export var reveal_mode: RevealMode = RevealMode.LINEAR:
 	set(value):
 		reveal_mode = value
+		queue_redraw()
+
+@export var transition_mode: TransitionMode = TransitionMode.SWIPE_RIGHT:
+	set(value):
+		transition_mode = value
 		queue_redraw()
 
 @export var center_column: int = 12: # Approx grid_width / 2
@@ -56,6 +62,11 @@ enum RevealMode {LINEAR, CENTER_OUT}
 @export var wipe_anim_width: float = 0.5: # Width of the wipe soft edge
 	set(value):
 		wipe_anim_width = value
+		queue_redraw()
+
+@export var swipe_gap: float = 0.15: # Gap between layers in SWIPE_RIGHT mode
+	set(value):
+		swipe_gap = value
 		queue_redraw()
 
 @export_group("Visuals")
@@ -141,6 +152,11 @@ func _update_source_reference() -> void:
 					_source_layer.changed.connect(_on_source_changed)
 			
 			queue_redraw()
+	else:
+		if _source_layer and _source_layer.changed.is_connected(_on_source_changed):
+			_source_layer.changed.disconnect(_on_source_changed)
+		_source_layer = null
+		queue_redraw()
 
 func _update_transition_reference() -> void:
 	# Resolves the transition TileMapLayer from exported NodePath.
@@ -157,6 +173,11 @@ func _update_transition_reference() -> void:
 					_transition_layer.changed.connect(_on_source_changed)
 			
 			queue_redraw()
+	else:
+		if _transition_layer and _transition_layer.changed.is_connected(_on_source_changed):
+			_transition_layer.changed.disconnect(_on_source_changed)
+		_transition_layer = null
+		queue_redraw()
 
 func _on_source_changed() -> void:
 	queue_redraw()
@@ -195,85 +216,90 @@ func _draw() -> void:
 	if not _source_layer:
 		return
 	
-	var tile_set: TileSet = _source_layer.tile_set
-	if not tile_set:
+	var source_tile_set: TileSet = _source_layer.tile_set
+	if not source_tile_set:
 		return
 	
 	_rebuild_style_lookup()
 	
-	var tile_size: Vector2i = tile_set.tile_size
-	
-	# Determine set of all cells to draw (Union of Source and Transition)
-	var all_cells: Dictionary[Vector2i, bool] = {}
-	for coords: Vector2i in _source_layer.get_used_cells():
-		all_cells[coords] = true
-	
 	if _transition_layer:
-		for coords: Vector2i in _transition_layer.get_used_cells():
-			all_cells[coords] = true
+		_draw_layer(_transition_layer, false)
+		
+	_draw_layer(_source_layer, true)
+
+func _draw_layer(layer: TileMapLayer, is_source: bool) -> void:
+	var tile_size: Vector2 = Vector2(layer.tile_set.tile_size)
+	var ref_w: float = float(_source_layer.tile_set.tile_size.x)
 	
-	# Process drawing
-	for coords: Vector2i in all_cells.keys():
-		# 1. Visibility / Scale Check (Wipe Logic)
-		var wipe_scale: float = _get_reveal_scale(coords)
+	for coords: Vector2i in layer.get_used_cells():
+		var phys_x: float = (float(coords.x) + 0.5) * tile_size.x
+		var wipe_scale: float = _get_reveal_scale(phys_x, ref_w)
 		if wipe_scale <= 0.001:
 			continue
-		
-		# Transition Logic (Dissolve)
-		# Deterministic hash based on coordinates for consistent per-tile noise
-		var noise_hash: float = float(
-			(coords.x * 73856093) ^ (coords.y * 19349663)
-		) / 2147483647.0
-		noise_hash = abs(noise_hash) # Ensure positive 0-1
-		
-		# Decide which layer provides the tile data
-		var active_layer: TileMapLayer = _source_layer
+			
 		var scale_anim_mult: float = 1.0
 		
-		# transition_progress = 0.0 -> Show Transition (if exists)
-		# transition_progress = 1.0 -> Show Source
-		
 		if _transition_layer:
-			var dist: float = transition_progress - noise_hash
+			var dist: float = 0.0
 			
-			# Determine Active Layer based on progress relative to hash
-			if dist > 0:
-				active_layer = _source_layer
-			else:
-				active_layer = _transition_layer
-			
-			# Calculate Scale Animation
-			# Check ends first to avoid artifacts/stuck scaling
-			if transition_progress >= 0.99 or transition_progress <= 0.01:
-				scale_anim_mult = 1.0
-			else:
-				if dist > 0:
-					# Showing Source (Behind Wave)
-					if dist < dissolve_anim_width:
-						scale_anim_mult = smoothstep(0.0, 1.0, dist / dissolve_anim_width)
-				else:
-					# Showing Transition (Ahead of Wave)
+			if transition_mode == TransitionMode.DISSOLVE:
+				var noise_hash: float = float(
+					(coords.x * 73856093) ^ (coords.y * 19349663)
+				) / 2147483647.0
+				noise_hash = abs(noise_hash)
+				dist = transition_progress - noise_hash
+				
+				if is_source and dist <= 0:
+					continue
+				if not is_source and dist > 0:
+					continue
+					
+				if transition_progress > 0.01 and transition_progress < 0.99:
 					var abs_dist: float = abs(dist)
 					if abs_dist < dissolve_anim_width:
 						scale_anim_mult = smoothstep(0.0, 1.0, abs_dist / dissolve_anim_width)
-		
-		# Get style from the active layer
-		var source_id: int = active_layer.get_cell_source_id(coords)
-		var atlas_coords: Vector2i = active_layer.get_cell_atlas_coords(coords)
+						
+			elif transition_mode == TransitionMode.SWIPE_RIGHT:
+				var total_width: float = float(grid_width) * ref_w
+				var norm_x: float = phys_x / total_width
+				
+				# The transition sweeps from 0.0 to 1.0 + wipe_anim_width + swipe_gap
+				var base_threshold: float = transition_progress * (1.0 + wipe_anim_width + swipe_gap)
+				
+				# Transition layer (Song) disappears when norm_x < threshold
+				var trans_threshold: float = base_threshold
+				# Source layer (Maze) appears when norm_x < threshold - swipe_gap
+				var source_threshold: float = base_threshold - swipe_gap
+				
+				if is_source:
+					dist = source_threshold - norm_x
+					if dist <= 0:
+						continue # Not yet reached
+					if dist < wipe_anim_width / 2.0:
+						# Wipe in soft edge for source
+						scale_anim_mult = smoothstep(0.0, 1.0, dist / (wipe_anim_width / 2.0))
+				else:
+					dist = trans_threshold - norm_x
+					if dist >= 0:
+						continue # Already passed
+					
+					# Wipe out soft edge for transition
+					# We want scale=0 at dist=0, and scale=1 at dist < -wipe_anim_width/2.0
+					if dist > -wipe_anim_width / 2.0:
+						scale_anim_mult = smoothstep(0.0, 1.0, -dist / (wipe_anim_width / 2.0))
+					
+		var source_id: int = layer.get_cell_source_id(coords)
+		var atlas_coords: Vector2i = layer.get_cell_atlas_coords(coords)
 		var key: Vector3i = Vector3i(source_id, atlas_coords.x, atlas_coords.y)
 		var style: MazeTileStyle = _style_lookup.get(key)
 		
 		if not style:
 			continue
-		
-		# Geometry
-		var cell_center: Vector2 = Vector2(coords * int(tile_size.x)) + (Vector2(tile_size) / 2.0)
-		var full_size: Vector2 = Vector2(tile_size)
-		# Available size accounts for shadow depth so Scale 1.0 fits without overlap
-		var available_size: Vector2 = (full_size - depth_offset.abs()).max(Vector2.ZERO)
+			
+		var cell_center: Vector2 = (Vector2(coords) * tile_size) + (tile_size / 2.0)
+		var available_size: Vector2 = (tile_size - depth_offset.abs()).max(Vector2.ZERO)
 		var draw_size: Vector2 = available_size * button_scale * scale_anim_mult * wipe_scale
 		
-		# Draw
 		var centering_offset: Vector2 = - depth_offset * 0.5
 		var offset_pos: Vector2 = cell_center - (draw_size * 0.5) + centering_offset
 		
@@ -281,13 +307,9 @@ func _draw() -> void:
 		var back_rect: Rect2 = face_rect
 		back_rect.position += depth_offset
 		
-		# Draw Extrusion
 		_draw_extrusion(face_rect, back_rect, style.side_color)
-		
-		# Draw Face
 		draw_style_box(_create_style_box(style.button_color, corner_radius), face_rect)
 		
-		# Draw Inner Glow
 		if inner_padding > 0 and style.glow_opacity > 0:
 			for i: int in range(glow_steps):
 				var current_padding: float = inner_padding + (i * glow_step_size)
@@ -386,19 +408,20 @@ func _create_style_box(color: Color, radius: float) -> StyleBoxFlat:
 	_style_box_pool[key] = sb
 	return sb
 
-func _get_reveal_scale(coords: Vector2i) -> float:
+func _get_reveal_scale(phys_x: float, ref_w: float) -> float:
 	# Returns 0.0 (Hidden) to 1.0 (Fully Visible) based on reveal_mode and reveal_ratio.
 	if reveal_mode == RevealMode.LINEAR:
-		if (float(coords.x) + 0.5) / float(grid_width) <= reveal_ratio:
+		if phys_x / (float(grid_width) * ref_w) <= reveal_ratio:
 			return 1.0
 		return 0.0
 	
 	elif reveal_mode == RevealMode.CENTER_OUT:
-		var dist: int = abs(coords.x - center_column)
-		var max_dist: int = max(center_column, grid_width - center_column)
+		var phys_center: float = float(center_column) * ref_w
+		var dist: float = abs(phys_x - phys_center)
+		var max_dist: float = max(float(center_column) * ref_w, float(grid_width - center_column) * ref_w)
 		
 		# Normalised position of this tile (0.0 = centre, 1.0 = edge)
-		var norm_pos: float = float(dist) / float(max_dist) if max_dist > 0 else 0.0
+		var norm_pos: float = dist / max_dist if max_dist > 0 else 0.0
 		
 		# If width is effectively zero, hard cut
 		if wipe_anim_width < 0.001:

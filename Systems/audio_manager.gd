@@ -35,6 +35,7 @@ func _ready() -> void:
 	if GameManager:
 		GameManager.peak_meter_changed.connect(_on_peak_meter_changed)
 		GameManager.wave_changed.connect(_on_wave_changed)
+		GameManager.game_state_changed.connect(_on_game_state_changed)
 
 func _setup_audio_players() -> void:
 	_player_good = AudioStreamPlayer.new()
@@ -131,3 +132,11 @@ func _on_wave_changed(_current_wave: int, _total_waves: int) -> void:
 		play_stem(wave)
 	else:
 		_stop_all()
+
+
+## Pauses or resumes stem playback to stay in sync with the game pause state.
+func _on_game_state_changed(new_state: GameManager.GameState) -> void:
+	var is_paused: bool = (new_state == GameManager.GameState.PAUSED)
+	_player_good.stream_paused = is_paused
+	_player_avg.stream_paused = is_paused
+	_player_bad.stream_paused = is_paused

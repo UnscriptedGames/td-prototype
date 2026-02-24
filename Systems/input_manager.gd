@@ -11,6 +11,10 @@ var current_state: State = State.DEFAULT
 var _build_manager: BuildManager = null
 
 
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	var handled: bool = false
 

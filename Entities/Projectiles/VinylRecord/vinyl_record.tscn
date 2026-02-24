@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://bd62q1oc803v1" path="res://Entities/Towers/Turntable/Assets/turntable_projectile.png" id="2_kkuu6"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_hit"]
-radius = 8.0
+radius = 10.5
 
 [node name="VinylRecord" type="Area2D" unique_id=904366304]
 collision_layer = 8
@@ -13,7 +13,7 @@ script = ExtResource("1_proj")
 
 [node name="Sprite" type="Sprite2D" parent="." unique_id=308266742]
 texture_filter = 4
-scale = Vector2(0.036, 0.036)
+scale = Vector2(0.0473, 0.0473)
 texture = ExtResource("2_kkuu6")
 
 [node name="HitboxShape" type="CollisionShape2D" parent="." unique_id=55514520]

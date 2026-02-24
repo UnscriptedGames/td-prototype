@@ -22,6 +22,7 @@ Towers utilize a "Data-Driven" approach combined with "Scene Inheritance":
     -   Select the **Sprite** node and assign your texture/spritesheet.
     -   Ensure `Hframes` or `Vframes` are set correctly if using a spritesheet.
 5.  **Configure Muzzle**: Move the `Muzzle` node to the point where projectiles should spawn.
+6.  **Pause Selection (Critical)**: Select the **Hitbox** node and set its `Process > Mode` to **`Always`**. This ensures the tower can still be clicked/selected even when the rest of the game level is paused.
 
 ---
 

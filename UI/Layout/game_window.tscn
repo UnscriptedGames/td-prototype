@@ -59,7 +59,7 @@ theme_override_constants/separation = 0
 
 [node name="TopBar" type="PanelContainer" parent="MainLayout" unique_id=925509776]
 z_index = 2
-custom_minimum_size = Vector2(0, 56)
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 theme_type_variation = &"TopBarPanel"
 
@@ -388,7 +388,7 @@ theme_override_constants/separation = 0
 
 [node name="LeftSidebar" type="PanelContainer" parent="MainLayout/WorkspaceSplit" unique_id=1963009277]
 z_index = 1
-custom_minimum_size = Vector2(320, 0)
+custom_minimum_size = Vector2(324, 0)
 layout_mode = 2
 theme_type_variation = &"SideBarPanel"
 
@@ -400,7 +400,7 @@ stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="MainLayout/WorkspaceSplit/GameViewContainer" unique_id=135730004]
 handle_input_locally = false
-size = Vector2i(1600, 1024)
+size = Vector2i(1596, 1008)
 render_target_update_mode = 4
 
 [node name="MainMenuConfirmation" type="ConfirmationDialog" parent="." unique_id=1158682758]

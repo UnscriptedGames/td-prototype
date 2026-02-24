@@ -18,14 +18,14 @@ y_sort_enabled = true
 script = ExtResource("1_f16nf")
 
 [node name="Background" type="TextureRect" parent="." unique_id=1965822054]
-offset_right = 1600.0
-offset_bottom = 1024.0
+offset_right = 1596.0
+offset_bottom = 1008.0
 mouse_filter = 2
 expand_mode = 1
 
 [node name="DesignGuide" type="ReferenceRect" parent="." unique_id=907145451]
-offset_right = 1600.0
-offset_bottom = 1024.0
+offset_right = 1596.0
+offset_bottom = 1008.0
 mouse_filter = 2
 border_color = Color(1, 0, 0, 0.5)
 border_width = 2.0
@@ -78,9 +78,9 @@ valid_range_id = 3
 invalid_range_id = 6
 
 [node name="LevelCamera" type="Camera2D" parent="." unique_id=1695427683]
-position = Vector2(800, 512)
+position = Vector2(798, 504)
 limit_left = 0
 limit_top = 0
-limit_right = 1600
-limit_bottom = 1024
+limit_right = 1596
+limit_bottom = 1008
 position_smoothing_enabled = true
