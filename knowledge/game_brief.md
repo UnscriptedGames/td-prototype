@@ -1,7 +1,7 @@
 # Game Brief — TD-Prototype
 
 **Version:** 0.1 (Living Document)
-**Last Updated:** 2026-02-21
+**Last Updated:** 2026-02-26
 
 ## 1. Game Identity
 
@@ -33,8 +33,8 @@
 │                                                          │
 │  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐      │
 │  │Stem 1│→ │Stem 2│→ │Stem 3│→ │Stem 4│→ │Stem 5│      │
-│  │(Wave)│  │(Wave)│  │(Wave)│  │(Wave)│  │(Wave)│      │
-│  └──┬───┘  └──┬───┘  └──┬───┘  └──┬───┘  └──┬───┘      │
+│  │ (Enc)│  │ (Enc)│  │ (Enc)│  │ (Enc)│  │ (Enc)│      │
+│  └──────┘  └──────┘  └──────┘  └──────┘  └──────┘      │
 │     │         │         │         │         │           │
 │     ▼         ▼         ▼         ▼         ▼           │
 │  [Quality] [Quality] [Quality] [Quality] [Quality]      │
@@ -97,8 +97,9 @@ DAW-standard VU/peak meter with a three-colour gradient and smooth, unscaled ani
 
 ### Structure
 - **10 Stages**, each representing a complete song (e.g., "Funky Golden Sun").
-- **5 Stem Levels per Stage** + **1 Boss Wave** = 6 encounters per stage.
-- Each stem level corresponds to a musical layer (e.g., Drums, Bass, Synth, Melody, Vocals).
+- **5 Stems per Stage** + **1 Boss Wave** = 6 encounters per stage.
+- **Atomic Data (`stem_data.gd`)**: Legacy `WaveData` has been merged into `StemData`. A stem now contains its own audio references and spawn instructions directly.
+- Each stem corresponds to a musical layer (e.g., Drums, Bass, Synth, Melody, Vocals).
 - **Filesystem Standard**: `Stages/Stage01_Name/Audio/stem_01_drums.mp3`.
 
 ### Stem Order & Gating
@@ -327,12 +328,12 @@ equipment.
 The entire interface is modelled after professional DAW software.
 
 ### Layout (1536×1024 Native, Scaled to 1920×1080)
-- **Top Bar:** Global stats (Peak Meter, Gold, Wave counter) and Volume Control.
+- **Top Bar:** Global stats (Peak Meter, Gold, Wave counter), Restart button, and Volume Control.
 - **Left Sidebar:** Loadout rack — Tower buttons (with stock counts), Spell slots (with
 	cooldown bars), Relic slots.
 - **Right Panel:** Tower Inspector / Selection details.
+- **Debug Overlay:** Developmental tools (Game Speed, Framerate, Debug Logs) are grouped in a dedicated `DebugToolbar` overlay. This sits on top of the Game Viewport but is visually distinct from the main Top Bar to preserve the "DAW" aesthetic.
 - **High-Contrast Popups:** The Tower Inspector uses a solid, high-opacity background (`~95%`) specifically to mirror DAW "floating plugin" aesthetics and ensure stats are readable over the complex maze geometry.
-- **Centre:** The Level Viewport (24×16 tiles @ 64px) — the maze/battlefield.
 
 ### DAW Metaphor Mapping
 | Game Element | DAW Equivalent |
@@ -412,6 +413,7 @@ The following items are acknowledged as **not yet finalised** and will be resolv
 future design sessions and playtesting:
 
 - [x] **Gold Scope:** Gold resets per stem (Resolved Feb 26).
+- [x] **Data Consolidation:** Merged legacy `WaveData` into `StemData` to simplify the resource pipeline (Resolved Feb 26).
 - [ ] **AP Growth:** How does the player's maximum AP increase? Fixed per stage, or a
 	separate upgrade currency?
 - [ ] **Unlock Economy:** Full mapping of what unlocks where (towers, buffs, relics, AP).

@@ -89,13 +89,15 @@ func start_stem(stem_index: int) -> void:
 	# Reset GameManager state for a fresh stem play.
 	GameManager.reset_state()
 
-	# Determine the scene path from the stage data.
+	# Determine the scene path and stem data from the stage data.
 	var scene_path: String = _get_scene_path(stem_index)
 	if scene_path.is_empty():
 		push_error("StageManager: No scene path for stem index %d." % stem_index)
 		return
+		
+	var stem_data: StemData = _get_stem_data(stem_index)
 
-	SceneManager.load_scene(scene_path)
+	SceneManager.load_scene(scene_path, stem_data)
 
 
 ## Records the completion of the current stem with a quality grade.
@@ -215,3 +217,16 @@ func _get_scene_path(stem_index: int) -> String:
 		return _active_stage.stems[stem_index].level_scene_path
 
 	return ""
+
+## Resolves the StemData resource for a given stem index.
+func _get_stem_data(stem_index: int) -> StemData:
+	if not _active_stage:
+		return null
+
+	if stem_index == BOSS_INDEX:
+		return _active_stage.boss_stem
+
+	if stem_index >= 0 and stem_index < _active_stage.stems.size():
+		return _active_stage.stems[stem_index]
+
+	return null

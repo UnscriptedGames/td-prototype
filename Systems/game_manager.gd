@@ -127,29 +127,29 @@ func set_player_data(data: PlayerData) -> void:
 func set_level(level_index: int, data: StemData) -> void:
 	_current_level = level_index
 	_level_data = data
-	if data and not data.waves.is_empty():
-		_total_waves = data.waves.size()
+	if data and not data.spawns.is_empty():
+		_total_waves = 1
 	else:
 		_total_waves = 0
 	level_changed.emit(_current_level)
 	wave_changed.emit(_current_wave, _total_waves)
 
 ## Updates the current wave and emits the wave_changed signal.
-func set_wave(wave_index: int, wave_data: WaveData = null) -> void:
+func set_wave(wave_index: int, stem_data: StemData = null) -> void:
 	_current_wave = wave_index
-	_calculate_wave_max_peak(wave_data)
+	_calculate_wave_max_peak(stem_data)
 	_current_peak = 0.0 # Reset peak meter at start of stem per design doc
 	peak_meter_changed.emit(_current_peak, _current_max_peak)
 	wave_changed.emit(_current_wave, _total_waves)
 
 ## Calculates the 100% capacity of the peak meter based on total wave health.
-func _calculate_wave_max_peak(wave: WaveData) -> void:
-	if not wave:
+func _calculate_wave_max_peak(stem: StemData) -> void:
+	if not stem:
 		_current_max_peak = 100.0
 		return
 		
 	var total_wave_health: int = 0
-	for instruction in wave.spawns:
+	for instruction in stem.spawns:
 		if instruction and instruction.enemy_scene:
 			# Instantiate purely to extract max_health without hardcoding
 			var temp_state = instruction.enemy_scene.instantiate()
@@ -164,7 +164,7 @@ func _calculate_wave_max_peak(wave: WaveData) -> void:
 			temp_state.free()
 			
 	if total_wave_health > 0:
-		_current_max_peak = float(total_wave_health) * wave.clip_tolerance
+		_current_max_peak = float(total_wave_health) * stem.clip_tolerance
 	else:
 		_current_max_peak = 100.0 # Failsafe
 		

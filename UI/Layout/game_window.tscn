@@ -2,15 +2,15 @@
 
 [ext_resource type="Script" uid="uid://dtscqhcaqtreq" path="res://UI/Layout/game_window.gd" id="1_layout"]
 [ext_resource type="Theme" uid="uid://dpov18qpoqhlb" path="res://UI/Themes/daw_theme.tres" id="2_theme"]
-[ext_resource type="Texture2D" uid="uid://cjdgy6uoobd48" path="res://UI/Icons/speed_down.svg" id="3_j48ql"]
 [ext_resource type="Texture2D" uid="uid://db0c38x6qu3j6" path="res://UI/Icons/play.svg" id="4_648vu"]
-[ext_resource type="Texture2D" uid="uid://b2rofkoacpmvm" path="res://UI/Icons/speed_up.svg" id="5_v3gkn"]
+[ext_resource type="Texture2D" uid="uid://cskn5exj6ik00" path="res://UI/Icons/restart.svg" id="6_j48ql"]
 [ext_resource type="Texture2D" uid="uid://coxcnq8aomvit" path="res://UI/Icons/volume.svg" id="6_q8a2y"]
 [ext_resource type="StyleBox" uid="uid://dmckjg7vfbq2s" path="res://UI/Themes/meter_clipper_style.tres" id="8_clipper"]
 [ext_resource type="Texture2D" uid="uid://c26p8kca2limr" path="res://UI/Icons/minimise.svg" id="9_0yftj"]
 [ext_resource type="Shader" uid="uid://g3mfhouro5ou" path="res://UI/Shaders/peak_meter.gdshader" id="9_peak_shader"]
 [ext_resource type="Texture2D" uid="uid://bgjlsw5u6ehrv" path="res://UI/Icons/window.svg" id="10_fcxat"]
 [ext_resource type="Texture2D" uid="uid://ld1ntqmn7kgd" path="res://UI/Icons/close.svg" id="11_4r27i"]
+[ext_resource type="PackedScene" path="res://UI/HUD/debug_toolbar.tscn" id="13_debug"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_peak"]
 shader = ExtResource("9_peak_shader")
@@ -267,15 +267,6 @@ layout_mode = 2
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="SpeedDownButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls" unique_id=1417243523]
-custom_minimum_size = Vector2(35, 35)
-layout_mode = 2
-size_flags_vertical = 4
-focus_mode = 0
-icon = ExtResource("3_j48ql")
-flat = true
-expand_icon = true
-
 [node name="PlayButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls" unique_id=1372303758]
 custom_minimum_size = Vector2(35, 35)
 layout_mode = 2
@@ -285,12 +276,12 @@ icon = ExtResource("4_648vu")
 flat = true
 expand_icon = true
 
-[node name="SpeedUpButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls" unique_id=996963216]
+[node name="RestartButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls" unique_id=996963216]
 custom_minimum_size = Vector2(35, 35)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
-icon = ExtResource("5_v3gkn")
+icon = ExtResource("6_j48ql")
 flat = true
 expand_icon = true
 
@@ -331,12 +322,6 @@ alignment = 1
 [node name="WaveLabel" type="Label" parent="MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox" unique_id=1299038656]
 layout_mode = 2
 text = "Track: 0 / 0"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="SpeedLabel" type="Label" parent="MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox" unique_id=108164397]
-layout_mode = 2
-text = "Speed: 1.00x"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -392,16 +377,27 @@ custom_minimum_size = Vector2(324, 0)
 layout_mode = 2
 theme_type_variation = &"SideBarPanel"
 
-[node name="GameViewContainer" type="SubViewportContainer" parent="MainLayout/WorkspaceSplit" unique_id=1688367999]
-clip_contents = true
+[node name="GameViewWrapper" type="Control" parent="MainLayout/WorkspaceSplit"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="GameViewContainer" type="SubViewportContainer" parent="MainLayout/WorkspaceSplit/GameViewWrapper" unique_id=1688367999]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 stretch = true
 
-[node name="SubViewport" type="SubViewport" parent="MainLayout/WorkspaceSplit/GameViewContainer" unique_id=135730004]
+[node name="SubViewport" type="SubViewport" parent="MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer" unique_id=135730004]
 handle_input_locally = false
 size = Vector2i(1596, 1008)
 render_target_update_mode = 4
+
+[node name="DebugToolbar" parent="MainLayout/WorkspaceSplit/GameViewWrapper" unique_id=839140025 instance=ExtResource("13_debug")]
+layout_mode = 1
 
 [node name="MainMenuConfirmation" type="ConfirmationDialog" parent="." unique_id=1158682758]
 oversampling_override = 1.0
@@ -415,3 +411,9 @@ title = "Confirm"
 initial_position = 2
 size = Vector2i(300, 100)
 dialog_text = "Quit to desktop?"
+
+[node name="RestartConfirmation" type="ConfirmationDialog" parent="." unique_id=192837465]
+title = "Abort Stem?"
+initial_position = 2
+size = Vector2i(300, 100)
+dialog_text = "Restart the current stem? All progress will be lost."

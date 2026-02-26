@@ -128,21 +128,19 @@ func _exit_tree() -> void:
 ## Public Methods
 
 func _start_wave(wave_index: int) -> void:
-	# Begins spawning enemies for a specific wave.
-	if wave_index >= stem_data.waves.size():
+	# Begins spawning enemies for the stem. Since stem=wave now, we only run this once.
+	if not stem_data:
 		return
 	
-	var wave: WaveData = stem_data.waves[wave_index] as WaveData
-	GameManager.set_wave(wave_index + 1, wave)
-	if wave:
-		_spawning = true
-		_active_enemy_count = 0
-		_spawn_wave(wave)
+	GameManager.set_wave(wave_index + 1, stem_data)
+	_spawning = true
+	_active_enemy_count = 0
+	_spawn_stem(stem_data)
 
 
 ## Private Methods
 
-func _spawn_wave(wave: WaveData) -> void:
+func _spawn_stem(stem: StemData) -> void:
 	# Flattens all SpawnInstructions into a single sorted timeline of spawn events.
 	# Each instruction can specify a start_delay and enemy_delay, which are accumulated
 	# into absolute trigger times. All instructions run in parallel.
@@ -151,7 +149,7 @@ func _spawn_wave(wave: WaveData) -> void:
 	
 	var master_timeline: Array[Dictionary] = []
 	
-	for instruction: SpawnInstruction in wave.spawns:
+	for instruction: SpawnInstruction in stem.spawns:
 		var current_time: float = instruction.start_delay
 		for i: int in range(instruction.count):
 			master_timeline.append({
@@ -289,8 +287,8 @@ func _on_next_wave_requested() -> void:
 	if _spawning:
 		return
 
-	if stem_data and _current_wave_index >= stem_data.waves.size():
-		return
+	if stem_data and _current_wave_index > 0:
+		return # Stem only has 1 wave
 
 	#_spawning = true # Set in _start_wave
 	_start_wave(_current_wave_index)
@@ -414,35 +412,30 @@ func _validate_spawn_data() -> void:
 	
 	var region: Rect2i = _astar_grid.region
 	
-	for wave_idx: int in range(stem_data.waves.size()):
-		var wave: WaveData = stem_data.waves[wave_idx] as WaveData
-		if not wave:
+	for inst_idx: int in range(stem_data.spawns.size()):
+		var instruction: SpawnInstruction = stem_data.spawns[inst_idx] as SpawnInstruction
+		if not instruction:
 			continue
 		
-		for inst_idx: int in range(wave.spawns.size()):
-			var instruction: SpawnInstruction = wave.spawns[inst_idx] as SpawnInstruction
-			if not instruction:
+		# Validate spawn_tile
+		var st: Vector2i = instruction.spawn_tile
+		if not region.has_point(st) or _astar_grid.is_point_solid(st):
+			push_warning(
+				"Instruction %d: spawn_tile %s is not walkable!"
+				% [inst_idx + 1, st]
+			)
+		
+		# Validate all weighted goal tiles
+		for wt_idx: int in range(instruction.weighted_targets.size()):
+			var wt: WeightedTarget = instruction.weighted_targets[wt_idx]
+			if not wt:
 				continue
-			
-			# Validate spawn_tile
-			var st: Vector2i = instruction.spawn_tile
-			if not region.has_point(st) or _astar_grid.is_point_solid(st):
+			var gt: Vector2i = wt.goal_tile
+			if not region.has_point(gt) or _astar_grid.is_point_solid(gt):
 				push_warning(
-					"Wave %d, Instruction %d: spawn_tile %s is not walkable!"
-					% [wave_idx + 1, inst_idx + 1, st]
+					"Instruction %d, Target %d: goal_tile %s is not walkable!"
+					% [inst_idx + 1, wt_idx + 1, gt]
 				)
-			
-			# Validate all weighted goal tiles
-			for wt_idx: int in range(instruction.weighted_targets.size()):
-				var wt: WeightedTarget = instruction.weighted_targets[wt_idx]
-				if not wt:
-					continue
-				var gt: Vector2i = wt.goal_tile
-				if not region.has_point(gt) or _astar_grid.is_point_solid(gt):
-					push_warning(
-						"Wave %d, Instruction %d, Target %d: goal_tile %s is not walkable!"
-						% [wave_idx + 1, inst_idx + 1, wt_idx + 1, gt]
-					)
 
 func _remove_background_tiles_under_path(animate: bool = true) -> void:
 	# BFS flood-fill from Spawn01's start point, hiding background pads under the path.

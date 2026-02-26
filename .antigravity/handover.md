@@ -1,29 +1,18 @@
-# Handover
+# Handover: TD-Prototype
+
+**Date:** 2026-02-26
+**Status:** Data Model Consolidated, UI Refined.
 
 ## Current State
-- **Filesystem Restructured**: Successfully transitioned from "Levels" to **Stage & Stem** terminology.
-- **Data Model Merged**: `LevelData` is eliminated. `StemData` is now the single source of truth for both metadata and wave data for a stem.
-- **Audio Named**: All placeholder stems follow the `stem_XX_instrument.mp3` naming convention in `Stages/Stage01_FunkyGoldenSun/Audio/`.
-- **Design Finalised**: Restart logic ("Option C"), Loadout locking, and Setlist Preview specs are finalised in `Knowledge/game_brief.md`.
+- **Data Model:** `WaveData` is fully deprecated and deleted. `StemData` is now the unit of work for all encounters, containing audio streams and `SpawnInstruction` arrays.
+- **UI Architecture:** `GameWindow.tscn` uses a `GameViewWrapper` (Control) to hold the `SubViewportContainer` and `DebugToolbar` as siblings. This fixed a critical bug where UI clicks were swallowed by the viewport.
+- **Top Bar:** Cleaned up. Removed `SpeedLabel`; added `RestartButton` + confirmation flow.
 
-## New Files
-| File | Purpose |
-|:---|:---|
-| `Stages/_TemplateStage/*.gd` | Renamed template stage, data, and scene files |
-| `Config/Stages/level_01_config.tres` | Moved from Config/Levels/ |
+## Signal Map Highlights
+- `GameManager.game_speed_changed` -> Updates `DebugToolbar` (if present).
+- `GameWindow._on_restart_confirmed` -> Calls `StageManager.restart_stem()` or `GameManager.reset_state()` / `_load_level()`.
 
-## Modified Files
-| File | Change |
-|:---|:---|
-| `Core/Data/Stages/stem_data.gd` | Merged `waves` array into this class; dropped `StemInstrument` enum |
-| `Stages/_TemplateStage/template_stage.gd` | References `StemData` instead of `LevelData` |
-| `Systems/game_manager.gd` | Updated to handle `StemData` for level definitions |
-| `Systems/scene_manager.gd` | Updated pool pre-warming for `StemData` structure |
-| `Knowledge/game_brief.md` | Documented "Option C" restart logic and Setlist Specs |
-| `Knowledge/ideas.md` | Documented Hybrid Dynamic Audio approach |
-
-## Next Session
-- **Testing Tool Implementation**: Discuss and implement tools for verifying wave spawns and audio quality shifts.
-- **Setlist Preview UI Refinement**: Implement the `StemCard` visuals and Gating logic (Stem 1 mandatory).
-- **Restart Hook**: Implement the "Restart Stem" and "Restart Stage" logic in the Pause Menu.
-- **Audio Quality Crossfades**: Hook up the 3-tier layering in `AudioManager` using the new `StemData.waves` configuration.
+## Immediate Next Steps (Next Session)
+- **Pool Manager Migration:** Discuss and implement moving object pooling tasks (pre-warming/initialization) from the loading screen to the `SetlistUI` screen to optimize transition times.
+- **Testing Tool Implementation:** Implement functional testing buttons for manual wave spawning and audio quality shifting.
+- **Audio Crossfades:** Implement the 3-tier layering logic in `AudioManager`.

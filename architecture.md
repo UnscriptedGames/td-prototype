@@ -72,3 +72,7 @@ To maximise the AI Pro 5-hour refresh window (250 requests):
 - **Comments:** Single space after `#`. Explain **what** (final state) the code does. The **why** belongs in the chat.
 - **Cleanliness:** One statement per line. Use English boolean operators (`and`, `or`, `not`). Wrap `print()` in `if OS.is_debug_build():` checks.
 - **Numbers:** Leading/trailing zeroes in floats (`0.5`). Use underscores for large numbers (`1_000_000`). Lowercase hex (`0xffaabb`).
+
+## 5. UI Architecture Rules
+- **SubViewport Input Blocking:** `SubViewportContainer` nodes often swallow mouse events by design. For any UI overlays that require mouse interaction (like the `DebugToolbar` or modal dialogs) on top of a game view, place them as **siblings** to the `SubViewportContainer` inside a shared `Control` wrapper. Use `anchors_preset = FULL_RECT` for the container and overlays to ensure perfect alignment.
+- **Layering Order:** Use the `z_index` property sparingly for UI. Instead, rely on the node tree order (bottom nodes render last/top) to manage depth priority in the workspace.

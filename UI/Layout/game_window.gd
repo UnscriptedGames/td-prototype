@@ -4,15 +4,14 @@
 class_name GameWindow
 extends Control
 
-@onready var game_viewport: SubViewport = $MainLayout/WorkspaceSplit/GameViewContainer/SubViewport
+@onready var game_viewport: SubViewport = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport
 @onready var menu_button: MenuButton = $MainLayout/TopBar/Content/MenuButton
 @onready var main_menu_confirm: ConfirmationDialog = $MainMenuConfirmation
 @onready var quit_confirm: ConfirmationDialog = $QuitConfirmation
 
 # Transport Controls
 @onready var play_button: Button = $MainLayout/TopBar/Content/TransportControls/PlayButton
-@onready var speed_down_button: Button = $MainLayout/TopBar/Content/TransportControls/SpeedDownButton
-@onready var speed_up_button: Button = $MainLayout/TopBar/Content/TransportControls/SpeedUpButton
+@onready var restart_button: Button = $MainLayout/TopBar/Content/TransportControls/RestartButton
 
 @onready var gauge_l: ProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL
 @onready var gauge_r: ProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR
@@ -26,7 +25,6 @@ extends Control
 @onready var btn_close: Button = $MainLayout/TopBar/Content/WindowControls/CloseButton
 
 @onready var wave_label: Label = $MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox/WaveLabel
-@onready var speed_label: Label = $MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox/SpeedLabel
 @onready var gain_label: Label = $MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox/GainLabel
 
 # Volume Controls
@@ -36,6 +34,7 @@ extends Control
 # Icons
 var icon_play: Texture2D = preload("res://UI/Icons/play.svg")
 var icon_pause: Texture2D = preload("res://UI/Icons/pause.svg")
+var icon_restart: Texture2D = preload("res://UI/Icons/restart.svg")
 var icon_volume: Texture2D = preload("res://UI/Icons/volume.svg")
 var icon_mute: Texture2D = preload("res://UI/Icons/volume_mute.svg")
 
@@ -74,6 +73,8 @@ enum MenuOptions {
 	QUIT
 }
 
+@onready var restart_confirm: ConfirmationDialog = $RestartConfirmation
+
 
 func _ready() -> void:
 	# Wait for systems to settle
@@ -106,8 +107,8 @@ func _setup_build_manager() -> void:
 	_build_manager.tower_deselected.connect(_on_tower_deselected)
 
 	# Bind Viewport
-	var viewport: SubViewport = $MainLayout/WorkspaceSplit/GameViewContainer/SubViewport
-	var container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewContainer
+	var viewport: SubViewport = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport
+	var container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
 	_build_manager.bind_to_viewport(viewport, container)
 
 	# Attach drop handler via child Control overlay
@@ -162,11 +163,6 @@ func _setup_signal_connections() -> void:
 	if GameManager.has_signal("wave_status_changed"):
 		GameManager.wave_status_changed.connect(_on_wave_status_changed)
 
-	# Speed multiplier
-	if GameManager.has_signal("game_speed_changed"):
-		GameManager.game_speed_changed.connect(_on_game_speed_changed)
-		_on_game_speed_changed(Engine.time_scale)
-
 	# Volume slider + mute button
 	if volume_slider:
 		volume_slider.value_changed.connect(_on_volume_changed)
@@ -185,7 +181,7 @@ func _setup_input_propagation() -> void:
 	if has_node("Background"):
 		$Background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var viewport_container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewContainer
+	var viewport_container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
 	if viewport_container:
 		# ALWAYS so clicks reach BuildManager even while paused.
 		# Game entities remain PAUSABLE by default via their own process_mode.
@@ -208,7 +204,7 @@ func _setup_input_propagation() -> void:
 ## Instantiates the TowerInspector panel inside the game view container and
 ## connects its action signals to the BuildManager.
 func _setup_inspector() -> void:
-	var game_view_container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewContainer
+	var game_view_container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
 	var inspector_scene: PackedScene = load("res://UI/Inspector/tower_inspector.tscn")
 	if not inspector_scene:
 		return
@@ -310,19 +306,27 @@ func _setup_window_controls() -> void:
 		btn_close.pressed.connect(_on_close_pressed)
 
 
-## Connects transport bar buttons (play/pause, speed up, speed down).
+## Connects transport bar buttons (play/pause, restart).
 func _setup_transport() -> void:
-	play_button.pressed.connect(_on_play_button_pressed)
+	if play_button:
+		play_button.pressed.connect(_on_play_button_pressed)
 
-	if speed_down_button:
-		speed_down_button.pressed.connect(GameManager.step_speed_down)
-	if speed_up_button:
-		speed_up_button.pressed.connect(GameManager.step_speed_up)
+	if restart_button:
+		restart_button.pressed.connect(_on_restart_button_pressed)
 
 
 ## Toggles the game between playing and paused states.
 func _on_play_button_pressed() -> void:
 	GameManager.toggle_game_state()
+
+
+## Pauses the game (if playing) and opens the restart confirmation dialog.
+func _on_restart_button_pressed() -> void:
+	if GameManager.game_state == GameManager.GameState.PLAYING:
+		GameManager.toggle_game_state() # Pause before asking
+	
+	if restart_confirm:
+		restart_confirm.popup_centered()
 
 
 ## Minimises the application window.
@@ -384,12 +388,6 @@ func _on_wave_status_changed(_is_active: bool) -> void:
 	_update_play_button_visuals()
 
 
-## Updates the speed label when the game speed multiplier changes.
-func _on_game_speed_changed(new_speed: float) -> void:
-	if speed_label:
-		speed_label.text = "Speed: %.2fx" % new_speed
-
-
 ## Sets the play button icon based on the current game and wave state.
 ## Idle or paused → play icon. Active and playing → pause icon.
 func _update_play_button_visuals() -> void:
@@ -416,8 +414,9 @@ func _setup_menu() -> void:
 
 ## Connects confirmation dialog signals.
 func _setup_confirmations() -> void:
-	main_menu_confirm.confirmed.connect(_on_main_menu_confirmed)
-	quit_confirm.confirmed.connect(_on_quit_confirmed)
+	if main_menu_confirm: main_menu_confirm.confirmed.connect(_on_main_menu_confirmed)
+	if quit_confirm: quit_confirm.confirmed.connect(_on_quit_confirmed)
+	if restart_confirm: restart_confirm.confirmed.connect(_on_restart_confirmed)
 
 
 ## Routes menu dropdown selections to their confirmation dialogs.
@@ -438,6 +437,21 @@ func _on_main_menu_confirmed() -> void:
 ## Quits the application.
 func _on_quit_confirmed() -> void:
 	get_tree().quit()
+
+
+## Restarts the current stem by reloading the active level scene.
+func _on_restart_confirmed() -> void:
+	get_tree().paused = false
+	
+	if StageManager.current_stem_index >= 0:
+		StageManager.restart_stem()
+	else:
+		GameManager.reset_state() # Ensure timing variables reset
+		var current_path = DEFAULT_LEVEL_PATH
+		if GameManager.level_data != null and GameManager.level_data.level_scene_path != "":
+			current_path = GameManager.level_data.level_scene_path
+			
+		_load_level(current_path) # Reload logic; later mapped to current level path
 
 
 ## Loads a level scene from a file path into the game SubViewport.

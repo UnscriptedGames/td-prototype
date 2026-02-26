@@ -10,7 +10,7 @@
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_5muv1"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_2nk17"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3onyj"]
 shader = ExtResource("3_fgavm")
 shader_parameter/noise_strength = 0.01
 shader_parameter/gradient_strength = 0.05
@@ -25,7 +25,6 @@ glow_opacity = 1.0
 metadata/_custom_type_script = "uid://0x3lyn1cjhr1"
 
 [node name="Level01" unique_id=853479160 node_paths=PackedStringArray("background_renderer", "maze_renderer", "song_layer") instance=ExtResource("1_sm372")]
-level_data = ExtResource("2_5muv1")
 lane_count = 3
 max_lane_offset = 10.0
 background_renderer = NodePath("TileMaps/BackgroundRenderer")
@@ -47,7 +46,7 @@ texture = SubResource("CanvasTexture_5muv1")
 [node name="BackgroundRenderer" parent="TileMaps" parent_id_path=PackedInt32Array(1301297614) index="0" unique_id=1621264932]
 visible = true
 texture_filter = 4
-material = SubResource("ShaderMaterial_2nk17")
+material = SubResource("ShaderMaterial_3onyj")
 grid_width = 57
 grid_height = 36
 tile_size = Vector2(28, 28)

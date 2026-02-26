@@ -20,7 +20,8 @@ var game_window_scene: PackedScene = preload(GAME_WINDOW_PATH)
 
 ## Initiates a scene transition to the specified level path.
 ## @param scene_path: The resource path of the level scene (.tscn) to load.
-func load_scene(scene_path: String) -> void:
+## @param stem_data: The specific stem configuration (spawns, audio, etc) to inject.
+func load_scene(scene_path: String, stem_data: StemData = null) -> void:
 	# 1. Show the loading screen and wait for it to draw.
 	var loading_screen_instance: Node = loading_screen_scene.instantiate()
 	get_tree().root.add_child(loading_screen_instance)
@@ -33,19 +34,21 @@ func load_scene(scene_path: String) -> void:
 	# 3. Load the ACTUAL Level scene.
 	var level_resource: PackedScene = load(scene_path)
 	var level_instance := level_resource.instantiate() as TemplateLevel
+	
+	# Pass the stem data via injection rather than relying on the scene file
+	if stem_data:
+		level_instance.stem_data = stem_data
 
 	# 4. Get the level data from the instance and create all the necessary object pools.
 	#    This is the heavy, synchronous work that will freeze the game on the loading screen.
 	if is_instance_valid(level_instance.stem_data):
-		var stem_data: StemData = level_instance.stem_data
+		stem_data = level_instance.stem_data
 		
 		# Create enemy pools
 		var unique_enemies: Array[PackedScene] = []
-		for wave in stem_data.waves:
-			if wave is WaveData:
-				for spawn_instruction in wave.spawns:
-					if not unique_enemies.has(spawn_instruction.enemy_scene):
-						unique_enemies.append(spawn_instruction.enemy_scene)
+		for spawn_instruction in stem_data.spawns:
+			if not unique_enemies.has(spawn_instruction.enemy_scene):
+				unique_enemies.append(spawn_instruction.enemy_scene)
 
 		for enemy_scene in unique_enemies:
 			ObjectPoolManager.create_pool(enemy_scene, 20)

@@ -56,15 +56,15 @@ func _setup_audio_players() -> void:
 	# Start with only 'Good' audible
 	_set_volumes(StemQuality.GOOD)
 
-## Starts playing the specific stems for a new wave/level
-func play_stem(wave_data: WaveData) -> void:
-	if not wave_data:
+## Starts playing the specific stems for a new level
+func play_stem(stem_data: StemData) -> void:
+	if not stem_data:
 		_stop_all()
 		return
 		
-	_player_good.stream = wave_data.stem_audio_good
-	_player_avg.stream = wave_data.stem_audio_avg
-	_player_bad.stream = wave_data.stem_audio_bad
+	_player_good.stream = stem_data.stem_audio_good
+	_player_avg.stream = stem_data.stem_audio_avg
+	_player_bad.stream = stem_data.stem_audio_bad
 	
 	_current_quality = StemQuality.GOOD
 	_set_volumes(_current_quality)
@@ -125,11 +125,10 @@ func _set_volumes(target_quality: StemQuality) -> void:
 			_player_bad.volume_db = vol_on
 
 func _on_wave_changed(_current_wave: int, _total_waves: int) -> void:
-	# Hook to grab the new wave data from GameManager when it starts
+	# Hook to grab the new stem data from GameManager when it starts
 	var level_data = GameManager.level_data
-	if level_data and _current_wave > 0 and _current_wave <= level_data.waves.size():
-		var wave: WaveData = level_data.waves[_current_wave - 1]
-		play_stem(wave)
+	if level_data and _current_wave > 0:
+		play_stem(level_data)
 	else:
 		_stop_all()
 
