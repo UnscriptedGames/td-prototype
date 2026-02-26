@@ -1,0 +1,36 @@
+[gd_scene load_steps=2 format=3 uid="uid://c6stemcard001"]
+
+[ext_resource type="Script" path="res://UI/Setlist/stem_card.gd" id="1_stem_card"]
+
+[node name="StemCard" type="PanelContainer"]
+custom_minimum_size = Vector2(200, 120)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_stem_card")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+alignment = 1
+
+[node name="StemNameLabel" type="Label" parent="VBoxContainer"]
+horizontal_alignment = 1
+text = "Stem Name"
+
+[node name="InstrumentLabel" type="Label" parent="VBoxContainer"]
+horizontal_alignment = 1
+text = "INSTRUMENT"
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer"]
+horizontal_alignment = 1
+text = "LOCKED"
+
+[node name="QualityLabel" type="Label" parent="VBoxContainer"]
+horizontal_alignment = 1
+text = ""
+
+[node name="PreviewLabel" type="Label" parent="VBoxContainer"]
+horizontal_alignment = 1
+text = "Preview TBD"

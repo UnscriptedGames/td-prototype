@@ -4,9 +4,9 @@
 [ext_resource type="Script" uid="uid://c6sd68ghkditp" path="res://Core/Data/Waves/spawn_instruction.gd" id="2_spawn"]
 [ext_resource type="PackedScene" uid="uid://dj2xubaiwg7dq" path="res://Entities/Enemies/BasicEnemy/basic_enemy.tscn" id="3_enemy"]
 [ext_resource type="Script" uid="uid://cwhwoc5lm1of7" path="res://Core/Data/Waves/weighted_target.gd" id="4_w70wb"]
-[ext_resource type="AudioStream" uid="uid://chplf7ktmmadc" path="res://Levels/Level01/Music/level_01_average.wav" id="5_gb8x1"]
-[ext_resource type="AudioStream" uid="uid://ndgtkw6mbnf" path="res://Levels/Level01/Music/level_01_bad.wav" id="6_j6i0t"]
-[ext_resource type="AudioStream" uid="uid://dq1u423v3hv1u" path="res://Levels/Level01/Music/level_01_good.wav" id="7_v2f4t"]
+[ext_resource type="AudioStream" uid="uid://chplf7ktmmadc" path="res://Stages/Stage01_FunkyGoldenSun/Audio/level_01_average.wav" id="5_gb8x1"]
+[ext_resource type="AudioStream" uid="uid://ndgtkw6mbnf" path="res://Stages/Stage01_FunkyGoldenSun/Audio/level_01_bad.wav" id="6_j6i0t"]
+[ext_resource type="AudioStream" uid="uid://dq1u423v3hv1u" path="res://Stages/Stage01_FunkyGoldenSun/Audio/level_01_good.wav" id="7_v2f4t"]
 
 [sub_resource type="Resource" id="Resource_r2eih"]
 script = ExtResource("4_w70wb")

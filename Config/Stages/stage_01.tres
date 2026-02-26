@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="StageData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://Core/Data/Stages/stage_data.gd" id="1_stage"]
+[ext_resource type="Script" path="res://Core/Data/Stages/stem_data.gd" id="2_stem"]
+
+[sub_resource type="Resource" id="stem_1"]
+script = ExtResource("2_stem")
+stem_label = "Drums"
+instrument = 0
+level_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stem_01_drums.tscn"
+is_mandatory_first = true
+enemy_preview_hint = "Standard Waveforms"
+
+[sub_resource type="Resource" id="stem_2"]
+script = ExtResource("2_stem")
+stem_label = "Bass"
+instrument = 1
+level_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stem_01_drums.tscn"
+is_mandatory_first = false
+enemy_preview_hint = "Preview TBD"
+
+[sub_resource type="Resource" id="stem_3"]
+script = ExtResource("2_stem")
+stem_label = "Harmony"
+instrument = 2
+level_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stem_01_drums.tscn"
+is_mandatory_first = false
+enemy_preview_hint = "Preview TBD"
+
+[sub_resource type="Resource" id="stem_4"]
+script = ExtResource("2_stem")
+stem_label = "Melody"
+instrument = 3
+level_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stem_01_drums.tscn"
+is_mandatory_first = false
+enemy_preview_hint = "Preview TBD"
+
+[sub_resource type="Resource" id="stem_5"]
+script = ExtResource("2_stem")
+stem_label = "Vocals"
+instrument = 4
+level_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stem_01_drums.tscn"
+is_mandatory_first = false
+enemy_preview_hint = "Preview TBD"
+
+[sub_resource type="Resource" id="boss_stem"]
+script = ExtResource("2_stem")
+stem_label = "Boss — Full Mix"
+instrument = 0
+level_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stem_01_drums.tscn"
+is_mandatory_first = false
+enemy_preview_hint = "All Stems Active"
+
+[resource]
+script = ExtResource("1_stage")
+stage_name = "Track 01 — Neon Pulse"
+stage_number = 1
+stems = [SubResource("stem_1"), SubResource("stem_2"), SubResource("stem_3"), SubResource("stem_4"), SubResource("stem_5")]
+boss_stem = SubResource("boss_stem")

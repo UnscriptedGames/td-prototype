@@ -36,12 +36,12 @@ func load_scene(scene_path: String) -> void:
 
 	# 4. Get the level data from the instance and create all the necessary object pools.
 	#    This is the heavy, synchronous work that will freeze the game on the loading screen.
-	if is_instance_valid(level_instance.level_data):
-		var level_data: LevelData = level_instance.level_data
+	if is_instance_valid(level_instance.stem_data):
+		var stem_data: StemData = level_instance.stem_data
 		
 		# Create enemy pools
 		var unique_enemies: Array[PackedScene] = []
-		for wave in level_data.waves:
+		for wave in stem_data.waves:
 			if wave is WaveData:
 				for spawn_instruction in wave.spawns:
 					if not unique_enemies.has(spawn_instruction.enemy_scene):

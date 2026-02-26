@@ -22,7 +22,7 @@ var speed_steps: Array[float] = [1.0, 2.0, 4.0, 12.0]
 
 # Player and level state variables
 var _player_data: PlayerData
-var _level_data: LevelData
+var _level_data: StemData
 var _current_level: int = 0
 var _current_wave: int = 0
 var _total_waves: int = 0
@@ -45,7 +45,7 @@ var _relic_used_this_level: bool = false
 var player_data: PlayerData:
 	get: return _player_data
 
-var level_data: LevelData:
+var level_data: StemData:
 	get: return _level_data
 
 var current_level: int:
@@ -124,7 +124,7 @@ func set_player_data(data: PlayerData) -> void:
 	currency_changed.emit(_player_data.currency)
 
 ## Sets the current level and total waves, then emits relevant signals.
-func set_level(level_index: int, data: LevelData) -> void:
+func set_level(level_index: int, data: StemData) -> void:
 	_current_level = level_index
 	_level_data = data
 	if data and not data.waves.is_empty():

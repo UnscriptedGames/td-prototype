@@ -47,9 +47,9 @@
 └─────────────────────────────────────────────────────────┘
 ```
 
-1. **The Studio (Pre-Game):** Player configures their Loadout — selecting Towers, Spells,
+1. **The Studio (Pre-Game):** Player configures their Loadout — selecting Towers, Buffs,
 	 and Relics within their Allocation Point budget.
-2. **Stem Select:** Player chooses which stem level to play next within the stage. 
+2. **Setlist Preview:** Player chooses which stem level to play next within the stage. 
 3. **The Live Set (In-Game):** Player places towers and defends the maze against waveform
 	 enemies. The Peak Meter tracks performance.
 4. **Stem Unlock:** Based on Peak Meter position at wave end, the player unlocks a Good,
@@ -96,20 +96,32 @@ DAW-standard VU/peak meter with a three-colour gradient and smooth, unscaled ani
 ## 4. Stage & Stem System
 
 ### Structure
-- **10 Stages**, each representing a complete song.
-- **~5 Stem Levels per Stage** + **1 Boss Wave** = 6 encounters per stage.
+- **10 Stages**, each representing a complete song (e.g., "Funky Golden Sun").
+- **5 Stem Levels per Stage** + **1 Boss Wave** = 6 encounters per stage.
 - Each stem level corresponds to a musical layer (e.g., Drums, Bass, Synth, Melody, Vocals).
+- **Filesystem Standard**: `Stages/Stage01_Name/Audio/stem_01_drums.mp3`.
 
-### Stem Order: "Producer's Cut"
-- Players **choose** which stem to play next, but a **suggested order** is displayed on the
-	stage select screen following natural musical layering logic:
-	1. Rhythm / Drums
-	2. Bass
-	3. Harmony / Chords
-	4. Melody / Lead
-	5. Vocals / Top Line
-- **Freestyle Mode:** Once a stage is completed via the suggested order, the player unlocks
-	the ability to play stems in any order for that stage (for replays and codex hunting).
+### Stem Order & Gating
+- **Stem 1 is mandatory.** The first stem (typically Drums/Percussion) must be completed 
+	to establish the rhythmic foundation and rhythmic progress.
+- **Stems 2–5 are free choice.** After Stem 1 is completed, the player can attempt any
+	of the remains 4 stems in any order.
+- **Boss Wave is gated.** Only unlocks after all 5 stems have been completed.
+
+### Restart Logic ("Option C")
+The player is given two levels of reset depending on whether they want to optimize a single track or rethink their entire strategy:
+
+- **Restart Stem:** Immediately retries the current stem encounter. Towers and Gold reset,
+	but the stage's overall progress (locked qualities of previously completed stems) 
+	remains untouched.
+- **Restart Entire Stage:** Wipes all stem progress for the current stage and returns the
+	player to the Studio. This is the **only way to unlock and change the Loadout** 
+	once a stage run has begun.
+
+### Loadout Lock Timing
+- The loadout **locks the moment Stem 1 begins**. 
+- To ensure players can plan appropriately before committing, the **Setlist screen** 
+	provides a detailed preview of all upcoming stem challenges (see Section 11).
 
 ### Layered Playback
 - While playing Stem Level N, the current active stem plays in the foreground and dynamically shifts its audio quality (Good/Average/Abomination) in real-time as the Peak Meter rises.
@@ -117,8 +129,22 @@ DAW-standard VU/peak meter with a three-colour gradient and smooth, unscaled ani
 - On the Boss Wave, all 5 stems play simultaneously — the player hears the full song they
 	assembled.
 
+### Audio Quality Approach (Hybrid)
+Two independent audio layers operate simultaneously:
+
+1. **Pre-Recorded Quality Variants (Composer-Owned):** Each stem ships with 3 curated
+	audio files (Good / Average / Abomination) crafted by the composer. The AudioManager
+	crossfades between them based on Peak Meter thresholds. This gives full artistic control
+	over what degradation *sounds like* for each stem.
+2. **Dynamic Audio Effects (AudioManager-Owned):** Temporary, gameplay-driven effects are
+	layered on top of the active quality track via Godot's AudioBus effect chain. These are
+	triggered by buffs, relics, and other gameplay events — not by the Peak Meter. They are
+	additive overlays, not replacements for the base quality.
+
 ### Replayability
 - Stems can be **replayed at any time** to improve quality grades.
+- Replaying a stem does *not* unlock the Loadout; it uses the loadout currently locked to 
+	the stage.
 - All unlocked versions are stored in the **Codex** (see Section 5).
 
 ---
@@ -206,8 +232,10 @@ The Loadout replaces the legacy card/deck system. We use a **Data vs. Configurat
 ### Gold (In-Game Currency)
 - Earned primarily through **defeating enemies**.
 - Used to **build towers** and **play buffs**.
-- Currently planned to be **contained per stem level** (resets between stems).
-- Scope (per-stem vs per-stage persistence) is **TBD** and subject to playtesting.
+- **Per-Stem Scope (Finalized):** Gold is contained strictly within the current stem level. 
+	Starting a new stem or restarting a stem resets Gold to the starting amount defined 
+	in the stage config. This prevents "snowballing" economy where an easy first stem 
+	makes the remaining 4 trivial.
 
 ### Progression & Unlocks (TBD)
 - **Stage Completion:** Unlocks the next stage sequentially.
@@ -322,6 +350,16 @@ The entire interface is modelled after professional DAW software.
 | Stem levels | Individual tracks/stems |
 | Enhanced map tiles | Amped Tiles / High Voltage |
 
+### The Setlist Preview (The Stage Map)
+The Setlist screen serves as the transition between "The Studio" (Preparation) and "The Live Set" (Performance). It displays the 5 stems as clickable cards.
+
+- **The Stem Card**:
+    - **Instrument Label**: The musical role (e.g., "Synths", "Vocals").
+    - **State Indication**: Clearly marked as *Locked*, *Available*, or *Completed*.
+    - **Quality Grade**: Displays the earned medal/icon (**Good / Average / Abomination**) if the stem has been beaten.
+    - **Enemy Preview**: Critical strategic data. Shows a brief hint of the roster (e.g., "Heavy Shielded," "Sonic Swarm") so the player can tailor their Loadout before locking it in.
+    - **Mandatory Cue**: Stem 1 is visually highlighted as the required entry point.
+
 ### Art Direction for Assets
 - **Style:** Modern, clean semi-realistic digital illustration. Not retro, not
 	cartoon, no thick outlines. Smooth gradients with subtle material shading.
@@ -373,14 +411,11 @@ The pause state acts as a "Strategic Planning" mode. The music/action freezes, b
 The following items are acknowledged as **not yet finalised** and will be resolved through
 future design sessions and playtesting:
 
-- [ ] **Gold Scope:** Does gold persist across stem levels within a stage, or reset per
-	stem? (Current lean: per-stem reset.)
+- [x] **Gold Scope:** Gold resets per stem (Resolved Feb 26).
 - [ ] **AP Growth:** How does the player's maximum AP increase? Fixed per stage, or a
 	separate upgrade currency?
 - [ ] **Unlock Economy:** Full mapping of what unlocks where (towers, buffs, relics, AP).
 - [ ] **Enemy Variants:** Detailed design for shielded, resistant, and other enemy types.
-- [x] **Tower Roster:** 8 tower concepts confirmed. See `Knowledge/towers_brief.md`.
-	Individual tower specs in `Knowledge/tower_design_*.md`. Stats TBD via playtesting.
 - [ ] **Upgrade Branching:** Can the player mix upgrade choices across tiers (e.g.,
 	Tier 1A + Tier 2B), or must they commit to a single path?
 - [ ] **Relic Design:** Specific passive/active ability designs for each relic.

@@ -66,7 +66,7 @@ var _noise_val_diff: float = 0.0
 var _is_muted: bool = false
 var _previous_volume: float = 80.0
 
-const DEFAULT_LEVEL_PATH: String = "res://Levels/_TemplateLevel/template_level.tscn"
+const DEFAULT_LEVEL_PATH: String = "res://Stages/_TemplateStage/template_stage.tscn"
 const MAIN_MENU_SCENE_PATH: String = "res://UI/MainMenu/main_menu.tscn"
 
 enum MenuOptions {
