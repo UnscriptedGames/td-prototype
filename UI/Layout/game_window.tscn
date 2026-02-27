@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://d3x1y204a5b6c"]
 
+[ext_resource type="Script" path="res://UI/Layout/game_view_dropper.gd" id="1_dropper"]
 [ext_resource type="Script" uid="uid://dtscqhcaqtreq" path="res://UI/Layout/game_window.gd" id="1_layout"]
 [ext_resource type="Theme" uid="uid://dpov18qpoqhlb" path="res://UI/Themes/daw_theme.tres" id="2_theme"]
 [ext_resource type="Texture2D" uid="uid://db0c38x6qu3j6" path="res://UI/Icons/play.svg" id="4_648vu"]
@@ -269,6 +270,7 @@ layout_mode = 2
 theme_override_constants/separation = 15
 
 [node name="PlayButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls" unique_id=1372303758]
+disabled = true
 custom_minimum_size = Vector2(35, 35)
 layout_mode = 2
 size_flags_vertical = 4
@@ -278,6 +280,7 @@ flat = true
 expand_icon = true
 
 [node name="RestartButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls" unique_id=996963216]
+disabled = true
 custom_minimum_size = Vector2(35, 35)
 layout_mode = 2
 size_flags_vertical = 4
@@ -397,7 +400,17 @@ handle_input_locally = false
 size = Vector2i(1596, 1008)
 render_target_update_mode = 4
 
-[node name="UIWorkspaceContainer" type="MarginContainer" parent="MainLayout/WorkspaceSplit/GameViewWrapper"]
+[node name="DropZone" type="Control" parent="MainLayout/WorkspaceSplit/GameViewWrapper" unique_id=2011257287]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_dropper")
+
+[node name="UIWorkspaceContainer" type="MarginContainer" parent="MainLayout/WorkspaceSplit/GameViewWrapper" unique_id=1441491149]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -422,6 +435,12 @@ title = "Confirm"
 initial_position = 2
 size = Vector2i(350, 100)
 dialog_text = "Quit game and return to main menu?"
+
+[node name="SetlistConfirmation" type="ConfirmationDialog" parent="." unique_id=892345671]
+title = "Confirm"
+initial_position = 2
+size = Vector2i(350, 100)
+dialog_text = "Return to Setlist? Current stem progress will be lost."
 
 [node name="QuitConfirmation" type="ConfirmationDialog" parent="." unique_id=624483855]
 title = "Confirm"

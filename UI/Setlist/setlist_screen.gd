@@ -21,6 +21,7 @@ const STEM_CARD_SCENE: PackedScene = preload("res://UI/Setlist/stem_card.tscn")
 @onready var boss_slot: Control = $MarginContainer/VBoxContainer/BossSlot
 @onready var boss_counter_label: Label = $MarginContainer/VBoxContainer/BossSlot/BossCounterLabel
 @onready var restart_button: Button = $MarginContainer/VBoxContainer/RestartStageButton
+@onready var restart_confirm: ConfirmationDialog = $RestartConfirmation
 
 
 # --- State ---
@@ -33,6 +34,8 @@ var _stem_cards: Array = []
 
 func _ready() -> void:
 	restart_button.pressed.connect(_on_restart_stage_pressed)
+	if restart_confirm:
+		restart_confirm.confirmed.connect(_on_restart_confirmed)
 
 	# Connect to StageManager signals.
 	StageManager.stem_status_changed.connect(_on_stem_status_changed)
@@ -185,6 +188,12 @@ func _on_stage_restarted() -> void:
 		call_deferred("_build_setlist", StageManager.active_stage)
 
 
-## Triggers a full stage restart.
+## Triggers the restart confirmation popup.
 func _on_restart_stage_pressed() -> void:
+	if restart_confirm:
+		restart_confirm.popup_centered()
+
+
+## Confirms the restart and wipes the stage progress.
+func _on_restart_confirmed() -> void:
 	StageManager.restart_stage()

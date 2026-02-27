@@ -195,7 +195,7 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 		"subtype": type,
 		"data": data,
 		"drag_id": drag_id,
-		"source": self,
+		"source": self ,
 		"preview": preview
 	}
 

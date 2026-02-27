@@ -1,74 +1,61 @@
+@tool
 extends Control
 
-## Drop handler overlay for the game viewport.
+## GameViewDropper
+## A transparent overlay Control that covers the game viewport.
+## It is placed as a static sibling of SubViewportContainer in game_window.tscn so that
+## it always sits on top and receives drag events *before* the SubViewportContainer.
 ##
-## Attached at runtime as a child of the SubViewportContainer.
-## Translates Godot drag-and-drop events into [BuildManager] calls
-## for tower placement and buff application.
+## This node's mouse_filter must be MOUSE_FILTER_PASS so normal clicks fall
+## through to the game world underneath.
 
-var build_manager: BuildManager
+var build_manager: Node = null
 
-func _ready() -> void:
-	pass
-
-func setup(bm: BuildManager) -> void:
-	# Binds this handler to the given BuildManager and enables mouse passthrough.
+## Called by GameWindow._bind_build_manager() once a level is loaded.
+func setup(bm: Node) -> void:
 	build_manager = bm
-	mouse_filter = Control.MOUSE_FILTER_PASS
-	print("GameViewDropper setup triggered. Attached and ready.")
+	if OS.is_debug_build():
+		print("GameViewDropper setup triggered. Attached and ready.")
+
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
-	# Evaluates whether the dragged payload is a valid loadout_drag and forwards
-	# hover updates to BuildManager. Returns true while a drag is active.
-	if not build_manager:
-		return false
+	if not is_instance_valid(build_manager): return false
+	if typeof(data) != TYPE_DICTIONARY: return false
+	if data.get("type") != "loadout_drag": return false
 	
-	if typeof(data) == TYPE_DICTIONARY and data.get("type") == "loadout_drag":
-		if OS.is_debug_build() and int(Time.get_ticks_msec()) % 30 == 0:
-			print("DropZone: _can_drop_data active at ", _at_position)
-		# Initialise the drag ghost on first entry.
-		if not build_manager.is_dragging():
-			var item_data: LoadoutItem = data.get("data")
-			var subtype: String = data.get("subtype")
-			
-			if subtype == "tower" and item_data is TowerData:
-				if item_data.tower_scene_path:
-					var scene: PackedScene = load(item_data.tower_scene_path)
-					if scene:
-						build_manager.start_drag_ghost_with_scene(
-							item_data, scene, data.get("drag_id"), data.get("source")
-						)
-			
-			elif subtype == "buff":
-				build_manager.start_drag_buff(data.get("source"), data.get("drag_id"))
-		
-		# Update ghost/buff cursor position each frame.
-		if build_manager.is_dragging():
-			if data.get("subtype") == "buff":
-				build_manager.update_drag_buff(get_global_mouse_position())
-			else:
-				build_manager.update_drag_ghost(get_global_mouse_position())
-		
-		# Hide the UI preview while hovering the game viewport.
-		if data.get("preview"):
-			data.preview.visible = false
-		return true
-	
-	return false
+	var subtype: String = data.get("subtype", "")
+
+	if not build_manager.is_dragging():
+		var item_data: LoadoutItem = data.get("data")
+		if subtype == "tower" and item_data is TowerData:
+			if item_data.tower_scene_path:
+				var scene: PackedScene = load(item_data.tower_scene_path)
+				if scene:
+					build_manager.start_drag_ghost_with_scene(
+						item_data, scene, data.get("drag_id"), data.get("source")
+					)
+		elif subtype == "buff":
+			build_manager.start_drag_buff(data.get("source"), data.get("drag_id"))
+
+	if build_manager.is_dragging():
+		if subtype == "buff":
+			build_manager.update_drag_buff(get_global_mouse_position())
+		else:
+			build_manager.update_drag_ghost(get_global_mouse_position())
+
+	var preview: Node = data.get("preview")
+	if preview and is_instance_valid(preview):
+		preview.visible = false
+
+	return true
+
 
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
-	# Finalises the drag: places a tower or applies a buff at the drop location.
-	if not build_manager:
-		return
-	
-	if data.get("subtype") == "buff":
+	if not is_instance_valid(build_manager): return
+	if typeof(data) != TYPE_DICTIONARY: return
+
+	var subtype: String = data.get("subtype", "")
+	if subtype == "buff":
 		build_manager.apply_buff_at(get_global_mouse_position(), data.get("data"))
 	else:
 		build_manager.validate_and_place()
-
-func _notification(what: int) -> void:
-	# Cancels any active drag when the drag operation ends without a valid drop.
-	if what == NOTIFICATION_DRAG_END:
-		if build_manager and build_manager.is_dragging():
-			build_manager.cancel_drag_ghost()
-			build_manager.cancel_drag_buff()

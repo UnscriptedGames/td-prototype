@@ -60,3 +60,9 @@ vertical_alignment = 1
 [node name="RestartStageButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=2022784569]
 layout_mode = 2
 text = "Restart Stage"
+
+[node name="RestartConfirmation" type="ConfirmationDialog" parent="." unique_id=1849203847]
+title = "Confirm Restart"
+initial_position = 2
+size = Vector2i(450, 100)
+dialog_text = "Are you sure you want to restart the entire stage? All stem progress will be wiped."

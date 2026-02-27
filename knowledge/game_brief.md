@@ -77,6 +77,9 @@ DAW-standard VU/peak meter with a three-colour gradient and smooth, unscaled ani
 - **Collision Logic:** When an enemy reaches the goal, its **remaining health** is added to the total.
 - **Unscaled Animation:** UI feedback remains smooth regardless of game speed scale.
 
+> [!TIP]
+> **Sub-Floor Noise in Menus:** To reinforce the "active hardware" aesthetic, the peak meter remains live in all menu and setlist screens. When no level is loaded, the meter is forced to a **0% distortion target**. Due to the -5% sub-floor offset, this results in the meter jittering at the **5% hardware margin**, communicating that the system is "on" and ready for a signal.
+
 ### Performance Grades
 | Meter Zone at Wave End | Stem Quality Unlocked |
 |:---|:---|
@@ -349,6 +352,14 @@ The game operates as a Single Page Application within a persistent shell (`GameW
 - **Debug Overlay:** Developmental tools (Game Speed, Framerate, Debug Logs) are grouped in a dedicated `DebugToolbar` overlay. This sits on top of the Game Viewport but is visually distinct from the main Top Bar to preserve the "DAW" aesthetic.
 - **High-Contrast Popups:** The Tower Inspector uses a solid, high-opacity background (`~95%`) specifically to mirror DAW "floating plugin" aesthetics and ensure stats are readable over the complex maze geometry.
 
+**Context-Aware Transport Controls**
+- The **Play** and **Restart** buttons in the Top Bar are strictly tied to gameplay state. They are disabled when viewing the Main Menu or Setlist to prevent invalid state transitions.
+- **Restart Safety:** Triggering a restart while a wave is active explicitly pauses the simulation before presenting the confirmation dialog, ensuring the game doesn't continue running in the background while the player decides.
+
+**Auto-Pause for System Modals**
+- To preserve player progress and prevent "cheap" deaths, the game automatically enters a `PAUSED` state whenever a system-level confirmation dialog (Quit, Main Menu, Setlist, Restart) is opened.
+- If the user cancels the dialog, the game automatically resumes only if a wave was already in progress.
+
 ### DAW Metaphor Mapping
 | Game Element | DAW Equivalent |
 |:---|:---|
@@ -417,6 +428,7 @@ The pause state acts as a "Strategic Planning" mode. The music/action freezes, b
 ### Selective Interactivity
 - **Permitted:** Tower selection, changing Target Priority, and interacting with background pads (animations/hovers).
 - **Blocked:** Placing new towers, selling, or upgrading. This prevents permanent/destructive tactical decisions while the simulation is frozen.
+- **Modal Interruptions:** Opening any modal confirmation via the Top Bar menu (Main Menu, Setlist, etc.) triggers a global pause. This ensures that tactical decisions are never made under time pressure while navigating the "DAW shell" interface.
 - **Audio Sync:** Background music stems are strictly synchronized to the game's pause state via `stream_paused`, ensuring the track resumes exactly in sync with the gameplay exactly where it left off.
 
 ---
@@ -428,6 +440,8 @@ future design sessions and playtesting:
 
 - [x] **Gold Scope:** Gold resets per stem (Resolved Feb 26).
 - [x] **Data Consolidation:** Merged legacy `WaveData` into `StemData` to simplify the resource pipeline (Resolved Feb 26).
+- [x] **Modal Behavior:** Game auto-pauses for all system confirmations and resumes on cancel if a wave was active (Resolved Feb 27).
+- [x] **Setlist Navigation:** Returning to the Setlist from a level is a destructive action that requires a confirmation prompt (Resolved Feb 27).
 - [ ] **AP Growth:** How does the player's maximum AP increase? Fixed per stage, or a
 	separate upgrade currency?
 - [ ] **Unlock Economy:** Full mapping of what unlocks where (towers, buffs, relics, AP).

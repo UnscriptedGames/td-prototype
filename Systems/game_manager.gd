@@ -296,6 +296,7 @@ func reset_state() -> void:
 	_game_state = GameState.PLAYING
 	_game_speed_index = 0
 	_current_peak = 0.0
+	_current_max_peak = 100.0
 	if speed_steps.size() > 0:
 		Engine.time_scale = speed_steps[0]
 	else:

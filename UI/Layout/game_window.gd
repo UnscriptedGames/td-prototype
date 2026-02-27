@@ -9,6 +9,7 @@ extends Control
 @onready var game_view_container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
 @onready var menu_button: MenuButton = $MainLayout/TopBar/Content/MenuButton
 @onready var main_menu_confirm: ConfirmationDialog = $MainMenuConfirmation
+@onready var setlist_confirm: ConfirmationDialog = $SetlistConfirmation
 @onready var quit_confirm: ConfirmationDialog = $QuitConfirmation
 
 # Transport Controls
@@ -66,12 +67,15 @@ var _noise_val_diff: float = 0.0
 # Volume State
 var _is_muted: bool = false
 var _previous_volume: float = 80.0
+var _transport_allowed: bool = false # Guard flag for Play/Restart buttons
 
 const DEFAULT_LEVEL_PATH: String = "res://Stages/_TemplateStage/template_stage.tscn"
 const MAIN_MENU_SCENE_PATH: String = "res://UI/MainMenu/main_menu.tscn"
+const SETLIST_SCENE_PATH: String = "res://UI/Setlist/setlist_screen.tscn"
 
 enum MenuOptions {
 	MAIN_MENU,
+	SETLIST,
 	QUIT
 }
 
@@ -100,34 +104,32 @@ func _exit_tree() -> void:
 		_build_manager.clear_level_references()
 
 
-## Acquires the BuildManager from InputManager, binds the SubViewport, and
-## creates the GameViewDropper overlay for drag-and-drop tower placement.
+## Attempts to acquire the BuildManager from InputManager if available.
 func _setup_build_manager() -> void:
-	if not InputManager.has_method("get_build_manager"):
-		return
+	if InputManager.has_method("get_build_manager"):
+		_build_manager = InputManager.get_build_manager()
+		if _build_manager:
+			_bind_build_manager()
 
-	_build_manager = InputManager.get_build_manager()
-	if not _build_manager:
-		return
 
-	_build_manager.tower_selected.connect(_on_tower_selected)
-	_build_manager.tower_deselected.connect(_on_tower_deselected)
+## Binds the current BuildManager to the viewport, UI signals, and the static DropZone node.
+func _bind_build_manager() -> void:
+	if not is_instance_valid(_build_manager): return
+	
+	if not _build_manager.tower_selected.is_connected(_on_tower_selected):
+		_build_manager.tower_selected.connect(_on_tower_selected)
+	if not _build_manager.tower_deselected.is_connected(_on_tower_deselected):
+		_build_manager.tower_deselected.connect(_on_tower_deselected)
 
 	# Bind Viewport
 	var viewport: SubViewport = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport
 	var container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
 	_build_manager.bind_to_viewport(viewport, container)
-
-	# Attach drop handler via child Control overlay
-	var drop_zone: Control = Control.new()
-	drop_zone.name = "DropZone"
-	drop_zone.mouse_filter = Control.MOUSE_FILTER_PASS
-
-	var wrapper = $MainLayout/WorkspaceSplit/GameViewWrapper
-	wrapper.add_child(drop_zone)
-	drop_zone.set_anchors_preset(Control.PRESET_FULL_RECT)
-	drop_zone.set_script(load("res://UI/Layout/game_view_dropper.gd"))
-	drop_zone.setup(_build_manager)
+	
+	# Inject BuildManager into the static DropZone node defined in the scene file
+	var drop_zone: Control = $MainLayout/WorkspaceSplit/GameViewWrapper.get_node_or_null("DropZone")
+	if is_instance_valid(drop_zone) and drop_zone.has_method("setup"):
+		drop_zone.setup(_build_manager)
 
 
 ## Instantiates the SidebarHUD scene into the left sidebar panel, replacing
@@ -327,8 +329,8 @@ func _on_play_button_pressed() -> void:
 
 ## Pauses the game (if playing) and opens the restart confirmation dialog.
 func _on_restart_button_pressed() -> void:
-	if GameManager.game_state == GameManager.GameState.PLAYING:
-		GameManager.toggle_game_state() # Pause before asking
+	if GameManager.is_wave_active and GameManager.game_state == GameManager.GameState.PLAYING:
+		GameManager.set_game_state(GameManager.GameState.PAUSED) # Explicitly pause, don't toggle
 	
 	if restart_confirm:
 		restart_confirm.popup_centered()
@@ -372,7 +374,13 @@ func _on_game_state_changed(new_state: int) -> void:
 func _set_container_input_state(node: Node, enabled: bool) -> void:
 	if node is Control:
 		if node is BaseButton or node is LineEdit:
-			node.disabled = not enabled
+			var can_interact: bool = enabled
+			
+			# Transport buttons are further restricted by the _transport_allowed flag
+			if node == play_button or node == restart_button:
+				can_interact = enabled and _transport_allowed
+				
+			node.disabled = not can_interact
 
 		if not enabled:
 			node.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -408,28 +416,46 @@ func _update_play_button_visuals() -> void:
 	play_button.icon = icon_pause if show_pause_icon else icon_play
 
 
-## Populates the top-bar dropdown menu with Main Menu and Quit options.
+## Populates the top-bar dropdown menu with Main Menu, Setlist, and Quit options.
 func _setup_menu() -> void:
 	var popup: PopupMenu = menu_button.get_popup()
 	popup.add_item("Main Menu", MenuOptions.MAIN_MENU)
+	popup.add_item("Setlist", MenuOptions.SETLIST)
 	popup.add_item("Quit", MenuOptions.QUIT)
+	
+	# Start with Setlist disabled until a level loads
+	popup.set_item_disabled(popup.get_item_index(MenuOptions.SETLIST), true)
 
 	popup.id_pressed.connect(_on_menu_item_pressed)
 
 
 ## Connects confirmation dialog signals.
 func _setup_confirmations() -> void:
-	if main_menu_confirm: main_menu_confirm.confirmed.connect(_on_main_menu_confirmed)
-	if quit_confirm: quit_confirm.confirmed.connect(_on_quit_confirmed)
-	if restart_confirm: restart_confirm.confirmed.connect(_on_restart_confirmed)
+	if main_menu_confirm:
+		main_menu_confirm.confirmed.connect(_on_main_menu_confirmed)
+		main_menu_confirm.canceled.connect(_on_dialog_canceled)
+	if setlist_confirm:
+		setlist_confirm.confirmed.connect(_on_setlist_confirmed)
+		setlist_confirm.canceled.connect(_on_dialog_canceled)
+	if quit_confirm:
+		quit_confirm.confirmed.connect(_on_quit_confirmed)
+		quit_confirm.canceled.connect(_on_dialog_canceled)
+	if restart_confirm:
+		restart_confirm.confirmed.connect(_on_restart_confirmed)
+		restart_confirm.canceled.connect(_on_dialog_canceled)
 
 
 ## Routes menu dropdown selections to their confirmation dialogs.
 func _on_menu_item_pressed(id: int) -> void:
 	match id:
 		MenuOptions.MAIN_MENU:
+			_pause_game_for_dialog()
 			main_menu_confirm.popup_centered()
+		MenuOptions.SETLIST:
+			_pause_game_for_dialog()
+			setlist_confirm.popup_centered()
 		MenuOptions.QUIT:
+			_pause_game_for_dialog()
 			quit_confirm.popup_centered()
 
 
@@ -441,6 +467,16 @@ func _on_main_menu_confirmed() -> void:
 	# Ensure timing vars are reset when returning entirely to main menu
 	GameManager.reset_state()
 	SceneManager.load_scene(MAIN_MENU_SCENE_PATH, SceneManager.ViewType.MENU)
+
+
+## Unpauses the tree and returns to the setlist ui screen.
+func _on_setlist_confirmed() -> void:
+	get_tree().paused = false
+	if StageManager.has_method("_stop_current_stem_audio"):
+		StageManager._stop_current_stem_audio()
+	# Ensure timing vars are reset when returning
+	GameManager.reset_state()
+	SceneManager.load_scene(SETLIST_SCENE_PATH, SceneManager.ViewType.MENU)
 
 
 ## Quits the application.
@@ -461,6 +497,18 @@ func _on_restart_confirmed() -> void:
 			current_path = GameManager.level_data.level_scene_path
 			
 		_load_level(current_path) # Reload logic; later mapped to current level path
+
+
+## Pauses the game (if currently playing) before showing a system modal.
+func _pause_game_for_dialog() -> void:
+	if GameManager.is_wave_active and GameManager.game_state == GameManager.GameState.PLAYING:
+		GameManager.set_game_state(GameManager.GameState.PAUSED)
+
+
+## Resumes the game when a confirmation dialog is canceled.
+func _on_dialog_canceled() -> void:
+	if GameManager.is_wave_active and GameManager.game_state == GameManager.GameState.PAUSED:
+		GameManager.set_game_state(GameManager.GameState.PLAYING)
 
 
 ## Loads a level scene from a file path into the game SubViewport.
@@ -539,8 +587,17 @@ func change_workspace(scene_instance: Node, view_type: int) -> void:
 ## Temporarily enables/disables transport buttons (play, restart) 
 ## when navigating menus vs playing levels.
 func _set_transport_controls_enabled(enabled: bool) -> void:
+	_transport_allowed = enabled
+	
 	if play_button: play_button.disabled = not enabled
 	if restart_button: restart_button.disabled = not enabled
+	
+	# Sync the Setlist dropdown option with the active level state
+	if menu_button:
+		var popup: PopupMenu = menu_button.get_popup()
+		var setlist_idx: int = popup.get_item_index(MenuOptions.SETLIST)
+		if setlist_idx != -1:
+			popup.set_item_disabled(setlist_idx, not enabled)
 	
 	# Always ensure the top bar isn't orphaned in a locked state when entering a menu
 	if not enabled:
@@ -550,6 +607,11 @@ func _set_transport_controls_enabled(enabled: bool) -> void:
 ## Connects a level instance's required nodes to the BuildManager and wires
 ## up opening sequence signals for UI locking.
 func _wire_up_level(level_instance: Node) -> void:
+	if InputManager.has_method("get_build_manager"):
+		_build_manager = InputManager.get_build_manager()
+		if _build_manager:
+			_bind_build_manager()
+
 	if _build_manager:
 		var path_layer: TileMapLayer = level_instance.get_node_or_null("TileMaps/MazeLayer")
 		var highlight: TileMapLayer = level_instance.get_node_or_null("TileMaps/HighlightLayer")
@@ -640,7 +702,8 @@ func _notification(what: int) -> void:
 		if left_sidebar: _set_container_mouse_ignore_recursive(left_sidebar, true)
 
 		# Ensure buff/drag state is cleaned up
-		if _build_manager:
+		if is_instance_valid(_build_manager) and _build_manager.is_dragging():
+			_build_manager.cancel_drag_ghost()
 			_build_manager.cancel_drag_buff()
 
 
@@ -658,6 +721,12 @@ func _on_gain_changed(new_gain: int) -> void:
 
 ## Updates the peak meter visual target.
 func _on_peak_changed(current: float, max_val: float) -> void:
+	if not _transport_allowed:
+		_target_damage_value = 0.0
+		if is_instance_valid(integrity_label):
+			integrity_label.text = "0%"
+		return
+
 	if max_val > 0.0 and is_instance_valid(gauge_l):
 		var true_pct: float = min(100.0, (current / max_val) * 100.0)
 		_target_damage_value = true_pct

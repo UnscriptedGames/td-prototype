@@ -32,3 +32,9 @@ To ensure standard DAW-style meter responsiveness even when the game is fast-for
 - The `game_window.gd` script calculates an `unscaled_delta`: 
   `delta / Engine.time_scale if time_scale > 0.0 else 0.0`.
 - The `lerp` for the meter needle uses this unscaled value, preventing the UI from becoming hyper-fast or jittery during high-speed wave playback.
+
+### 5. Idle Subfloor State
+To maintain visual consistency, the UI uses a **forced idle override** when transport controls are locked (e.g., in menus):
+- **State Detection:** If `_transport_allowed` is false, the UI bypasses normal `GameManager` signal calculations.
+- **Value Alignment:** The internal `_target_damage_value` in `game_window.gd` is set to `0.0`.
+- **Visual Result:** Because the subfloor starts at -5.0, a target of 0.0 places the peak-hold line and the average jitter exactly at the **5% scale mark**. This provides a consistent "resting" position for the hardware meters across all UI screens.

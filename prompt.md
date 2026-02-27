@@ -6,7 +6,7 @@ Confirm once you are familiar with the documents and ready to begin with the nex
 
 Please review this session's conversations for any design decisions, new ideas, or resolved questions that should be reflected in @Knowledge/game_brief.md or any of the other documents in the @Knowledge folder. Propose specific updates to the brief (additions, modifications, or items moved from "Open Design Questions" to their relevant sections). Do not apply changes — present them for my approval.
 
-Please proceed with all suggested updates.
+Please proceed with all suggested updates to the Knowledge base files.
 
 ---------------------------------------------
 

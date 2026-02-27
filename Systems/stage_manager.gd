@@ -258,12 +258,18 @@ func _on_stem_failed() -> void:
 ## Stem 1 (index 0) starts as AVAILABLE; everything else starts LOCKED.
 func _initialise_results() -> void:
 	_stem_results.clear()
+	
+	# Pass 1: Build the array completely to prevent out-of-bounds queries 
+	# from listeners responding to the status signal.
 	for index: int in range(STEM_COUNT + 1):
 		var result := StemResult.new()
 		if index == 0:
 			result.status = StemResult.StemStatus.AVAILABLE
 		_stem_results.append(result)
-		stem_status_changed.emit(index, result)
+		
+	# Pass 2: Now that the array is complete and safe to query, emit the signals.
+	for index: int in range(STEM_COUNT + 1):
+		stem_status_changed.emit(index, _stem_results[index])
 
 
 ## Opens stems based on progression rules:
