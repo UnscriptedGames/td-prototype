@@ -22,5 +22,9 @@ enum StemQuality {
 ## Current availability state of this stem.
 var status: StemStatus = StemStatus.LOCKED
 
-## Earned quality grade (only meaningful when status == COMPLETED).
+## Best earned quality grade (only meaningful when status == COMPLETED).
 var quality: StemQuality = StemQuality.NONE
+
+## The quality track the player manually chooses to hear during playback.
+## Defaults to matching `quality` when a new high score is achieved.
+var active_playback_quality: StemQuality = StemQuality.NONE

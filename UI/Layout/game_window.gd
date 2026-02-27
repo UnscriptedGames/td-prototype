@@ -5,6 +5,8 @@ class_name GameWindow
 extends Control
 
 @onready var game_viewport: SubViewport = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport
+@onready var ui_workspace: MarginContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/UIWorkspaceContainer
+@onready var game_view_container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
 @onready var menu_button: MenuButton = $MainLayout/TopBar/Content/MenuButton
 @onready var main_menu_confirm: ConfirmationDialog = $MainMenuConfirmation
 @onready var quit_confirm: ConfirmationDialog = $QuitConfirmation
@@ -93,6 +95,11 @@ func _ready() -> void:
 	_setup_level()
 
 
+func _exit_tree() -> void:
+	if is_instance_valid(_build_manager) and _build_manager.has_method("clear_level_references"):
+		_build_manager.clear_level_references()
+
+
 ## Acquires the BuildManager from InputManager, binds the SubViewport, and
 ## creates the GameViewDropper overlay for drag-and-drop tower placement.
 func _setup_build_manager() -> void:
@@ -114,10 +121,11 @@ func _setup_build_manager() -> void:
 	# Attach drop handler via child Control overlay
 	var drop_zone: Control = Control.new()
 	drop_zone.name = "DropZone"
-	drop_zone.set_anchors_preset(Control.PRESET_FULL_RECT)
 	drop_zone.mouse_filter = Control.MOUSE_FILTER_PASS
 
-	container.add_child(drop_zone)
+	var wrapper = $MainLayout/WorkspaceSplit/GameViewWrapper
+	wrapper.add_child(drop_zone)
+	drop_zone.set_anchors_preset(Control.PRESET_FULL_RECT)
 	drop_zone.set_script(load("res://UI/Layout/game_view_dropper.gd"))
 	drop_zone.setup(_build_manager)
 
@@ -204,7 +212,6 @@ func _setup_input_propagation() -> void:
 ## Instantiates the TowerInspector panel inside the game view container and
 ## connects its action signals to the BuildManager.
 func _setup_inspector() -> void:
-	var game_view_container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
 	var inspector_scene: PackedScene = load("res://UI/Inspector/tower_inspector.tscn")
 	if not inspector_scene:
 		return
@@ -226,8 +233,6 @@ func _setup_inspector() -> void:
 func _setup_level() -> void:
 	if game_viewport.get_child_count() > 0:
 		_wire_up_level(game_viewport.get_child(0))
-	else:
-		_load_level(DEFAULT_LEVEL_PATH)
 
 
 ## Animates performance meters with smoothed jitter and peak-hold indicators.
@@ -431,7 +436,11 @@ func _on_menu_item_pressed(id: int) -> void:
 ## Unpauses the tree and returns to the main menu scene.
 func _on_main_menu_confirmed() -> void:
 	get_tree().paused = false
-	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
+	if StageManager.has_method("_stop_current_stem_audio"):
+		StageManager._stop_current_stem_audio()
+	# Ensure timing vars are reset when returning entirely to main menu
+	GameManager.reset_state()
+	SceneManager.load_scene(MAIN_MENU_SCENE_PATH, SceneManager.ViewType.MENU)
 
 
 ## Quits the application.
@@ -459,7 +468,7 @@ func _load_level(level_path: String) -> void:
 	var level_scene: PackedScene = load(level_path)
 	if level_scene:
 		var level_instance: Node = level_scene.instantiate()
-		load_level_instance(level_instance)
+		change_workspace(level_instance, 1) # 1 = LEVEL
 
 
 ## Shows the tower inspector anchored to the selected tower's screen position.
@@ -501,13 +510,41 @@ func _on_tower_deselected() -> void:
 		_tower_inspector.set_tower(null)
 
 
-## Clears the SubViewport and loads a new level instance into it.
-func load_level_instance(level_instance: Node) -> void:
+## Clears the workspace and loads a new scene into the correct container.
+func change_workspace(scene_instance: Node, view_type: int) -> void:
+	# Purge loose level references before destroying previous scene
+	if is_instance_valid(_build_manager) and _build_manager.has_method("clear_level_references"):
+		_build_manager.clear_level_references()
+
+	# Clear both workspaces
 	for child: Node in game_viewport.get_children():
 		child.queue_free()
+	for child: Node in ui_workspace.get_children():
+		child.queue_free()
 
-	game_viewport.add_child(level_instance)
-	_wire_up_level(level_instance)
+	# SceneManager.ViewType.LEVEL = 1, MENU = 0 
+	# (using int to avoid circular typing if necessary)
+	if view_type == 1: # LEVEL
+		ui_workspace.hide()
+		game_view_container.show()
+		game_viewport.add_child(scene_instance)
+		_wire_up_level(scene_instance)
+		_set_transport_controls_enabled(true)
+	else: # MENU
+		game_view_container.hide()
+		ui_workspace.show()
+		ui_workspace.add_child(scene_instance)
+		_set_transport_controls_enabled(false)
+
+## Temporarily enables/disables transport buttons (play, restart) 
+## when navigating menus vs playing levels.
+func _set_transport_controls_enabled(enabled: bool) -> void:
+	if play_button: play_button.disabled = not enabled
+	if restart_button: restart_button.disabled = not enabled
+	
+	# Always ensure the top bar isn't orphaned in a locked state when entering a menu
+	if not enabled:
+		_set_ui_interaction(true)
 
 
 ## Connects a level instance's required nodes to the BuildManager and wires
@@ -526,6 +563,8 @@ func _wire_up_level(level_instance: Node) -> void:
 	# Wire up opening sequence signals
 	if level_instance is TemplateLevel:
 		var level: TemplateLevel = level_instance as TemplateLevel
+		
+		# Connect signals immediately so we don't miss emissions during _ready()
 		if not level.opening_sequence_started.is_connected(_on_opening_sequence_started):
 			level.opening_sequence_started.connect(_on_opening_sequence_started)
 		if not level.opening_sequence_finished.is_connected(_on_opening_sequence_finished):

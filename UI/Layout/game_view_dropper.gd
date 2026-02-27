@@ -15,6 +15,7 @@ func setup(bm: BuildManager) -> void:
 	# Binds this handler to the given BuildManager and enables mouse passthrough.
 	build_manager = bm
 	mouse_filter = Control.MOUSE_FILTER_PASS
+	print("GameViewDropper setup triggered. Attached and ready.")
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 	# Evaluates whether the dragged payload is a valid loadout_drag and forwards
@@ -23,6 +24,8 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 		return false
 	
 	if typeof(data) == TYPE_DICTIONARY and data.get("type") == "loadout_drag":
+		if OS.is_debug_build() and int(Time.get_ticks_msec()) % 30 == 0:
+			print("DropZone: _can_drop_data active at ", _at_position)
 		# Initialise the drag ghost on first entry.
 		if not build_manager.is_dragging():
 			var item_data: LoadoutItem = data.get("data")

@@ -25,6 +25,9 @@ var _player_good: AudioStreamPlayer
 var _player_avg: AudioStreamPlayer
 var _player_bad: AudioStreamPlayer
 
+# Historical Stem Players (Playing Simultaneously at locked qualities)
+var _historical_players: Array[AudioStreamPlayer] = []
+
 var _current_quality: StemQuality = StemQuality.GOOD
 
 func _ready() -> void:
@@ -62,6 +65,13 @@ func play_stem(stem_data: StemData) -> void:
 		_stop_all()
 		return
 		
+	# 1. Clean up old historical players
+	for player in _historical_players:
+		if is_instance_valid(player):
+			player.queue_free()
+	_historical_players.clear()
+	
+	# 2. Setup active stem's 3-track dynamic playback
 	_player_good.stream = stem_data.stem_audio_good
 	_player_avg.stream = stem_data.stem_audio_avg
 	_player_bad.stream = stem_data.stem_audio_bad
@@ -69,14 +79,61 @@ func play_stem(stem_data: StemData) -> void:
 	_current_quality = StemQuality.GOOD
 	_set_volumes(_current_quality)
 	
+	# 3. Setup historical locked-quality playback
+	if StageManager and StageManager.active_stage:
+		var current_index: int = StageManager.current_stem_index
+		
+		# Iterate through all stems in the stage
+		for i in range(StageManager.stem_results.size()):
+			# Skip the currently active stem (it's handled by the dynamic players)
+			if i == current_index:
+				continue
+				
+			# Ensure we have a valid result and stem data to read from
+			if i >= StageManager.active_stage.stems.size():
+				continue
+				
+			var result: StemResult = StageManager.stem_results[i]
+			var hist_stem: StemData = StageManager.active_stage.stems[i]
+			
+			if result.status == StemResult.StemStatus.COMPLETED and is_instance_valid(hist_stem):
+				# Pick the stream matching their manual playback selection
+				var stream: AudioStream = null
+				if result.active_playback_quality == StemResult.StemQuality.ABOMINATION:
+					stream = hist_stem.stem_audio_bad
+				elif result.active_playback_quality == StemResult.StemQuality.AVERAGE:
+					stream = hist_stem.stem_audio_avg
+				else:
+					# Default to Good if None or Good
+					stream = hist_stem.stem_audio_good
+					
+				# Create a dedicated player for this historical stem
+				if stream:
+					var hist_player := AudioStreamPlayer.new()
+					hist_player.name = "HistoricalStem_%d" % i
+					hist_player.bus = "Music"
+					hist_player.stream = stream
+					add_child(hist_player)
+					_historical_players.append(hist_player)
+
+	# 4. Play EVERYTHING at the precise same moment for perfect phase sync
 	_player_good.play()
 	_player_avg.play()
 	_player_bad.play()
+	
+	for hist_player in _historical_players:
+		hist_player.play()
 
 func _stop_all() -> void:
 	_player_good.stop()
 	_player_avg.stop()
 	_player_bad.stop()
+	
+	for player in _historical_players:
+		if is_instance_valid(player):
+			player.stop()
+			player.queue_free()
+	_historical_players.clear()
 
 ## Called when the GameManager updates the peak meter.
 ## current: specific distortion number
@@ -139,3 +196,7 @@ func _on_game_state_changed(new_state: GameManager.GameState) -> void:
 	_player_good.stream_paused = is_paused
 	_player_avg.stream_paused = is_paused
 	_player_bad.stream_paused = is_paused
+	
+	for player in _historical_players:
+		if is_instance_valid(player):
+			player.stream_paused = is_paused

@@ -16,6 +16,12 @@ signal start_wave_requested
 signal loadout_stock_changed(tower_data: TowerData, new_stock: int)
 signal relic_state_changed(is_available: bool)
 signal peak_meter_changed(current: float, max_val: float)
+# Emitted when all spawn/enemies are done and the stem should grade and close.
+signal stem_completion_requested
+# Emitted when the peak meter clips to 100% — triggers immediate fail.
+signal stem_failed
+# Emitted by the debug force-complete path so template_stage can set the bypass flag.
+signal force_complete_stem_requested
 
 enum GameState {PAUSED, PLAYING}
 var speed_steps: Array[float] = [1.0, 2.0, 4.0, 12.0]
@@ -189,11 +195,43 @@ func add_peak_volume(amount: float) -> void:
 	_current_peak += amount
 	if _current_peak >= _current_max_peak:
 		_current_peak = _current_max_peak
-		# TODO: Trigger Game Over or clipping event if desired
+		peak_meter_changed.emit(_current_peak, _current_max_peak)
+		stem_failed.emit()
+		return
 	peak_meter_changed.emit(_current_peak, _current_max_peak)
-	
+
 	if OS.is_debug_build():
 		print("Enemy Reached Goal! Current Peak: ", _current_peak, " / ", _current_max_peak)
+
+
+## Sets the peak meter to a specific ratio of the current max peak.
+## Used by the debug toolbar quality buttons and peak slider.
+func set_peak_ratio(ratio: float) -> void:
+	_current_peak = clampf(ratio, 0.0, 1.0) * _current_max_peak
+	
+	if _current_peak >= _current_max_peak:
+		peak_meter_changed.emit(_current_peak, _current_max_peak)
+		stem_failed.emit()
+		return
+		
+	peak_meter_changed.emit(_current_peak, _current_max_peak)
+
+
+## Debug helper: adds a fixed amount of currency without gameplay side-effects.
+func add_gold_debug(amount: int) -> void:
+	add_currency(amount)
+
+
+## Debug shortcut: completes the current stem immediately at the current peak
+## meter value, bypassing the track-end enemy penalty.
+## Intended for use by the debug toolbar only.
+func force_complete_stem() -> void:
+	if OS.is_debug_build():
+		print("DEBUG: force_complete_stem() called — bypassing track-end penalty.")
+	force_complete_stem_requested.emit()
+	_is_wave_active = false
+	wave_status_changed.emit(_is_wave_active)
+	stem_completion_requested.emit()
 
 
 # --- Transport Controls ---
@@ -237,10 +275,11 @@ func _update_time_scale() -> void:
 	Engine.time_scale = new_speed
 	game_speed_changed.emit(new_speed)
 
-## Marks the current wave as completed.
+## Marks the current wave as completed and signals for stem grading.
 func wave_completed() -> void:
 	_is_wave_active = false
 	wave_status_changed.emit(_is_wave_active)
+	stem_completion_requested.emit()
 
 ## Resets the game state to default values (e.g. for restarting level).
 func reset_state() -> void:

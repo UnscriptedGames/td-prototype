@@ -14,8 +14,7 @@ We are finishing this session. Please perform the Handover Protocol as per @arch
 
 In the next session I want to start with...
 
+There is nothing that needs to be handed over from this session so please clear the handover file.
+
 ---------------------------------------------
 
-We are finishing this session. Please perform the Handover Protocol as per @architecture.md and provide me with a one sentence summary of what we accomplished this session for my Git commit message.
-
-There is nothing that needs to be handed over from this session so please clear the handover file.

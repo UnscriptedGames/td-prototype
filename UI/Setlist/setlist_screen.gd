@@ -5,6 +5,8 @@ extends Control
 ## Displays all 6 stem cards (5 playable + 1 boss) and allows the player
 ## to select which stem to play next. Reacts to StageManager signals to
 ## keep card states synchronised.
+## Pre-warms the ObjectPoolManager for all enemy/projectile types in the
+## full stage while the player browses, so stem transitions are near-instant.
 
 # --- Constants ---
 
@@ -39,6 +41,7 @@ func _ready() -> void:
 	# Build the UI from the currently loaded stage.
 	if StageManager.active_stage:
 		_build_setlist(StageManager.active_stage)
+		_prewarm_pools()
 
 
 func _exit_tree() -> void:
@@ -96,6 +99,44 @@ func _build_setlist(stage_data: StageData) -> void:
 ## Instantiates a blank StemCard without configuring it.
 func _instantiate_card() -> PanelContainer:
 	return STEM_CARD_SCENE.instantiate()
+
+
+## Seeds the ObjectPoolManager for every unique enemy and projectile type
+## in the full stage (all 5 stems + boss) while the player browses the setlist.
+## Uses the same pool sizes as the former SceneManager pre-warming step.
+func _prewarm_pools() -> void:
+	if not is_instance_valid(StageManager.active_stage):
+		return
+
+	# Collect all StemData objects for the full stage including the boss.
+	var all_stems: Array[StemData] = []
+	for stem_data: StemData in StageManager.active_stage.stems:
+		if is_instance_valid(stem_data):
+			all_stems.append(stem_data)
+	if is_instance_valid(StageManager.active_stage.boss_stem):
+		all_stems.append(StageManager.active_stage.boss_stem)
+
+	# Seed enemy pools.
+	var unique_enemies: Array[PackedScene] = []
+	for stem_data: StemData in all_stems:
+		for spawn_instruction: SpawnInstruction in stem_data.spawns:
+			if is_instance_valid(spawn_instruction.enemy_scene):
+				if not unique_enemies.has(spawn_instruction.enemy_scene):
+					unique_enemies.append(spawn_instruction.enemy_scene)
+	for enemy_scene: PackedScene in unique_enemies:
+		ObjectPoolManager.create_pool(enemy_scene, 20)
+
+	# Seed projectile pools from the locked loadout's tower data.
+	var unique_projectiles: Array[PackedScene] = []
+	if is_instance_valid(GameManager.player_data) and GameManager.player_data.towers:
+		for tower_data: TowerData in GameManager.player_data.towers:
+			if tower_data is TowerData:
+				for tower_level in tower_data.levels:
+					if is_instance_valid(tower_level) and is_instance_valid(tower_level.projectile_scene):
+						if not unique_projectiles.has(tower_level.projectile_scene):
+							unique_projectiles.append(tower_level.projectile_scene)
+	for projectile_scene: PackedScene in unique_projectiles:
+		ObjectPoolManager.create_pool(projectile_scene, 50)
 
 
 ## Updates the "X/5" counter on the boss card.

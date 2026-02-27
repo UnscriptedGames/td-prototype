@@ -39,12 +39,14 @@ var _current_status: StemResult.StemStatus = StemResult.StemStatus.LOCKED
 @onready var label_status: Label = $VBoxContainer/StatusLabel
 @onready var label_quality: Label = $VBoxContainer/QualityLabel
 @onready var label_preview: Label = $VBoxContainer/PreviewLabel
+@onready var quality_select: OptionButton = $VBoxContainer/QualitySelect
 
 
 # --- Lifecycle ---
 
 func _ready() -> void:
 	gui_input.connect(_on_gui_input)
+	quality_select.item_selected.connect(_on_quality_item_selected)
 	mouse_default_cursor_shape = Control.CURSOR_ARROW
 
 
@@ -76,6 +78,7 @@ func update_state(result: StemResult) -> void:
 		StemResult.StemStatus.AVAILABLE:
 			label_status.text = "AVAILABLE"
 			label_quality.text = ""
+			quality_select.visible = false
 			_set_card_colour(COLOUR_AVAILABLE)
 			mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		StemResult.StemStatus.COMPLETED:
@@ -84,6 +87,8 @@ func update_state(result: StemResult) -> void:
 			label_quality.add_theme_color_override(
 				"font_color", _quality_colour(result.quality)
 			)
+			_populate_quality_dropdown(result)
+			quality_select.visible = true
 			_set_card_colour(COLOUR_COMPLETED)
 			mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
@@ -94,9 +99,53 @@ func update_state(result: StemResult) -> void:
 func _on_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mouse_event: InputEventMouseButton = event as InputEventMouseButton
+		# Ensure we are not clicking the OptionButton itself, which handles its own consumption
 		if mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_LEFT:
 			if _current_status != StemResult.StemStatus.LOCKED:
 				stem_selected.emit(_stem_index)
+				
+				
+## Populates the manual playback override dropdown based on best achieved score.
+func _populate_quality_dropdown(result: StemResult) -> void:
+	# Temporarily disconnect so we don't fire signals while building
+	if quality_select.item_selected.is_connected(_on_quality_item_selected):
+		quality_select.item_selected.disconnect(_on_quality_item_selected)
+		
+	quality_select.clear()
+	
+	# Only allow them to select qualities up to their highest achieved grade.
+	# Enums are: GOOD=1, AVERAGE=2, ABOMINATION=3
+	var best_q: int = result.quality
+	
+	if best_q <= StemResult.StemQuality.GOOD and best_q != StemResult.StemQuality.NONE:
+		quality_select.add_item("★ Good Mix", StemResult.StemQuality.GOOD)
+		quality_select.set_item_metadata(quality_select.item_count - 1, StemResult.StemQuality.GOOD)
+		
+	if best_q <= StemResult.StemQuality.AVERAGE and best_q != StemResult.StemQuality.NONE:
+		quality_select.add_item("◆ Average Mix", StemResult.StemQuality.AVERAGE)
+		quality_select.set_item_metadata(quality_select.item_count - 1, StemResult.StemQuality.AVERAGE)
+		
+	if best_q <= StemResult.StemQuality.ABOMINATION and best_q != StemResult.StemQuality.NONE:
+		quality_select.add_item("✖ Abomination Mix", StemResult.StemQuality.ABOMINATION)
+		quality_select.set_item_metadata(quality_select.item_count - 1, StemResult.StemQuality.ABOMINATION)
+		
+	# Reselect their currently active choice
+	for i in range(quality_select.item_count):
+		if quality_select.get_item_metadata(i) == result.active_playback_quality:
+			quality_select.select(i)
+			break
+			
+	# Reconnect
+	quality_select.item_selected.connect(_on_quality_item_selected)
+
+
+## Saves their new playback preference into the global StageManager results array.
+func _on_quality_item_selected(index: int) -> void:
+	var specific_quality: StemResult.StemQuality = quality_select.get_item_metadata(index)
+	# Update the backing data in StageManager so it persists and AudioManager sees it
+	var result: StemResult = StageManager.stem_results[_stem_index]
+	if result:
+		result.active_playback_quality = specific_quality
 
 
 ## Applies a tint colour to the card's panel stylebox.

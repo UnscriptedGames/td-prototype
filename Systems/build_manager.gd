@@ -51,7 +51,7 @@ func _ready() -> void:
 		GlobalSignals.build_tower_requested.connect(_on_build_tower_requested)
 
 		# Register with the InputManager
-		InputManager.register_build_manager(self)
+		InputManager.register_build_manager(self )
 
 
 # --- SETUP METHODS ---
@@ -79,6 +79,18 @@ func update_level_references(new_path_layer: TileMapLayer, new_highlight_layer: 
 	print("BuildManager level references updated.")
 
 
+## Clears references to level-specific nodes to prevent memory leaks during scene transitions.
+func clear_level_references() -> void:
+	path_layer = null
+	highlight_layer = null
+	towers_container = null
+	_bound_viewport = null
+	_bound_container = null
+	_deselect_current_tower()
+	_occupied_build_tiles.clear()
+	print("BuildManager level references cleared.")
+
+
 ## Called every frame. Checks for inputs and ensures Drag liveness.
 func _process(_delta: float) -> void:
 	# Check boundaries if we are BUILDING (Ghost) OR Dragging a known card (Buff)
@@ -97,6 +109,7 @@ func _process(_delta: float) -> void:
 			var local_rect: Rect2 = Rect2(Vector2.ZERO, _bound_container.get_size())
 			
 			if not local_rect.has_point(local_mouse):
+				print("BuildManager Boundary Fail: mouse at ", local_mouse, " rect is ", local_rect)
 				banish_drag_session() # Use new universal banish
 				return
 		else:
@@ -353,7 +366,7 @@ func _enter_build_mode(tower_data: TowerData, tower_scene: PackedScene) -> void:
 		}
 
 		_ghost_tower.initialize(
-			self, tower_data, path_layer, highlight_layer, highlight_ids
+			self , tower_data, path_layer, highlight_layer, highlight_ids
 		)
 		
 		# Reset grace frames to prevent immediate cancellation

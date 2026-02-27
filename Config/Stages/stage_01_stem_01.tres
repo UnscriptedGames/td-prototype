@@ -2,9 +2,11 @@
 
 [ext_resource type="Script" uid="uid://cub41ifvd2n7o" path="res://Core/Data/Stages/stem_data.gd" id="1_lau1e"]
 [ext_resource type="Script" uid="uid://c6sd68ghkditp" path="res://Core/Data/Waves/spawn_instruction.gd" id="2_pqcga"]
-[ext_resource type="AudioStream" uid="uid://ecbsxx1h47w6" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_01_drums.mp3" id="3_itrpl"]
 [ext_resource type="PackedScene" uid="uid://dj2xubaiwg7dq" path="res://Entities/Enemies/BasicEnemy/basic_enemy.tscn" id="3_m4vk0"]
 [ext_resource type="Script" uid="uid://cwhwoc5lm1of7" path="res://Core/Data/Waves/weighted_target.gd" id="4_ug0b2"]
+[ext_resource type="AudioStream" uid="uid://esux35npd6so" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_01_drums_average.wav" id="5_ug0b2"]
+[ext_resource type="AudioStream" uid="uid://rn4t0a7uc60n" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_01_drums_bad.wav" id="6_45yd0"]
+[ext_resource type="AudioStream" uid="uid://bmxhm52ctmse2" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_01_drums_good.mp3" id="7_08w3w"]
 
 [sub_resource type="Resource" id="Resource_itrpl"]
 script = ExtResource("4_ug0b2")
@@ -32,6 +34,6 @@ level_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stem_01_drums.tscn
 is_mandatory_first = true
 enemy_preview_hint = "Standard Waveforms"
 spawns = Array[ExtResource("2_pqcga")]([SubResource("Resource_45yd0")])
-stem_audio_good = ExtResource("3_itrpl")
-stem_audio_avg = ExtResource("3_itrpl")
-stem_audio_bad = ExtResource("3_itrpl")
+stem_audio_good = ExtResource("7_08w3w")
+stem_audio_avg = ExtResource("5_ug0b2")
+stem_audio_bad = ExtResource("6_45yd0")

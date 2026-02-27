@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://ddq411tlq7iyx"]
+
+[ext_resource type="Script" path="res://UI/HUD/stem_fail_popup.gd" id="1_failbg"]
+[ext_resource type="Theme" uid="uid://dpov18qpoqhlb" path="res://UI/Themes/daw_theme.tres" id="2_theme"]
+
+[node name="StemFailPopup" type="ColorRect"]
+process_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+color = Color(0.08, 0.08, 0.08, 0.8)
+script = ExtResource("1_failbg")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(400, 200)
+layout_mode = 2
+theme_type_variation = &"DisplayPanel"
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Title" type="Label" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 32
+text = "STEM FAILED"
+horizontal_alignment = 1
+
+[node name="Message" type="Label" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+text = "The peak meter reached maximum capacity."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Spacer" type="Control" parent="CenterContainer/Panel/VBox"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="ActionHBox" type="HBoxContainer" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="RetryButton" type="Button" parent="CenterContainer/Panel/VBox/ActionHBox"]
+custom_minimum_size = Vector2(160, 45)
+layout_mode = 2
+focus_mode = 0
+text = "Retry Stem"
+
+[node name="ReturnButton" type="Button" parent="CenterContainer/Panel/VBox/ActionHBox"]
+custom_minimum_size = Vector2(160, 45)
+layout_mode = 2
+focus_mode = 0
+text = "Return to Setlist"

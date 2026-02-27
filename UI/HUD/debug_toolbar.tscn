@@ -9,7 +9,7 @@
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -150.0
+offset_left = -600.0
 offset_bottom = 60.0
 grow_horizontal = 0
 theme = ExtResource("2_282vj")
@@ -23,7 +23,7 @@ theme_type_variation = &"TopBarPanel"
 
 [node name="Controls" type="HBoxContainer" parent="Panel"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 alignment = 1
 
 [node name="SpeedDownButton" type="Button" parent="Panel/Controls"]
@@ -50,3 +50,58 @@ focus_mode = 0
 icon = ExtResource("4_v3gkn")
 flat = true
 expand_icon = true
+
+[node name="Sep1" type="VSeparator" parent="Panel/Controls"]
+layout_mode = 2
+
+
+[node name="PeakSlider" type="HSlider" parent="Panel/Controls"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+max_value = 1.0
+step = 0.01
+tooltip_text = "Set peak meter ratio directly"
+
+[node name="Sep2" type="VSeparator" parent="Panel/Controls"]
+layout_mode = 2
+
+[node name="SpawnWaveButton" type="Button" parent="Panel/Controls"]
+custom_minimum_size = Vector2(60, 28)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+text = "▶ Wave"
+tooltip_text = "Force spawn the current wave"
+
+[node name="CompleteStemButton" type="Button" parent="Panel/Controls"]
+custom_minimum_size = Vector2(60, 28)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+text = "✓ Stem"
+tooltip_text = "Force complete stem (no penalty)"
+
+[node name="Sep3" type="VSeparator" parent="Panel/Controls"]
+layout_mode = 2
+
+[node name="AddGoldButton" type="Button" parent="Panel/Controls"]
+custom_minimum_size = Vector2(40, 28)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+text = "+G"
+tooltip_text = "Add 500 gold"
+
+[node name="Sep4" type="VSeparator" parent="Panel/Controls"]
+layout_mode = 2
+
+[node name="PoolStatsButton" type="Button" parent="Panel/Controls"]
+custom_minimum_size = Vector2(45, 28)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+toggle_mode = true
+text = "Pool"
+tooltip_text = "Toggle ObjectPool monitor overlay"

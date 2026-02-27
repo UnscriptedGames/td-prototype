@@ -1,11 +1,14 @@
 [gd_scene load_steps=2 format=3 uid="uid://c6stemcard001"]
 
 [ext_resource type="Script" path="res://UI/Setlist/stem_card.gd" id="1_stem_card"]
+[ext_resource type="Theme" uid="uid://dpov18qpoqhlb" path="res://UI/Themes/daw_theme.tres" id="2_theme"]
 
 [node name="StemCard" type="PanelContainer"]
 custom_minimum_size = Vector2(200, 120)
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme = ExtResource("2_theme")
+theme_type_variation = &"SideBarPanel"
 script = ExtResource("1_stem_card")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -34,3 +37,8 @@ text = ""
 [node name="PreviewLabel" type="Label" parent="VBoxContainer"]
 horizontal_alignment = 1
 text = "Preview TBD"
+
+[node name="QualitySelect" type="OptionButton" parent="VBoxContainer"]
+visible = false
+layout_mode = 2
+text = "Quality"

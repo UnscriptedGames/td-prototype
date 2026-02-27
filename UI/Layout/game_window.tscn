@@ -10,7 +10,8 @@
 [ext_resource type="Shader" uid="uid://g3mfhouro5ou" path="res://UI/Shaders/peak_meter.gdshader" id="9_peak_shader"]
 [ext_resource type="Texture2D" uid="uid://bgjlsw5u6ehrv" path="res://UI/Icons/window.svg" id="10_fcxat"]
 [ext_resource type="Texture2D" uid="uid://ld1ntqmn7kgd" path="res://UI/Icons/close.svg" id="11_4r27i"]
-[ext_resource type="PackedScene" path="res://UI/HUD/debug_toolbar.tscn" id="13_debug"]
+[ext_resource type="PackedScene" uid="uid://debugbar00000" path="res://UI/HUD/debug_toolbar.tscn" id="13_debug"]
+[ext_resource type="PackedScene" uid="uid://ddq411tlq7iyx" path="res://UI/HUD/stem_fail_popup.tscn" id="14_popup"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_peak"]
 shader = ExtResource("9_peak_shader")
@@ -377,7 +378,7 @@ custom_minimum_size = Vector2(324, 0)
 layout_mode = 2
 theme_type_variation = &"SideBarPanel"
 
-[node name="GameViewWrapper" type="Control" parent="MainLayout/WorkspaceSplit"]
+[node name="GameViewWrapper" type="Control" parent="MainLayout/WorkspaceSplit" unique_id=491534373]
 layout_mode = 2
 size_flags_horizontal = 3
 
@@ -396,7 +397,23 @@ handle_input_locally = false
 size = Vector2i(1596, 1008)
 render_target_update_mode = 4
 
+[node name="UIWorkspaceContainer" type="MarginContainer" parent="MainLayout/WorkspaceSplit/GameViewWrapper"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
 [node name="DebugToolbar" parent="MainLayout/WorkspaceSplit/GameViewWrapper" unique_id=839140025 instance=ExtResource("13_debug")]
+layout_mode = 1
+
+[node name="StemFailPopup" parent="." unique_id=748293481 instance=ExtResource("14_popup")]
 layout_mode = 1
 
 [node name="MainMenuConfirmation" type="ConfirmationDialog" parent="." unique_id=1158682758]

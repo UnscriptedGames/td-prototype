@@ -21,6 +21,10 @@ var stem_data: StemData
 var _current_wave_index: int = 0
 var _spawning: bool = false
 var _active_enemy_count: int = 0
+# Set to true by force_complete_stem() to skip the track-end penalty on next completion.
+var _bypass_track_end_penalty: bool = false
+# Set to true when the stem fails, to prevent wave completion from firing on the same frame.
+var _stem_has_failed: bool = false
 
 # AStarGrid2D Navigation
 var _astar_grid: AStarGrid2D
@@ -32,6 +36,9 @@ var _spawn_timer: float = 0.0
 ## Onready Variables
 
 @onready var entities: Node2D = $Entities
+
+# Created and managed in _setup_stem_audio().
+var _stem_audio_player: AudioStreamPlayer
 
 @export_group("Renderers")
 @export var background_renderer: BackgroundRenderer
@@ -112,8 +119,13 @@ func _ready() -> void:
 
 	if stem_data:
 		GameManager.set_level(level_number, stem_data)
-	
+
 	GameManager.start_wave_requested.connect(_on_next_wave_requested)
+	GameManager.stem_failed.connect(_on_stem_failed)
+	GameManager.force_complete_stem_requested.connect(
+		func() -> void: _bypass_track_end_penalty = true
+	)
+	_setup_stem_audio()
 
 func _process(delta: float) -> void:
 	# Processes the spawn queue each frame.
@@ -123,9 +135,18 @@ func _process(delta: float) -> void:
 func _exit_tree() -> void:
 	if GameManager.start_wave_requested.is_connected(_on_next_wave_requested):
 		GameManager.start_wave_requested.disconnect(_on_next_wave_requested)
+	if GameManager.stem_failed.is_connected(_on_stem_failed):
+		GameManager.stem_failed.disconnect(_on_stem_failed)
+		
+	# Ensure audio is hard-stopped when leaving the scene so it doesn't bleed into Setlist.
+	if is_instance_valid(_stem_audio_player):
+		_stem_audio_player.stop()
 
 
 ## Public Methods
+
+func set_stem_data(data: StemData) -> void:
+	stem_data = data
 
 func _start_wave(wave_index: int) -> void:
 	# Begins spawning enemies for the stem. Since stem=wave now, we only run this once.
@@ -136,6 +157,8 @@ func _start_wave(wave_index: int) -> void:
 	_spawning = true
 	_active_enemy_count = 0
 	_spawn_stem(stem_data)
+	if is_instance_valid(_stem_audio_player) and not _stem_audio_player.playing:
+		_stem_audio_player.play()
 
 
 ## Private Methods
@@ -279,7 +302,9 @@ func _on_enemy_finished_path(enemy: TemplateEnemy) -> void:
 	GameManager.add_peak_volume(enemy.health)
 	enemy.reached_goal()
 	_active_enemy_count -= 1
-	_check_wave_completion()
+	# If the peak volume just caused a fail, don't also trigger wave completion.
+	if not _stem_has_failed:
+		_check_wave_completion()
 
 
 func _on_next_wave_requested() -> void:
@@ -304,6 +329,9 @@ func _on_wave_spawn_finished() -> void:
 	
 func _check_wave_completion() -> void:
 	# Only complete the wave if NO enemies are left AND we are done spawning.
+	# Also skip if the stem has already failed this frame.
+	if _stem_has_failed:
+		return
 	if _active_enemy_count <= 0 and not _spawning:
 		GameManager.wave_completed()
 
@@ -383,6 +411,10 @@ func _initialize_navigation_grid() -> void:
 	var maze_layer := layer_node as TileMapLayer
 	var used_rect := maze_layer.get_used_rect()
 	
+	if not is_instance_valid(maze_layer.tile_set):
+		push_error("Cannot initialize AStarGrid2D: maze layer has no tile_set assigned.")
+		return
+		
 	_astar_grid = AStarGrid2D.new()
 	_astar_grid.region = used_rect
 	_astar_grid.cell_size = maze_layer.tile_set.tile_size
@@ -521,3 +553,99 @@ func _hide_background_subcells(maze_cell: Vector2i, duration: float) -> void:
 	for dx in range(3):
 		for dy in range(3):
 			background_renderer.animate_hide_cell(Vector2i(bg_start_x + dx, bg_start_y + dy), duration)
+
+
+## Audio Stem Management
+
+func _setup_stem_audio() -> void:
+	# Creates a managed AudioStreamPlayer and connects it to the stem completion pathway.
+	# Uses the Good-quality stream as the primary track. Quality crossfading is handled
+	# separately by the AudioManager (future implementation).
+	if not stem_data:
+		return
+
+	_stem_audio_player = AudioStreamPlayer.new()
+	_stem_audio_player.name = "StemAudioPlayer"
+	add_child(_stem_audio_player)
+
+	# Use the Good stream as the base track. AudioManager will handle crossfading.
+	if stem_data.stem_audio_good:
+		_stem_audio_player.stream = stem_data.stem_audio_good
+	elif stem_data.stem_audio_avg:
+		_stem_audio_player.stream = stem_data.stem_audio_avg
+	elif stem_data.stem_audio_bad:
+		_stem_audio_player.stream = stem_data.stem_audio_bad
+
+	if _stem_audio_player.stream:
+		_stem_audio_player.finished.connect(_on_stem_track_finished)
+
+
+func _on_stem_track_finished() -> void:
+	# Called when the stem's audio track reaches its end.
+	# Boss stems loop; all others apply the track-end penalty and complete.
+	if stem_data and stem_data.is_boss_stem:
+		# Boss wave loops until the boss is defeated or the peak meter fills.
+		_stem_audio_player.play()
+		return
+
+	_apply_track_end_penalty()
+	
+	if _stem_has_failed:
+		return
+		
+	_clear_all_enemies()
+	_spawning = false
+	GameManager.wave_completed()
+
+
+func _on_stem_failed() -> void:
+	# Called when the peak meter clips to 100% during the wave (enemy leak).
+	# Clears all enemies and stops spawning — StageManager handles the Setlist return.
+	_stem_has_failed = true
+	_spawning = false
+	_spawn_queue.clear()
+	_clear_all_enemies()
+	if is_instance_valid(_stem_audio_player) and _stem_audio_player.playing:
+		# Disconnect so stopping the player doesn't trigger _on_stem_track_finished
+		if _stem_audio_player.finished.is_connected(_on_stem_track_finished):
+			_stem_audio_player.finished.disconnect(_on_stem_track_finished)
+		_stem_audio_player.stop()
+
+
+func _apply_track_end_penalty() -> void:
+	# Calculates and applies the track-end damage for all surviving enemies.
+	# Skipped when _bypass_track_end_penalty is true (debug force-complete path).
+	if _bypass_track_end_penalty or not stem_data:
+		_bypass_track_end_penalty = false
+		return
+
+	var penalty_ratio: float = stem_data.track_end_penalty_ratio
+	if penalty_ratio <= 0.0:
+		return
+
+	var enemies_container: Node2D = entities.get_node_or_null("Enemies") as Node2D
+	if not is_instance_valid(enemies_container):
+		return
+
+	var total_penalty: float = 0.0
+	for enemy in enemies_container.get_children():
+		if enemy.has_method("reset") and "health" in enemy:
+			total_penalty += float(enemy.health) * penalty_ratio
+
+	if total_penalty > 0.0:
+		if OS.is_debug_build():
+			print("Track ended. Applying penalty: %.1f (ratio: %.2f)" % [total_penalty, penalty_ratio])
+		GameManager.add_peak_volume(total_penalty)
+
+
+func _clear_all_enemies() -> void:
+	# Returns all living enemies to the object pool cleanly.
+	var enemies_container: Node2D = entities.get_node_or_null("Enemies") as Node2D
+	if not is_instance_valid(enemies_container):
+		return
+
+	for enemy in enemies_container.get_children():
+		if is_instance_valid(enemy):
+			ObjectPoolManager.return_object(enemy)
+
+	_active_enemy_count = 0

@@ -1,17 +1,19 @@
-[gd_scene load_steps=2 format=3 uid="uid://c6setlistscr01"]
+[gd_scene format=3 uid="uid://c562t3tjoav2w"]
 
-[ext_resource type="Script" path="res://UI/Setlist/setlist_screen.gd" id="1_setlist"]
+[ext_resource type="Script" uid="uid://dom3uvte1igme" path="res://UI/Setlist/setlist_screen.gd" id="1_setlist"]
+[ext_resource type="Theme" uid="uid://dpov18qpoqhlb" path="res://UI/Themes/daw_theme.tres" id="2_theme"]
 
-[node name="SetlistScreen" type="Control"]
+[node name="SetlistScreen" type="Control" unique_id=1109507192]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
 script = ExtResource("1_setlist")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1525621887]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,38 +25,38 @@ theme_override_constants/margin_top = 40
 theme_override_constants/margin_right = 40
 theme_override_constants/margin_bottom = 40
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=139255960]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="StageTitleLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="StageTitleLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=1677831276]
 layout_mode = 2
 text = "Stage Title"
 horizontal_alignment = 1
 
-[node name="Stem1Slot" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="Stem1Slot" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=90831115]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.5
 
-[node name="MiddleRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="MiddleRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=578671801]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 1.5
 theme_override_constants/separation = 12
 
-[node name="BossSlot" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="BossSlot" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=3147754]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.5
 
-[node name="BossCounterLabel" type="Label" parent="MarginContainer/VBoxContainer/BossSlot"]
+[node name="BossCounterLabel" type="Label" parent="MarginContainer/VBoxContainer/BossSlot" unique_id=153550140]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "0 / 5 Stems Complete"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="RestartStageButton" type="Button" parent="MarginContainer/VBoxContainer"]
+[node name="RestartStageButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=2022784569]
 layout_mode = 2
 text = "Restart Stage"

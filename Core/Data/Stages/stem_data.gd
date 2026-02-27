@@ -32,6 +32,10 @@ extends Resource
 ## True if this is a boss stem.
 @export var is_boss_stem: bool = false
 
+## Fraction of surviving enemy health applied to the peak meter when the track ends.
+## 0.0 = no penalty. 1.0 = full remaining health. Tune per-stem in the inspector.
+@export_range(0.0, 1.0, 0.01) var track_end_penalty_ratio: float = 0.5
+
 ## List of enemy spawn instructions for this entire stem.
 @export var spawns: Array[SpawnInstruction] = []
 

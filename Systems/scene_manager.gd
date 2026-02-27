@@ -5,12 +5,16 @@ extends Node
 ## Handles the specific flow of:
 ## 1. Show Loading Screen
 ## 2. Load Level Resource
-## 3. Pre-warm Object Pools (synchronous)
-## 4. Swap to Game Window
-## 5. Inject Level into Game Window
+## 3. Swap to Game Window
+## 4. Inject Level into Game Window
 
 const LOADING_SCREEN_PATH: String = "res://UI/LoadingScreen/loading_screen.tscn"
 const GAME_WINDOW_PATH: String = "res://UI/Layout/game_window.tscn"
+
+enum ViewType {
+	MENU,
+	LEVEL
+}
 
 ## The scene that will be displayed during loading.
 var loading_screen_scene: PackedScene = preload(LOADING_SCREEN_PATH)
@@ -18,69 +22,45 @@ var loading_screen_scene: PackedScene = preload(LOADING_SCREEN_PATH)
 var game_window_scene: PackedScene = preload(GAME_WINDOW_PATH)
 
 
-## Initiates a scene transition to the specified level path.
-## @param scene_path: The resource path of the level scene (.tscn) to load.
-## @param stem_data: The specific stem configuration (spawns, audio, etc) to inject.
-func load_scene(scene_path: String, stem_data: StemData = null) -> void:
+## Initiates a scene transition to the specified resource path.
+## @param scene_path: The resource path of the scene (.tscn) to load.
+## @param view_type: Whether this is a UI MENU or a gameplay LEVEL to route into the correct container.
+## @param stem_data: Optional stem configuration for LEVELs.
+func load_scene(scene_path: String, view_type: ViewType = ViewType.LEVEL, stem_data: StemData = null) -> void:
 	# 1. Show the loading screen and wait for it to draw.
 	var loading_screen_instance: Node = loading_screen_scene.instantiate()
 	get_tree().root.add_child(loading_screen_instance)
 	await get_tree().process_frame
 	await get_tree().process_frame
 
-	# 2. Instantiate the GameWindow shell.
-	var game_window_instance := game_window_scene.instantiate() as GameWindow
-	
-	# 3. Load the ACTUAL Level scene.
-	var level_resource: PackedScene = load(scene_path)
-	var level_instance := level_resource.instantiate() as TemplateLevel
-	
-	# Pass the stem data via injection rather than relying on the scene file
-	if stem_data:
-		level_instance.stem_data = stem_data
+	# 2. Get or instantiate the GameWindow shell.
+	var current_scene: Node = get_tree().current_scene
+	var game_window_instance: GameWindow = null
 
-	# 4. Get the level data from the instance and create all the necessary object pools.
-	#    This is the heavy, synchronous work that will freeze the game on the loading screen.
-	if is_instance_valid(level_instance.stem_data):
-		stem_data = level_instance.stem_data
-		
-		# Create enemy pools
-		var unique_enemies: Array[PackedScene] = []
-		for spawn_instruction in stem_data.spawns:
-			if not unique_enemies.has(spawn_instruction.enemy_scene):
-				unique_enemies.append(spawn_instruction.enemy_scene)
+	if current_scene is GameWindow:
+		game_window_instance = current_scene as GameWindow
+	else:
+		game_window_instance = game_window_scene.instantiate() as GameWindow
+		get_tree().root.add_child(game_window_instance)
+		if is_instance_valid(current_scene):
+			current_scene.queue_free()
+		get_tree().current_scene = game_window_instance
 
-		for enemy_scene in unique_enemies:
-			ObjectPoolManager.create_pool(enemy_scene, 20)
-			
-		# Create projectile pools
-		var unique_projectiles: Array[PackedScene] = []
-		
-		# Use the player data to determine which towers (and thus projectiles) are needed
-		if GameManager.player_data and GameManager.player_data.towers:
-			for tower_data in GameManager.player_data.towers:
-				if tower_data is TowerData:
-					for level in tower_data.levels:
-						if is_instance_valid(level) and is_instance_valid(level.projectile_scene):
-							if not unique_projectiles.has(level.projectile_scene):
-								unique_projectiles.append(level.projectile_scene)
-
-		for projectile_scene in unique_projectiles:
-			ObjectPoolManager.create_pool(projectile_scene, 50)
+	# 3. Load the requested scene resource.
+	var scene_resource: PackedScene = load(scene_path)
+	var scene_instance: Node = scene_resource.instantiate()
 	
-	# 5. Add the GameWindow (containing the level) to the root.
-	get_tree().root.add_child(game_window_instance)
-	
-	# 6. Inject the prepared Level into the GameWindow.
-	#    We do this AFTER adding to tree so GameWindow._ready() has run and nodes are valid.
-	game_window_instance.load_level_instance(level_instance)
+	# Pass stem data if it's a level
+	if view_type == ViewType.LEVEL and stem_data and scene_instance.has_method("set_stem_data"):
+		# Using duck typing or specific class check, TemplateLevel uses stem_data var directly
+		scene_instance.set("stem_data", stem_data)
 
-	# 7. Access and free the OLD current scene (e.g. MainMenu).
-	if is_instance_valid(get_tree().current_scene):
-		get_tree().current_scene.queue_free()
-	
-	# 8. Set the new scene as the current scene.
-	get_tree().current_scene = game_window_instance
+	# 4. Inject into the appropriate workspace layer.
+	# We rely on GameWindow.change_workspace() which we are adding next.
+	if game_window_instance.has_method("change_workspace"):
+		game_window_instance.change_workspace(scene_instance, view_type)
+	else:
+		push_error("SceneManager: GameWindow is missing change_workspace() method!")
 
-	# 9. Remove the loading screen.
+	# 5. Remove the loading screen.
 	loading_screen_instance.queue_free()

@@ -30,6 +30,9 @@ const BOSS_INDEX: int = 5
 const THRESHOLD_AVG: float = 0.33
 const THRESHOLD_BAD: float = 0.66
 
+## Resource path for returning to the Setlist between stems.
+const SETLIST_SCENE_PATH: String = "res://UI/Setlist/setlist_screen.tscn"
+
 
 # --- State ---
 
@@ -69,6 +72,8 @@ func load_stage(stage_data: StageData) -> void:
 	_current_stem_index = -1
 	_loadout_locked = false
 	_initialise_results()
+	GameManager.stem_completion_requested.connect(_on_stem_completion_requested)
+	GameManager.stem_failed.connect(_on_stem_failed)
 	stage_loaded.emit(stage_data)
 
 
@@ -97,7 +102,7 @@ func start_stem(stem_index: int) -> void:
 		
 	var stem_data: StemData = _get_stem_data(stem_index)
 
-	SceneManager.load_scene(scene_path, stem_data)
+	SceneManager.load_scene(scene_path, SceneManager.ViewType.LEVEL, stem_data)
 
 
 ## Records the completion of the current stem with a quality grade.
@@ -109,7 +114,15 @@ func complete_stem(quality: StemResult.StemQuality) -> void:
 
 	var result: StemResult = _stem_results[_current_stem_index]
 	result.status = StemResult.StemStatus.COMPLETED
-	result.quality = quality
+
+	# Best Score Keeps: Only overwrite quality if we did better (lower enum integer).
+	# NONE (0) is lower than GOOD (1), so handle that specific upgrade safely.
+	var old_quality: int = result.quality
+	if old_quality == StemResult.StemQuality.NONE or quality < old_quality:
+		result.quality = quality
+		# Sync the active playback quality so the player hears their new high score.
+		result.active_playback_quality = quality
+
 	stem_status_changed.emit(_current_stem_index, result)
 
 	# Unlock the next tier of stems based on what was just completed.
@@ -171,7 +184,75 @@ func determine_quality_from_peak() -> StemResult.StemQuality:
 		return StemResult.StemQuality.GOOD
 
 
+## Retries the currently failed stem by using the remembered index.
+func retry_stem() -> void:
+	if _current_stem_index >= 0:
+		_stop_current_stem_audio()
+		start_stem(_current_stem_index)
+	else:
+		push_error("StageManager: No active stem to retry.")
+
+
+## Clears the current stem index and returns to the setlist preview screen.
+func return_to_setlist() -> void:
+	_current_stem_index = -1
+	_stop_current_stem_audio()
+	SceneManager.load_scene(SETLIST_SCENE_PATH, SceneManager.ViewType.MENU)
+
+
+## Finds the StemAudioPlayer node in the live scene tree and stops it immediately.
+## Called before any scene transition to prevent audio from bleeding into the next scene.
+func _stop_current_stem_audio() -> void:
+	# 1. Stop the new global audio manager (which plays the layered stems)
+	if AudioManager and AudioManager.has_method("_stop_all"):
+		AudioManager._stop_all()
+
+	# 2. Stop the local TemplateStage audio player (if it hasn't been removed yet)
+	var root: Window = get_tree().root
+	for child: Node in root.get_children():
+		if child is GameWindow:
+			var subviewport: Node = child.get_node_or_null(
+				"MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport"
+			)
+			if not subviewport:
+				return
+			for level: Node in subviewport.get_children():
+				var player: Node = level.get_node_or_null("StemAudioPlayer")
+				if player is AudioStreamPlayer and player.playing:
+					player.stop()
+					if OS.is_debug_build():
+						print("StageManager: Local Stem audio stopped before scene transition.")
+			return
+
+
 # --- Private Methods ---
+
+## Handles a normal stem completion event from GameManager.
+## Grades the stem quality, records the result, and returns to the Setlist.
+func _on_stem_completion_requested() -> void:
+	if _current_stem_index < 0:
+		return
+	var quality: StemResult.StemQuality = determine_quality_from_peak()
+	complete_stem(quality)
+	return_to_setlist()
+
+
+## Handles an immediate stem fail event from GameManager (peak meter clipped).
+func _on_stem_failed() -> void:
+	if _current_stem_index < 0:
+		return
+	var result: StemResult = _stem_results[_current_stem_index]
+	
+	# Failure Preservation: Do not wipe progress if this was already beaten.
+	if result.status != StemResult.StemStatus.COMPLETED:
+		result.status = StemResult.StemStatus.AVAILABLE
+		result.quality = StemResult.StemQuality.NONE
+		
+	stem_status_changed.emit(_current_stem_index, result)
+
+	if OS.is_debug_build():
+		print("StageManager: Stem failed — peak meter clipped. Awaiting user popup action.")
+
 
 ## Creates fresh StemResult objects for all 6 slots (5 stems + 1 boss).
 ## Stem 1 (index 0) starts as AVAILABLE; everything else starts LOCKED.

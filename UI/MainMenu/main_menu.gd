@@ -19,4 +19,4 @@ func _on_start_button_pressed() -> void:
 	var stage: StageData = load(STAGE_1_PATH) as StageData
 	assert(stage != null, "Failed to load StageData from: " + STAGE_1_PATH)
 	StageManager.load_stage(stage)
-	get_tree().change_scene_to_file("res://UI/Setlist/setlist_screen.tscn")
+	SceneManager.load_scene("res://UI/Setlist/setlist_screen.tscn", SceneManager.ViewType.MENU)

@@ -4,6 +4,10 @@
 [ext_resource type="Script" uid="uid://c6sd68ghkditp" path="res://Core/Data/Waves/spawn_instruction.gd" id="2_grwt2"]
 [ext_resource type="Script" uid="uid://cub41ifvd2n7o" path="res://Core/Data/Stages/stem_data.gd" id="2_stem"]
 [ext_resource type="Resource" uid="uid://bexmpa3c26c7y" path="res://Config/Stages/stage_01_stem_01.tres" id="4_grwt2"]
+[ext_resource type="Resource" uid="uid://dkd24h3cs6pwt" path="res://Config/Stages/stage_01_stem_02.tres" id="5_txdv4"]
+[ext_resource type="Resource" uid="uid://d2lb3bi5qtvjv" path="res://Config/Stages/stage_01_stem_03.tres" id="6_ry1br"]
+[ext_resource type="Resource" uid="uid://bfvcmxv3ebo12" path="res://Config/Stages/stage_01_stem_04.tres" id="7_v4qsm"]
+[ext_resource type="Resource" uid="uid://cg3oyt4l6w7n6" path="res://Config/Stages/stage_01_stem_05.tres" id="8_pfhh4"]
 
 [sub_resource type="Resource" id="boss_stem"]
 script = ExtResource("2_stem")
@@ -11,28 +15,8 @@ stem_label = "Boss — Full Mix"
 level_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stem_01_drums.tscn"
 enemy_preview_hint = "All Stems Active"
 
-[sub_resource type="Resource" id="stem_2"]
-script = ExtResource("2_stem")
-stem_label = "Bass"
-level_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stem_01_drums.tscn"
-
-[sub_resource type="Resource" id="stem_3"]
-script = ExtResource("2_stem")
-stem_label = "Harmony"
-level_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stem_01_drums.tscn"
-
-[sub_resource type="Resource" id="stem_4"]
-script = ExtResource("2_stem")
-stem_label = "Melody"
-level_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stem_01_drums.tscn"
-
-[sub_resource type="Resource" id="stem_5"]
-script = ExtResource("2_stem")
-stem_label = "Vocals"
-level_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stem_01_drums.tscn"
-
 [resource]
 script = ExtResource("1_stage")
-stage_name = "Track 01 — Neon Pulse"
-stems = Array[ExtResource("2_stem")]([ExtResource("4_grwt2"), SubResource("stem_2"), SubResource("stem_3"), SubResource("stem_4"), SubResource("stem_5")])
+stage_name = "Funky Golden Sun"
+stems = Array[ExtResource("2_stem")]([ExtResource("4_grwt2"), ExtResource("5_txdv4"), ExtResource("6_ry1br"), ExtResource("7_v4qsm"), ExtResource("8_pfhh4")])
 boss_stem = SubResource("boss_stem")

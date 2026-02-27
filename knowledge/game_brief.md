@@ -84,12 +84,15 @@ DAW-standard VU/peak meter with a three-colour gradient and smooth, unscaled ani
 | **Yellow** | **Average** — A slightly out-of-tune version with random sound artefacts. |
 | **Red** | **Abomination** — A nightmarish version (goat screams, distortion, chaos). |
 
-### Fail State
-- **Dynamic Clipping:** Failure is not a fixed number. It is calculated per-wave based on **Enemy Roster Health × Wave Clip Tolerance**. 
-- If the Distortion hits 100% capacity (past 1.0 on the calculated scale), the signal "clips," and the level is immediately **failed**.
-- During the **Boss Wave (Wave 6)**, the Peak Meter is a pure survival mechanic — there is
-	no stem quality to grade. The player must prevent the meter from filling while defeating
-	the mini boss.
+### Failure & Clipping Logic
+When the Peak Meter hits 100% capacity ("Clips"):
+- **Immediate Pause:** The game simulation and spawning stop instantly.
+- **Signal Fail Popup:** A failure dialogue is presented over the board.
+- **Routing Options:**
+  - **Retry Stem:** Resets the current wave/stem encounter immediately using the same loadout.
+  - **Return to Setlist:** Exits the level and returns the player to the Stage menu to potentially reconfigure their approach or try a different stem.
+
+During the **Boss Wave (Wave 6)**, the Peak Meter is a pure survival mechanic — there is no stem quality to grade. The player must prevent the meter from filling while defeating the mini boss.
 
 ---
 
@@ -101,6 +104,11 @@ DAW-standard VU/peak meter with a three-colour gradient and smooth, unscaled ani
 - **Atomic Data (`stem_data.gd`)**: Legacy `WaveData` has been merged into `StemData`. A stem now contains its own audio references and spawn instructions directly.
 - Each stem corresponds to a musical layer (e.g., Drums, Bass, Synth, Melody, Vocals).
 - **Filesystem Standard**: `Stages/Stage01_Name/Audio/stem_01_drums.mp3`.
+
+### Setlist Preview UI
+The Setlist is no longer a simple level select; it is a **Mix Selection** interface. 
+- **Quality Selector:** Once a player unlocks a stem variant (e.g., getting a "Good" result), they can use a dropdown on the Setlist card to toggle which version of the track plays during subsequent gameplay or re-runs.
+- **Progress Preservation:** If a player achieves a high quality (Good) but later replays the same stem and fails or gets a lower grade (Abomination), **the game preserves the highest quality achieved.** This ensures players don't "lose" their better tracks while experimenting with different loadouts.
 
 ### Stem Order & Gating
 - **Stem 1 is mandatory.** The first stem (typically Drums/Percussion) must be completed 
@@ -327,6 +335,12 @@ equipment.
 
 The entire interface is modelled after professional DAW software.
 
+### SPA Desktop Architecture
+The game operates as a Single Page Application within a persistent shell (`GameWindow`).
+- **Persistent DAW Shell:** The Top Bar (Transport Controls, Peak Meter) and Left Sidebar (Towers/Relics) remain on screen during transitions to maintain immersion.
+- **Workspace Swapping:** Menus (Main Menu, Setlist, Studio) and Gameplay Levels are loaded into a central **SubViewport Workspace**. This prevents "hard" scene cuts and allows for smooth, software-like transitions.
+- **UI Interaction Lock:** During automated opening sequences (like the path-reveal wipe), the DAW shell locks the "Play" and "Restart" buttons to prevent state desync until the animation finishes.
+
 ### Layout (1536×1024 Native, Scaled to 1920×1080)
 - **Top Bar:** Global stats (Peak Meter, Gold, Wave counter), Restart button, and Volume Control.
 - **Left Sidebar:** Loadout rack — Tower buttons (with stock counts), Spell slots (with
@@ -427,3 +441,15 @@ future design sessions and playtesting:
 - [ ] **Difficulty Scaling:** How does difficulty ramp across stages and within stem levels?
 - [ ] **Music Source:** Original compositions, licensed tracks, or procedurally generated?
 - [ ] **Game Title:** Final name for the game.
+
+---
+
+## 14. Future / Stretch Goals
+
+### Dynamic Audio Effects Layer
+Temporary, gameplay-triggered audio effects layered on top of the active stem quality track via Godot's AudioBus system. 
+- **Buff Feedback:** High-pass filter sweeps or shimmer reverb when a buff is applied.
+- **Relic Feedback:** Tape stop or rewind effects for relic activations.
+- **Performance Feedback:** Vinyl scratch one-shots when an enemy reaches the goal.
+- **Visualizer Sync:** Buffs and towers pulsing the background "sound pads" in time with the track transients.
+

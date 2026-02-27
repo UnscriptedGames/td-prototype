@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="StemData" format=3 uid="uid://cg3oyt4l6w7n6"]
+
+[ext_resource type="Script" uid="uid://cub41ifvd2n7o" path="res://Core/Data/Stages/stem_data.gd" id="1_4iq47"]
+[ext_resource type="Script" uid="uid://c6sd68ghkditp" path="res://Core/Data/Waves/spawn_instruction.gd" id="2_tv8b7"]
+[ext_resource type="PackedScene" uid="uid://dj2xubaiwg7dq" path="res://Entities/Enemies/BasicEnemy/basic_enemy.tscn" id="3_qkwde"]
+[ext_resource type="Script" uid="uid://cwhwoc5lm1of7" path="res://Core/Data/Waves/weighted_target.gd" id="4_7l8r8"]
+[ext_resource type="AudioStream" uid="uid://b3mafcmbppb6u" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_05_lead_vocals_average.wav" id="5_4iq47"]
+[ext_resource type="AudioStream" uid="uid://crmoqlvtf6isa" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_05_lead_vocals_bad.wav" id="6_tv8b7"]
+[ext_resource type="AudioStream" uid="uid://6sa543cpsdt" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_05_lead_vocals_good.mp3" id="7_qkwde"]
+
+[sub_resource type="Resource" id="Resource_itrpl"]
+script = ExtResource("4_7l8r8")
+goal_tile = Vector2i(18, 3)
+metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
+
+[sub_resource type="Resource" id="Resource_m4vk0"]
+script = ExtResource("4_7l8r8")
+goal_tile = Vector2i(14, 11)
+metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
+
+[sub_resource type="Resource" id="Resource_45yd0"]
+script = ExtResource("2_tv8b7")
+enemy_scene = ExtResource("3_qkwde")
+spawn_tile = Vector2i(2, -1)
+count = 20
+start_delay = 0.5
+weighted_targets = Array[ExtResource("4_7l8r8")]([SubResource("Resource_itrpl"), SubResource("Resource_m4vk0")])
+metadata/_custom_type_script = "uid://c6sd68ghkditp"
+
+[resource]
+script = ExtResource("1_4iq47")
+stem_label = "Lead Vocals"
+level_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stem_01_drums.tscn"
+is_mandatory_first = true
+enemy_preview_hint = "Standard Waveforms"
+spawns = Array[ExtResource("2_tv8b7")]([SubResource("Resource_45yd0")])
+stem_audio_good = ExtResource("7_qkwde")
+stem_audio_avg = ExtResource("5_4iq47")
+stem_audio_bad = ExtResource("6_tv8b7")
