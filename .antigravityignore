@@ -1,0 +1,48 @@
+# Godot Internal & Build Overheads
+.godot/
+*.import
+
+# UIDs severely pollute directory listings and text searches
+*.uid 
+
+# Export & Build directories
+build/
+export/
+exports/
+bin/
+*.exe
+*.pck
+*.apk
+*.ipa
+*.aab
+
+# Audio Assets
+*.wav
+*.mp3
+*.ogg
+
+# Images & Visual Assets
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.webp
+*.bmp
+
+# Design files and App Icons
+*.ico
+*.icns
+*.aseprite
+*.psd
+
+# Fonts
+*.ttf
+*.otf
+*.woff
+*.woff2
+
+# Editor & System
+.vscode/
+.idea/
+.DS_Store
+*.log

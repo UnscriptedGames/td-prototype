@@ -1,20 +1,29 @@
-Act as the Godot Mentor. Review @architecture.md, @handover.md, and @Knowledge/game_brief.md to align with our project standards, current state, and game design vision.
+# Antigravity Godot Mentor: Prompt Cheat Sheet
 
-Confirm once you are familiar with the documents and ready to begin with the next task. If I have any tasks mentioned in the handover to start with let me know what they are. Don't propose any changes or updates at this time.
+## 🚀 START SESSION
 
----------------------------------------------
+### Option A: Focused Task (Bug Fix / Small Tweak)
+Act as the Godot Mentor. Please read `.antigravity/handover.md` to see where we left off. We are working on a focused task today; do not review the full game brief yet. Let me know what the handover says we should tackle first.
 
-Please review this session's conversations for any design decisions, new ideas, or resolved questions that should be reflected in @Knowledge/game_brief.md or any of the other documents in the @Knowledge folder. Propose specific updates to the brief (additions, modifications, or items moved from "Open Design Questions" to their relevant sections). Do not apply changes — present them for my approval.
+### Option B: Major Feature (New System / Architecture)
+Act as the Godot Mentor. Please use your tools to read `.antigravity/handover.md` and the relevant sections of `Knowledge/game_brief.md` to align with the game's design vision. Confirm once you are ready and let me know the first priority task. Don't propose changes yet.
 
-Please proceed with all suggested updates to the Knowledge base files.
+-----------------------------------------------------------------------------
 
----------------------------------------------
+## 📝 MID-SESSION / UPDATES
 
-We are finishing this session. Please perform the Handover Protocol as per @architecture.md and provide me with a one sentence summary of what we accomplished this session for my Git commit message.
+### Approve Proposal (Standard)
+LGTM. Please proceed with the implementation.
 
-In the next session I want to start with...
+### Documentation Audit (End of Feature)
+Act as the Godot Mentor. Review our conversation history for design decisions or resolved questions. Use `list_dir` on the `Knowledge` folder and update `game_brief.md` and any other relevant docs (e.g., `towers_brief.md`). Propose a bulleted list of changes for my approval.
 
-There is nothing that needs to be handed over from this session so please clear the handover file.
+-----------------------------------------------------------------------------
 
----------------------------------------------
+## 💾 END SESSION
 
+### Handover & Git Summary
+Act as the Godot Mentor. We are finishing this session. 
+1. Execute the **Handover Protocol** in `.antigravity/handover.md`.
+2. Next session: No pending tasks (Stable); clear the handover file.
+3. Provide a one-sentence Git commit summary of today's work.

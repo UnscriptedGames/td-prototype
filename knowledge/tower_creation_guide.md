@@ -1,4 +1,4 @@
-# Tower Creation & Configuration Instructions
+# Tower Creation & Configuration Guide
 
 This document explains the technical architecture and step-by-step process for creating new towers in **TD-Prototype**.
 
@@ -59,34 +59,20 @@ The `TemplateTower.gd` script does NOT automatically spawn projectiles. It waits
     -   In the `TowerData` Inspector, expand the **Levels** array.
     -   Add a new element and choose **New TowerLevelData**.
     -   **Important**: The **Level 0** index is your base tower. Every index after that is an upgrade path.
-    -   Each level requires a `projectile_scene` (see Step 5).
+    -   Each level requires a `projectile_scene`.
 4.  **Link the Data to the Tower Scene**:
     -   Go back to your **Tower Scene**.
     -   In the Inspector for the root node, drag/drop your new `.tres` file into the **Data** slot.
 
 ---
 
-## 4. Creating the Projectile Scene
+## 4. Integration with Loadout
 
-1.  In the FileSystem, locate `res://Entities/Projectiles/_TemplateProjectile/template_projectile.tscn`.
-2.  Right-click it and select **New Inherited Scene**.
-3.  Save it in its own folder (e.g., `res://Entities/Projectiles/BasicBullet/basic_bullet.tscn`).
-4.  Assign a `Sprite` or `AnimatedSprite2D` texture for the projectile visual.
-5.  Configure the `HitboxShape` collision shape to match the projectile's size.
-6.  Drag this `.tscn` into the `projectile_scene` slot on each `TowerLevelData`.
+Towers must be added to a **Loadout** resource to be available in "The Studio" and "The Live Set".
 
----
-
-## 5. Creating the Card (Bridge to Gameplay)
-
-The tower scene is **not** linked directly on `TowerData`. It is linked via a **LoadoutData** resource with a **BuildTowerEffect**. See `card_deck_instructions.md` for full steps.
-
-1.  Create a **LoadoutData** resource in `Config/Cards/Build`.
-2.  In its **Effect** slot, create a **New BuildTowerEffect**.
-3.  On the `BuildTowerEffect`, assign:
-    -   `tower_data`: Your `.tres` TowerData resource.
-    -   `tower_scene`: Your tower's `.tscn` scene.
-4.  Add the `LoadoutData` to a **LoadoutData** resource and link it to `PlayerData`.
+1.  Open your active **Loadout** resource (e.g., `res://Config/Loadouts/default_loadout.tres`).
+2.  Add your `TowerData` resource to the appropriate array.
+3.  Configure the **AP (Allocation Point)** cost for the tower within the loadout.
 
 ---
 
@@ -96,4 +82,3 @@ The tower scene is **not** linked directly on `TowerData`. It is linked via a **
 -   **Range Issues?** Tower range is defined in the `TowerLevelData`. If you change it, the square grid highlight will automatically adjust.
 -   **Y-Offset**: Use the `visual_offset` in `TowerData` to shift the ghost tower during placement if it doesn't align with the 64×64 grid correctly.
 -   **Upgrades**: The game supports branching upgrades. The indices in the `levels` array determine the order shown in the UI.
--   **Tower Not in Sidebar?** Ensure the `LoadoutData` is in a `LoadoutData` that is linked to the active `PlayerData`.

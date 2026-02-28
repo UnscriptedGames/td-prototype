@@ -6,51 +6,48 @@ This document explains the hierarchical structure of level data in **TD-Prototyp
 
 The level data system is built using Godot's **Resource** system. It follows a three-tier hierarchy:
 
-1.  **LevelData (`template_data.gd`)**: The root resource for a level. It defines available towers and contains an array of Waves.
-2.  **WaveData (`wave_data.gd`)**: Defines a single wave. It contains properties like boss status, reward multipliers, and an array of Spawn Instructions.
+1.  **StageData (`stage_data.gd`)**: The root resource for a stage. It defines the available loadout and links to its 5 stems.
+2.  **StemData (`stem_data.gd`)**: Defines a single stem level. It contains the audio reference, performance thresholds, and an array of Spawn Instructions.
 3.  **SpawnInstruction (`spawn_instruction.gd`)**: The most granular unit. It defines which enemy scene to spawn, the path it follows, how many to spawn, and the timing.
 
 ---
 
-## 1. Creating Level Data (`.tres`)
+## 1. Creating Stage Data (`.tres`)
 
-A Level Data file binds all waves and tower restrictions together.
+A Stage Data file binds all stems together for a single song.
 
 ### Step-by-Step
-1.  In the FileSystem dock, right-click your desired folder (e.g., `Config/Levels`).
+1.  In the FileSystem dock, right-click your desired folder (e.g., `Config/Stages`).
 2.  Select **Create New > Resource..**.
-3.  Search for and select **LevelData**.
-4.  Save it as `level_name_config.tres`.
+3.  Search for and select **StageData**.
+4.  Save it as `stage_name_config.tres`.
 5.  In the Inspector:
-    -   **Available Towers**: Add elements to this array for each tower type allowed in this level (e.g., Archer, Magic, Bomb).
-    -   **Waves**: This is where you will link your individual wave resources.
+    -   **Stems**: This is where you will link your individual StemData resources (5 stems + 1 boss).
 
 ---
 
-## 2. Creating Wave Data (`.tres`)
+## 2. Creating Stem Data (`.tres`)
 
-Each level contains multiple waves. Each wave is its own file to allow for easy reuse or adjustment.
+Each stage contains 5 stems and a boss wave. Each stem is its own file to allow for independent configuration and audio quality handling.
 
 ### Step-by-Step
-1.  Right-click your wave folder (e.g., `Config/Waves/LevelName`).
+1.  Right-click your stem folder (e.g., `Config/Stages/StageName/Stems`).
 2.  Select **Create New > Resource..**.
-3.  Search for and select **WaveData**.
-4.  Save it as `level_name_wave_01.tres`.
+3.  Search for and select **StemData**.
+4.  Save it as `stage_name_stem_01.tres`.
 5.  In the Inspector:
-    -   **Start Delay**: The time (in seconds) to wait before this wave begins.
-    -   **Reward Multiplier**: Adjusts the gold/currency reward for this specific wave.
+    -   **Audio Stream**: Link the `.mp3` or `.wav` for this stem.
     -   **Is Boss Wave**: Check this if special boss logic or UI should trigger.
-    -   **Clip Tolerance**: The percentage of wave health allowed before failure (e.g., `0.20` = 20%).
     -   **Spawns**: An array where you will add individual spawn instructions.
 
 ---
 
 ## 3. Creating Spawn Instructions
 
-Spawn Instructions are usually kept **local** to the Wave file (Sub-resources) rather than separate files, as they are specific to a single wave.
+Spawn Instructions are kept **local** to the Stem file (Sub-resources) rather than separate files, as they are specific to a single stem level.
 
 ### Step-by-Step
-1.  Open a **WaveData** `.tres` file in the Inspector.
+1.  Open a **StemData** `.tres` file in the Inspector.
 2.  Expand the **Spawns** array and click **Add Element**.
 3.  Click the empty slot for the new element and select **New SpawnInstruction**.
 4.  Click the newly created `SpawnInstruction` to expand its properties:
@@ -64,12 +61,12 @@ Spawn Instructions are usually kept **local** to the Wave file (Sub-resources) r
 
 ## 4. Linking Everything Together
 
-1.  Open your `LevelData` file.
-2.  Drag your `WaveData` files into the **Waves** array in the correct order.
-3.  Assign the `LevelData` resource to your level scene (typically in the `WorldData` or `GameManager` slot in the scene inspector).
+1.  Open your `StageData` file.
+2.  Drag your `StemData` files into the **Stems** array in the correct order.
+3.  Assign the `StageData` resource to your stage scene (typically in the `AudioManager` or `GameManager` slot in the scene inspector).
 
 ### 💡 Best Practices
--   **Sequential Timing**: Use `Start Delay` in `WaveData` to provide "breather" time between waves. 
+-   **Sequential Order**: Ensure Stem 1 is placed in the first slot, as it is mandatory.
 -   **Goal Action**: When an enemy reaches a **Weighted Target** (Goal), it triggers the `reached_goal` function.
 -   **Damage**: The player takes damage based on the enemy's **remaining health** which is added to the Peak Meter.
--   **Naming Convention**: Use `level01_wave01_config.tres` style naming for clear sorting.
+-   **Naming Convention**: Use `stage01_stem01_config.tres` style naming for clear sorting.

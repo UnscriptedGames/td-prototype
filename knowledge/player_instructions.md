@@ -14,9 +14,9 @@ The player state is defined by a single `PlayerData` resource. At game startup, 
 Open `res://Config/Players/player_config.tres` in the Inspector to modify the following:
 
 -   **Health**: The player's starting health points. When an enemy reaches the goal, this is reduced by the enemy's damage stat.
--   **Currency**: The starting gold/currency available for building towers, upgrading, and playing cards.
--   **Hand Size**: The maximum number of cards the player can hold in their hand at once.
--   **Deck**: The `LoadoutData` resource that will be used for this game session.
+-   **Currency**: The starting gold/currency available for building towers and playing buffs.
+-   **Allocation Points (AP)**: The player's CPU/RAM budget for their loadout. Items consume AP.
+-   **Loadout**: The `LoadoutData` resource containing the towers, buffs, and relics for the session.
 
 ---
 
