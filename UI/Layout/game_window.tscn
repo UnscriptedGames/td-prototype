@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://d3x1y204a5b6c"]
 
-[ext_resource type="Script" path="res://UI/Layout/game_view_dropper.gd" id="1_dropper"]
+[ext_resource type="Script" uid="uid://der117fpns5rj" path="res://UI/Layout/game_view_dropper.gd" id="1_dropper"]
 [ext_resource type="Script" uid="uid://dtscqhcaqtreq" path="res://UI/Layout/game_window.gd" id="1_layout"]
 [ext_resource type="Theme" uid="uid://dpov18qpoqhlb" path="res://UI/Themes/daw_theme.tres" id="2_theme"]
 [ext_resource type="Texture2D" uid="uid://db0c38x6qu3j6" path="res://UI/Icons/play.svg" id="4_648vu"]
@@ -40,6 +40,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("2_theme")
 script = ExtResource("1_layout")
+sidebar_overlay_anim_time = 1.0
 
 [node name="Background" type="Panel" parent="." unique_id=208253181]
 layout_mode = 1
@@ -270,21 +271,21 @@ layout_mode = 2
 theme_override_constants/separation = 15
 
 [node name="PlayButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls" unique_id=1372303758]
-disabled = true
 custom_minimum_size = Vector2(35, 35)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
+disabled = true
 icon = ExtResource("4_648vu")
 flat = true
 expand_icon = true
 
 [node name="RestartButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls" unique_id=996963216]
-disabled = true
 custom_minimum_size = Vector2(35, 35)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
+disabled = true
 icon = ExtResource("6_j48ql")
 flat = true
 expand_icon = true
@@ -335,6 +336,18 @@ text = "Gain: 0 dB"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="StageTitleLabel" type="Label" parent="MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox" unique_id=836421945]
+visible = false
+layout_mode = 2
+text = "Stage Title"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SetlistRestartButton" type="Button" parent="MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox" unique_id=748291884]
+visible = false
+layout_mode = 2
+text = "Restart Stage"
+
 [node name="RightSpacer" type="Control" parent="MainLayout/TopBar/Content" unique_id=829581726]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -375,11 +388,52 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 0
 
-[node name="LeftSidebar" type="PanelContainer" parent="MainLayout/WorkspaceSplit" unique_id=1963009277]
-z_index = 1
+[node name="SidebarContainer" type="Control" parent="MainLayout/WorkspaceSplit" unique_id=297071280]
 custom_minimum_size = Vector2(324, 0)
 layout_mode = 2
+mouse_filter = 2
+
+[node name="LeftSidebar" type="PanelContainer" parent="MainLayout/WorkspaceSplit/SidebarContainer" unique_id=1963009277]
+z_index = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_type_variation = &"SideBarPanel"
+
+[node name="SidebarOverlay" type="Control" parent="MainLayout/WorkspaceSplit/SidebarContainer" unique_id=1029384756]
+visible = false
+z_index = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="Panel" parent="MainLayout/WorkspaceSplit/SidebarContainer/SidebarOverlay" unique_id=1352415614]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"WorkspacePanel"
+
+[node name="StatusLabel" type="Label" parent="MainLayout/WorkspaceSplit/SidebarContainer/SidebarOverlay" unique_id=-1356491686]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 24
+text = "[ OFFLINE ]"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="GameViewWrapper" type="Control" parent="MainLayout/WorkspaceSplit" unique_id=491534373]
 layout_mode = 2

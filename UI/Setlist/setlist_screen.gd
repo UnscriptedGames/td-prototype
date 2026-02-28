@@ -1,3 +1,4 @@
+class_name SetlistScreen
 extends Control
 
 ## Setlist Preview screen — the stage hub between the Studio and the Live Set.
@@ -12,31 +13,21 @@ extends Control
 
 const STEM_CARD_SCENE: PackedScene = preload("res://UI/Setlist/stem_card.tscn")
 
-
 # --- Node References ---
 
-@onready var stage_title_label: Label = $MarginContainer/VBoxContainer/StageTitleLabel
-@onready var stem1_slot: Control = $MarginContainer/VBoxContainer/Stem1Slot
-@onready var middle_row: HBoxContainer = $MarginContainer/VBoxContainer/MiddleRow
-@onready var boss_slot: Control = $MarginContainer/VBoxContainer/BossSlot
-@onready var boss_counter_label: Label = $MarginContainer/VBoxContainer/BossSlot/BossCounterLabel
-@onready var restart_button: Button = $MarginContainer/VBoxContainer/RestartStageButton
-@onready var restart_confirm: ConfirmationDialog = $RestartConfirmation
-
+@onready var stem1_slot: Control = $MarginContainer/HBoxContainer/Stem1Slot
+@onready var middle_column: VBoxContainer = $MarginContainer/HBoxContainer/MiddleColumn
+@onready var boss_slot: Control = $MarginContainer/HBoxContainer/BossSlot
 
 # --- State ---
 
 ## References to the instantiated StemCard nodes, indexed 0-5.
 var _stem_cards: Array = []
 
-
 # --- Lifecycle ---
 
-func _ready() -> void:
-	restart_button.pressed.connect(_on_restart_stage_pressed)
-	if restart_confirm:
-		restart_confirm.confirmed.connect(_on_restart_confirmed)
 
+func _ready() -> void:
 	# Connect to StageManager signals.
 	StageManager.stem_status_changed.connect(_on_stem_status_changed)
 	StageManager.stage_restarted.connect(_on_stage_restarted)
@@ -56,25 +47,25 @@ func _exit_tree() -> void:
 
 # --- Private Methods ---
 
+
 ## Builds all 6 stem cards from the active StageData.
 func _build_setlist(stage_data: StageData) -> void:
-	stage_title_label.text = stage_data.stage_name
 	_stem_cards.clear()
 
 	# Phase 1: Instantiate and add cards to the tree so @onready vars resolve.
 
-	# Stem 1 — full width, placed in the top slot.
+	# Stem 1 — full height, placed in the left slot.
 	var stem1_card: PanelContainer = _instantiate_card()
 	stem1_slot.add_child(stem1_card)
 	_stem_cards.append(stem1_card)
 
-	# Stems 2-5 — equal columns in the middle row.
+	# Stems 2-5 — stacked vertically in the middle column.
 	for index: int in range(1, StageManager.STEM_COUNT):
 		var card: PanelContainer = _instantiate_card()
-		middle_row.add_child(card)
+		middle_column.add_child(card)
 		_stem_cards.append(card)
 
-	# Boss stem — full width, placed in the bottom slot.
+	# Boss stem — full height, placed in the right slot.
 	var boss_card: PanelContainer = _instantiate_card()
 	boss_slot.add_child(boss_card)
 	_stem_cards.append(boss_card)
@@ -87,16 +78,12 @@ func _build_setlist(stage_data: StageData) -> void:
 		_stem_cards[index].setup(index, stage_data.stems[index])
 		_stem_cards[index].stem_selected.connect(_on_stem_selected)
 
-	_stem_cards[StageManager.BOSS_INDEX].setup(
-		StageManager.BOSS_INDEX, stage_data.boss_stem
-	)
+	_stem_cards[StageManager.BOSS_INDEX].setup(StageManager.BOSS_INDEX, stage_data.boss_stem)
 	_stem_cards[StageManager.BOSS_INDEX].stem_selected.connect(_on_stem_selected)
 
 	# Apply initial states from StageManager results.
 	for card_index: int in range(_stem_cards.size()):
 		_stem_cards[card_index].update_state(StageManager.stem_results[card_index])
-
-	_update_boss_counter()
 
 
 ## Instantiates a blank StemCard without configuring it.
@@ -135,7 +122,10 @@ func _prewarm_pools() -> void:
 		for tower_data: TowerData in GameManager.player_data.towers:
 			if tower_data is TowerData:
 				for tower_level in tower_data.levels:
-					if is_instance_valid(tower_level) and is_instance_valid(tower_level.projectile_scene):
+					if (
+						is_instance_valid(tower_level)
+						and is_instance_valid(tower_level.projectile_scene)
+					):
 						if not unique_projectiles.has(tower_level.projectile_scene):
 							unique_projectiles.append(tower_level.projectile_scene)
 	for projectile_scene: PackedScene in unique_projectiles:
@@ -145,12 +135,13 @@ func _prewarm_pools() -> void:
 ## Updates the "X/5" counter on the boss card.
 func _update_boss_counter() -> void:
 	var completed: int = StageManager.get_completed_stem_count()
-	boss_counter_label.text = "%d / %d Stems Complete" % [
-		completed, StageManager.STEM_COUNT
-	]
+	var boss_lbl: Label = boss_slot.get_node_or_null("BossCounterLabel")
+	if boss_lbl:
+		boss_lbl.text = "%d / %d Stems Complete" % [completed, StageManager.STEM_COUNT]
 
 
 # --- Signal Callbacks ---
+
 
 ## Handles stem card click — starts the selected stem via StageManager.
 func _on_stem_selected(stem_index: int) -> void:
@@ -161,7 +152,6 @@ func _on_stem_selected(stem_index: int) -> void:
 func _on_stem_status_changed(stem_index: int, result: StemResult) -> void:
 	if stem_index >= 0 and stem_index < _stem_cards.size():
 		_stem_cards[stem_index].update_state(result)
-	_update_boss_counter()
 
 
 ## Handles full stage restart — clears and rebuilds the setlist.
@@ -176,7 +166,7 @@ func _on_stage_restarted() -> void:
 	for child in stem1_slot.get_children():
 		if child is PanelContainer:
 			child.queue_free()
-	for child in middle_row.get_children():
+	for child in middle_column.get_children():
 		child.queue_free()
 	for child in boss_slot.get_children():
 		if child is PanelContainer:
@@ -186,14 +176,3 @@ func _on_stage_restarted() -> void:
 	if StageManager.active_stage:
 		# Defer rebuild to next frame so freed nodes are cleaned up.
 		call_deferred("_build_setlist", StageManager.active_stage)
-
-
-## Triggers the restart confirmation popup.
-func _on_restart_stage_pressed() -> void:
-	if restart_confirm:
-		restart_confirm.popup_centered()
-
-
-## Confirms the restart and wipes the stage progress.
-func _on_restart_confirmed() -> void:
-	StageManager.restart_stage()

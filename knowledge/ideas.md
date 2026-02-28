@@ -1,7 +1,7 @@
 # Pending Ideas and Open Questions
 
 **Version:** 0.1 (Living Document)
-**Last Updated:** 2026-02-26
+**Last Updated:** 2026-02-28
 
 This document tracks all pending ideas, brainstorms, and open design questions that have not yet been implemented or finalized.
 
@@ -43,3 +43,9 @@ This section contains existing open questions from previous design sessions that
 ### Artistic Identity
 *   **Music Source:** Will the music be original compositions, licensed tracks, or procedurally generated?
 *   **Game Title:** Finalize the official name for the project (currently "TD-Prototype").
+
+### UI & Technical Presentation
+*   **### SubViewport Aspect Ratio & Scaling
+*   **The "Hardware Rack" Aesthetic:** When the window exceeds the 1536×1024 grid, we experience vertical/horizontal bars. 
+*   **Design Decision:** Instead of "dead" black bars, use a themed background (e.g., a hardware rack or studio wall) that tiles under the main DAW shell.
+*   **Secondary Option:** Implement a custom shader that continues the "infinite grid" pattern into the letterbox areas, ensuring the entire window feels active even if gameplay is centered.

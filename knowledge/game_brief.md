@@ -128,7 +128,8 @@ The player is given two levels of reset depending on whether they want to optimi
 	remains untouched.
 - **Restart Entire Stage:** Wipes all stem progress for the current stage and returns the
 	player to the Studio. This is the **only way to unlock and change the Loadout** 
-	once a stage run has begun.
+	once a stage run has begun. In the SPA architecture, this is triggered via the
+	`StageManager` and updates the Top Bar's context state immediately upon confirmation.
 
 ### Loadout Lock Timing
 - The loadout **locks the moment Stem 1 begins**. 
@@ -342,6 +343,9 @@ The entire interface is modelled after professional DAW software.
 The game operates as a Single Page Application within a persistent shell (`GameWindow`).
 - **Persistent DAW Shell:** The Top Bar (Transport Controls, Peak Meter) and Left Sidebar (Towers/Relics) remain on screen during transitions to maintain immersion.
 - **Workspace Swapping:** Menus (Main Menu, Setlist, Studio) and Gameplay Levels are loaded into a central **SubViewport Workspace**. This prevents "hard" scene cuts and allows for smooth, software-like transitions.
+- **Context Modes (`ContextMode`):** The DAW shell uses a central state machine (`GAMEPLAY`, `SETLIST`, `EMPTY`) to toggle the visibility and interactivity of persistent elements (e.g., hiding Wave counters in menus).
+- **Sidebar Loadout Overlay:** To reinforce the "Locked Loadout" and "Offline" status during menus, the Left Sidebar is covered by an opaque sliding panel that animates in from the left edge of the screen when entering a non-gameplay context.
+- **Animation Strategy (SPA Timing):** Due to the heavy nature of workspace swaps, UI animations (like the sidebar slide) utilize a `call_deferred` pattern. This ensuring the engine yields one frame to finalize layout calculations before starting Tweens, preventing visual "snapping."
 - **UI Interaction Lock:** During automated opening sequences (like the path-reveal wipe), the DAW shell locks the "Play" and "Restart" buttons to prevent state desync until the animation finishes.
 
 ### Layout (1536×1024 Native, Scaled to 1920×1080)

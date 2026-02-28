@@ -4,9 +4,17 @@
 class_name GameWindow
 extends Control
 
-@onready var game_viewport: SubViewport = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport
-@onready var ui_workspace: MarginContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/UIWorkspaceContainer
-@onready var game_view_container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
+@onready
+var game_viewport: SubViewport = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport
+@onready
+var ui_workspace: MarginContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/UIWorkspaceContainer
+@export var sidebar_overlay_anim_time: float = 0.4
+
+@onready
+var game_view_container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
+
+@onready var sidebar_overlay: Control = $MainLayout/WorkspaceSplit/SidebarContainer/SidebarOverlay
+
 @onready var menu_button: MenuButton = $MainLayout/TopBar/Content/MenuButton
 @onready var main_menu_confirm: ConfirmationDialog = $MainMenuConfirmation
 @onready var setlist_confirm: ConfirmationDialog = $SetlistConfirmation
@@ -16,11 +24,18 @@ extends Control
 @onready var play_button: Button = $MainLayout/TopBar/Content/TransportControls/PlayButton
 @onready var restart_button: Button = $MainLayout/TopBar/Content/TransportControls/RestartButton
 
-@onready var gauge_l: ProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL
-@onready var gauge_r: ProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR
-@onready var peak_line_l: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL/PeakLineL
-@onready var peak_line_r: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR/PeakLineR
-@onready var integrity_label: Label = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/IntegrityValueLabel
+@onready
+var gauge_l: ProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL
+@onready
+var gauge_r: ProgressBar = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR
+@onready
+var peak_line_l: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL/PeakLineL
+@onready
+var peak_line_r: ColorRect = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR/PeakLineR
+@onready
+var integrity_label: Label = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/IntegrityValueLabel
+@onready
+var performance_meter_container: PanelContainer = $MainLayout/TopBar/Content/PerformanceMeterContainer
 
 # Window Controls
 @onready var btn_minimize: Button = $MainLayout/TopBar/Content/WindowControls/MinimizeButton
@@ -29,6 +44,10 @@ extends Control
 
 @onready var wave_label: Label = $MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox/WaveLabel
 @onready var gain_label: Label = $MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox/GainLabel
+@onready
+var stage_title_label: Label = $MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox/StageTitleLabel
+@onready
+var setlist_restart_button: Button = $MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox/SetlistRestartButton
 
 # Volume Controls
 @onready var volume_button: Button = $MainLayout/TopBar/Content/TransportControls/VolumeButton
@@ -44,8 +63,10 @@ var icon_mute: Texture2D = preload("res://UI/Icons/volume_mute.svg")
 # State
 var _build_manager: BuildManager
 var _selected_tower: TemplateTower = null
-var _tower_inspector: PanelContainer # Typed loose to avoid cyclic ref with TowerInspector
-var _sidebar_hud: Control # Typed loose to avoid cyclic ref with SidebarHUD
+var _transport_allowed: bool = false
+var _is_sidebar_offline: bool = true  # Default to true so opening the first level animates it away
+var _tower_inspector: PanelContainer  # Typed loose to avoid cyclic ref with TowerInspector
+var _sidebar_hud: Control  # Typed loose to avoid cyclic ref with SidebarHUD
 
 # Meter Animation State
 var _target_damage_value: float = 0.0
@@ -54,9 +75,9 @@ var _meter_noise_offset_r: float = 0.0
 
 # (Peak Hold State removed as it is now pinned strictly to actual damage)
 # Jitter Settings
-const JITTER_SPEED: float = 20.0 # How fast the noise fluctuates (Higher = Faster)
-const JITTER_AMPLITUDE: float = 0.01 # 2% of max value
-const STEREO_SEPARATION: float = 0.15 # 0.0 = Mono (Synced), 1.0 = Independent
+const JITTER_SPEED: float = 20.0  # How fast the noise fluctuates (Higher = Faster)
+const JITTER_AMPLITUDE: float = 0.01  # 2% of max value
+const STEREO_SEPARATION: float = 0.15  # 0.0 = Mono (Synced), 1.0 = Independent
 
 # Jitter State
 var _noise_target_common: float = 0.0
@@ -67,17 +88,14 @@ var _noise_val_diff: float = 0.0
 # Volume State
 var _is_muted: bool = false
 var _previous_volume: float = 80.0
-var _transport_allowed: bool = false # Guard flag for Play/Restart buttons
 
 const DEFAULT_LEVEL_PATH: String = "res://Stages/_TemplateStage/template_stage.tscn"
 const MAIN_MENU_SCENE_PATH: String = "res://UI/MainMenu/main_menu.tscn"
 const SETLIST_SCENE_PATH: String = "res://UI/Setlist/setlist_screen.tscn"
 
-enum MenuOptions {
-	MAIN_MENU,
-	SETLIST,
-	QUIT
-}
+enum MenuOptions { MAIN_MENU, SETLIST, QUIT }
+
+enum ContextMode { GAMEPLAY, SETLIST, EMPTY }
 
 @onready var restart_confirm: ConfirmationDialog = $RestartConfirmation
 
@@ -98,6 +116,9 @@ func _ready() -> void:
 	_setup_inspector()
 	_setup_level()
 
+	# Ensure the overlay's physical state matches its default boolean state behind the loading screen.
+	_set_sidebar_offline(_is_sidebar_offline, true)
+
 
 func _exit_tree() -> void:
 	if is_instance_valid(_build_manager) and _build_manager.has_method("clear_level_references"):
@@ -114,8 +135,9 @@ func _setup_build_manager() -> void:
 
 ## Binds the current BuildManager to the viewport, UI signals, and the static DropZone node.
 func _bind_build_manager() -> void:
-	if not is_instance_valid(_build_manager): return
-	
+	if not is_instance_valid(_build_manager):
+		return
+
 	if not _build_manager.tower_selected.is_connected(_on_tower_selected):
 		_build_manager.tower_selected.connect(_on_tower_selected)
 	if not _build_manager.tower_deselected.is_connected(_on_tower_deselected):
@@ -125,17 +147,19 @@ func _bind_build_manager() -> void:
 	var viewport: SubViewport = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport
 	var container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
 	_build_manager.bind_to_viewport(viewport, container)
-	
+
 	# Inject BuildManager into the static DropZone node defined in the scene file
 	var drop_zone: Control = $MainLayout/WorkspaceSplit/GameViewWrapper.get_node_or_null("DropZone")
 	if is_instance_valid(drop_zone) and drop_zone.has_method("setup"):
 		drop_zone.setup(_build_manager)
 
+	# Setup initial overlay state removed to prevent snapping. Overlay animation is now driven purely by change_workspace ContextMode swaps.
+
 
 ## Instantiates the SidebarHUD scene into the left sidebar panel, replacing
 ## any existing children.
 func _setup_sidebar_hud() -> void:
-	var sidebar_container: PanelContainer = $MainLayout/WorkspaceSplit/LeftSidebar
+	var sidebar_container: PanelContainer = $MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar
 	if not sidebar_container:
 		return
 
@@ -207,8 +231,10 @@ func _setup_input_propagation() -> void:
 	var top_bar: PanelContainer = $MainLayout/TopBar
 	var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/LeftSidebar
 
-	if top_bar: _set_container_mouse_ignore_recursive(top_bar)
-	if left_sidebar: _set_container_mouse_ignore_recursive(left_sidebar)
+	if top_bar:
+		_set_container_mouse_ignore_recursive(top_bar)
+	if left_sidebar:
+		_set_container_mouse_ignore_recursive(left_sidebar)
 
 
 ## Instantiates the TowerInspector panel inside the game view container and
@@ -225,9 +251,7 @@ func _setup_inspector() -> void:
 
 	if _build_manager:
 		_tower_inspector.sell_tower_requested.connect(_build_manager._on_sell_tower_requested)
-		_tower_inspector.target_priority_changed.connect(
-			_build_manager._on_target_priority_changed
-		)
+		_tower_inspector.target_priority_changed.connect(_build_manager._on_target_priority_changed)
 
 
 ## Loads or wires up the initial level. If a level already exists in the
@@ -239,8 +263,9 @@ func _setup_level() -> void:
 
 ## Animates performance meters with smoothed jitter and peak-hold indicators.
 func _process(delta: float) -> void:
-	if not is_instance_valid(gauge_l) or not is_instance_valid(gauge_r): return
-	
+	if not is_instance_valid(gauge_l) or not is_instance_valid(gauge_r):
+		return
+
 	# We want UI meters to animate smoothly even if the game is fast-forwarding,
 	# so we get the raw, unscaled delta time by removing the time_scale multiplier.
 	var time_scale: float = Engine.time_scale
@@ -291,7 +316,8 @@ func _process(delta: float) -> void:
 func _update_peak_hold(target_val: float, is_left: bool) -> void:
 	var line: ColorRect = peak_line_l if is_left else peak_line_r
 
-	if not is_instance_valid(gauge_l): return
+	if not is_instance_valid(gauge_l):
+		return
 
 	# Update visual position of peak line
 	# Progress bar physical range is -5 to 100 (total span 105).
@@ -321,6 +347,9 @@ func _setup_transport() -> void:
 	if restart_button:
 		restart_button.pressed.connect(_on_restart_button_pressed)
 
+	if setlist_restart_button:
+		setlist_restart_button.pressed.connect(_on_setlist_restart_button_pressed)
+
 
 ## Toggles the game between playing and paused states.
 func _on_play_button_pressed() -> void:
@@ -330,9 +359,11 @@ func _on_play_button_pressed() -> void:
 ## Pauses the game (if playing) and opens the restart confirmation dialog.
 func _on_restart_button_pressed() -> void:
 	if GameManager.is_wave_active and GameManager.game_state == GameManager.GameState.PLAYING:
-		GameManager.set_game_state(GameManager.GameState.PAUSED) # Explicitly pause, don't toggle
-	
+		GameManager.set_game_state(GameManager.GameState.PAUSED)  # Explicitly pause, don't toggle
+
 	if restart_confirm:
+		restart_confirm.title = "Abort Stem?"
+		restart_confirm.dialog_text = "Restart the current stem? All progress will be lost."
 		restart_confirm.popup_centered()
 
 
@@ -344,8 +375,10 @@ func _on_minimize_pressed() -> void:
 ## Toggles between windowed and fullscreen modes.
 func _on_maximize_pressed() -> void:
 	var current_mode: int = DisplayServer.window_get_mode()
-	if current_mode == DisplayServer.WINDOW_MODE_FULLSCREEN \
-		or current_mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
+	if (
+		current_mode == DisplayServer.WINDOW_MODE_FULLSCREEN
+		or current_mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN
+	):
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 	else:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
@@ -362,7 +395,7 @@ func _on_close_pressed() -> void:
 func _on_game_state_changed(new_state: int) -> void:
 	_update_play_button_visuals()
 
-	var is_paused: bool = (new_state == GameManager.GameState.PAUSED)
+	var is_paused: bool = new_state == GameManager.GameState.PAUSED
 
 	if has_node("MainLayout/WorkspaceSplit/LeftSidebar"):
 		_set_container_input_state($MainLayout/WorkspaceSplit/LeftSidebar, not is_paused)
@@ -375,11 +408,11 @@ func _set_container_input_state(node: Node, enabled: bool) -> void:
 	if node is Control:
 		if node is BaseButton or node is LineEdit:
 			var can_interact: bool = enabled
-			
+
 			# Transport buttons are further restricted by the _transport_allowed flag
 			if node == play_button or node == restart_button:
 				can_interact = enabled and _transport_allowed
-				
+
 			node.disabled = not can_interact
 
 		if not enabled:
@@ -422,7 +455,7 @@ func _setup_menu() -> void:
 	popup.add_item("Main Menu", MenuOptions.MAIN_MENU)
 	popup.add_item("Setlist", MenuOptions.SETLIST)
 	popup.add_item("Quit", MenuOptions.QUIT)
-	
+
 	# Start with Setlist disabled until a level loads
 	popup.set_item_disabled(popup.get_item_index(MenuOptions.SETLIST), true)
 
@@ -484,19 +517,28 @@ func _on_quit_confirmed() -> void:
 	get_tree().quit()
 
 
-## Restarts the current stem by reloading the active level scene.
+## Restarts the current stem by reloading the active level scene, OR restarts the full stage if in setlist.
 func _on_restart_confirmed() -> void:
 	get_tree().paused = false
-	
+
+	if restart_confirm.title == "Restart Stage?":
+		# We are performing a full stage restart from the setlist
+		GameManager.reset_state()
+		if StageManager.has_method("restart_stage"):
+			StageManager.restart_stage()
+		SceneManager.load_scene(SETLIST_SCENE_PATH, SceneManager.ViewType.MENU)
+		return
+
+	# Normal single-stem restart
 	if StageManager.current_stem_index >= 0:
 		StageManager.restart_stem()
 	else:
-		GameManager.reset_state() # Ensure timing variables reset
+		GameManager.reset_state()  # Ensure timing variables reset
 		var current_path = DEFAULT_LEVEL_PATH
 		if GameManager.level_data != null and GameManager.level_data.level_scene_path != "":
 			current_path = GameManager.level_data.level_scene_path
-			
-		_load_level(current_path) # Reload logic; later mapped to current level path
+
+		_load_level(current_path)  # Reload logic; later mapped to current level path
 
 
 ## Pauses the game (if currently playing) before showing a system modal.
@@ -516,7 +558,7 @@ func _load_level(level_path: String) -> void:
 	var level_scene: PackedScene = load(level_path)
 	if level_scene:
 		var level_instance: Node = level_scene.instantiate()
-		change_workspace(level_instance, 1) # 1 = LEVEL
+		change_workspace(level_instance, 1)  # 1 = LEVEL
 
 
 ## Shows the tower inspector anchored to the selected tower's screen position.
@@ -570,38 +612,96 @@ func change_workspace(scene_instance: Node, view_type: int) -> void:
 	for child: Node in ui_workspace.get_children():
 		child.queue_free()
 
-	# SceneManager.ViewType.LEVEL = 1, MENU = 0 
+	# SceneManager.ViewType.LEVEL = 1, MENU = 0
 	# (using int to avoid circular typing if necessary)
-	if view_type == 1: # LEVEL
+	if view_type == 1:  # LEVEL
 		ui_workspace.hide()
 		game_view_container.show()
 		game_viewport.add_child(scene_instance)
 		_wire_up_level(scene_instance)
 		_set_transport_controls_enabled(true)
-	else: # MENU
+	else:  # MENU
 		game_view_container.hide()
 		ui_workspace.show()
 		ui_workspace.add_child(scene_instance)
 		_set_transport_controls_enabled(false)
 
-## Temporarily enables/disables transport buttons (play, restart) 
+		# Context detection for menus (using duck-typing to avoid circular class_name issues)
+		if scene_instance.has_method("_build_setlist"):
+			set_context_mode(ContextMode.SETLIST)
+		else:
+			set_context_mode(ContextMode.EMPTY)
+
+
+## Temporarily enables/disables transport buttons (play, restart)
 ## when navigating menus vs playing levels.
 func _set_transport_controls_enabled(enabled: bool) -> void:
 	_transport_allowed = enabled
-	
-	if play_button: play_button.disabled = not enabled
-	if restart_button: restart_button.disabled = not enabled
-	
+
+	if play_button:
+		play_button.disabled = not enabled
+	if restart_button:
+		restart_button.disabled = not enabled
+
 	# Sync the Setlist dropdown option with the active level state
 	if menu_button:
 		var popup: PopupMenu = menu_button.get_popup()
 		var setlist_idx: int = popup.get_item_index(MenuOptions.SETLIST)
 		if setlist_idx != -1:
 			popup.set_item_disabled(setlist_idx, not enabled)
-	
+
 	# Always ensure the top bar isn't orphaned in a locked state when entering a menu
 	if not enabled:
 		_set_ui_interaction(true)
+
+	if enabled:
+		set_context_mode(ContextMode.GAMEPLAY)
+	else:
+		# We no longer default to SETLIST here.
+		# Context is now explicitly set in change_workspace() or other state transitions.
+		pass
+
+
+## Updates the Top Bar layout based on the current context (e.g. gameplay vs menu).
+func set_context_mode(mode: ContextMode) -> void:
+	match mode:
+		ContextMode.GAMEPLAY:
+			wave_label.show()
+			gain_label.show()
+			stage_title_label.hide()
+			if setlist_restart_button:
+				setlist_restart_button.hide()
+			_set_sidebar_offline(false)
+
+		ContextMode.SETLIST:
+			wave_label.hide()
+			gain_label.hide()
+			stage_title_label.show()
+			if setlist_restart_button:
+				setlist_restart_button.show()
+			_set_sidebar_offline(true)
+
+			if StageManager.active_stage:
+				stage_title_label.text = StageManager.active_stage.stage_name
+			else:
+				stage_title_label.text = "Setlist"
+
+		ContextMode.EMPTY:
+			wave_label.hide()
+			gain_label.hide()
+			stage_title_label.hide()
+			if setlist_restart_button:
+				setlist_restart_button.hide()
+			_set_sidebar_offline(true)
+
+
+## Triggers the confirmation to restart the ENTIRE stage from the Setlist screen.
+func _on_setlist_restart_button_pressed() -> void:
+	# Show a different confirmation dialog for stage restart if desired, or reuse a generic one
+	if restart_confirm:
+		restart_confirm.title = "Restart Stage?"
+		restart_confirm.dialog_text = "Are you sure you want to restart the entire stage? All stem progress will be wiped."
+		restart_confirm.popup_centered()
 
 
 ## Connects a level instance's required nodes to the BuildManager and wires
@@ -625,7 +725,7 @@ func _wire_up_level(level_instance: Node) -> void:
 	# Wire up opening sequence signals
 	if level_instance is TemplateLevel:
 		var level: TemplateLevel = level_instance as TemplateLevel
-		
+
 		# Connect signals immediately so we don't miss emissions during _ready()
 		if not level.opening_sequence_started.is_connected(_on_opening_sequence_started):
 			level.opening_sequence_started.connect(_on_opening_sequence_started)
@@ -662,13 +762,15 @@ func _set_ui_interaction(enabled: bool) -> void:
 ## Recursively sets mouse filters on a container tree. Interactive controls
 ## (buttons, sliders, draggables) keep MOUSE_FILTER_STOP when allow_buttons
 ## is true; all other containers are set to MOUSE_FILTER_IGNORE.
-func _set_container_mouse_ignore_recursive(
-	node: Node, allow_buttons: bool = true
-) -> void:
+func _set_container_mouse_ignore_recursive(node: Node, allow_buttons: bool = true) -> void:
 	if node is Control:
 		var is_interactive: bool = (
-			node is BaseButton or node is LineEdit or node is TextEdit
-			or node is Tree or node is ItemList or node is Range
+			node is BaseButton
+			or node is LineEdit
+			or node is TextEdit
+			or node is Tree
+			or node is ItemList
+			or node is Range
 		)
 		if not is_interactive and node.has_method("_get_drag_data"):
 			is_interactive = true
@@ -692,14 +794,18 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_DRAG_BEGIN:
 		var top_bar: PanelContainer = $MainLayout/TopBar
 		var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/LeftSidebar
-		if top_bar: _set_container_mouse_ignore_recursive(top_bar, false)
-		if left_sidebar: _set_container_mouse_ignore_recursive(left_sidebar, false)
+		if top_bar:
+			_set_container_mouse_ignore_recursive(top_bar, false)
+		if left_sidebar:
+			_set_container_mouse_ignore_recursive(left_sidebar, false)
 
 	elif what == NOTIFICATION_DRAG_END:
 		var top_bar: PanelContainer = $MainLayout/TopBar
 		var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/LeftSidebar
-		if top_bar: _set_container_mouse_ignore_recursive(top_bar, true)
-		if left_sidebar: _set_container_mouse_ignore_recursive(left_sidebar, true)
+		if top_bar:
+			_set_container_mouse_ignore_recursive(top_bar, true)
+		if left_sidebar:
+			_set_container_mouse_ignore_recursive(left_sidebar, true)
 
 		# Ensure buff/drag state is cleaned up
 		if is_instance_valid(_build_manager) and _build_manager.is_dragging():
@@ -730,7 +836,7 @@ func _on_peak_changed(current: float, max_val: float) -> void:
 	if max_val > 0.0 and is_instance_valid(gauge_l):
 		var true_pct: float = min(100.0, (current / max_val) * 100.0)
 		_target_damage_value = true_pct
-		
+
 		if is_instance_valid(integrity_label):
 			var distortion_pct: int = max(0, floor(true_pct))
 			integrity_label.text = "%d%%" % distortion_pct
@@ -748,10 +854,12 @@ func _on_volume_changed(value: float) -> void:
 	# Sync mute icon with slider position
 	if value <= 0 and not _is_muted:
 		_is_muted = true
-		if volume_button: volume_button.icon = icon_mute
+		if volume_button:
+			volume_button.icon = icon_mute
 	elif value > 0 and _is_muted:
 		_is_muted = false
-		if volume_button: volume_button.icon = icon_volume
+		if volume_button:
+			volume_button.icon = icon_volume
 
 
 ## Toggles mute state. Muting saves the current volume and sets the slider
@@ -759,14 +867,53 @@ func _on_volume_changed(value: float) -> void:
 func _on_volume_button_pressed() -> void:
 	if _is_muted:
 		_is_muted = false
-		if volume_button: volume_button.icon = icon_volume
+		if volume_button:
+			volume_button.icon = icon_volume
 
-		if _previous_volume <= 0: _previous_volume = 50.0
-		if volume_slider: volume_slider.value = _previous_volume
+		if _previous_volume <= 0:
+			_previous_volume = 50.0
+		if volume_slider:
+			volume_slider.value = _previous_volume
 	else:
 		_is_muted = true
-		if volume_button: volume_button.icon = icon_mute
+		if volume_button:
+			volume_button.icon = icon_mute
 
 		if volume_slider:
 			_previous_volume = volume_slider.value
 			volume_slider.value = 0
+
+
+## Animates the Sidebar Overlay in or out to block loadout interaction during menus.
+func _set_sidebar_offline(is_offline: bool, instant: bool = false) -> void:
+	if not is_instance_valid(sidebar_overlay):
+		return
+
+	if _is_sidebar_offline == is_offline and not instant:
+		return
+
+	_is_sidebar_offline = is_offline
+
+	var target_x: float = 0.0 if is_offline else -sidebar_overlay.size.x
+
+	if instant:
+		sidebar_overlay.position.x = target_x
+		sidebar_overlay.visible = is_offline
+		return
+
+	# Delay the animation by one frame to allow the layout to settle after large scene changes
+	call_deferred("_start_sidebar_tween", target_x, is_offline)
+
+
+func _start_sidebar_tween(target_x: float, is_offline: bool) -> void:
+	if not is_instance_valid(sidebar_overlay):
+		return
+
+	# Ensure the overlay is visible before animating, regardless of direction.
+	sidebar_overlay.visible = true
+
+	var tween: Tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(sidebar_overlay, "position:x", target_x, sidebar_overlay_anim_time)
+
+	if not is_offline:
+		tween.tween_callback(sidebar_overlay.hide)

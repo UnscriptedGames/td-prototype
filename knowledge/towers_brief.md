@@ -16,7 +16,8 @@ The attack behaviour must feel like a **natural extension of the equipment** —
 intuitively to the gear, it's the wrong fit.
 
 ### Core Mechanics
-- **Target Priority Swapping:** Every tower supports real-time priority swapping (Closest, Strongest, Most Progress, etc.). This UI remains active during the paused state to encourage tactical adjustment.
+- **Target Priority Swapping:** Every tower supports real-time priority swapping (Closest, Strongest, Most Progress, etc.).
+- **DAW Plug-in Inspector:** The Tower Inspector is no longer a world-space UI. It is a persistent "plug-in" panel residing in the right-side shell of the `GameWindow`. It remains active and interactive during the paused state to encourage tactical adjustment while the music is frozen.
 
 ### Target Roster
 - **6–8 unique towers** covering a range of attack types, effects, and upgrade paths.

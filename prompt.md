@@ -12,9 +12,6 @@ Act as the Godot Mentor. Please use your tools to read `.antigravity/handover.md
 
 ## 📝 MID-SESSION / UPDATES
 
-### Approve Proposal (Standard)
-LGTM. Please proceed with the implementation.
-
 ### Documentation Audit (End of Feature)
 Act as the Godot Mentor. Review our conversation history for design decisions or resolved questions. Use `list_dir` on the `Knowledge` folder and update `game_brief.md` and any other relevant docs (e.g., `towers_brief.md`). Propose a bulleted list of changes for my approval.
 
