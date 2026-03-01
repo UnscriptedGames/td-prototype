@@ -11,10 +11,7 @@ extends Node
 const LOADING_SCREEN_PATH: String = "res://UI/LoadingScreen/loading_screen.tscn"
 const GAME_WINDOW_PATH: String = "res://UI/Layout/game_window.tscn"
 
-enum ViewType {
-	MENU,
-	LEVEL
-}
+enum ViewType { MENU, LEVEL }
 
 ## The scene that will be displayed during loading.
 var loading_screen_scene: PackedScene = preload(LOADING_SCREEN_PATH)
@@ -26,7 +23,9 @@ var game_window_scene: PackedScene = preload(GAME_WINDOW_PATH)
 ## @param scene_path: The resource path of the scene (.tscn) to load.
 ## @param view_type: Whether this is a UI MENU or a gameplay LEVEL to route into the correct container.
 ## @param stem_data: Optional stem configuration for LEVELs.
-func load_scene(scene_path: String, view_type: ViewType = ViewType.LEVEL, stem_data: StemData = null) -> void:
+func load_scene(
+	scene_path: String, view_type: ViewType = ViewType.LEVEL, stem_data: StemData = null
+) -> void:
 	# 1. Show the loading screen and wait for it to draw.
 	var loading_screen_instance: Node = loading_screen_scene.instantiate()
 	get_tree().root.add_child(loading_screen_instance)
@@ -49,10 +48,10 @@ func load_scene(scene_path: String, view_type: ViewType = ViewType.LEVEL, stem_d
 	# 3. Load the requested scene resource.
 	var scene_resource: PackedScene = load(scene_path)
 	var scene_instance: Node = scene_resource.instantiate()
-	
+
 	# Pass stem data if it's a level
 	if view_type == ViewType.LEVEL and stem_data and scene_instance.has_method("set_stem_data"):
-		# Using duck typing or specific class check, TemplateLevel uses stem_data var directly
+		# Using duck typing or specific class check, BaseStage uses stem_data var directly
 		scene_instance.set("stem_data", stem_data)
 
 	# 4. Inject into the appropriate workspace layer.

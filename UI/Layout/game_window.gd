@@ -229,7 +229,7 @@ func _setup_input_propagation() -> void:
 
 	# Allow drag data to fall through containers (prevents "Forbidden" cursor)
 	var top_bar: PanelContainer = $MainLayout/TopBar
-	var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/LeftSidebar
+	var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar
 
 	if top_bar:
 		_set_container_mouse_ignore_recursive(top_bar)
@@ -397,8 +397,10 @@ func _on_game_state_changed(new_state: int) -> void:
 
 	var is_paused: bool = new_state == GameManager.GameState.PAUSED
 
-	if has_node("MainLayout/WorkspaceSplit/LeftSidebar"):
-		_set_container_input_state($MainLayout/WorkspaceSplit/LeftSidebar, not is_paused)
+	if has_node("MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar"):
+		_set_container_input_state(
+			$MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar, not is_paused
+		)
 
 
 ## Recursively enables or disables input on a container and its children.
@@ -535,8 +537,6 @@ func _on_restart_confirmed() -> void:
 	else:
 		GameManager.reset_state()  # Ensure timing variables reset
 		var current_path = DEFAULT_LEVEL_PATH
-		if GameManager.level_data != null and GameManager.level_data.level_scene_path != "":
-			current_path = GameManager.level_data.level_scene_path
 
 		_load_level(current_path)  # Reload logic; later mapped to current level path
 
@@ -574,7 +574,7 @@ func _on_tower_selected(tower: TemplateTower) -> void:
 			var viewport_local_pos: Vector2 = tower.get_global_transform_with_canvas().origin
 			var container_offset: Vector2 = Vector2.ZERO
 
-			var container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewContainer
+			var container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
 			if container:
 				container_offset = container.global_position
 
@@ -722,17 +722,14 @@ func _wire_up_level(level_instance: Node) -> void:
 		else:
 			printerr("Failed to find required level nodes for BuildManager.")
 
-	# Wire up opening sequence signals
-	if level_instance is TemplateLevel:
-		var level: TemplateLevel = level_instance as TemplateLevel
+	# Wire up opening sequence signals using duck-typing to avoid cyclical reference errors
+	if level_instance.has_signal("opening_sequence_started"):
+		if not level_instance.opening_sequence_started.is_connected(_on_opening_sequence_started):
+			level_instance.opening_sequence_started.connect(_on_opening_sequence_started)
+		if not level_instance.opening_sequence_finished.is_connected(_on_opening_sequence_finished):
+			level_instance.opening_sequence_finished.connect(_on_opening_sequence_finished)
 
-		# Connect signals immediately so we don't miss emissions during _ready()
-		if not level.opening_sequence_started.is_connected(_on_opening_sequence_started):
-			level.opening_sequence_started.connect(_on_opening_sequence_started)
-		if not level.opening_sequence_finished.is_connected(_on_opening_sequence_finished):
-			level.opening_sequence_finished.connect(_on_opening_sequence_finished)
-
-		if level.play_opening_sequence:
+		if "play_opening_sequence" in level_instance and level_instance.play_opening_sequence:
 			_set_ui_interaction(false)
 		else:
 			_set_ui_interaction(true)
@@ -751,7 +748,7 @@ func _on_opening_sequence_finished() -> void:
 ## Enables or disables interaction on the top bar and sidebar containers.
 func _set_ui_interaction(enabled: bool) -> void:
 	var top_bar: PanelContainer = $MainLayout/TopBar
-	var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/LeftSidebar
+	var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar
 
 	if top_bar:
 		_set_container_input_state(top_bar, enabled)
@@ -793,7 +790,7 @@ func _set_container_mouse_ignore_recursive(node: Node, allow_buttons: bool = tru
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_DRAG_BEGIN:
 		var top_bar: PanelContainer = $MainLayout/TopBar
-		var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/LeftSidebar
+		var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar
 		if top_bar:
 			_set_container_mouse_ignore_recursive(top_bar, false)
 		if left_sidebar:
@@ -801,7 +798,7 @@ func _notification(what: int) -> void:
 
 	elif what == NOTIFICATION_DRAG_END:
 		var top_bar: PanelContainer = $MainLayout/TopBar
-		var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/LeftSidebar
+		var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar
 		if top_bar:
 			_set_container_mouse_ignore_recursive(top_bar, true)
 		if left_sidebar:

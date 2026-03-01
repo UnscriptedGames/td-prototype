@@ -5,7 +5,7 @@ extends Control
 ## Provides a single "Start Game" button that loads Stage 1 into the
 ## [StageManager] and transitions to the Setlist Preview screen.
 
-const STAGE_1_PATH: String = "res://Config/Stages/stage_01.tres"
+const STAGE_1_PATH: String = "res://Config/Stages/stage01.tres"
 
 @onready var start_button: Button = $StartButton
 

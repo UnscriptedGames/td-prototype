@@ -1,18 +1,19 @@
 [gd_resource type="Resource" script_class="StageData" format=3 uid="uid://bbnb52tildayr"]
 
+[ext_resource type="Script" uid="uid://0x3lyn1cjhr1" path="res://Stages/_Components/Resources/maze_tile_style.gd" id="1_22rae"]
 [ext_resource type="Script" uid="uid://b4bc38iess3ir" path="res://Core/Data/Stages/stage_data.gd" id="1_stage"]
 [ext_resource type="Script" uid="uid://c6sd68ghkditp" path="res://Core/Data/Waves/spawn_instruction.gd" id="2_grwt2"]
 [ext_resource type="Script" uid="uid://cub41ifvd2n7o" path="res://Core/Data/Stages/stem_data.gd" id="2_stem"]
-[ext_resource type="Resource" uid="uid://bexmpa3c26c7y" path="res://Config/Stages/stage_01_stem_01.tres" id="4_grwt2"]
-[ext_resource type="Resource" uid="uid://dkd24h3cs6pwt" path="res://Config/Stages/stage_01_stem_02.tres" id="5_txdv4"]
-[ext_resource type="Resource" uid="uid://d2lb3bi5qtvjv" path="res://Config/Stages/stage_01_stem_03.tres" id="6_ry1br"]
-[ext_resource type="Resource" uid="uid://bfvcmxv3ebo12" path="res://Config/Stages/stage_01_stem_04.tres" id="7_v4qsm"]
-[ext_resource type="Resource" uid="uid://cg3oyt4l6w7n6" path="res://Config/Stages/stage_01_stem_05.tres" id="8_pfhh4"]
+[ext_resource type="Resource" uid="uid://bexmpa3c26c7y" path="res://Config/Stages/stage01_stem01.tres" id="4_grwt2"]
+[ext_resource type="Resource" uid="uid://dkd24h3cs6pwt" path="res://Config/Stages/stage01_stem02.tres" id="5_txdv4"]
+[ext_resource type="Resource" uid="uid://d2lb3bi5qtvjv" path="res://Config/Stages/stage01_stem03.tres" id="6_ry1br"]
+[ext_resource type="Resource" uid="uid://bfvcmxv3ebo12" path="res://Config/Stages/stage01_stem04.tres" id="7_v4qsm"]
+[ext_resource type="Resource" uid="uid://cg3oyt4l6w7n6" path="res://Config/Stages/stage01_stem05.tres" id="8_pfhh4"]
 
 [sub_resource type="Resource" id="boss_stem"]
 script = ExtResource("2_stem")
 stem_label = "Boss — Full Mix"
-level_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stem_01_drums.tscn"
+layout_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stage01_stem01_drums.tscn"
 enemy_preview_hint = "All Stems Active"
 
 [resource]

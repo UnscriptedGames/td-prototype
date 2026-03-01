@@ -104,9 +104,12 @@ During the **Boss Wave (Wave 6)**, the Peak Meter is a pure survival mechanic �
 ### Structure
 - **10 Stages**, each representing a complete song (e.g., "Funky Golden Sun").
 - **5 Stems per Stage** + **1 Boss Wave** = 6 encounters per stage.
-- **Atomic Data (`stem_data.gd`)**: Legacy `WaveData` has been merged into `StemData`. A stem now contains its own audio references and spawn instructions directly.
-- Each stem corresponds to a musical layer (e.g., Drums, Bass, Synth, Melody, Vocals).
-- **Filesystem Standard**: `Stages/Stage01_Name/Audio/stem_01_drums.mp3`.
+- **The BaseStage Shell**: To minimize scene overhead, all gameplay happens in `BaseStage.tscn`. Individual levels are lightweight "Layout Scenes" (`template_stage.tscn` inherits) containing only painted tiles.
+- **Atomic Data (`stem_data.gd`)**: Legacy `WaveData` has been merged into `StemData`. A stem now contains its own audio references, spawn instructions, and a `layout_scene_path` which is injected into the `BaseStage` at runtime.
+- **Filesystem Standard**: `Stages/Stage01_Name/Audio/stem_01_drums.mp3`. Configuration files use a strict no-underscore naming convention (e.g., `Config/Stages/stage01.tres`) to ensure consistent automated loading.
+
+### Audio Meter Pattern (Debug Logic)
+- **Always On Top**: To streamline the iteration loop, launching the game in a debug build (F5) automatically sets the window to "Always On Top" via `GameManager`, ensuring the DAW interface is immediate and visible over the IDE.
 
 ### Setlist Preview UI
 The Setlist is no longer a simple level select; it is a **Mix Selection** interface. 
@@ -341,12 +344,13 @@ The entire interface is modelled after professional DAW software.
 
 ### SPA Desktop Architecture
 The game operates as a Single Page Application within a persistent shell (`GameWindow`).
-- **Persistent DAW Shell:** The Top Bar (Transport Controls, Peak Meter) and Left Sidebar (Towers/Relics) remain on screen during transitions to maintain immersion.
-- **Workspace Swapping:** Menus (Main Menu, Setlist, Studio) and Gameplay Levels are loaded into a central **SubViewport Workspace**. This prevents "hard" scene cuts and allows for smooth, software-like transitions.
-- **Context Modes (`ContextMode`):** The DAW shell uses a central state machine (`GAMEPLAY`, `SETLIST`, `EMPTY`) to toggle the visibility and interactivity of persistent elements (e.g., hiding Wave counters in menus).
-- **Sidebar Loadout Overlay:** To reinforce the "Locked Loadout" and "Offline" status during menus, the Left Sidebar is covered by an opaque sliding panel that animates in from the left edge of the screen when entering a non-gameplay context.
-- **Animation Strategy (SPA Timing):** Due to the heavy nature of workspace swaps, UI animations (like the sidebar slide) utilize a `call_deferred` pattern. This ensuring the engine yields one frame to finalize layout calculations before starting Tweens, preventing visual "snapping."
-- **UI Interaction Lock:** During automated opening sequences (like the path-reveal wipe), the DAW shell locks the "Play" and "Restart" buttons to prevent state desync until the animation finishes.
+- **Persistent DAW Shell**: The Top Bar (Transport Controls, Peak Meter) and Left Sidebar remain on screen during transitions to maintain immersion.
+- **Workspace Swapping**: Menus (Main Menu, Setlist, Studio) and Gameplay Levels are loaded into a central **SubViewport Workspace**. This prevents "hard" scene cuts and allows for smooth, software-like transitions.
+- **Sidebar Architecture**: The Left Sidebar is nested within a `SidebarContainer` alongside a `SidebarOverlay`. This grouping allows the entire rack to be managed as a single logical unit for input propagation and state-dependent visibility.
+- **Context Modes (`ContextMode`)**: The DAW shell uses a central state machine (`GAMEPLAY`, `SETLIST`, `EMPTY`) to toggle the visibility and interactivity of persistent elements (e.g., hiding Wave counters in menus).
+- **Sidebar Loadout Overlay**: To reinforce the "Locked Loadout" and "Offline" status during menus, the Left Sidebar is covered by an opaque sliding panel that animates in from the left edge of the screen when entering a non-gameplay context.
+- **Animation Strategy (SPA Timing)**: Due to the heavy nature of workspace swaps, UI animations (like the sidebar slide) utilize a `call_deferred` pattern. This ensuring the engine yields one frame to finalize layout calculations before starting Tweens, preventing visual "snapping."
+- **UI Interaction Lock**: During automated opening sequences (like the path-reveal wipe), the DAW shell locks the "Play" and "Restart" buttons to prevent state desync until the animation finishes.
 
 ### Layout (1536×1024 Native, Scaled to 1920×1080)
 - **Top Bar:** Global stats (Peak Meter, Gold, Wave counter), Restart button, and Volume Control.
@@ -419,8 +423,8 @@ The Setlist screen serves as the transition between "The Studio" (Preparation) a
 	"sheet music" or "sequencer" view for the player.
 
 ### The Opening Sequence
-- **The Writing Grid:** The `SongLayer` uses a 1:1 mapping with the background 28×28 pad grid. Large writing tiles are used to display song titles or messages across the pads.
-- **The Column Swipe:** The opening sequence uses a `SWIPE_RIGHT` transition mode. `SongLayer` tiles (28px) disappear as a leading wave, followed by the `MazeLayer` buttons (84px) appearing with a fixed `swipe_gap` (~15% screen width), creating a rhythmic "wipe" that resolves into the level view.
+- **The Writing Grid**: The `AnimationLayer` uses a 1:1 mapping with the background 28×28 pad grid. Title strings (e.g., "DRUMS", "BASS") are plotted directly into this layer using the `animation_tileset.tres` and are revealed as part of the stem introduction.
+- **The Column Swipe**: The opening sequence uses a `SWIPE_RIGHT` transition mode. `SongLayer` tiles (28px) disappear as a leading wave, followed by the `MazeLayer` buttons (84px) appearing with a fixed `swipe_gap` (~15% screen width), creating a rhythmic "wipe" that resolves into the level view.
 
 ---
 
@@ -446,6 +450,7 @@ future design sessions and playtesting:
 - [x] **Data Consolidation:** Merged legacy `WaveData` into `StemData` to simplify the resource pipeline (Resolved Feb 26).
 - [x] **Modal Behavior:** Game auto-pauses for all system confirmations and resumes on cancel if a wave was active (Resolved Feb 27).
 - [x] **Setlist Navigation:** Returning to the Setlist from a level is a destructive action that requires a confirmation prompt (Resolved Feb 27).
+- [x] **BaseStage Injection:** Moved to a shell-injection pattern to reduce scene bloat (Resolved Mar 01).
 - [ ] **AP Growth:** How does the player's maximum AP increase? Fixed per stage, or a
 	separate upgrade currency?
 - [ ] **Unlock Economy:** Full mapping of what unlocks where (towers, buffs, relics, AP).

@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="StemData" format=3 uid="uid://dkd24h3cs6pwt"]
 
+[ext_resource type="Script" uid="uid://0x3lyn1cjhr1" path="res://Stages/_Components/Resources/maze_tile_style.gd" id="1_ae6p5"]
 [ext_resource type="Script" uid="uid://cub41ifvd2n7o" path="res://Core/Data/Stages/stem_data.gd" id="1_mvaxh"]
 [ext_resource type="Script" uid="uid://c6sd68ghkditp" path="res://Core/Data/Waves/spawn_instruction.gd" id="2_ae6p5"]
 [ext_resource type="PackedScene" uid="uid://dj2xubaiwg7dq" path="res://Entities/Enemies/BasicEnemy/basic_enemy.tscn" id="3_47ukw"]
@@ -8,20 +9,27 @@
 [ext_resource type="AudioStream" uid="uid://co3p0ra65338i" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_02_bass_bad.wav" id="6_ae6p5"]
 [ext_resource type="AudioStream" uid="uid://d1upouj506bgj" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_02_bass_good.mp3" id="7_47ukw"]
 
+[sub_resource type="Resource" id="Resource_47ukw"]
+script = ExtResource("1_ae6p5")
+button_color = Color(0.02745098, 0.54509807, 0.41960785, 1)
+side_color = Color(0.101960786, 0.101960786, 0.10980392, 1)
+glow_color = Color(0.011764706, 0.34509805, 0.2627451, 1)
+metadata/_custom_type_script = "uid://0x3lyn1cjhr1"
+
 [sub_resource type="Resource" id="Resource_itrpl"]
 script = ExtResource("4_gymmi")
-goal_tile = Vector2i(18, 3)
+goal_tile = Vector2i(0, 9)
 metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
 
 [sub_resource type="Resource" id="Resource_m4vk0"]
 script = ExtResource("4_gymmi")
-goal_tile = Vector2i(14, 11)
+goal_tile = Vector2i(12, 11)
 metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
 
 [sub_resource type="Resource" id="Resource_45yd0"]
 script = ExtResource("2_ae6p5")
 enemy_scene = ExtResource("3_47ukw")
-spawn_tile = Vector2i(2, -1)
+spawn_tile = Vector2i(-1, 2)
 count = 20
 start_delay = 0.5
 weighted_targets = Array[ExtResource("4_gymmi")]([SubResource("Resource_itrpl"), SubResource("Resource_m4vk0")])
@@ -30,9 +38,10 @@ metadata/_custom_type_script = "uid://c6sd68ghkditp"
 [resource]
 script = ExtResource("1_mvaxh")
 stem_label = "Bass"
-level_scene_path = "res://Stages/Stage01_FunkyGoldenSun/Stems/stem_01_drums.tscn"
+layout_scene_path = "uid://cn7fkt2y7chab"
 is_mandatory_first = true
 enemy_preview_hint = "Standard Waveforms"
+maze_styles = Array[ExtResource("1_ae6p5")]([SubResource("Resource_47ukw")])
 spawns = Array[ExtResource("2_ae6p5")]([SubResource("Resource_45yd0")])
 stem_audio_good = ExtResource("7_47ukw")
 stem_audio_avg = ExtResource("5_mvaxh")

@@ -36,6 +36,8 @@ Each stage contains 5 stems and a boss wave. Each stem is its own file to allow 
 3.  Search for and select **StemData**.
 4.  Save it as `stage_name_stem_01.tres`.
 5.  In the Inspector:
+    -   **Layout Scene Path**: Link to the lightweight layout scene (e.g., `stage01_stem01_drums.tscn`).
+    -   **Maze Styles**: Add `MazeTileStyle` resources here to define health-based colors.
     -   **Audio Stream**: Link the `.mp3` or `.wav` for this stem.
     -   **Is Boss Wave**: Check this if special boss logic or UI should trigger.
     -   **Spawns**: An array where you will add individual spawn instructions.
@@ -67,6 +69,7 @@ Spawn Instructions are kept **local** to the Stem file (Sub-resources) rather th
 
 ### 💡 Best Practices
 -   **Sequential Order**: Ensure Stem 1 is placed in the first slot, as it is mandatory.
--   **Goal Action**: When an enemy reaches a **Weighted Target** (Goal), it triggers the `reached_goal` function.
--   **Damage**: The player takes damage based on the enemy's **remaining health** which is added to the Peak Meter.
--   **Naming Convention**: Use `stage01_stem01_config.tres` style naming for clear sorting.
+-   **No-Underscore Convention**: Use `stage01.tres` style naming to prevent automated path failures.
+-   **Injection Pattern**: `BaseStage` handles all rendering logic; stems only provide the data and layout scenes.
+-   **Weighted Targets**: Always define goal tiles in the spawner to ensure enemies have a destination.
+-   **Damage Logic**: Distortion (Peak Meter) increases based on the enemy's **remaining health** when they reach a goal.

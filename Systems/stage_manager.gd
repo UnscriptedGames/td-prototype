@@ -17,7 +17,6 @@ signal stem_status_changed(stem_index: int, result: StemResult)
 ## Emitted when a full stage restart occurs and all cards should reset.
 signal stage_restarted
 
-
 # --- Constants ---
 
 ## Total number of playable stems (excluding the boss).
@@ -33,6 +32,8 @@ const THRESHOLD_BAD: float = 0.66
 ## Resource path for returning to the Setlist between stems.
 const SETLIST_SCENE_PATH: String = "res://UI/Setlist/setlist_screen.tscn"
 
+## Resource path for the single gameplay scene loaded for every stem.
+const BASE_STAGE_PATH: String = "res://Stages/_BaseStage/base_stage.tscn"
 
 # --- State ---
 
@@ -48,23 +49,26 @@ var _current_stem_index: int = -1
 ## True after the player starts their first stem, locking the loadout.
 var _loadout_locked: bool = false
 
-
 # --- Getters ---
 
 var active_stage: StageData:
-	get: return _active_stage
+	get:
+		return _active_stage
 
 var stem_results: Array[StemResult]:
-	get: return _stem_results
+	get:
+		return _stem_results
 
 var current_stem_index: int:
-	get: return _current_stem_index
+	get:
+		return _current_stem_index
 
 var loadout_locked: bool:
-	get: return _loadout_locked
-
+	get:
+		return _loadout_locked
 
 # --- Public Methods ---
+
 
 ## Initialises the stage run. Sets Stem 1 to AVAILABLE, all others LOCKED.
 func load_stage(stage_data: StageData) -> void:
@@ -94,15 +98,12 @@ func start_stem(stem_index: int) -> void:
 	# Reset GameManager state for a fresh stem play.
 	GameManager.reset_state()
 
-	# Determine the scene path and stem data from the stage data.
-	var scene_path: String = _get_scene_path(stem_index)
-	if scene_path.is_empty():
-		push_error("StageManager: No scene path for stem index %d." % stem_index)
-		return
-		
 	var stem_data: StemData = _get_stem_data(stem_index)
+	if not stem_data:
+		push_error("StageManager: No StemData for stem index %d." % stem_index)
+		return
 
-	SceneManager.load_scene(scene_path, SceneManager.ViewType.LEVEL, stem_data)
+	SceneManager.load_scene(BASE_STAGE_PATH, SceneManager.ViewType.LEVEL, stem_data)
 
 
 ## Records the completion of the current stem with a quality grade.
@@ -133,9 +134,7 @@ func complete_stem(quality: StemResult.StemQuality) -> void:
 
 	if OS.is_debug_build():
 		var quality_name: String = StemResult.StemQuality.keys()[quality]
-		print("StageManager: Stem %d completed with %s quality." % [
-			completed_index, quality_name
-		])
+		print("StageManager: Stem %d completed with %s quality." % [completed_index, quality_name])
 
 
 ## Restarts the current stem without resetting stage progress.
@@ -227,6 +226,7 @@ func _stop_current_stem_audio() -> void:
 
 # --- Private Methods ---
 
+
 ## Handles a normal stem completion event from GameManager.
 ## Grades the stem quality, records the result, and returns to the Setlist.
 func _on_stem_completion_requested() -> void:
@@ -242,12 +242,12 @@ func _on_stem_failed() -> void:
 	if _current_stem_index < 0:
 		return
 	var result: StemResult = _stem_results[_current_stem_index]
-	
+
 	# Failure Preservation: Do not wipe progress if this was already beaten.
 	if result.status != StemResult.StemStatus.COMPLETED:
 		result.status = StemResult.StemStatus.AVAILABLE
 		result.quality = StemResult.StemQuality.NONE
-		
+
 	stem_status_changed.emit(_current_stem_index, result)
 
 	if OS.is_debug_build():
@@ -258,15 +258,15 @@ func _on_stem_failed() -> void:
 ## Stem 1 (index 0) starts as AVAILABLE; everything else starts LOCKED.
 func _initialise_results() -> void:
 	_stem_results.clear()
-	
-	# Pass 1: Build the array completely to prevent out-of-bounds queries 
+
+	# Pass 1: Build the array completely to prevent out-of-bounds queries
 	# from listeners responding to the status signal.
 	for index: int in range(STEM_COUNT + 1):
 		var result := StemResult.new()
 		if index == 0:
 			result.status = StemResult.StemStatus.AVAILABLE
 		_stem_results.append(result)
-		
+
 	# Pass 2: Now that the array is complete and safe to query, emit the signals.
 	for index: int in range(STEM_COUNT + 1):
 		stem_status_changed.emit(index, _stem_results[index])
@@ -289,21 +289,6 @@ func _unlock_next_stems() -> void:
 			_stem_results[BOSS_INDEX].status = StemResult.StemStatus.AVAILABLE
 			stem_status_changed.emit(BOSS_INDEX, _stem_results[BOSS_INDEX])
 
-
-## Resolves the level scene path for a given stem index.
-func _get_scene_path(stem_index: int) -> String:
-	if not _active_stage:
-		return ""
-
-	if stem_index == BOSS_INDEX:
-		if _active_stage.boss_stem:
-			return _active_stage.boss_stem.level_scene_path
-		return ""
-
-	if stem_index >= 0 and stem_index < _active_stage.stems.size():
-		return _active_stage.stems[stem_index].level_scene_path
-
-	return ""
 
 ## Resolves the StemData resource for a given stem index.
 func _get_stem_data(stem_index: int) -> StemData:

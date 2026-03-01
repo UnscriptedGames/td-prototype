@@ -9,14 +9,18 @@ extends Resource
 ## Display label shown on the Setlist card (e.g., "Drums", "Bass").
 @export var stem_label: String = ""
 
-## Resource path to the level scene (.tscn) for this stem.
-@export_file("*.tscn") var level_scene_path: String = ""
+## Resource path to the layout-only scene (.tscn) containing MazeLayer and SongLayer tiles.
+@export_file("*.tscn") var layout_scene_path: String = ""
 
 ## If true, this stem must be completed before any others become available.
 @export var is_mandatory_first: bool = false
 
 ## Placeholder hint describing the enemy composition for this stem.
 @export var enemy_preview_hint: String = "Preview TBD"
+
+@export_group("Visuals")
+## Custom styles mapping Tile IDs to colors and glow properties.
+@export var maze_styles: Array[MazeTileStyle] = []
 
 @export_group("Stem Settings")
 ## Delay before stem starts.
