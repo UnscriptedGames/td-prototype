@@ -8,13 +8,42 @@ This document contains a list of recurring maintenance tasks for the Jules async
 |:--|:----------|:---------|:----------|:--------------|
 | 1 | The Signal Janitor | Memory Management | Weekly / After refactors | — |
 | 2 | The Constitution Specialist | Naming & Standards | Every 3–4 features | — |
-| 3 | The Documentation Clerk | Project Tracking | Fortnightly / Milestone | — |
+| 3 | The Documentation Clerk | Project Tracking | Fortnightly / Milestone | 2026-03-03 |
 | 4 | The Test Architect | Quality Assurance | Per major new system | — |
 | 5 | The Typist | Static Typing | Monthly / Pre-break | — |
 | 6 | The Inspector | Performance Guard | Bi-weekly | — |
 | 7 | The Custodian | Dead Code Cleanup | Per dev phase | — |
 | 8 | The UI Architect | Hierarchy Enforcer | Per new UI element | — |
 | 9 | The Cartographer | Scene Tree Auditor | Monthly / After restructures | — |
+
+---
+
+## 🛠️ Jules maintenance task workflow
+
+Follow these steps to safely run maintenance tasks and sync changes back to your project.
+
+### 1. Preparation
+1.  **Select Task:** Choose a task from the **Task Schedule** (below).
+2.  **Create Branch (Optional):** In your IDE, create a new branch (e.g., `maint/task-name`). This acts as a safety buffer. 
+
+### 2. Configure Jules (Web UI)
+1.  **Paste Prompt:** Select your branch and paste the corresponding **Jules Prompt** into the Jules task window.
+2.  **Toggle Interactive Mode:** Change the start button dropdown to **Interactive plan**. This allows Jules to clarify goals before it begins.
+3.  **Confirm Scope:** Respond to Jules' initial clarification questions (e.g., "Documentation only," "Do not delete planned features").
+
+### 3. Review & Approve
+1.  **Review Plan:** Jules will provide a multi-step plan. Ensure it targets the correct files and respects project rules.
+2.  **Approve:** Click **Approve** (or "Start") to let Jules perform the research and implementation.
+
+### 4. GitHub Merge
+1.  **View PR:** Once Jules finishes, click **View PR** to open GitHub.
+2.  **Merge:** Review the diff, then click **Merge pull request** followed by **Confirm merge**.
+3.  **Delete Branch:** Click **Delete branch** on GitHub to clean up the temporary workspace Jules created.
+
+### 5. Local Sync & Cleanup
+1.  **Sync IDE:** In your Source Control sidebar, click **Sync Changes ↓** (or run `git pull`) to bring Jules' work down to your local branch.
+2.  **Merge to Main:** Switch to your `main` branch and merge your maintenance branch into it.
+3.  **Delete Local Branch:** After the merge, delete your local maintenance branch to keep your workspace clean.
 
 ---
 
@@ -25,6 +54,8 @@ This document contains a list of recurring maintenance tasks for the Jules async
 ### Jules Prompt
 ```text
 Scan all GDScript files in the project. Identify any nodes that connect to signals but do not explicitly disconnect those signals in the `_exit_tree()` function. Provide a list of missing disconnections and, if requested, implement the `_exit_tree()` logic for those files following the "Call Down, Signal Up" pattern from the project constitution.
+
+Finally, update the 'Last Executed' column for **Task 1 (The Signal Janitor)** in the 'Task Schedule' table at the top of this document (`Knowledge/scheduled_tasks.md`) with today's date (YYYY-MM-DD).
 ```
 
 ---
@@ -43,6 +74,8 @@ Review all recently modified scripts and compare them against the rules in `/.an
 - Leading/trailing zeroes on all floats (e.g., `0.5` not `.5`).
 - Underscores in large numbers (e.g., `1_000_000`).
 List any violations and suggest refactors to bring the code into 100% compliance.
+
+Finally, update the 'Last Executed' column for **Task 2 (The Constitution Specialist)** in the 'Task Schedule' table at the top of this document (`Knowledge/scheduled_tasks.md`) with today's date (YYYY-MM-DD).
 ```
 
 ---
@@ -54,6 +87,8 @@ List any violations and suggest refactors to bring the code into 100% compliance
 ### Jules Prompt
 ```text
 Analyze the current implementation of towers, stage management, and UI systems. Compare the actual code state against all files in the `Knowledge/` folder (including but not limited to `game_brief.md`, `towers_brief.md`, and any `tower_design_*.md` documents). Identify any discrepancies (implemented features not documented, or documented features not yet implemented) and update the markdown files to reflect the current reality of the codebase.
+
+Finally, update the 'Last Executed' column for **Task 3 (The Documentation Clerk)** in the 'Task Schedule' table at the top of this document (`Knowledge/scheduled_tasks.md`) with today's date (YYYY-MM-DD).
 ```
 
 ---
@@ -69,6 +104,8 @@ Examine the core logic in `Systems/` and `Towers/`. Create a set of unit test sc
 - Stage progression and wave completion logic.
 - UI state transitions.
 Focus on edge cases and ensure no side-effects are introduced.
+
+Finally, update the 'Last Executed' column for **Task 4 (The Test Architect)** in the 'Task Schedule' table at the top of this document (`Knowledge/scheduled_tasks.md`) with today's date (YYYY-MM-DD).
 ```
 
 ---
@@ -80,6 +117,8 @@ Focus on edge cases and ensure no side-effects are introduced.
 ### Jules Prompt
 ```text
 Review all `.gd` scripts in the project. Identify any functions missing explicit return types (like `-> void`, `-> int`, or `-> Node`) and any variables declared without type hints (like `var speed: float = 10.0`). Add the correct static typing to these declarations based on Godot 4 best practices to improve performance and autocomplete accuracy. Ensure no type casting errors are introduced.
+
+Finally, update the 'Last Executed' column for **Task 5 (The Typist)** in the 'Task Schedule' table at the top of this document (`Knowledge/scheduled_tasks.md`) with today's date (YYYY-MM-DD).
 ```
 
 ---
@@ -96,6 +135,8 @@ Analyze the `_process` and `_physics_process` loops across the entire codebase. 
 - Over-reliance on heavy math operations where simple caching could work.
 - Unsafe type casts that do not follow the safe pattern (`as` followed by `assert(node != null)`).
 Refactor these sections and provide the updated function bodies as atomic changes. Only use `move_toward()` for velocity damping per the constitution rules.
+
+Finally, update the 'Last Executed' column for **Task 6 (The Inspector)** in the 'Task Schedule' table at the top of this document (`Knowledge/scheduled_tasks.md`) with today's date (YYYY-MM-DD).
 ```
 
 ---
@@ -112,6 +153,8 @@ Perform a sweeping audit of the repository to identify dead code. Specifically l
 - Large blocks of commented-out logical instructions.
 - Scripts in the project folders that are not attached to any active `.tscn` files.
 Present a detailed list of all findings with file paths and line numbers. Do NOT delete any code automatically. Propose each removal as a separate, reviewable change so that each can be approved or rejected individually.
+
+Finally, update the 'Last Executed' column for **Task 7 (The Custodian)** in the 'Task Schedule' table at the top of this document (`Knowledge/scheduled_tasks.md`) with today's date (YYYY-MM-DD).
 ```
 
 ---
@@ -123,6 +166,8 @@ Present a detailed list of all findings with file paths and line numbers. Do NOT
 ### Jules Prompt
 ```text
 Review the project's UI structure, specifically focusing on any `.tscn` files that contain a `SubViewport` or `SubViewportContainer`. Check against the architectural rules in `/.antigravity/constitution.md` (Section 4: UI Architecture Rules). Ensure that any UI overlays intended to sit "on top" of a game view are placed as siblings to the `SubViewportContainer` within a shared `Control` wrapper, relying on node tree order instead of hardcoded Z-indexing where possible. Suggest the necessary structural tree changes if violations are found.
+
+Finally, update the 'Last Executed' column for **Task 8 (The UI Architect)** in the 'Task Schedule' table at the top of this document (`Knowledge/scheduled_tasks.md`) with today's date (YYYY-MM-DD).
 ```
 
 ---
@@ -138,4 +183,6 @@ Audit the entire project for broken or stale node references. Specifically:
 - Identify any `NodePath` properties set within `.tscn` resource files that point to nodes which no longer exist in the tree.
 - Flag any `@onready` variables that reference a node path that has been renamed or moved.
 Present a list of all mismatches with the current path vs. the expected path. Do NOT auto-fix; propose corrections for review.
+
+Finally, update the 'Last Executed' column for **Task 9 (The Cartographer)** in the 'Task Schedule' table at the top of this document (`Knowledge/scheduled_tasks.md`) with today's date (YYYY-MM-DD).
 ```
