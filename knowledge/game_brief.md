@@ -167,6 +167,9 @@ Two independent audio layers operate simultaneously:
 
 ## 5. The Codex
 
+> [!NOTE]
+> **Status: Planned / Not yet implemented**
+
 A library/collection system that stores all unlocked stem variants.
 
 ### Features
@@ -179,6 +182,9 @@ A library/collection system that stores all unlocked stem variants.
 ---
 
 ## 6. The Final Stage
+
+> [!NOTE]
+> **Status: Planned / Not yet implemented**
 
 **Stage 10** is the climactic finale and plays differently from all other stages.
 
@@ -220,6 +226,10 @@ The Loadout replaces the legacy card/deck system. We use a **Data vs. Configurat
 - Stock forces strategic decisions: bring many cheap towers or few powerful ones?
 
 ### Buffs — "The FX Rack"
+
+> [!NOTE]
+> **Status: Planned / Not yet implemented**
+
 - Repeatable utility effects that temporarily modify tower attributes.
 - **Gold Cost:** Deducted on play.
 - **Global Cooldown:** After any Buff is used, all Buffs enter a shared cooldown before
@@ -227,6 +237,10 @@ The Loadout replaces the legacy card/deck system. We use a **Data vs. Configurat
 - Applied via drag-to-target (existing system).
 
 ### Relics — "Mastering Plugins"
+
+> [!NOTE]
+> **Status: Planned / Not yet implemented**
+
 - Passive modifiers that are always active once the stage begins.
 - Each Relic also has an **Active Ability**.
 - **Critical Rule:** Regardless of how many Relics are in the Loadout, the player may only
@@ -418,6 +432,10 @@ The Setlist screen serves as the transition between "The Studio" (Preparation) a
 	- **Dark / Charcoal:** Permanent 3D shadows and extrusions.
 
 ### The Timeline (New Feature)
+
+> [!NOTE]
+> **Status: Planned / Not yet implemented**
+
 - **Concept:** A visual representation of the music track's progress and upcoming events.
 - **Playhead:** A red vertical line that scans left-to-right across the Level Viewport.
 - **Duration Sync:** The scan duration matches the exact length of the current stem's audio track.
@@ -427,6 +445,10 @@ The Setlist screen serves as the transition between "The Studio" (Preparation) a
 	"sheet music" or "sequencer" view for the player.
 
 ### The Opening Sequence
+
+> [!NOTE]
+> **Status: Planned / Not yet implemented**
+
 - **The Writing Grid**: The `AnimationLayer` uses a 1:1 mapping with the background 28×28 pad grid. Title strings (e.g., "DRUMS", "BASS") are plotted directly into this layer using the `animation_tileset.tres` and are revealed as part of the stem introduction.
 - **The Column Swipe**: The opening sequence uses a `SWIPE_RIGHT` transition mode. `SongLayer` tiles (28px) disappear as a leading wave, followed by the `MazeLayer` buttons (84px) appearing with a fixed `swipe_gap` (~15% screen width), creating a rhythmic "wipe" that resolves into the level view.
 
