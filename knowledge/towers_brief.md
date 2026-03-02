@@ -55,6 +55,9 @@ intuitively to the gear, it's the wrong fit.
 
 ### 2.2. The Monitor
 
+> [!NOTE]
+> **Status: Planned / Not yet implemented**
+
 - **Archetype:** AoE pulse damage
 - **Attack:** Studio monitor that emits concentric sound wave pulses, damaging all
   enemies in range.
@@ -69,6 +72,9 @@ intuitively to the gear, it's the wrong fit.
 
 ### 2.3. The Subwoofer
 
+> [!NOTE]
+> **Status: Planned / Not yet implemented**
+
 - **Archetype:** Crowd Control (slow)
 - **Attack:** Emits deep bass frequencies that vibrate the ground, slowing all enemies
   in its zone. Minimal damage.
@@ -82,6 +88,9 @@ intuitively to the gear, it's the wrong fit.
 ---
 
 ### 2.4. The Compressor
+
+> [!NOTE]
+> **Status: Planned / Not yet implemented**
 
 - **Archetype:** Anti-Tank / Scaling damage
 - **Attack:** Targets a single enemy and "compresses" its amplitude — deals
@@ -100,6 +109,9 @@ intuitively to the gear, it's the wrong fit.
 
 ### 2.5. The Delay Pedal
 
+> [!NOTE]
+> **Status: Planned / Not yet implemented**
+
 - **Archetype:** Damage-over-Time
 - **Attack:** Initial hit, then the damage **echoes** — repeating as reduced-damage
   ticks over time (like a delay effect's repeating taps).
@@ -113,6 +125,9 @@ intuitively to the gear, it's the wrong fit.
 ---
 
 ### 2.6. The Tuning Fork
+
+> [!NOTE]
+> **Status: Planned / Not yet implemented**
 
 - **Archetype:** Burst / Sniper
 - **Attack:** Charges up and releases a devastating **resonance strike** at long range.
@@ -128,6 +143,9 @@ intuitively to the gear, it's the wrong fit.
 ---
 
 ### 2.7. The Equalizer (EQ)
+
+> [!NOTE]
+> **Status: Planned / Not yet implemented**
 
 - **Archetype:** Debuff / Support
 - **Attack:** Deals no direct damage. Instead, **filters** enemies passing through its
@@ -146,6 +164,9 @@ intuitively to the gear, it's the wrong fit.
 ---
 
 ### 2.8. The Theremin
+
+> [!NOTE]
+> **Status: Planned / Not yet implemented**
 
 - **Archetype:** Sustained Beam
 - **Attack:** Continuous damage beam that locks onto the nearest enemy. Damage **ramps
