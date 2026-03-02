@@ -37,6 +37,24 @@ func _ready() -> void:
 	GlobalSignals.buff_applied.connect(_on_buff_applied)
 	GameManager.relic_state_changed.connect(_on_relic_state_changed)
 
+func _exit_tree() -> void:
+	if is_instance_valid(GameManager):
+		if GameManager.has_signal("loadout_stock_changed") and GameManager.loadout_stock_changed.is_connected(_on_loadout_stock_changed):
+			GameManager.loadout_stock_changed.disconnect(_on_loadout_stock_changed)
+		if GameManager.relic_state_changed.is_connected(_on_relic_state_changed):
+			GameManager.relic_state_changed.disconnect(_on_relic_state_changed)
+
+	if is_instance_valid(GlobalSignals):
+		if GlobalSignals.buff_applied.is_connected(_on_buff_applied):
+			GlobalSignals.buff_applied.disconnect(_on_buff_applied)
+
+	for child in relics_container.get_children():
+		var btn = child as TextureButton
+		if is_instance_valid(btn):
+			var callables = btn.pressed.get_connections()
+			for conn in callables:
+				btn.pressed.disconnect(conn["callable"])
+
 	populate(GameManager.player_data)
 
 

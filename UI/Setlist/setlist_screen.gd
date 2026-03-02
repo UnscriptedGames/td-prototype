@@ -44,6 +44,10 @@ func _exit_tree() -> void:
 	if StageManager.stage_restarted.is_connected(_on_stage_restarted):
 		StageManager.stage_restarted.disconnect(_on_stage_restarted)
 
+	for card in _stem_cards:
+		if is_instance_valid(card) and card.stem_selected.is_connected(_on_stem_selected):
+			card.stem_selected.disconnect(_on_stem_selected)
+
 
 # --- Private Methods ---
 

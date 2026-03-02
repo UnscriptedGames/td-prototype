@@ -171,3 +171,10 @@ func resend_state() -> void:
 func has_active_buffs() -> bool:
 	## Returns true if the tower has at least one active buff.
 	return not _active_buffs.is_empty()
+
+func _exit_tree() -> void:
+	for buff_effect in _active_buffs:
+		var timer: Timer = _active_buffs[buff_effect]
+		if is_instance_valid(timer):
+			if timer.timeout.is_connected(_on_buff_expired.bind(buff_effect)):
+				timer.timeout.disconnect(_on_buff_expired.bind(buff_effect))
