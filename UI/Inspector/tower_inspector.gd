@@ -69,8 +69,25 @@ func _ready() -> void:
 
 ## Disconnects the currency signal to prevent orphan connections.
 func _exit_tree() -> void:
-	GameManager.currency_changed.disconnect(_on_currency_changed)
-	GameManager.game_state_changed.disconnect(_on_game_state_changed)
+	if is_instance_valid(GameManager):
+		if GameManager.currency_changed.is_connected(_on_currency_changed):
+			GameManager.currency_changed.disconnect(_on_currency_changed)
+		if GameManager.game_state_changed.is_connected(_on_game_state_changed):
+			GameManager.game_state_changed.disconnect(_on_game_state_changed)
+
+	if is_instance_valid(sell_button) and sell_button.pressed.is_connected(_on_sell_button_pressed):
+		sell_button.pressed.disconnect(_on_sell_button_pressed)
+	if is_instance_valid(priority_button) and priority_button.pressed.is_connected(_on_priority_button_pressed):
+		priority_button.pressed.disconnect(_on_priority_button_pressed)
+	if is_instance_valid(priority_inspector) and priority_inspector.priority_changed.is_connected(_on_priority_changed):
+		priority_inspector.priority_changed.disconnect(_on_priority_changed)
+
+	if is_instance_valid(upgrade_buttons_container):
+		for child in upgrade_buttons_container.get_children():
+			if child is Button and child.pressed.is_connected(_on_upgrade_button_pressed.bind(child)):
+				child.pressed.disconnect(_on_upgrade_button_pressed.bind(child))
+
+	set_tower(null)
 
 
 ## Sets the inspected tower, connecting/disconnecting upgrade and buff

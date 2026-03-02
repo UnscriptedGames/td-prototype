@@ -6,7 +6,7 @@ This document contains a list of recurring maintenance tasks for the Jules async
 
 | # | Task Name | Category | Frequency | Last Executed |
 |:--|:----------|:---------|:----------|:--------------|
-| 1 | The Signal Janitor | Memory Management | Weekly / After refactors | — |
+| 1 | The Signal Janitor | Memory Management | Weekly / After refactors | 2026-03-02 |
 | 2 | The Constitution Specialist | Naming & Standards | Every 3–4 features | — |
 | 3 | The Documentation Clerk | Project Tracking | Fortnightly / Milestone | 2026-03-03 |
 | 4 | The Test Architect | Quality Assurance | Per major new system | — |

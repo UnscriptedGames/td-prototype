@@ -15,3 +15,12 @@ func _ready() -> void:
 	setlist_button.pressed.connect(func(): setlist_pressed.emit())
 	# settings_button.pressed.connect(...) # Placeholder
 	quit_button.pressed.connect(func(): quit_pressed.emit())
+
+func _exit_tree() -> void:
+	if is_instance_valid(setlist_button):
+		for conn in setlist_button.pressed.get_connections():
+			setlist_button.pressed.disconnect(conn["callable"])
+
+	if is_instance_valid(quit_button):
+		for conn in quit_button.pressed.get_connections():
+			quit_button.pressed.disconnect(conn["callable"])

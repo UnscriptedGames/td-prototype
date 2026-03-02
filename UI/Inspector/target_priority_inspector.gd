@@ -27,6 +27,11 @@ func _ready() -> void:
 	for btn: CheckButton in _check_buttons:
 		btn.toggled.connect(_on_toggled)
 
+func _exit_tree() -> void:
+	for btn in _check_buttons:
+		if is_instance_valid(btn) and btn.toggled.is_connected(_on_toggled):
+			btn.toggled.disconnect(_on_toggled)
+
 func set_priority(priority: TargetPriority.Priority) -> void:
 	# Updates the visual state to reflect the given priority without emitting signals.
 	for btn: CheckButton in _check_buttons:

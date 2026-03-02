@@ -56,10 +56,32 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
-	if GameManager.peak_meter_changed.is_connected(_on_peak_meter_changed):
-		GameManager.peak_meter_changed.disconnect(_on_peak_meter_changed)
-	if GameManager.game_speed_changed.is_connected(_on_speed_changed):
-		GameManager.game_speed_changed.disconnect(_on_speed_changed)
+	if is_instance_valid(GameManager):
+		if GameManager.peak_meter_changed.is_connected(_on_peak_meter_changed):
+			GameManager.peak_meter_changed.disconnect(_on_peak_meter_changed)
+		if GameManager.game_speed_changed.is_connected(_on_speed_changed):
+			GameManager.game_speed_changed.disconnect(_on_speed_changed)
+
+	if is_instance_valid(speed_down_btn) and speed_down_btn.pressed.is_connected(GameManager.step_speed_down):
+		speed_down_btn.pressed.disconnect(GameManager.step_speed_down)
+	if is_instance_valid(speed_up_btn) and speed_up_btn.pressed.is_connected(GameManager.step_speed_up):
+		speed_up_btn.pressed.disconnect(GameManager.step_speed_up)
+	if is_instance_valid(peak_slider) and peak_slider.value_changed.is_connected(_on_peak_slider_changed):
+		peak_slider.value_changed.disconnect(_on_peak_slider_changed)
+	if is_instance_valid(spawn_wave_btn) and spawn_wave_btn.pressed.is_connected(_on_spawn_wave_pressed):
+		spawn_wave_btn.pressed.disconnect(_on_spawn_wave_pressed)
+	if is_instance_valid(complete_stem_btn) and complete_stem_btn.pressed.is_connected(_on_complete_stem_pressed):
+		complete_stem_btn.pressed.disconnect(_on_complete_stem_pressed)
+	if is_instance_valid(complete_all_stems_btn):
+		for conn in complete_all_stems_btn.pressed.get_connections():
+			complete_all_stems_btn.pressed.disconnect(conn["callable"])
+	if is_instance_valid(add_gold_btn):
+		for conn in add_gold_btn.pressed.get_connections():
+			add_gold_btn.pressed.disconnect(conn["callable"])
+	if is_instance_valid(pool_stats_btn) and pool_stats_btn.toggled.is_connected(_on_pool_stats_toggled):
+		pool_stats_btn.toggled.disconnect(_on_pool_stats_toggled)
+	if is_instance_valid(debug_btn) and debug_btn.toggled.is_connected(_on_debug_toggled):
+		debug_btn.toggled.disconnect(_on_debug_toggled)
 
 
 # --- Callbacks ---

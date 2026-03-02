@@ -43,6 +43,12 @@ func _ready() -> void:
 	quality_select.item_selected.connect(_on_quality_item_selected)
 	mouse_default_cursor_shape = Control.CURSOR_ARROW
 
+func _exit_tree() -> void:
+	if gui_input.is_connected(_on_gui_input):
+		gui_input.disconnect(_on_gui_input)
+	if is_instance_valid(quality_select) and quality_select.item_selected.is_connected(_on_quality_item_selected):
+		quality_select.item_selected.disconnect(_on_quality_item_selected)
+
 
 # --- Public Methods ---
 

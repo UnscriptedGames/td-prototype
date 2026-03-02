@@ -11,8 +11,14 @@ func _ready() -> void:
 	GameManager.stem_failed.connect(_on_stem_failed)
 
 func _exit_tree() -> void:
-	if GameManager.stem_failed.is_connected(_on_stem_failed):
+	if is_instance_valid(GameManager) and GameManager.stem_failed.is_connected(_on_stem_failed):
 		GameManager.stem_failed.disconnect(_on_stem_failed)
+
+	if is_instance_valid(retry_button) and retry_button.pressed.is_connected(_on_retry_pressed):
+		retry_button.pressed.disconnect(_on_retry_pressed)
+
+	if is_instance_valid(return_button) and return_button.pressed.is_connected(_on_return_pressed):
+		return_button.pressed.disconnect(_on_return_pressed)
 
 func _on_stem_failed() -> void:
 	# Show the popup and pause the game so the action freezes behind it.
