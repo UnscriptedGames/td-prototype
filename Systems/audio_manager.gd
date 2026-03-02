@@ -40,6 +40,15 @@ func _ready() -> void:
 		GameManager.wave_changed.connect(_on_wave_changed)
 		GameManager.game_state_changed.connect(_on_game_state_changed)
 
+func _exit_tree() -> void:
+	if is_instance_valid(GameManager):
+		if GameManager.peak_meter_changed.is_connected(_on_peak_meter_changed):
+			GameManager.peak_meter_changed.disconnect(_on_peak_meter_changed)
+		if GameManager.wave_changed.is_connected(_on_wave_changed):
+			GameManager.wave_changed.disconnect(_on_wave_changed)
+		if GameManager.game_state_changed.is_connected(_on_game_state_changed):
+			GameManager.game_state_changed.disconnect(_on_game_state_changed)
+
 func _setup_audio_players() -> void:
 	_player_good = AudioStreamPlayer.new()
 	_player_good.name = "StemGood"

@@ -80,6 +80,13 @@ func load_stage(stage_data: StageData) -> void:
 	GameManager.stem_failed.connect(_on_stem_failed)
 	stage_loaded.emit(stage_data)
 
+func _exit_tree() -> void:
+	if is_instance_valid(GameManager):
+		if GameManager.stem_completion_requested.is_connected(_on_stem_completion_requested):
+			GameManager.stem_completion_requested.disconnect(_on_stem_completion_requested)
+		if GameManager.stem_failed.is_connected(_on_stem_failed):
+			GameManager.stem_failed.disconnect(_on_stem_failed)
+
 
 ## Starts a specific stem level by index. Validates availability first.
 func start_stem(stem_index: int) -> void:

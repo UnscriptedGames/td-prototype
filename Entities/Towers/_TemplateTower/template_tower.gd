@@ -67,6 +67,11 @@ func _ready() -> void:
 	animation_player.animation_finished.connect(_on_animation_finished)
 	_projectiles_container = get_tree().get_first_node_in_group("projectiles_container")
 
+func _exit_tree() -> void:
+	if is_instance_valid(animation_player):
+		if animation_player.animation_finished.is_connected(_on_animation_finished):
+			animation_player.animation_finished.disconnect(_on_animation_finished)
+
 	# Keep the hitbox active during pause so towers can be selected via physics queries.
 	if hitbox:
 		hitbox.process_mode = Node.PROCESS_MODE_ALWAYS

@@ -53,6 +53,11 @@ func _ready() -> void:
 		# Register with the InputManager
 		InputManager.register_build_manager(self)
 
+func _exit_tree() -> void:
+	if is_instance_valid(GlobalSignals):
+		if GlobalSignals.build_tower_requested.is_connected(_on_build_tower_requested):
+			GlobalSignals.build_tower_requested.disconnect(_on_build_tower_requested)
+
 
 # --- SETUP METHODS ---
 
