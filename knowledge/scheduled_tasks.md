@@ -43,7 +43,7 @@ Follow these steps to safely run maintenance tasks and sync changes back to your
 ### 5. Local Sync & Cleanup
 1.  **Sync IDE:** In your Source Control sidebar, click **Sync Changes ↓** (or run `git pull`) to bring Jules' work down to your local branch.
 2.  **Merge to Main:** Switch to your `main` branch and merge your maintenance branch into it.
-3.  **Delete Local Branch:** After the merge, delete your local maintenance branch to keep your workspace clean.
+3.  **Delete Remote & Local Branch:** After the merge, use the **Delete Remote Branch...** option in your IDE to remove the branch from GitHub, then delete the local branch to keep your workspace clean.
 
 ---
 
