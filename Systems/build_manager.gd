@@ -77,7 +77,7 @@ func update_level_references(
 	highlight_layer = new_highlight_layer
 	towers_container = new_towers_container
 	# Reset state just in case
-	_deselect_current_tower()
+	deselect_current_tower()
 	_occupied_build_tiles.clear()
 	print("BuildManager level references updated.")
 
@@ -89,7 +89,7 @@ func clear_level_references() -> void:
 	towers_container = null
 	_bound_viewport = null
 	_bound_container = null
-	_deselect_current_tower()
+	deselect_current_tower()
 	_occupied_build_tiles.clear()
 	print("BuildManager level references cleared.")
 
@@ -123,9 +123,11 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	# Block all gameplay input while paused
+	# Block building and dragging while paused, but allow selection toggling/clicking.
 	if GameManager.game_state == GameManager.GameState.PAUSED:
-		return
+		if state == State.BUILDING_TOWER or _is_dragging:
+			return
+		# Continue to allow selection logic below...
 
 	# Determine if this is a cancel action (Right click or Escape)
 	var is_cancel: bool = (
@@ -154,7 +156,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 		State.TOWER_SELECTED, State.VIEWING:
 			if is_cancel and state == State.TOWER_SELECTED:
-				_deselect_current_tower()
+				deselect_current_tower()
 				get_viewport().set_input_as_handled()
 				return
 
@@ -171,7 +173,7 @@ func _unhandled_input(event: InputEvent) -> void:
 					get_viewport().set_input_as_handled()
 				else:
 					if state == State.TOWER_SELECTED:
-						_deselect_current_tower()
+						deselect_current_tower()
 						# Note: We don't mark as handled here so background clicks can still trigger animations
 
 
@@ -274,7 +276,7 @@ func _on_sell_tower_requested() -> void:
 		GameManager.refund_stock(_selected_tower.data)
 
 	var tower_to_remove = _selected_tower
-	_deselect_current_tower()
+	deselect_current_tower()
 	tower_to_remove.queue_free()
 
 
@@ -332,7 +334,8 @@ func _select_tower(tower: TemplateTower) -> void:
 	emit_signal("tower_selected", tower)
 
 
-func _deselect_current_tower() -> void:
+## Deselects the current tower, clears highlights, and updates internal state.
+func deselect_current_tower() -> void:
 	if is_instance_valid(_selected_tower):
 		_selected_tower.deselect()
 		_selected_tower = null
@@ -372,7 +375,7 @@ func _get_tower_at_position(screen_position: Vector2) -> TemplateTower:
 
 
 func _enter_build_mode(tower_data: TowerData, tower_scene: PackedScene) -> void:
-	_deselect_current_tower()
+	deselect_current_tower()
 	state = State.BUILDING_TOWER
 	_pending_tower_scene = tower_scene
 	_is_placing = false  ## Reset the placing flag.

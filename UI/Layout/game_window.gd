@@ -72,6 +72,7 @@ var _is_sidebar_offline: bool = false
 var _tower_inspector: PanelContainer  # Typed loose to avoid cyclic ref with TowerInspector
 var _sidebar_hud: Control  # Typed loose to avoid cyclic ref with SidebarHUD
 var _current_context: ContextMode = ContextMode.EMPTY
+var _is_sidebar_animating: bool = false
 @onready var _game_view_wrapper: Control = $MainLayout/WorkspaceSplit/GameViewWrapper
 
 # Meter Animation State
@@ -361,13 +362,39 @@ func _setup_transport() -> void:
 		setlist_restart_button.pressed.connect(_on_setlist_restart_button_pressed)
 
 
+## Automatically hides the sidebar menu if we are in a gameplay level.
+func _auto_hide_sidebar() -> void:
+	if _current_context == ContextMode.MAIN_MENU and _transport_allowed:
+		set_context_mode(ContextMode.GAMEPLAY)
+
+
 ## Toggles the game between playing and paused states.
 func _on_play_button_pressed() -> void:
+	# If the menu is open and we click play, just close the menu (which unpauses).
+	if _current_context == ContextMode.MAIN_MENU and _transport_allowed:
+		set_context_mode(ContextMode.GAMEPLAY)
+		return
+
+	# Normal toggle
 	GameManager.toggle_game_state()
+
+	# If we just switched to paused, open the menu and deselect towers.
+	if _transport_allowed and GameManager.game_state == GameManager.GameState.PAUSED:
+		if is_instance_valid(_build_manager):
+			_build_manager.deselect_current_tower()
+		set_context_mode(ContextMode.MAIN_MENU)
 
 
 ## Pauses the game (if playing) and opens the restart confirmation dialog.
 func _on_restart_button_pressed() -> void:
+	# Ensure the menu is visible for confirmation, but don't toggle it closed.
+	if _current_context != ContextMode.MAIN_MENU and _transport_allowed:
+		set_context_mode(ContextMode.MAIN_MENU)
+
+	# Deselect towers to clear the view for the confirmation dialog
+	if is_instance_valid(_build_manager):
+		_build_manager.deselect_current_tower()
+
 	if GameManager.is_wave_active and GameManager.game_state == GameManager.GameState.PLAYING:
 		GameManager.set_game_state(GameManager.GameState.PAUSED)  # Explicitly pause, don't toggle
 
@@ -478,19 +505,28 @@ func _setup_confirmations() -> void:
 
 
 func _on_menu_button_pressed() -> void:
+	if _is_sidebar_animating:
+		return
+
 	# Toggle logic: if we are already in MAIN_MENU context showing the sidebar, close it.
 	if _current_context == ContextMode.MAIN_MENU:
 		# Only allow closing if we are in a state that has "Gameplay" to return to
 		if _transport_allowed:
 			set_context_mode(ContextMode.GAMEPLAY)
 		else:
-			# If in Title/Setlist, we don't 'toggle' it closed easily because
+			# If in Title/Setlist, we don't 'toggle' it closed because
 			# the menu IS the main interaction layer here.
-			# But we'll allow a forced 'close' if the user really wants to see the bg.
-			_set_sidebar_offline(false)
-			_current_context = ContextMode.EMPTY
+			pass
 	else:
-		# Otherwise, open the menu
+		# Otherwise, open the menu.
+		# If we are in gameplay, pause the game while the menu is open.
+		if _transport_allowed:
+			GameManager.set_game_state(GameManager.GameState.PAUSED)
+			# Deselect any tower when opening the menu to keep UI clean.
+			# We go through BuildManager to ensure source-of-truth is updated.
+			if is_instance_valid(_build_manager):
+				_build_manager.deselect_current_tower()
+
 		set_context_mode(ContextMode.MAIN_MENU)
 
 
@@ -555,9 +591,11 @@ func _pause_game_for_dialog() -> void:
 		GameManager.set_game_state(GameManager.GameState.PAUSED)
 
 
-## Resumes the game when a confirmation dialog is canceled.
+## Resums gameplay context (hides sidebar, unpauses) when a confirmation dialog is canceled.
 func _on_dialog_canceled() -> void:
-	if GameManager.is_wave_active and GameManager.game_state == GameManager.GameState.PAUSED:
+	if _current_context == ContextMode.MAIN_MENU and _transport_allowed:
+		set_context_mode(ContextMode.GAMEPLAY)
+	elif GameManager.is_wave_active and GameManager.game_state == GameManager.GameState.PAUSED:
 		GameManager.set_game_state(GameManager.GameState.PLAYING)
 
 
@@ -571,6 +609,7 @@ func _load_level(level_path: String) -> void:
 
 ## Shows the tower inspector anchored to the selected tower's screen position.
 func _on_tower_selected(tower: TemplateTower) -> void:
+	_auto_hide_sidebar()
 	_selected_tower = tower
 
 	if _tower_inspector and _tower_inspector.has_method("set_tower"):
@@ -670,6 +709,11 @@ func _set_transport_controls_enabled(enabled: bool) -> void:
 
 ## Updates the Top Bar layout based on the current context (e.g. gameplay vs menu).
 func set_context_mode(mode: ContextMode) -> void:
+	# If we are returning to gameplay from a menu, unpause the game.
+	if mode == ContextMode.GAMEPLAY and _current_context == ContextMode.MAIN_MENU:
+		if _transport_allowed:
+			GameManager.set_game_state(GameManager.GameState.PLAYING)
+
 	_current_context = mode
 	match mode:
 		ContextMode.GAMEPLAY:
@@ -725,9 +769,7 @@ func _on_setlist_restart_button_pressed() -> void:
 
 ## Updates the content of the Sidebar Overlay based on current context.
 func _update_sidebar_content(mode: ContextMode) -> void:
-	print("SIDEBAR: Updating content for mode: ", mode)
 	if not is_instance_valid(overlay_content):
-		print("SIDEBAR: overlay_content NOT VALID")
 		return
 
 	# Clear existing dynamic content
@@ -741,30 +783,27 @@ func _update_sidebar_content(mode: ContextMode) -> void:
 			status_label.text = "[ OFFLINE ]"
 		ContextMode.MAIN_MENU:
 			status_label.hide()
-			print("SIDEBAR: Loading menu scene from: ", SIDEBAR_MENU_SCENE_PATH)
 			var menu_scene: PackedScene = load(SIDEBAR_MENU_SCENE_PATH)
 			if menu_scene:
 				var menu_instance = menu_scene.instantiate()
 				overlay_content.add_child(menu_instance)
-				print("SIDEBAR: Menu instance added: ", menu_instance.name)
 				# Connect signals
 				menu_instance.setlist_pressed.connect(_on_sidebar_setlist)
 				menu_instance.quit_pressed.connect(_on_close_pressed)
-			else:
-				print("SIDEBAR: FAILED to load menu scene")
 		_:
 			status_label.show()
 			status_label.text = "[ OFFLINE ]"
 
-	print(
-		"SIDEBAR: Overlay visible: ",
-		sidebar_overlay.visible,
-		" position: ",
-		sidebar_overlay.position
-	)
+	pass
 
 
 func _on_sidebar_setlist() -> void:
+	# If we are in a level, show a confirmation dialog
+	if _transport_allowed and setlist_confirm:
+		setlist_confirm.dialog_text = "Are you sure you want to return to the setlist? All progress in the current stem will be lost."
+		setlist_confirm.popup_centered()
+		return
+
 	# If no stage is loaded, default to Stage 1
 	if StageManager.active_stage == null:
 		var STAGE_1_PATH: String = "res://Config/Stages/stage01.tres"
@@ -920,8 +959,7 @@ func _on_peak_changed(current: float, max_val: float) -> void:
 			integrity_label.text = "%d%%" % distortion_pct
 
 
-## Converts the volume slider's 0–100 linear range to dB and applies it to
-## the Master audio bus. Syncs the mute icon state.
+## Updates the GameManager volume and refreshes UI icons.
 func _on_volume_changed(value: float) -> void:
 	var linear_val: float = value / 100.0
 	var db_val: float = linear_to_db(linear_val)
@@ -940,8 +978,7 @@ func _on_volume_changed(value: float) -> void:
 			volume_button.icon = icon_volume
 
 
-## Toggles mute state. Muting saves the current volume and sets the slider
-## to 0; unmuting restores the saved volume.
+## Toggles the mute state via GameManager.
 func _on_volume_button_pressed() -> void:
 	if _is_muted:
 		_is_muted = false
@@ -949,7 +986,7 @@ func _on_volume_button_pressed() -> void:
 			volume_button.icon = icon_volume
 
 		if _previous_volume <= 0:
-			_previous_volume = 50.0
+			_previous_volume = 80.0
 		if volume_slider:
 			volume_slider.value = _previous_volume
 	else:
@@ -972,26 +1009,36 @@ func _set_sidebar_offline(is_offline: bool, instant: bool = false) -> void:
 
 	_is_sidebar_offline = is_offline
 
-	var target_x: float = 0.0 if is_offline else -sidebar_overlay.size.x
+	# For nodes with anchors, animating offsets is safer than position.x.
+	# Positive target (0.0) covers the sidebar; negative (-size.x) hides it.
+	var target_offset: float = 0.0 if is_offline else -sidebar_overlay.size.x
+
+	if is_offline:
+		sidebar_overlay.visible = true
 
 	if instant:
-		sidebar_overlay.position.x = target_x
+		sidebar_overlay.offset_left = target_offset
+		sidebar_overlay.offset_right = target_offset
 		sidebar_overlay.visible = is_offline
 		return
 
 	# Delay the animation by one frame to allow the layout to settle after large scene changes
-	call_deferred("_start_sidebar_tween", target_x, is_offline)
+	_is_sidebar_animating = true
+	call_deferred("_start_sidebar_tween", target_offset, is_offline)
 
 
-func _start_sidebar_tween(target_x: float, is_offline: bool) -> void:
+func _start_sidebar_tween(target_offset: float, is_offline: bool) -> void:
 	if not is_instance_valid(sidebar_overlay):
+		_is_sidebar_animating = false
 		return
 
-	# Ensure the overlay is visible before animating, regardless of direction.
-	sidebar_overlay.visible = true
-
 	var tween: Tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween.tween_property(sidebar_overlay, "position:x", target_x, sidebar_overlay_anim_time)
+	tween.set_parallel(true)
+	tween.tween_property(sidebar_overlay, "offset_left", target_offset, sidebar_overlay_anim_time)
+	tween.tween_property(sidebar_overlay, "offset_right", target_offset, sidebar_overlay_anim_time)
+
+	tween.set_parallel(false)
+	tween.tween_callback(func(): _is_sidebar_animating = false)
 
 	if not is_offline:
 		tween.tween_callback(sidebar_overlay.hide)

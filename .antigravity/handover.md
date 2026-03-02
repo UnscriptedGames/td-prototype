@@ -1,5 +1,8 @@
-- **Current State:** Sidebar navigation refactored into context-aware overlay. Navigation consolidated into SETLIST (with auto-load) and QUIT. Interaction refined with toggle and click-to-close logic for active levels.
+- **Current State:** Sidebar and transport interactions are fully polished. Key features include reliable pause/resume synchronization, contextual auto-hide for gameplay elements (with audio control exemptions), and a "Single-Click" tactical selection transition. Selection state de-sync between `GameWindow` and `BuildManager` has been resolved. Safety guards (confirmation prompts) are implemented for all destructive navigation paths (Setlist, Restart, Quit).
 - **Signal Maps:** 
     - `SidebarMainMenu.setlist_pressed` -> `GameWindow._on_sidebar_setlist`
-    - `SidebarMainMenu.quit_pressed` -> `GameWindow.quit_game`
-- **Immediate Next Step:** Investigate and fix menu sidebar animation hiding issues during specific transitions.
+    - `SidebarMainMenu.quit_pressed` -> `GameWindow._on_close_pressed`
+    - `GameWindow.setlist_confirm.confirmed` -> `GameWindow._on_setlist_confirmed`
+    - `GameWindow.restart_confirm.confirmed` -> `GameWindow._on_restart_confirmed`
+    - `GameWindow.quit_confirm.confirmed` -> `GameWindow._on_quit_confirmed`
+- **Immediate Next Step:** Begin work on the song selection UI scene.

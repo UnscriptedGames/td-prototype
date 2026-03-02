@@ -17,7 +17,7 @@ intuitively to the gear, it's the wrong fit.
 
 ### Core Mechanics
 - **Target Priority Swapping:** Every tower supports real-time priority swapping (Closest, Strongest, Most Progress, etc.).
-- **DAW Plug-in Inspector:** The Tower Inspector is no longer a world-space UI. It is a persistent "plug-in" panel residing in the right-side shell of the `GameWindow`. It remains active and interactive during the paused state to encourage tactical adjustment while the music is frozen.
+- **DAW Plug-in Inspector**: The Tower Inspector resides in the right-side shell of the `GameWindow`. It remains active for **Selection** and attribute review during the paused state, allowing for tactical planning while the simulation is frozen.
 
 ### Target Roster
 - **6–8 unique towers** covering a range of attack types, effects, and upgrade paths.

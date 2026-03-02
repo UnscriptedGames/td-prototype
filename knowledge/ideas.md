@@ -9,7 +9,8 @@ This document tracks all pending ideas, brainstorms, and open design questions t
 
 ### Audio-Responsive Gameplay Mechanics
 *   **Buffs Altering Audio:** Tower buffs could modify sound effects while active (e.g., increasing fire rate pitches up the sound, or adds reverb/distortion).
-*   **Visual Feedback on Pads:** Using buffs could manipulate the surrounding environment to some degree (e.g., changing the appearance or pulsing of the "grey blocks/cubes" or the background visualizer pads).
+-   **Visual Feedback on Pads:** Using buffs could manipulate the surrounding environment to some degree (e.g., changing the appearance or pulsing of the "grey blocks/cubes" or the background visualizer pads).
+-   **Dancing Enemies:** Enemies rhythmically react to their corresponding musical stems. Drum-themed enemies might "shuffle" or shake to the kick/snare transients, while guitar-themed waveforms "hop" (squash/stretch) to strums. This can be achieved via real-time spectrum analysis or pre-baked beat timestamps in `StemData`.
 
 
 ### Sidebar Context Expansion

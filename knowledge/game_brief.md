@@ -347,13 +347,13 @@ The game operates as a Single Page Application within a persistent shell (`GameW
 - **Persistent DAW Shell**: The Top Bar (Transport Controls, Peak Meter) and Left Sidebar remain on screen during transitions to maintain immersion.
 - **Workspace Swapping**: Menus (Main Menu, Setlist, Studio) and Gameplay Levels are loaded into a central **SubViewport Workspace**. This prevents "hard" scene cuts and allows for smooth, software-like transitions.
 - **Sidebar Architecture**: The Left Sidebar is nested within a `SidebarContainer` alongside a `SidebarOverlay`. This grouping allows the entire rack to be managed as a single logical unit for input propagation and state-dependent visibility.
-- **Context-Aware Sidebar Overlay**: The Left Sidebar features a dynamic **OverlayContent** container. This system swaps its content (e.g., Main Menu buttons) based on the game's context, rather than using traditional floating menus.
-- **Context Modes (`ContextMode`)**: The DAW shell uses a central state machine (`GAMEPLAY`, `SETLIST`, `EMPTY`, `MAIN_MENU`) to toggle the visibility and interactivity of persistent elements and drive the sidebar overlay content.
+- **Animation Strategy**: To ensure layout stability, sidebar transitions animate `offset_left` and `offset_right` properties rather than `position.x`. This utilizes Godot 4's anchor system reliably. Animations use a `TRANS_CUBIC` ease (`0.4s`) and a `call_deferred` pattern to allow layout settlement before the Tween begins.
+- **Animation Lock**: An `_is_sidebar_animating` flag prevents rapid-fire button presses from desynchronizing the sidebar state during transitions.
+- **Context-Aware Sidebar Overlay**: The Left Sidebar features a dynamic **OverlayContent** container. This system swaps its content (e.g., Main Menu buttons) based on the game's context.
 - **Refined Navigation Flow**:
-    - **Menu Toggle**: The "Menu" button in the Top Bar is a regular button that toggles the sidebar overlay open/closed.
-    - **Click-to-Close**: During gameplay, clicking anywhere in the game viewport area automatically closes the sidebar if it is open, ensuring a clean "perfomance" view.
-- **Animation Strategy (SPA Timing)**: Due to the heavy nature of workspace swaps, UI animations (like the sidebar slide) utilize a `call_deferred` pattern. This ensures the engine yields one frame to finalize layout calculations before starting Tweens.
-- **UI Interaction Lock**: During automated opening sequences, the DAW shell locks the "Play" and "Restart" buttons to prevent state desync until the animation finishes.
+    - **Menu Toggle**: The "Menu" button in the Top Bar toggles the sidebar overlay.
+    - **Click-to-Close (Auto-Hide)**: During gameplay, clicking in the maze viewport, selecting a tower, or interacting with transport controls (Play/Restart) automatically closes the sidebar.
+    - **Audio Exception**: Adjusting volume or toggling mute is exempt from auto-hide, allowing for background adjustments without closing the menu.
 
 ### Layout (1536×1024 Native, Scaled to 1920×1080)
 - **Top Bar:** Global stats (Peak Meter, Gold, Wave counter), Restart button, and Volume Control.
@@ -438,10 +438,11 @@ The Setlist screen serves as the transition between "The Studio" (Preparation) a
 The pause state acts as a "Strategic Planning" mode. The music/action freezes, but the player remains active within the "DAW" environment.
 
 ### Selective Interactivity
-- **Permitted:** Tower selection, changing Target Priority, and interacting with background pads (animations/hovers).
-- **Blocked:** Placing new towers, selling, or upgrading. This prevents permanent/destructive tactical decisions while the simulation is frozen.
-- **Modal Interruptions:** Opening any modal confirmation via the Top Bar menu (Main Menu, Setlist, etc.) triggers a global pause. This ensures that tactical decisions are never made under time pressure while navigating the "DAW shell" interface.
-- **Audio Sync:** Background music stems are strictly synchronized to the game's pause state via `stream_paused`, ensuring the track resumes exactly in sync with the gameplay exactly where it left off.
+- **Permitted**: Tower selection, changing Target Priority, and interacting with background pads.
+- **Single-Click Transition**: Selection remains active while paused. If a tower is clicked while the menu is open, the game unpauses, hides the menu, and selects the tower in one seamless action.
+- **Blocked**: Placing new towers, selling, or upgrading. This prevents permanent tactical decisions while frozen.
+- **Modal Interruptions**: Opening any modal confirmation via the Top Bar or Sidebar (Main Menu, Setlist, Restart) triggers a global pause and deselects current towers to clear the tactical view.
+- **Audio Sync**: Background music stems are strictly synchronized to the game's pause state via `stream_paused`.
 
 ---
 
@@ -453,10 +454,11 @@ future design sessions and playtesting:
 - [x] **Gold Scope:** Gold resets per stem (Resolved Feb 26).
 - [x] **Data Consolidation:** Merged legacy `WaveData` into `StemData` to simplify the resource pipeline (Resolved Feb 26).
 - [x] **Modal Behavior:** Game auto-pauses for all system confirmations and resumes on cancel if a wave was active (Resolved Feb 27).
-- [x] **Setlist Navigation:** Returning to the Setlist from a level is a destructive action that requires a confirmation prompt (Resolved Feb 27).
+- [x] **Setlist Navigation:** Returning to the Setlist from a level is a destructive action requiring a confirmation prompt (Resolved Mar 02).
 - [x] **BaseStage Injection:** Moved to a shell-injection pattern to reduce scene bloat (Resolved Mar 01).
 - [x] **Sidebar Main Menu:** Refactored main navigation into a context-aware sidebar overlay (Resolved Mar 02).
 - [x] **Auto-Load Stage 1:** The Setlist button now automatically loads the first stage if no active stage exists (Resolved Mar 02).
+- [x] **Selection Reliability:** Synchronized `BuildManager` and `GameWindow` state to ensure reliable tower clicking during pause (Resolved Mar 02).
 - [ ] **AP Growth:** How does the player's maximum AP increase? Fixed per stage, or a
 	separate upgrade currency?
 - [ ] **Unlock Economy:** Full mapping of what unlocks where (towers, buffs, relics, AP).
