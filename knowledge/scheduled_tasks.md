@@ -66,7 +66,7 @@ Finally, update the 'Last Executed' column for **Task 1 (The Signal Janitor)** i
 
 ### Jules Prompt
 ```text
-Review all recently modified scripts and compare them against the rules in `/.antigravity/constitution.md` (specifically Section 3: Coding Standards). Check for:
+Review all recently modified scripts and compare them against the rules in `.agent/rules/constitution.md` (specifically Section 3: Coding Standards). Check for:
 - Snake_case for functions/variables.
 - No abbreviated or single-letter variables (e.g., no 'pos', 'v', 'i').
 - Proper private variable prefixing (`_`).
