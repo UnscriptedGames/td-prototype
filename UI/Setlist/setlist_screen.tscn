@@ -32,7 +32,6 @@ theme_override_constants/separation = 16
 [node name="Stem1Slot" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=90831115]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.0
 
 [node name="MiddleColumn" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=578671801]
 layout_mode = 2
@@ -44,4 +43,3 @@ alignment = 1
 [node name="BossSlot" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=3147754]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.0

@@ -1,10 +1,6 @@
 extends Node
 
-enum State {
-	DEFAULT, # Default gameplay state, interacting with cards and UI.
-	BUILDING_TOWER, # The player is currently placing a tower.
-	UI_INTERACTION # A UI panel is open, gameplay input is blocked.
-}
+enum State { DEFAULT, BUILDING_TOWER, UI_INTERACTION }  # Default gameplay state, interacting with cards and UI.  # The player is currently placing a tower.  # A UI panel is open, gameplay input is blocked.
 
 var current_state: State = State.DEFAULT
 
@@ -15,23 +11,10 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	var handled: bool = false
-
-	# If no UI button was clicked, proceed to game state logic.
-	match current_state:
-		State.DEFAULT:
-			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-				# Priority 1: Check for tower selection/deselection.
-				if _build_manager:
-					handled = _build_manager.handle_selection_input(event)
-
-		State.BUILDING_TOWER:
-			if _build_manager:
-				handled = _build_manager.handle_build_input(event)
-
-	if handled:
-		get_viewport().set_input_as_handled()
+func _unhandled_input(_event: InputEvent) -> void:
+	# UI/Global shortcuts can go here.
+	# Mouse clicks for gameplay are now handled by BuildManager inside the SubViewport.
+	pass
 
 
 func register_build_manager(manager: BuildManager) -> void:

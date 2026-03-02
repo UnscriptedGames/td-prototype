@@ -1,41 +1,49 @@
-[gd_scene load_steps=2 format=3 uid="uid://c6stemcard001"]
+[gd_scene format=3 uid="uid://c6stemcard001"]
 
-[ext_resource type="Script" path="res://UI/Setlist/stem_card.gd" id="1_stem_card"]
+[ext_resource type="Script" uid="uid://fpt2xpjva0e7" path="res://UI/Setlist/stem_card.gd" id="1_stem_card"]
 [ext_resource type="Theme" uid="uid://dpov18qpoqhlb" path="res://UI/Themes/daw_theme.tres" id="2_theme"]
 
-[node name="StemCard" type="PanelContainer"]
+[node name="StemCard" type="PanelContainer" unique_id=540027831]
 custom_minimum_size = Vector2(200, 120)
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme = ExtResource("2_theme")
-theme_type_variation = &"SideBarPanel"
+theme_type_variation = &"StemCardLocked"
 script = ExtResource("1_stem_card")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1269663178]
 layout_mode = 2
 alignment = 1
 
-[node name="StemNameLabel" type="Label" parent="VBoxContainer"]
-horizontal_alignment = 1
+[node name="StemNameLabel" type="Label" parent="VBoxContainer" unique_id=1038012092]
+layout_mode = 2
+theme_type_variation = &"StemCardLabelLocked"
 text = "Stem Name"
-
-[node name="InstrumentLabel" type="Label" parent="VBoxContainer"]
 horizontal_alignment = 1
+
+[node name="InstrumentLabel" type="Label" parent="VBoxContainer" unique_id=1561860348]
+layout_mode = 2
+theme_type_variation = &"StemCardLabelLocked"
 text = "INSTRUMENT"
-
-[node name="StatusLabel" type="Label" parent="VBoxContainer"]
 horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer" unique_id=665983752]
+layout_mode = 2
+theme_type_variation = &"StemCardLabelLocked"
 text = "LOCKED"
-
-[node name="QualityLabel" type="Label" parent="VBoxContainer"]
 horizontal_alignment = 1
-text = ""
 
-[node name="PreviewLabel" type="Label" parent="VBoxContainer"]
+[node name="QualityLabel" type="Label" parent="VBoxContainer" unique_id=1756379437]
+layout_mode = 2
+theme_type_variation = &"StemCardLabelLocked"
 horizontal_alignment = 1
+
+[node name="PreviewLabel" type="Label" parent="VBoxContainer" unique_id=1449464635]
+layout_mode = 2
+theme_type_variation = &"StemCardLabelLocked"
 text = "Preview TBD"
+horizontal_alignment = 1
 
-[node name="QualitySelect" type="OptionButton" parent="VBoxContainer"]
+[node name="QualitySelect" type="OptionButton" parent="VBoxContainer" unique_id=1934868617]
 visible = false
 layout_mode = 2
-text = "Quality"

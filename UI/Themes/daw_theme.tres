@@ -111,6 +111,42 @@ shadow_color = Color(0, 0, 0, 0.2)
 shadow_size = 1
 shadow_offset = Vector2(1, 0)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stem_card_available"]
+bg_color = Color(0.79607844, 0.80784315, 0.8156863, 0.32941177)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.15686275, 0.4117647, 0.26666668, 0.83137256)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stem_card_completed"]
+bg_color = Color(0.15686275, 0.4117647, 0.26666668, 0.83137256)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.79607844, 0.80784315, 0.8156863, 0.32941177)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stem_card_locked"]
+bg_color = Color(0.12156863, 0.12156863, 0.12156863, 0.85490197)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.08, 0.08, 0.08, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tab_focus"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab_hover"]
@@ -195,6 +231,18 @@ MeterBackground/base_type = &"PanelContainer"
 MeterBackground/styles/panel = SubResource("StyleBoxFlat_meter_bg")
 SideBarPanel/base_type = &"PanelContainer"
 SideBarPanel/styles/panel = SubResource("StyleBoxFlat_sidebar_panel")
+StemCardAvailable/base_type = &"PanelContainer"
+StemCardAvailable/styles/panel = SubResource("StyleBoxFlat_stem_card_available")
+StemCardCompleted/base_type = &"PanelContainer"
+StemCardCompleted/styles/panel = SubResource("StyleBoxFlat_stem_card_completed")
+StemCardLabelAvailable/base_type = &"Label"
+StemCardLabelAvailable/colors/font_color = Color(0.7019608, 0.7019608, 0.7019608, 1)
+StemCardLabelCompleted/base_type = &"Label"
+StemCardLabelCompleted/colors/font_color = Color(0.7019608, 0.7019608, 0.7019608, 1)
+StemCardLabelLocked/base_type = &"Label"
+StemCardLabelLocked/colors/font_color = Color(0.7019608, 0.7019608, 0.7019608, 1)
+StemCardLocked/base_type = &"PanelContainer"
+StemCardLocked/styles/panel = SubResource("StyleBoxFlat_stem_card_locked")
 TabButton/base_type = &"Button"
 TabButton/styles/disabled = SubResource("StyleBoxFlat_button_disabled")
 TabButton/styles/focus = SubResource("StyleBoxEmpty_tab_focus")

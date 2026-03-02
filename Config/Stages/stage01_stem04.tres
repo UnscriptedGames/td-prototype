@@ -11,19 +11,26 @@
 
 [sub_resource type="Resource" id="Resource_1oh8h"]
 script = ExtResource("1_i7ms1")
-button_color = Color(0.02745098, 0.54509807, 0.41960785, 1)
+button_color = Color(0.606485, 0.62706923, 0.25116858, 1)
 side_color = Color(0.101960786, 0.101960786, 0.10980392, 1)
-glow_color = Color(0.011764706, 0.34509805, 0.2627451, 1)
+glow_color = Color(0.19607843, 0.20392157, 0.05490196, 1)
 metadata/_custom_type_script = "uid://0x3lyn1cjhr1"
 
-[sub_resource type="Resource" id="Resource_itrpl"]
+[sub_resource type="Resource" id="Resource_6py77"]
 script = ExtResource("4_tqgf3")
-goal_tile = Vector2i(18, 3)
+goal_tile = Vector2i(11, 0)
+weight = 0.5
 metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
 
-[sub_resource type="Resource" id="Resource_m4vk0"]
+[sub_resource type="Resource" id="Resource_q0god"]
 script = ExtResource("4_tqgf3")
-goal_tile = Vector2i(14, 11)
+goal_tile = Vector2i(18, 4)
+weight = 0.5
+metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
+
+[sub_resource type="Resource" id="Resource_m7miv"]
+script = ExtResource("4_tqgf3")
+goal_tile = Vector2i(11, 11)
 metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
 
 [sub_resource type="Resource" id="Resource_45yd0"]
@@ -32,7 +39,7 @@ enemy_scene = ExtResource("3_1oh8h")
 spawn_tile = Vector2i(2, -1)
 count = 20
 start_delay = 0.5
-weighted_targets = Array[ExtResource("4_tqgf3")]([SubResource("Resource_itrpl"), SubResource("Resource_m4vk0")])
+weighted_targets = Array[ExtResource("4_tqgf3")]([SubResource("Resource_6py77"), SubResource("Resource_q0god"), SubResource("Resource_m7miv")])
 metadata/_custom_type_script = "uid://c6sd68ghkditp"
 
 [resource]

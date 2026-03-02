@@ -11,6 +11,7 @@ extends Control
 
 var build_manager: Node = null
 
+
 ## Called by GameWindow._bind_build_manager() once a level is loaded.
 func setup(bm: Node) -> void:
 	build_manager = bm
@@ -19,10 +20,13 @@ func setup(bm: Node) -> void:
 
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
-	if not is_instance_valid(build_manager): return false
-	if typeof(data) != TYPE_DICTIONARY: return false
-	if data.get("type") != "loadout_drag": return false
-	
+	if not is_instance_valid(build_manager):
+		return false
+	if typeof(data) != TYPE_DICTIONARY:
+		return false
+	if data.get("type") != "loadout_drag":
+		return false
+
 	var subtype: String = data.get("subtype", "")
 
 	if not build_manager.is_dragging():
@@ -39,9 +43,9 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 
 	if build_manager.is_dragging():
 		if subtype == "buff":
-			build_manager.update_drag_buff(get_global_mouse_position())
+			build_manager.update_drag_buff(get_local_mouse_position())
 		else:
-			build_manager.update_drag_ghost(get_global_mouse_position())
+			build_manager.update_drag_ghost(get_local_mouse_position())
 
 	var preview: Node = data.get("preview")
 	if preview and is_instance_valid(preview):
@@ -51,11 +55,13 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 
 
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
-	if not is_instance_valid(build_manager): return
-	if typeof(data) != TYPE_DICTIONARY: return
+	if not is_instance_valid(build_manager):
+		return
+	if typeof(data) != TYPE_DICTIONARY:
+		return
 
 	var subtype: String = data.get("subtype", "")
 	if subtype == "buff":
-		build_manager.apply_buff_at(get_global_mouse_position(), data.get("data"))
+		build_manager.apply_buff_at(get_local_mouse_position(), data.get("data"))
 	else:
 		build_manager.validate_and_place()

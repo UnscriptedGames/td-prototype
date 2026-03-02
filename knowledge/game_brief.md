@@ -1,7 +1,7 @@
 # Game Brief — TD-Prototype
 
 **Version:** 0.1 (Living Document)
-**Last Updated:** 2026-02-26
+**Last Updated:** 2026-03-02
 
 ## 1. Game Identity
 
@@ -347,10 +347,13 @@ The game operates as a Single Page Application within a persistent shell (`GameW
 - **Persistent DAW Shell**: The Top Bar (Transport Controls, Peak Meter) and Left Sidebar remain on screen during transitions to maintain immersion.
 - **Workspace Swapping**: Menus (Main Menu, Setlist, Studio) and Gameplay Levels are loaded into a central **SubViewport Workspace**. This prevents "hard" scene cuts and allows for smooth, software-like transitions.
 - **Sidebar Architecture**: The Left Sidebar is nested within a `SidebarContainer` alongside a `SidebarOverlay`. This grouping allows the entire rack to be managed as a single logical unit for input propagation and state-dependent visibility.
-- **Context Modes (`ContextMode`)**: The DAW shell uses a central state machine (`GAMEPLAY`, `SETLIST`, `EMPTY`) to toggle the visibility and interactivity of persistent elements (e.g., hiding Wave counters in menus).
-- **Sidebar Loadout Overlay**: To reinforce the "Locked Loadout" and "Offline" status during menus, the Left Sidebar is covered by an opaque sliding panel that animates in from the left edge of the screen when entering a non-gameplay context.
-- **Animation Strategy (SPA Timing)**: Due to the heavy nature of workspace swaps, UI animations (like the sidebar slide) utilize a `call_deferred` pattern. This ensuring the engine yields one frame to finalize layout calculations before starting Tweens, preventing visual "snapping."
-- **UI Interaction Lock**: During automated opening sequences (like the path-reveal wipe), the DAW shell locks the "Play" and "Restart" buttons to prevent state desync until the animation finishes.
+- **Context-Aware Sidebar Overlay**: The Left Sidebar features a dynamic **OverlayContent** container. This system swaps its content (e.g., Main Menu buttons) based on the game's context, rather than using traditional floating menus.
+- **Context Modes (`ContextMode`)**: The DAW shell uses a central state machine (`GAMEPLAY`, `SETLIST`, `EMPTY`, `MAIN_MENU`) to toggle the visibility and interactivity of persistent elements and drive the sidebar overlay content.
+- **Refined Navigation Flow**:
+    - **Menu Toggle**: The "Menu" button in the Top Bar is a regular button that toggles the sidebar overlay open/closed.
+    - **Click-to-Close**: During gameplay, clicking anywhere in the game viewport area automatically closes the sidebar if it is open, ensuring a clean "perfomance" view.
+- **Animation Strategy (SPA Timing)**: Due to the heavy nature of workspace swaps, UI animations (like the sidebar slide) utilize a `call_deferred` pattern. This ensures the engine yields one frame to finalize layout calculations before starting Tweens.
+- **UI Interaction Lock**: During automated opening sequences, the DAW shell locks the "Play" and "Restart" buttons to prevent state desync until the animation finishes.
 
 ### Layout (1536×1024 Native, Scaled to 1920×1080)
 - **Top Bar:** Global stats (Peak Meter, Gold, Wave counter), Restart button, and Volume Control.
@@ -391,8 +394,9 @@ The Setlist screen serves as the transition between "The Studio" (Preparation) a
     - **Instrument Label**: The musical role (e.g., "Synths", "Vocals").
     - **State Indication**: Clearly marked as *Locked*, *Available*, or *Completed*.
     - **Quality Grade**: Displays the earned medal/icon (**Good / Average / Abomination**) if the stem has been beaten.
-    - **Enemy Preview**: Critical strategic data. Shows a brief hint of the roster (e.g., "Heavy Shielded," "Sonic Swarm") so the player can tailor their Loadout before locking it in.
+    - **Enemy Preview**: Critical strategic data preview.
     - **Mandatory Cue**: Stem 1 is visually highlighted as the required entry point.
+    - **Theme Variations**: Styling is managed via **Theme Type Variations** (e.g., `StemCardPanel`) within `daw_theme.tres`, allowing unique card looks while maintaining global inheritance from the DAW theme.
 
 ### Art Direction for Assets
 - **Style:** Modern, clean semi-realistic digital illustration. Not retro, not
@@ -451,6 +455,8 @@ future design sessions and playtesting:
 - [x] **Modal Behavior:** Game auto-pauses for all system confirmations and resumes on cancel if a wave was active (Resolved Feb 27).
 - [x] **Setlist Navigation:** Returning to the Setlist from a level is a destructive action that requires a confirmation prompt (Resolved Feb 27).
 - [x] **BaseStage Injection:** Moved to a shell-injection pattern to reduce scene bloat (Resolved Mar 01).
+- [x] **Sidebar Main Menu:** Refactored main navigation into a context-aware sidebar overlay (Resolved Mar 02).
+- [x] **Auto-Load Stage 1:** The Setlist button now automatically loads the first stage if no active stage exists (Resolved Mar 02).
 - [ ] **AP Growth:** How does the player's maximum AP increase? Fixed per stage, or a
 	separate upgrade currency?
 - [ ] **Unlock Economy:** Full mapping of what unlocks where (towers, buffs, relics, AP).

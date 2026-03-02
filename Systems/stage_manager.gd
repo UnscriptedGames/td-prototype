@@ -199,6 +199,24 @@ func return_to_setlist() -> void:
 	SceneManager.load_scene(SETLIST_SCENE_PATH, SceneManager.ViewType.MENU)
 
 
+## Debug Cheat: Completes all 5 non-boss stems at GOOD quality and unlocks the boss.
+func cheat_complete_all_stems() -> void:
+	if not _active_stage:
+		return
+
+	for index: int in range(STEM_COUNT):
+		var result: StemResult = _stem_results[index]
+		result.status = StemResult.StemStatus.COMPLETED
+		result.quality = StemResult.StemQuality.GOOD
+		result.active_playback_quality = StemResult.StemQuality.GOOD
+		stem_status_changed.emit(index, result)
+
+	_unlock_next_stems()
+
+	if OS.is_debug_build():
+		print("StageManager: Debug Cheat — All non-boss stems completed.")
+
+
 ## Finds the StemAudioPlayer node in the live scene tree and stops it immediately.
 ## Called before any scene transition to prevent audio from bleeding into the next scene.
 func _stop_current_stem_audio() -> void:

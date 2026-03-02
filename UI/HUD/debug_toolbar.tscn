@@ -9,7 +9,6 @@
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -600.0
 offset_bottom = 60.0
 grow_horizontal = 0
 theme = ExtResource("2_282vj")
@@ -83,6 +82,14 @@ focus_mode = 0
 text = "✓ Stem"
 tooltip_text = "Force complete stem (no penalty)"
 
+[node name="CompleteAllStemsButton" type="Button" parent="Panel/Controls"]
+custom_minimum_size = Vector2(60, 28)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+text = "✓ Stage"
+tooltip_text = "Cheat: Complete all 5 non-boss stems at GOOD quality"
+
 [node name="Sep3" type="VSeparator" parent="Panel/Controls"]
 layout_mode = 2
 
@@ -105,3 +112,16 @@ focus_mode = 0
 toggle_mode = true
 text = "Pool"
 tooltip_text = "Toggle ObjectPool monitor overlay"
+
+[node name="Sep5" type="VSeparator" parent="Panel/Controls"]
+layout_mode = 2
+
+[node name="DebugButton" type="Button" parent="Panel/Controls"]
+custom_minimum_size = Vector2(50, 28)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+toggle_mode = true
+button_pressed = true
+text = "Debug"
+tooltip_text = "Toggle visibility of debug controls"

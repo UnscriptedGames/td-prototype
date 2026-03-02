@@ -7,17 +7,20 @@ extends MarginContainer
 @onready var speed_up_btn: Button = $Panel/Controls/SpeedUpButton
 @onready var speed_label: Label = $Panel/Controls/SpeedLabel
 
-
 @onready var peak_slider: HSlider = $Panel/Controls/PeakSlider
 
 @onready var spawn_wave_btn: Button = $Panel/Controls/SpawnWaveButton
 @onready var complete_stem_btn: Button = $Panel/Controls/CompleteStemButton
+@onready var complete_all_stems_btn: Button = $Panel/Controls/CompleteAllStemsButton
 
 @onready var add_gold_btn: Button = $Panel/Controls/AddGoldButton
 
 @onready var pool_stats_btn: Button = $Panel/Controls/PoolStatsButton
+@onready var debug_btn: Button = $Panel/Controls/DebugButton
+@onready var controls: HBoxContainer = $Panel/Controls
 
 # --- Lifecycle ---
+
 
 func _ready() -> void:
 	# Hide in production builds.
@@ -31,7 +34,6 @@ func _ready() -> void:
 		GameManager.game_speed_changed.connect(_on_speed_changed)
 		_on_speed_changed(Engine.time_scale)
 
-
 	# Peak slider — bidirectional: slider drives GameManager, GameManager drives slider.
 	peak_slider.value_changed.connect(_on_peak_slider_changed)
 	GameManager.peak_meter_changed.connect(_on_peak_meter_changed)
@@ -39,12 +41,18 @@ func _ready() -> void:
 	# Wave controls.
 	spawn_wave_btn.pressed.connect(_on_spawn_wave_pressed)
 	complete_stem_btn.pressed.connect(_on_complete_stem_pressed)
+	complete_all_stems_btn.pressed.connect(func() -> void: StageManager.cheat_complete_all_stems())
 
 	# Economy.
 	add_gold_btn.pressed.connect(func() -> void: GameManager.add_gold_debug(500))
 
 	# Pool stats toggle.
 	pool_stats_btn.toggled.connect(_on_pool_stats_toggled)
+
+	# Debug toolbar collapse.
+	debug_btn.toggled.connect(_on_debug_toggled)
+	# Set initial state (Sync with scene default if needed, though button_pressed=true in scene)
+	_on_debug_toggled(debug_btn.button_pressed)
 
 
 func _exit_tree() -> void:
@@ -55,6 +63,7 @@ func _exit_tree() -> void:
 
 
 # --- Callbacks ---
+
 
 func _on_speed_changed(new_speed: float) -> void:
 	speed_label.text = "%.1fx" % new_speed
@@ -91,3 +100,9 @@ func _on_pool_stats_toggled(pressed: bool) -> void:
 		monitor.visible = pressed
 	elif pressed and OS.is_debug_build():
 		push_warning("DebugToolbar: ObjectPoolMonitor not found in group 'pool_monitor'.")
+
+
+func _on_debug_toggled(should_be_visible: bool) -> void:
+	for child in controls.get_children():
+		if child != debug_btn:
+			child.visible = should_be_visible

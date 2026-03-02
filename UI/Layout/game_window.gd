@@ -14,8 +14,12 @@ var ui_workspace: MarginContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/U
 var game_view_container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
 
 @onready var sidebar_overlay: Control = $MainLayout/WorkspaceSplit/SidebarContainer/SidebarOverlay
+@onready
+var overlay_content: MarginContainer = $MainLayout/WorkspaceSplit/SidebarContainer/SidebarOverlay/OverlayContent
+@onready
+var status_label: Label = $MainLayout/WorkspaceSplit/SidebarContainer/SidebarOverlay/OverlayContent/StatusLabel
 
-@onready var menu_button: MenuButton = $MainLayout/TopBar/Content/MenuButton
+@onready var menu_button: Button = $MainLayout/TopBar/Content/MenuButton
 @onready var main_menu_confirm: ConfirmationDialog = $MainMenuConfirmation
 @onready var setlist_confirm: ConfirmationDialog = $SetlistConfirmation
 @onready var quit_confirm: ConfirmationDialog = $QuitConfirmation
@@ -64,9 +68,11 @@ var icon_mute: Texture2D = preload("res://UI/Icons/volume_mute.svg")
 var _build_manager: BuildManager
 var _selected_tower: TemplateTower = null
 var _transport_allowed: bool = false
-var _is_sidebar_offline: bool = true  # Default to true so opening the first level animates it away
+var _is_sidebar_offline: bool = false
 var _tower_inspector: PanelContainer  # Typed loose to avoid cyclic ref with TowerInspector
 var _sidebar_hud: Control  # Typed loose to avoid cyclic ref with SidebarHUD
+var _current_context: ContextMode = ContextMode.EMPTY
+@onready var _game_view_wrapper: Control = $MainLayout/WorkspaceSplit/GameViewWrapper
 
 # Meter Animation State
 var _target_damage_value: float = 0.0
@@ -92,10 +98,9 @@ var _previous_volume: float = 80.0
 const DEFAULT_LEVEL_PATH: String = "res://Stages/_TemplateStage/template_stage.tscn"
 const MAIN_MENU_SCENE_PATH: String = "res://UI/MainMenu/main_menu.tscn"
 const SETLIST_SCENE_PATH: String = "res://UI/Setlist/setlist_screen.tscn"
+const SIDEBAR_MENU_SCENE_PATH: String = "res://UI/HUD/Sidebar/sidebar_main_menu.tscn"
 
-enum MenuOptions { MAIN_MENU, SETLIST, QUIT }
-
-enum ContextMode { GAMEPLAY, SETLIST, EMPTY }
+enum ContextMode { GAMEPLAY, SETLIST, EMPTY, MAIN_MENU }
 
 @onready var restart_confirm: ConfirmationDialog = $RestartConfirmation
 
@@ -104,8 +109,8 @@ func _ready() -> void:
 	# Wait for systems to settle
 	await get_tree().process_frame
 
-	_setup_menu()
 	_setup_confirmations()
+	menu_button.pressed.connect(_on_menu_button_pressed)
 	_setup_transport()
 	_setup_window_controls()
 	_setup_build_manager()
@@ -115,6 +120,7 @@ func _ready() -> void:
 	_setup_input_propagation()
 	_setup_inspector()
 	_setup_level()
+	_game_view_wrapper.gui_input.connect(_on_game_view_gui_input)
 
 	# Ensure the overlay's physical state matches its default boolean state behind the loading screen.
 	_set_sidebar_offline(_is_sidebar_offline, true)
@@ -230,11 +236,15 @@ func _setup_input_propagation() -> void:
 	# Allow drag data to fall through containers (prevents "Forbidden" cursor)
 	var top_bar: PanelContainer = $MainLayout/TopBar
 	var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar
+	var drop_zone: Control = $MainLayout/WorkspaceSplit/GameViewWrapper/DropZone
 
 	if top_bar:
 		_set_container_mouse_ignore_recursive(top_bar)
 	if left_sidebar:
 		_set_container_mouse_ignore_recursive(left_sidebar)
+
+	if drop_zone:
+		drop_zone.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 ## Instantiates the TowerInspector panel inside the game view container and
@@ -451,19 +461,6 @@ func _update_play_button_visuals() -> void:
 	play_button.icon = icon_pause if show_pause_icon else icon_play
 
 
-## Populates the top-bar dropdown menu with Main Menu, Setlist, and Quit options.
-func _setup_menu() -> void:
-	var popup: PopupMenu = menu_button.get_popup()
-	popup.add_item("Main Menu", MenuOptions.MAIN_MENU)
-	popup.add_item("Setlist", MenuOptions.SETLIST)
-	popup.add_item("Quit", MenuOptions.QUIT)
-
-	# Start with Setlist disabled until a level loads
-	popup.set_item_disabled(popup.get_item_index(MenuOptions.SETLIST), true)
-
-	popup.id_pressed.connect(_on_menu_item_pressed)
-
-
 ## Connects confirmation dialog signals.
 func _setup_confirmations() -> void:
 	if main_menu_confirm:
@@ -480,18 +477,29 @@ func _setup_confirmations() -> void:
 		restart_confirm.canceled.connect(_on_dialog_canceled)
 
 
-## Routes menu dropdown selections to their confirmation dialogs.
-func _on_menu_item_pressed(id: int) -> void:
-	match id:
-		MenuOptions.MAIN_MENU:
-			_pause_game_for_dialog()
-			main_menu_confirm.popup_centered()
-		MenuOptions.SETLIST:
-			_pause_game_for_dialog()
-			setlist_confirm.popup_centered()
-		MenuOptions.QUIT:
-			_pause_game_for_dialog()
-			quit_confirm.popup_centered()
+func _on_menu_button_pressed() -> void:
+	# Toggle logic: if we are already in MAIN_MENU context showing the sidebar, close it.
+	if _current_context == ContextMode.MAIN_MENU:
+		# Only allow closing if we are in a state that has "Gameplay" to return to
+		if _transport_allowed:
+			set_context_mode(ContextMode.GAMEPLAY)
+		else:
+			# If in Title/Setlist, we don't 'toggle' it closed easily because
+			# the menu IS the main interaction layer here.
+			# But we'll allow a forced 'close' if the user really wants to see the bg.
+			_set_sidebar_offline(false)
+			_current_context = ContextMode.EMPTY
+	else:
+		# Otherwise, open the menu
+		set_context_mode(ContextMode.MAIN_MENU)
+
+
+func _on_game_view_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		# Only auto-close if we are in gameplay (transport allowed)
+		# We don't want to close the sidebar on world-click during Title/Setlist
+		if _current_context == ContextMode.MAIN_MENU and _transport_allowed:
+			set_context_mode(ContextMode.GAMEPLAY)
 
 
 ## Unpauses the tree and returns to the main menu scene.
@@ -629,6 +637,8 @@ func change_workspace(scene_instance: Node, view_type: int) -> void:
 		# Context detection for menus (using duck-typing to avoid circular class_name issues)
 		if scene_instance.has_method("_build_setlist"):
 			set_context_mode(ContextMode.SETLIST)
+		elif scene_instance.has_method("is_main_menu"):
+			set_context_mode(ContextMode.MAIN_MENU)
 		else:
 			set_context_mode(ContextMode.EMPTY)
 
@@ -643,12 +653,8 @@ func _set_transport_controls_enabled(enabled: bool) -> void:
 	if restart_button:
 		restart_button.disabled = not enabled
 
-	# Sync the Setlist dropdown option with the active level state
-	if menu_button:
-		var popup: PopupMenu = menu_button.get_popup()
-		var setlist_idx: int = popup.get_item_index(MenuOptions.SETLIST)
-		if setlist_idx != -1:
-			popup.set_item_disabled(setlist_idx, not enabled)
+	# Sync the sidebar menu if needed or handle other state sync
+	# (Sidebar menu currently handles its own logic or is updated via contexts)
 
 	# Always ensure the top bar isn't orphaned in a locked state when entering a menu
 	if not enabled:
@@ -664,6 +670,7 @@ func _set_transport_controls_enabled(enabled: bool) -> void:
 
 ## Updates the Top Bar layout based on the current context (e.g. gameplay vs menu).
 func set_context_mode(mode: ContextMode) -> void:
+	_current_context = mode
 	match mode:
 		ContextMode.GAMEPLAY:
 			wave_label.show()
@@ -680,6 +687,7 @@ func set_context_mode(mode: ContextMode) -> void:
 			if setlist_restart_button:
 				setlist_restart_button.show()
 			_set_sidebar_offline(true)
+			_update_sidebar_content(ContextMode.MAIN_MENU)
 
 			if StageManager.active_stage:
 				stage_title_label.text = StageManager.active_stage.stage_name
@@ -693,6 +701,17 @@ func set_context_mode(mode: ContextMode) -> void:
 			if setlist_restart_button:
 				setlist_restart_button.hide()
 			_set_sidebar_offline(true)
+			_update_sidebar_content(ContextMode.EMPTY)
+
+		ContextMode.MAIN_MENU:
+			wave_label.hide()
+			gain_label.hide()
+			stage_title_label.text = "Main Menu"
+			stage_title_label.show()
+			if setlist_restart_button:
+				setlist_restart_button.hide()
+			_set_sidebar_offline(true)
+			_update_sidebar_content(ContextMode.MAIN_MENU)
 
 
 ## Triggers the confirmation to restart the ENTIRE stage from the Setlist screen.
@@ -702,6 +721,58 @@ func _on_setlist_restart_button_pressed() -> void:
 		restart_confirm.title = "Restart Stage?"
 		restart_confirm.dialog_text = "Are you sure you want to restart the entire stage? All stem progress will be wiped."
 		restart_confirm.popup_centered()
+
+
+## Updates the content of the Sidebar Overlay based on current context.
+func _update_sidebar_content(mode: ContextMode) -> void:
+	print("SIDEBAR: Updating content for mode: ", mode)
+	if not is_instance_valid(overlay_content):
+		print("SIDEBAR: overlay_content NOT VALID")
+		return
+
+	# Clear existing dynamic content
+	for child in overlay_content.get_children():
+		if child != status_label:
+			child.queue_free()
+
+	match mode:
+		ContextMode.EMPTY:
+			status_label.show()
+			status_label.text = "[ OFFLINE ]"
+		ContextMode.MAIN_MENU:
+			status_label.hide()
+			print("SIDEBAR: Loading menu scene from: ", SIDEBAR_MENU_SCENE_PATH)
+			var menu_scene: PackedScene = load(SIDEBAR_MENU_SCENE_PATH)
+			if menu_scene:
+				var menu_instance = menu_scene.instantiate()
+				overlay_content.add_child(menu_instance)
+				print("SIDEBAR: Menu instance added: ", menu_instance.name)
+				# Connect signals
+				menu_instance.setlist_pressed.connect(_on_sidebar_setlist)
+				menu_instance.quit_pressed.connect(_on_close_pressed)
+			else:
+				print("SIDEBAR: FAILED to load menu scene")
+		_:
+			status_label.show()
+			status_label.text = "[ OFFLINE ]"
+
+	print(
+		"SIDEBAR: Overlay visible: ",
+		sidebar_overlay.visible,
+		" position: ",
+		sidebar_overlay.position
+	)
+
+
+func _on_sidebar_setlist() -> void:
+	# If no stage is loaded, default to Stage 1
+	if StageManager.active_stage == null:
+		var STAGE_1_PATH: String = "res://Config/Stages/stage01.tres"
+		var stage: StageData = load(STAGE_1_PATH) as StageData
+		if stage:
+			StageManager.load_stage(stage)
+
+	SceneManager.load_scene(SETLIST_SCENE_PATH, SceneManager.ViewType.MENU)
 
 
 ## Connects a level instance's required nodes to the BuildManager and wires
@@ -788,26 +859,36 @@ func _set_container_mouse_ignore_recursive(node: Node, allow_buttons: bool = tru
 ## top bar and sidebar are set to IGNORE so drops fall through to the
 ## GameViewDropper overlay. Restored on drag end.
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_DRAG_BEGIN:
-		var top_bar: PanelContainer = $MainLayout/TopBar
-		var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar
-		if top_bar:
-			_set_container_mouse_ignore_recursive(top_bar, false)
-		if left_sidebar:
-			_set_container_mouse_ignore_recursive(left_sidebar, false)
+	if what == NOTIFICATION_DRAG_BEGIN or what == NOTIFICATION_DRAG_END:
+		var top_bar: PanelContainer = get_node_or_null("MainLayout/TopBar") as PanelContainer
+		var left_sidebar: PanelContainer = (
+			get_node_or_null("MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar")
+			as PanelContainer
+		)
+		var drop_zone: Control = (
+			get_node_or_null("MainLayout/WorkspaceSplit/GameViewWrapper/DropZone") as Control
+		)
 
-	elif what == NOTIFICATION_DRAG_END:
-		var top_bar: PanelContainer = $MainLayout/TopBar
-		var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar
-		if top_bar:
-			_set_container_mouse_ignore_recursive(top_bar, true)
-		if left_sidebar:
-			_set_container_mouse_ignore_recursive(left_sidebar, true)
+		if what == NOTIFICATION_DRAG_BEGIN:
+			if top_bar:
+				_set_container_mouse_ignore_recursive(top_bar, false)
+			if left_sidebar:
+				_set_container_mouse_ignore_recursive(left_sidebar, false)
+			if drop_zone:
+				drop_zone.mouse_filter = Control.MOUSE_FILTER_PASS
 
-		# Ensure buff/drag state is cleaned up
-		if is_instance_valid(_build_manager) and _build_manager.is_dragging():
-			_build_manager.cancel_drag_ghost()
-			_build_manager.cancel_drag_buff()
+		elif what == NOTIFICATION_DRAG_END:
+			if top_bar:
+				_set_container_mouse_ignore_recursive(top_bar, true)
+			if left_sidebar:
+				_set_container_mouse_ignore_recursive(left_sidebar, true)
+			if drop_zone:
+				drop_zone.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+			# Ensure buff/drag state is cleaned up
+			if is_instance_valid(_build_manager) and _build_manager.is_dragging():
+				_build_manager.cancel_drag_ghost()
+				_build_manager.cancel_drag_buff()
 
 
 ## Updates the wave counter label when the current wave changes.

@@ -12,7 +12,9 @@ This document tracks all pending ideas, brainstorms, and open design questions t
 *   **Visual Feedback on Pads:** Using buffs could manipulate the surrounding environment to some degree (e.g., changing the appearance or pulsing of the "grey blocks/cubes" or the background visualizer pads).
 
 
-### Relic Placement Mechanics
+### Sidebar Context Expansion
+*   **Contextual Rack Modules:** The sidebar overlay could display different "hardware" modules depending on context (e.g., a Master Fader for the main menu, a Detailed Stem Inspector for the setlist).
+*   **Active Plugin View:** A potential sidebar context that shows real-time stats for the active relic or global buffs currently affecting the board.
 *   **Physical Relic Slotting:** Instead of just a UI Loadout, relics could physical slot into the environment (the "grey cubes" or sound pads).
 *   **Slot Constraints:** Limit to 3-5 designated slots on the sound pads where players must choose to place their relics.
 *   **Visual Representation:** Relics have a physical presence with cool designs that pulse, visually representing their effects on the board alongside their gameplay buffs.
@@ -38,6 +40,7 @@ This section contains existing open questions from previous design sessions that
 ### Enemy & Level Design
 *   **Enemy Variants:** Detailed designs for shielded, resistant, and other audio-themed waveform variations.
 *   **Difficulty Scaling:** How exactly does the difficulty ramp up across stages and within specific stem levels?
+*   **AStar Pathing Noise:** Implement a "Path Weight Noise" refactor in `BaseStage.gd` to inject tiny random costs into walkable tiles. This will facilitate natural crowd distribution across symmetrical branches without manual waypoints.
 *   **Final Stage Mechanics:** Does the custom song selection entirely dictate gameplay mechanics on the final stage, or is the combination of stems purely aesthetic?
 
 ### Artistic Identity

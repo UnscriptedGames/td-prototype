@@ -1,3 +1,5 @@
-- **Current State:** Stable.
-- **Signal Maps:** None.
-- **Immediate Next Step:** None.
+- **Current State:** Sidebar navigation refactored into context-aware overlay. Navigation consolidated into SETLIST (with auto-load) and QUIT. Interaction refined with toggle and click-to-close logic for active levels.
+- **Signal Maps:** 
+    - `SidebarMainMenu.setlist_pressed` -> `GameWindow._on_sidebar_setlist`
+    - `SidebarMainMenu.quit_pressed` -> `GameWindow.quit_game`
+- **Immediate Next Step:** Investigate and fix menu sidebar animation hiding issues during specific transitions.

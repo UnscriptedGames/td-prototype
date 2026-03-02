@@ -1,15 +1,15 @@
 [gd_scene format=3 uid="uid://bir7iuxfukxsb"]
 
 [ext_resource type="Script" uid="uid://6irywbbrglw3" path="res://Stages/_BaseStage/base_stage.gd" id="1_f16nf"]
-[ext_resource type="TileSet" uid="uid://deanuyo4c5m1j" path="res://Stages/Tilesets/maze_tileset.tres" id="1_ser8i"]
 [ext_resource type="Shader" uid="uid://dxdrp5juv3u7u" path="res://Stages/_Components/matte_surface.gdshader" id="3_pbnvl"]
 [ext_resource type="Script" uid="uid://cyy8netls8x7r" path="res://Systems/build_manager.gd" id="3_x6qrl"]
 [ext_resource type="Texture2D" uid="uid://pbxk5a2gk0ti" path="res://Stages/Tilesets/Assets/background_tile_image.png" id="4_6akoy"]
 [ext_resource type="Script" uid="uid://dt7srovmpurri" path="res://Stages/_Components/background_renderer.gd" id="6_bg"]
 [ext_resource type="TileSet" uid="uid://lcs2qipbyflc" path="res://Stages/Tilesets/animation_tileset.tres" id="6_g2nhi"]
 [ext_resource type="Script" uid="uid://63tactyc62r7" path="res://Stages/_Components/maze_renderer.gd" id="6_renderer"]
+[ext_resource type="TileSet" uid="uid://dq71bx8v7hske" path="res://Stages/Tilesets/highlight_tileset.tres" id="7_g2nhi"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_j8a8s"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_g2nhi"]
 shader = ExtResource("3_pbnvl")
 shader_parameter/noise_strength = 0.0
 shader_parameter/gradient_strength = 0.0
@@ -18,6 +18,7 @@ shader_parameter/light_direction = Vector2(1, 1)
 [node name="BaseStage" type="Node2D" unique_id=1492646997]
 y_sort_enabled = true
 script = ExtResource("1_f16nf")
+play_opening_sequence = false
 
 [node name="Background" type="ColorRect" parent="." unique_id=1872361474]
 z_index = -100
@@ -38,7 +39,7 @@ y_sort_enabled = true
 
 [node name="BackgroundRenderer" type="Node2D" parent="TileMaps" unique_id=1621264932]
 z_index = -5
-material = SubResource("ShaderMaterial_j8a8s")
+material = SubResource("ShaderMaterial_g2nhi")
 script = ExtResource("6_bg")
 grid_width = 57
 grid_height = 36
@@ -63,7 +64,7 @@ tile_set = ExtResource("6_g2nhi")
 
 [node name="HighlightLayer" type="TileMapLayer" parent="TileMaps" unique_id=1097366726]
 z_index = -1
-tile_set = ExtResource("1_ser8i")
+tile_set = ExtResource("7_g2nhi")
 
 [node name="Entities" type="Node2D" parent="." unique_id=334363663]
 y_sort_enabled = true
