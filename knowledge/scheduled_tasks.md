@@ -11,7 +11,7 @@ This document contains a list of recurring maintenance tasks for the Jules async
 | 3 | The Documentation Clerk | Project Tracking | Fortnightly | **Interactive** | 2026-03-03 |
 | 4 | The Test Architect | Quality Assurance | Major System | **Interactive** | — |
 | 5 | The Typist | Static Typing | Monthly | **Start** | 2026-03-03 |
-| 6 | The Inspector | Performance Guard | Bi-weekly | **Review** | — |
+| 6 | The Inspector | Performance Guard | Bi-weekly | **Review** | 2026-03-03 |
 | 7 | The Custodian | Dead Code Cleanup | Per Phase | **Review** | 2026-03-04 |
 | 8 | The UI Architect | Hierarchy Enforcer | New UI | **Interactive** | — |
 | 9 | The Cartographer | Scene Tree Auditor | Monthly | **Review** | — |

@@ -155,6 +155,7 @@ func _on_range_area_entered(area: Area2D) -> void:
 	if not area is TemplateEnemy:
 		return
 	var enemy: TemplateEnemy = area as TemplateEnemy
+	assert(enemy != null)
 	_enemies_in_range.append(enemy)
 	_find_new_target()
 
@@ -163,6 +164,7 @@ func _on_range_area_exited(area: Area2D) -> void:
 	if not area is TemplateEnemy:
 		return
 	var enemy: TemplateEnemy = area as TemplateEnemy
+	assert(enemy != null)
 	
 	var index: int = _enemies_in_range.find(enemy)
 	if index != -1:
@@ -337,6 +339,7 @@ func _spawn_projectiles() -> void:
 		var projectile: TemplateProjectile = (
 			ObjectPoolManager.get_object(projectile_scene) as TemplateProjectile
 		)
+		assert(projectile != null)
 		if not is_instance_valid(projectile):
 			push_error("ObjectPoolManager failed to provide a projectile.")
 			continue

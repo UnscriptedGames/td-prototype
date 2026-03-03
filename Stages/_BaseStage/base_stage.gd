@@ -73,6 +73,8 @@ var _stem_has_failed: bool = false
 # AStarGrid2D Navigation
 var _astar_grid: AStarGrid2D
 
+@onready var _enemies_container: Node2D = $Entities/Enemies
+
 # Spawn Queue System
 var _spawn_queue: Array[Dictionary] = []
 var _spawn_timer: float = 0.0
@@ -389,13 +391,15 @@ func _spawn_queued_enemy(event: Dictionary) -> void:
 func _spawn_enemy(
 	enemy_scene: PackedScene, spawn_position: Vector2, start_tile: Vector2i, target_tile: Vector2i
 ) -> TemplateEnemy:
-	var enemies_container: Node2D = entities.get_node("Enemies") as Node2D
-
 	var enemy: TemplateEnemy = ObjectPoolManager.get_object(enemy_scene) as TemplateEnemy
 	if not is_instance_valid(enemy):
 		return null
 
-	enemies_container.add_child(enemy)
+	if is_instance_valid(_enemies_container):
+		_enemies_container.add_child(enemy)
+	else:
+		push_error("Enemies container is not valid.")
+		return null
 	enemy.reset()
 	enemy.global_position = spawn_position
 
@@ -779,12 +783,11 @@ func _apply_track_end_penalty() -> void:
 	if penalty_ratio <= 0.0:
 		return
 
-	var enemies_container: Node2D = entities.get_node_or_null("Enemies") as Node2D
-	if not is_instance_valid(enemies_container):
+	if not is_instance_valid(_enemies_container):
 		return
 
 	var total_penalty: float = 0.0
-	for enemy in enemies_container.get_children():
+	for enemy in _enemies_container.get_children():
 		if enemy.has_method("reset") and "health" in enemy:
 			total_penalty += float(enemy.health) * penalty_ratio
 
@@ -798,11 +801,10 @@ func _apply_track_end_penalty() -> void:
 
 func _clear_all_enemies() -> void:
 	# Returns all living enemies to the object pool cleanly.
-	var enemies_container: Node2D = entities.get_node_or_null("Enemies") as Node2D
-	if not is_instance_valid(enemies_container):
+	if not is_instance_valid(_enemies_container):
 		return
 
-	for enemy in enemies_container.get_children():
+	for enemy in _enemies_container.get_children():
 		if is_instance_valid(enemy):
 			ObjectPoolManager.return_object(enemy)
 

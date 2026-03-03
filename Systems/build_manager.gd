@@ -476,6 +476,7 @@ func apply_buff_at(screen_position: Vector2, item_data: Resource) -> bool:
 		return false  # Banished
 
 	var buff_data: BuffData = item_data as BuffData
+	assert(buff_data != null)
 	if not buff_data:
 		push_error("BuildManager: apply_buff_at called with invalid data type. Expected BuffData.")
 		return false
@@ -610,6 +611,7 @@ func _place_tower(
 		return
 
 	var new_tower := _pending_tower_scene.instantiate() as TemplateTower
+	assert(new_tower != null)
 	new_tower.global_position = build_position
 	towers_container.add_child(new_tower)
 
