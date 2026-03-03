@@ -57,9 +57,9 @@ func _exit_tree() -> void:
 			GlobalSignals.buff_applied.disconnect(_on_buff_applied)
 
 	for child in relic_container.get_children():
-		var btn = child as TextureButton
+		var btn: TextureButton = child as TextureButton
 		if is_instance_valid(btn):
-			var callables = btn.pressed.get_connections()
+			var callables: Array[Dictionary] = btn.pressed.get_connections()
 			for conn in callables:
 				btn.pressed.disconnect(conn["callable"])
 

@@ -80,14 +80,14 @@ func update_position_manually(local_viewport_pos: Vector2) -> void:
 func _snap_and_update(target_pos: Vector2) -> void:
 	var map_coords := path_layer.local_to_map(path_layer.to_local(target_pos))
 	var snapped_local_pos := path_layer.map_to_local(map_coords)
-	var final_pos = path_layer.to_global(snapped_local_pos)
+	var final_pos: Vector2 = path_layer.to_global(snapped_local_pos)
 	
 	global_position = final_pos
 	
 	_update_placement_validity(map_coords)
 
 	if map_coords != _last_tile_pos:
-		var tower_range = 0
+		var tower_range: int = 0
 		if not data.levels.is_empty():
 			tower_range = data.levels[0].tower_range
 		HighlightManager.show_ghost_highlights(highlight_layer, map_coords, tower_range, highlight_ids, is_placement_valid)
@@ -114,13 +114,13 @@ func get_range_points() -> PackedVector2Array:
 func _generate_range_polygon() -> void:
 	var points: PackedVector2Array = []
 	var full_tile_size := Vector2(64, 64)
-	var tower_range = 0
+	var tower_range: int = 0
 	if not data.levels.is_empty():
 		tower_range = data.levels[0].tower_range
 	var range_multiplier: float = tower_range + 0.5
 
 	# Generate a square polygon for top-down grid
-	var extent = full_tile_size * range_multiplier
+	var extent: Vector2 = full_tile_size * range_multiplier
 	
 	points.append(Vector2(-extent.x, -extent.y)) # Top Left
 	points.append(Vector2(extent.x, -extent.y)) # Top Right
