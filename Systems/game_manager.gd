@@ -39,7 +39,7 @@ var _current_peak: float = 0.0
 var _current_max_peak: float = 100.0  # Will be updated dynamically per wave
 
 # Loadout System
-# Key: TowerData, Value: int (Current Stock)
+# Key: TowerData, Value: int (Current Stock in this run)
 var _loadout_stock: Dictionary[TowerData, int] = {}
 
 # Relic Logic
@@ -103,13 +103,15 @@ func _ready() -> void:
 # --- Loadout Management ---
 
 
-## Initializes the loadout stock from the player data.
+## Initializes the loadout stock from the player data tower_slots array.
 func _initialize_loadout_stock() -> void:
 	if _player_data:
 		_loadout_stock.clear()
-		for tower_data in _player_data.towers:
-			if tower_data is TowerData:
-				var count: int = _player_data.towers[tower_data]
+		_player_data._ensure_slots()
+		for slot in _player_data.tower_slots:
+			if slot != null and slot.has("data") and slot["data"] is TowerData:
+				var tower_data: TowerData = slot["data"] as TowerData
+				var count: int = slot.get("stock", 1)
 				_loadout_stock[tower_data] = count
 				loadout_stock_changed.emit(tower_data, count)
 
@@ -313,10 +315,14 @@ func wave_completed() -> void:
 
 ## Resets the game state to default values (e.g. for restarting level).
 func reset_state() -> void:
-	# Reload Player Data to reset health/currency
-	_player_data = ResourceLoader.load(
-		"res://Config/Players/player_config.tres", "", ResourceLoader.CACHE_MODE_IGNORE
-	)
+	# NOTE: We no longer reload Player Data from disk here, as it wipes
+	# Studio Loadout changes. We preserve the in-memory '_player_data'
+	# but reset its per-run currency.
+	if _player_data:
+		# Reset to the baseline starting currency defined in the resource class
+		_player_data.currency = 100
+		currency_changed.emit(_player_data.currency)
+
 	_initialize_loadout_stock()
 
 	# Reset Wave counters

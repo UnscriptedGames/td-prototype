@@ -230,10 +230,15 @@ The Loadout replaces the legacy card/deck system. We use a **Data vs. Configurat
 - The hard budget for what a player can bring into a stage.
 - Every item (Tower type, Buff, Relic) has an AP cost.
 - AP max starts low and **increases through progression** (mechanism TBD).
-- **Cost Tiers:**
-	- **Heavy:** High-Tier Towers, Powerful Relics
-	- **Medium:** Standard Towers, Global Buffs
-	- **Light:** Simple Spells, Utility Modules
+
+### The Rack (Slot-Based Architecture)
+The loadout is organized into a fixed-size grid (The Rack), separating it from a generic "deck" feel.
+- **Towers:** Fixed **6 slots**.
+- **Buffs:** Fixed **6 slots**.
+- **Relics:** Fixed **3 slots**.
+- **Precise Placement:** Players can drag items from the Studio Catalog into specific slots.
+- **Internal Swapping:** Items within the Loadout can be rearranged by dragging one slot over another, triggering an automatic swap.
+- **Duplicate Guard:** A tower can only occupy one slot in the Rack. Once added, it is disabled in the Catalog until removed from the loadout.
 
 ### Towers — "The Instruments"
 - Must be allocated to the Loadout to be available for building in-game.
@@ -502,6 +507,8 @@ future design sessions and playtesting:
 - [x] **Selection Reliability:** Synchronized `BuildManager` and `GameWindow` state to ensure reliable tower clicking during pause (Resolved Mar 02).
 - [x] **Signal Management:** Implemented mandatory `_exit_tree()` cleanup across all UI and core systems (Resolved Mar 03).
 - [x] **Inspector Persistence:** Resolved broken sell/priority signals by rebinding inspector to BuildManager on every level load (Resolved Mar 03).
+- [x] **Slot-Based Loadout:** Transitioned towers to a fixed 6-slot array for precise placement and swapping (Resolved Mar 03).
+- [x] **Sidebar Interaction:** Fixed drag-locking issue by ensuring sidebar remains interactive during Studio drags (Resolved Mar 03).
 - [ ] **AP Growth:** How does the player's maximum AP increase? Fixed per stage, or a
 	separate upgrade currency?
 - [ ] **Unlock Economy:** Full mapping of what unlocks where (towers, buffs, relics, AP).

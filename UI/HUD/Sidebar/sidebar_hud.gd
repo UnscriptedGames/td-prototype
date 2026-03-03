@@ -14,6 +14,8 @@ extends Control
 const SIDEBAR_BUTTON_SCRIPT = preload("res://UI/HUD/Sidebar/sidebar_button.gd")
 const SIDEBAR_BUTTON_SCENE = preload("res://UI/HUD/Sidebar/sidebar_button.tscn")
 
+var _is_in_studio_context: bool = false
+
 @export var preview_loadout: PlayerData:
 	set = _set_preview_loadout
 
@@ -24,6 +26,21 @@ func _set_preview_loadout(val: PlayerData) -> void:
 	preview_loadout = val
 	if Engine.is_editor_hint() and is_node_ready():
 		populate(preview_loadout)
+
+
+## Sets the current context (called by GameWindow) to update child display logic.
+func set_context(mode: GameWindow.ContextMode) -> void:
+	var is_studio: bool = mode == GameWindow.ContextMode.STUDIO
+	_is_in_studio_context = is_studio
+	for child in tower_grid.get_children():
+		if child.has_method("set_studio_context"):
+			child.set_studio_context(is_studio)
+	for child in buff_container.get_children():
+		if child.has_method("set_studio_context"):
+			child.set_studio_context(is_studio)
+	for child in relic_container.get_children():
+		if child.has_method("set_studio_context"):
+			child.set_studio_context(is_studio)
 
 
 func _ready() -> void:
@@ -85,25 +102,23 @@ func populate(player_data: Resource) -> void:
 
 		_update_or_create_relic(btn, data, i)
 
-	# 2. Towers
+	# 2. Towers — always iterate exactly 6 fixed slots
 	var tower_children: Array[Node] = tower_grid.get_children()
-	var tower_items: Array[Dictionary] = []
-	if player_data and "towers" in player_data:
-		for tower_key: Variant in player_data.towers:
-			tower_items.append({"data": tower_key, "stock": player_data.towers[tower_key]})
+	if player_data:
+		player_data._ensure_slots()
 
-	var tower_count: int = max(tower_items.size(), 6)
-
-	for i: int in range(tower_count):
+	for slot_index: int in range(PlayerData.TOWER_SLOT_COUNT):
 		var btn: Button = null
-		if i < tower_children.size():
-			btn = tower_children[i]
+		if slot_index < tower_children.size():
+			btn = tower_children[slot_index]
 
 		var info: Dictionary = {}
-		if i < tower_items.size():
-			info = tower_items[i]
+		if player_data and slot_index < player_data.tower_slots.size():
+			var slot = player_data.tower_slots[slot_index]
+			if slot != null and slot.has("data"):
+				info = slot
 
-		_update_or_create_tower(btn, info)
+		_update_or_create_tower(btn, info, slot_index)
 
 	# 3. Buffs
 	var buff_children: Array[Node] = buff_container.get_children()
@@ -145,6 +160,9 @@ func _update_or_create_relic(existing_btn: Button, relic_data: RelicData, index:
 		if btn.stock_label:
 			btn.stock_label.visible = false
 
+	if btn.has_method("set_studio_context"):
+		btn.set_studio_context(_is_in_studio_context)
+
 	# Clean existing self-connections before reconnecting
 	var conns: Array = btn.pressed.get_connections()
 	for connection: Dictionary in conns:
@@ -162,7 +180,7 @@ func _update_or_create_relic(existing_btn: Button, relic_data: RelicData, index:
 
 ## Creates or updates a tower button. Replaces non-SidebarButton nodes with
 ## a fresh instance from the scene. Populates icon, stock, and drag metadata.
-func _update_or_create_tower(existing_btn: Button, info: Dictionary) -> void:
+func _update_or_create_tower(existing_btn: Button, info: Dictionary, slot_index: int) -> void:
 	var btn: SidebarButton = existing_btn as SidebarButton
 	if not btn:
 		btn = SIDEBAR_BUTTON_SCENE.instantiate()
@@ -176,20 +194,21 @@ func _update_or_create_tower(existing_btn: Button, info: Dictionary) -> void:
 		btn = new_btn
 		existing_btn.queue_free()
 
+	# Always assign the slot index so the button knows its rack position
+	btn.slot_index = slot_index
+
 	if not info.is_empty():
 		var tower_data: TowerData = info.data
-		var stock: int = info.stock
+		var stock: int = info.get("stock", 1)
 		btn.setup_tower(tower_data)
 		btn.set_stock(stock)
 		btn.set_meta("tower_data", tower_data)
 		btn.disabled = false
 	else:
-		btn.text = ""
-		btn.data = null
-		btn.disabled = true
-		btn.flat = false
-		if btn.stock_label:
-			btn.stock_label.visible = false
+		btn.reset_to_empty()
+
+	if btn.has_method("set_studio_context"):
+		btn.set_studio_context(_is_in_studio_context)
 
 
 ## Creates or updates a buff button. Replaces non-SidebarButton nodes with
@@ -220,6 +239,9 @@ func _update_or_create_buff(existing_btn: Button, buff_data: BuffData) -> void:
 			btn.cost_label.visible = false
 		if btn.stock_label:
 			btn.stock_label.visible = false
+
+	if btn.has_method("set_studio_context"):
+		btn.set_studio_context(_is_in_studio_context)
 
 
 ## Updates the stock count label and disabled state for a tower button when

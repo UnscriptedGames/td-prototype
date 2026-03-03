@@ -122,16 +122,21 @@ func _prewarm_pools() -> void:
 
 	# Seed projectile pools from the locked loadout's tower data.
 	var unique_projectiles: Array[PackedScene] = []
-	if is_instance_valid(GameManager.player_data) and GameManager.player_data.towers:
-		for tower_data: TowerData in GameManager.player_data.towers:
-			if tower_data is TowerData:
-				for tower_level in tower_data.levels:
-					if (
-						is_instance_valid(tower_level)
-						and is_instance_valid(tower_level.projectile_scene)
-					):
-						if not unique_projectiles.has(tower_level.projectile_scene):
-							unique_projectiles.append(tower_level.projectile_scene)
+	if is_instance_valid(GameManager.player_data):
+		GameManager.player_data._ensure_slots()
+		for slot in GameManager.player_data.tower_slots:
+			if slot == null:
+				continue
+			var tower_data: TowerData = slot.get("data") as TowerData
+			if not tower_data:
+				continue
+			for tower_level in tower_data.levels:
+				if (
+					is_instance_valid(tower_level)
+					and is_instance_valid(tower_level.projectile_scene)
+				):
+					if not unique_projectiles.has(tower_level.projectile_scene):
+						unique_projectiles.append(tower_level.projectile_scene)
 	for projectile_scene: PackedScene in unique_projectiles:
 		ObjectPoolManager.create_pool(projectile_scene, 50)
 

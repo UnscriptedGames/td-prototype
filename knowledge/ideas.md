@@ -1,7 +1,7 @@
 # Pending Ideas and Open Questions
 
 **Version:** 0.1 (Living Document)
-**Last Updated:** 2026-02-28
+**Last Updated:** 2026-03-03
 
 This document tracks all pending ideas, brainstorms, and open design questions that have not yet been implemented or finalized.
 

@@ -100,8 +100,9 @@ const DEFAULT_LEVEL_PATH: String = "res://Stages/_TemplateStage/template_stage.t
 const MAIN_MENU_SCENE_PATH: String = "res://UI/MainMenu/main_menu.tscn"
 const SETLIST_SCENE_PATH: String = "res://UI/Setlist/setlist_screen.tscn"
 const SIDEBAR_MENU_SCENE_PATH: String = "res://UI/HUD/Sidebar/sidebar_main_menu.tscn"
+const STUDIO_SCENE_PATH: String = "res://UI/Studio/studio_screen.tscn"
 
-enum ContextMode { GAMEPLAY, SETLIST, EMPTY, MAIN_MENU }
+enum ContextMode { GAMEPLAY, SETLIST, EMPTY, MAIN_MENU, STUDIO }
 
 @onready var restart_confirm: ConfirmationDialog = $RestartConfirmation
 
@@ -299,6 +300,9 @@ func _setup_signal_connections() -> void:
 		GameManager.peak_meter_changed.connect(_on_peak_changed)
 		_on_peak_changed(GameManager.current_peak, GameManager.max_peak)
 
+	if GlobalSignals.has_signal("loadout_rebuild_requested"):
+		GlobalSignals.loadout_rebuild_requested.connect(_on_loadout_rebuild_requested)
+
 	# Wave active/idle
 	if GameManager.has_signal("wave_status_changed"):
 		GameManager.wave_status_changed.connect(_on_wave_status_changed)
@@ -381,6 +385,30 @@ func _process(delta: float) -> void:
 	var time_scale: float = Engine.time_scale
 	var unscaled_delta: float = delta / time_scale if time_scale > 0.0 else 0.0
 
+	var target_val: float = _target_damage_value
+
+	# Context-Aware Meter Logic
+	if _current_context == ContextMode.STUDIO:
+		# AP/CPU Budget Mode
+		var player: PlayerData = GameManager.player_data
+		if is_instance_valid(player):
+			var current_cost: float = float(player.get_total_allocation_cost())
+			var max_ap: float = float(player.max_allocation_points)
+
+			# Map to 0-100% logic for the progress bar shader
+			if max_ap > 0.0:
+				target_val = (current_cost / max_ap) * 100.0
+			else:
+				target_val = 0.0
+		else:
+			target_val = 0.0
+	else:
+		# Distortion Mode (Default)
+		if GameManager.max_peak > 0:
+			target_val = (GameManager.current_peak / GameManager.max_peak) * 100.0
+		else:
+			target_val = 0.0
+
 	# 1. Update Noise (simulate live signal jitter for "analogue" feel)
 	var max_v: float = gauge_l.max_value
 	var noise_amp_val: float = max_v * JITTER_AMPLITUDE
@@ -405,20 +433,20 @@ func _process(delta: float) -> void:
 
 	# 2. Lerp towards target value
 	# The bar fill targets 2.5% below the true value, with +/- 2.5% jitter.
-	var bar_target: float = _target_damage_value - 2.5
+	var bar_target: float = target_val - 2.5
 	var smooth_speed: float = 7.0 * unscaled_delta
 
 	# L Channel
 	var smoothed_l: float = lerp(gauge_l.value, bar_target, smooth_speed)
-	var final_l: float = clamp(smoothed_l + _meter_noise_offset_l, -5.0, _target_damage_value)
+	var final_l: float = clamp(smoothed_l + _meter_noise_offset_l, -5.0, target_val)
 	gauge_l.value = final_l
-	_update_peak_hold(_target_damage_value, true)
+	_update_peak_hold(target_val, true)
 
 	# R Channel
 	var smoothed_r: float = lerp(gauge_r.value, bar_target, smooth_speed)
-	var final_r: float = clamp(smoothed_r + _meter_noise_offset_r, -5.0, _target_damage_value)
+	var final_r: float = clamp(smoothed_r + _meter_noise_offset_r, -5.0, target_val)
 	gauge_r.value = final_r
-	_update_peak_hold(_target_damage_value, false)
+	_update_peak_hold(target_val, false)
 
 
 ## Updates peak-hold indicator position for one channel.
@@ -553,16 +581,6 @@ func _set_container_input_state(node: Node, enabled: bool) -> void:
 
 			node.disabled = not can_interact
 
-		if not enabled:
-			node.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		else:
-			if node is BaseButton:
-				node.mouse_filter = Control.MOUSE_FILTER_STOP
-			elif node.has_method("_get_drag_data"):
-				node.mouse_filter = Control.MOUSE_FILTER_STOP
-			else:
-				node.mouse_filter = Control.MOUSE_FILTER_PASS
-
 	for child: Node in node.get_children():
 		_set_container_input_state(child, enabled)
 
@@ -647,6 +665,18 @@ func _on_main_menu_confirmed() -> void:
 	SceneManager.load_scene(MAIN_MENU_SCENE_PATH, SceneManager.ViewType.MENU)
 
 
+## Loads the Studio scene and switches context.
+func _on_sidebar_studio() -> void:
+	_load_menu(STUDIO_SCENE_PATH)
+
+
+## Rebuilds the Sidebar HUD (e.g., when buying a new item in the Studio).
+func _on_loadout_rebuild_requested() -> void:
+	if is_instance_valid(_sidebar_hud) and is_instance_valid(GameManager.player_data):
+		_sidebar_hud.populate(GameManager.player_data)
+		_sidebar_hud.set_context(_current_context)
+
+
 ## Unpauses the tree and returns to the setlist ui screen.
 func _on_setlist_confirmed() -> void:
 	get_tree().paused = false
@@ -704,6 +734,14 @@ func _load_level(level_path: String) -> void:
 	if level_scene:
 		var level_instance: Node = level_scene.instantiate()
 		change_workspace(level_instance, 1)  # 1 = LEVEL
+
+
+## Loads a menu scene from a file path into the ui workspace.
+func _load_menu(menu_path: String) -> void:
+	var menu_scene: PackedScene = load(menu_path)
+	if menu_scene:
+		var menu_instance: Node = menu_scene.instantiate()
+		change_workspace(menu_instance, 0)  # 0 = MENU
 
 
 ## Shows the tower inspector anchored to the selected tower's screen position.
@@ -766,6 +804,8 @@ func change_workspace(scene_instance: Node, view_type: int) -> void:
 		game_viewport.add_child(scene_instance)
 		_wire_up_level(scene_instance)
 		_set_transport_controls_enabled(true)
+		if is_instance_valid(_sidebar_hud) and is_instance_valid(GameManager.player_data):
+			_sidebar_hud.populate(GameManager.player_data)
 	else:  # MENU
 		game_view_container.hide()
 		ui_workspace.show()
@@ -777,6 +817,13 @@ func change_workspace(scene_instance: Node, view_type: int) -> void:
 			set_context_mode(ContextMode.SETLIST)
 		elif scene_instance.has_method("is_main_menu"):
 			set_context_mode(ContextMode.MAIN_MENU)
+		elif scene_instance.has_method("_populate_catalog"):  # Duck-typing for StudioScreen
+			set_context_mode(ContextMode.STUDIO)
+			if is_instance_valid(_sidebar_hud) and is_instance_valid(GameManager.player_data):
+				_sidebar_hud.populate(GameManager.player_data)
+			# Defer context propagation so sidebar buttons exist before context is set
+			if is_instance_valid(_sidebar_hud):
+				_sidebar_hud.call_deferred("set_context", ContextMode.STUDIO)
 		else:
 			set_context_mode(ContextMode.EMPTY)
 
@@ -814,6 +861,15 @@ func set_context_mode(mode: ContextMode) -> void:
 			GameManager.set_game_state(GameManager.GameState.PLAYING)
 
 	_current_context = mode
+
+	@warning_ignore("unsafe_property_access")
+	var health_label: Label = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/HealthLabel
+	if is_instance_valid(health_label):
+		if mode == ContextMode.STUDIO:
+			health_label.text = "CPU Usage:"
+		else:
+			health_label.text = "Distortion:"
+
 	match mode:
 		ContextMode.GAMEPLAY:
 			wave_label.show()
@@ -844,6 +900,16 @@ func set_context_mode(mode: ContextMode) -> void:
 			if setlist_restart_button:
 				setlist_restart_button.hide()
 			_set_sidebar_offline(true)
+		ContextMode.STUDIO:
+			wave_label.hide()
+			gain_label.hide()
+			# Can repurpose the stage title to say 'The Studio' for now
+			stage_title_label.text = "The Studio"
+			stage_title_label.show()
+			if setlist_restart_button:
+				setlist_restart_button.hide()
+			# Specifically keep the sidebar online so players can drag into it
+			_set_sidebar_offline(false)
 			_update_sidebar_content(ContextMode.EMPTY)
 
 		ContextMode.MAIN_MENU:
@@ -855,6 +921,9 @@ func set_context_mode(mode: ContextMode) -> void:
 				setlist_restart_button.hide()
 			_set_sidebar_offline(true)
 			_update_sidebar_content(ContextMode.MAIN_MENU)
+
+	if is_instance_valid(_sidebar_hud):
+		_sidebar_hud.set_context(mode)
 
 
 ## Triggers the confirmation to restart the ENTIRE stage from the Setlist screen.
@@ -887,6 +956,8 @@ func _update_sidebar_content(mode: ContextMode) -> void:
 				var menu_instance: Node = menu_scene.instantiate()
 				overlay_content.add_child(menu_instance)
 				# Connect signals
+				if menu_instance.has_signal("studio_pressed"):
+					menu_instance.studio_pressed.connect(_on_sidebar_studio)
 				menu_instance.setlist_pressed.connect(_on_sidebar_setlist)
 				menu_instance.quit_pressed.connect(_on_close_pressed)
 		_:
@@ -1010,8 +1081,12 @@ func _notification(what: int) -> void:
 		if what == NOTIFICATION_DRAG_BEGIN:
 			if top_bar:
 				_set_container_mouse_ignore_recursive(top_bar, false)
-			if left_sidebar:
+
+			# ONLY lock the sidebar if we are NOT in the Studio.
+			# In the Studio, we need the sidebar to remain interactive for drag-and-drop.
+			if left_sidebar and _current_context != ContextMode.STUDIO:
 				_set_container_mouse_ignore_recursive(left_sidebar, false)
+
 			if drop_zone:
 				drop_zone.mouse_filter = Control.MOUSE_FILTER_PASS
 

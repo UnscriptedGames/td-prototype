@@ -18,6 +18,7 @@ intuitively to the gear, it's the wrong fit.
 ### Core Mechanics
 - **Target Priority Swapping:** Every tower supports real-time priority swapping (Closest, Strongest, Most Progress, etc.).
 - **DAW Plug-in Inspector**: The Tower Inspector resides in the right-side shell of the `GameWindow`. It remains active for **Selection** and attribute review during the paused state. To ensure reliability across level transitions, the `GameWindow` explicitly re-binds the inspector's signals (Sell, Priority) every time a new `BuildManager` is instantiated.
+- **Rack Allocation**: Towers are allocated to a fixed **6-slot tower array** (`tower_slots`). This allows for specific positioning by the player, which is preserved across the stage run.
 
 ### Target Roster
 - **6–8 unique towers** covering a range of attack types, effects, and upgrade paths.

@@ -3,7 +3,6 @@ extends Node
 ## @description An autoload singleton for broadcasting game-wide signals.
 ## This allows disconnected systems to communicate with each other.
 
-
 # --- SIGNALS ---
 
 ## Emitted when a card effect requests to build a tower.
@@ -40,3 +39,8 @@ signal loadout_effect_cancelled
 ## @param buff_data: The LoadoutData or Effect resource of the buff.
 @warning_ignore("unused_signal")
 signal buff_applied(buff_data)
+
+## Emitted when the loadout has changed significantly (e.g. item added/removed)
+## and the Sidebar HUD needs a full repopulation.
+@warning_ignore("unused_signal")
+signal loadout_rebuild_requested
