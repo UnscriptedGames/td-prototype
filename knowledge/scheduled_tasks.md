@@ -16,6 +16,21 @@ This document contains a list of recurring maintenance tasks for the Jules async
 | 8 | The UI Architect | Hierarchy Enforcer | New UI | **Interactive** | — |
 | 9 | The Cartographer | Scene Tree Auditor | Monthly | **Review** | — |
 
+### 🧪 Model Tiering Guide
+Use this guide to select the most token-efficient model for each maintenance phase.
+
+| Task # | Category | Execution (Jules) | Review (Antigravity) | Rationale |
+| :--- | :--- | :--- | :--- | :--- |
+| **1** | Logical | 💎 **Pro** | 💎 **Pro** | Memory/lifecycle analysis requires high reasoning. |
+| **2** | Syntactic | ⚡ **Flash** | ⚡ **Flash** | Pattern matching for naming conventions. |
+| **3** | Contextual | 💎 **Pro** | 💎 **Pro** | Deep code-to-doc analysis is reasoning-heavy. |
+| **4** | Logical | 💎 **Pro** | 💎 **Pro** | Logic synthesis for unit tests is high-risk. |
+| **5** | Syntactic | ⚡ **Flash** | ⚡ **Flash** / 💎 Pro | Bulk syntax updates; Pro for final safety audit. |
+| **6** | Logical | 💎 **Pro** | 💎 **Pro** | Nuanced loop/math optimization. |
+| **7** | Syntactic | ⚡ **Flash** | 💎 **Pro** | Cleanup is fast; Pro ensures no broken dependencies. |
+| **8** | Structural | ⚡ **Flash** | 💎 **Pro** | Structural checks are fast; review needs context. |
+| **9** | Structural | ⚡ **Flash** | 💎 **Pro** | Reference audits are fast; review needs context. |
+
 ---
 
 ## 🛠️ Jules maintenance task workflow
