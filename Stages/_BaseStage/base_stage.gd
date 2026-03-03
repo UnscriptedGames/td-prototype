@@ -443,7 +443,6 @@ func _on_next_wave_requested() -> void:
 	if stem_data and _current_wave_index > 0:
 		return  # Stem only has 1 wave
 
-	#_spawning = true # Set in _start_wave
 	_start_wave(_current_wave_index)
 	_current_wave_index += 1
 

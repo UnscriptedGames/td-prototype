@@ -53,7 +53,6 @@ var health: int:
 
 ## Internal State
 var state: State = State.MOVING  # Current state
-var lane_index: int = 0  # The specific lane index this enemy is following
 var path_follow: Node2D  # Kept for signature compatibility if something expects node.
 
 var _health: int  # Current health
@@ -377,10 +376,6 @@ func _play_death_sequence(action_name: String) -> void:
 func _update_health_bar() -> void:
 	if not health_bar:
 		return
-
-	# Keep the old progress bar disabled so it doesn't overlap the new shader effect!
-	# _ensure_bar_is_visible(health_bar)
-	# health_bar.value = ratio * 100.0
 
 	var ratio: float = float(_health) / float(max_health)
 
