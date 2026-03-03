@@ -156,7 +156,8 @@ func _process(delta: float) -> void:
 		# AP/CPU Budget Mode
 		var player: PlayerData = GameManager.player_data
 		if is_instance_valid(player):
-			var current_cost: float = float(player.get_total_allocation_cost())
+			# Use the cached total cost variable (updated via signal when loadout changes)
+			var current_cost: float = float(player.total_cost)
 			var maximum_allocation_points: float = float(player.max_allocation_points)
 
 			# Map to 0-100% logic for the progress bar shader
@@ -208,10 +209,16 @@ func _process(delta: float) -> void:
 	# 2. Lerp towards target value
 	# The bar fill targets 2.5% below the true value, with +/- 2.5% jitter.
 	var bar_target: float = target_value - 2.5
-	var smooth_speed: float = 7.0 * unscaled_delta
+
+	# Compute actual move_toward speed for the meters
+	# The higher the distance, the faster we want it to move, simulating a proportional approach
+	var distance_left: float = abs(bar_target - gauge_l.value)
+	var distance_right: float = abs(bar_target - gauge_r.value)
+	var move_speed_left: float = (distance_left * 7.0) * unscaled_delta
+	var move_speed_right: float = (distance_right * 7.0) * unscaled_delta
 
 	# L Channel
-	var smoothed_left: float = lerp(gauge_l.value, bar_target, smooth_speed)
+	var smoothed_left: float = move_toward(gauge_l.value, bar_target, move_speed_left)
 	var final_left: float = clamp(
 		smoothed_left + _meter_noise_offset_left,
 		-5.0,
@@ -221,7 +228,7 @@ func _process(delta: float) -> void:
 	_update_peak_hold(target_value, true)
 
 	# R Channel
-	var smoothed_right: float = lerp(gauge_r.value, bar_target, smooth_speed)
+	var smoothed_right: float = move_toward(gauge_r.value, bar_target, move_speed_right)
 	var final_right: float = clamp(
 		smoothed_right + _meter_noise_offset_right,
 		-5.0,

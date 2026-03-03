@@ -146,7 +146,9 @@ func _process(delta: float) -> void:
 		if data and sprite and sprite.material is ShaderMaterial:
 			var speed_multiplier: float = data.scroll_speed
 			var computed_time: float = (float(Time.get_ticks_msec()) / 1_000.0) * speed_multiplier
-			(sprite.material as ShaderMaterial).set_shader_parameter("use_unscaled_time", true)
+			var shader_material: ShaderMaterial = sprite.material as ShaderMaterial
+			assert(shader_material != null)
+			shader_material.set_shader_parameter("use_unscaled_time", true)
 			sprite.set_instance_shader_parameter("unscaled_time", computed_time)
 		return
 
@@ -179,7 +181,8 @@ func _process(delta: float) -> void:
 	if _velocity == Vector2.ZERO:
 		_velocity = desired_velocity
 	else:
-		_velocity = _velocity.lerp(desired_velocity, min(1.0, delta * CORNER_SMOOTHING))
+		var move_speed: float = speed * _speed_modifier * delta * CORNER_SMOOTHING
+		_velocity = _velocity.move_toward(desired_velocity, move_speed)
 
 	# Add a sine-wave wobble perpendicular to the velocity
 	var wobble_amplitude: float = data.wobble_amplitude if data else 8.0
@@ -240,7 +243,9 @@ func _process(delta: float) -> void:
 
 	# Wave Visual: Update unscaled time and enable visibility
 	if sprite and sprite.material is ShaderMaterial:
-		(sprite.material as ShaderMaterial).set_shader_parameter("use_unscaled_time", true)
+		var shader_material: ShaderMaterial = sprite.material as ShaderMaterial
+		assert(shader_material != null)
+		shader_material.set_shader_parameter("use_unscaled_time", true)
 
 		var speed_multiplier: float = data.scroll_speed if data else 1.0
 		var computed_time: float = (float(Time.get_ticks_msec()) / 1_000.0) * speed_multiplier
