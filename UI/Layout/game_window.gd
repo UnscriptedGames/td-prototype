@@ -53,7 +53,6 @@ var _previous_volume: float = 80.0
 # Icons
 var icon_play: Texture2D = preload("res://UI/Icons/play.svg")
 var icon_pause: Texture2D = preload("res://UI/Icons/pause.svg")
-var icon_restart: Texture2D = preload("res://UI/Icons/restart.svg")
 var icon_volume: Texture2D = preload("res://UI/Icons/volume.svg")
 var icon_mute: Texture2D = preload("res://UI/Icons/volume_mute.svg")
 
@@ -295,7 +294,7 @@ func _exit_tree() -> void:
 		play_button.pressed.disconnect(_on_play_button_pressed)
 	if (
 		is_instance_valid(restart_button)
-		and restart_button.pressed.is_connected(_on_restart_button_pressed)
+		and restart_button.pressed.is_connected(_on_restart_button_requested)
 	):
 		restart_button.pressed.disconnect(_on_restart_button_requested)
 	if (
@@ -1183,5 +1182,3 @@ func _start_sidebar_tween(target_offset: float, is_offline: bool) -> void:
 		tween.tween_callback(sidebar_overlay.hide)
 
 
-func _on_restart_button_pressed() -> void:
-	_on_restart_button_requested()
