@@ -7,6 +7,15 @@ class_name MazeRenderer
 ## Draws rounded, "floating" buttons on top of MapLayer data.
 ## Supports animated wipe reveals and dissolve transitions between two TileMapLayers.
 
+
+# --- ENUMS ---
+
+enum RevealMode { LINEAR, CENTER_OUT }
+enum TransitionMode { DISSOLVE, SWIPE_RIGHT }
+
+
+# --- EXPORTS ---
+
 @export var source_layer_path: NodePath:
 	set(value):
 		source_layer_path = value
@@ -25,9 +34,6 @@ class_name MazeRenderer
 		queue_redraw()
 
 @export var grid_width: int = 25  # Match BackgroundRenderer default
-
-enum RevealMode { LINEAR, CENTER_OUT }
-enum TransitionMode { DISSOLVE, SWIPE_RIGHT }
 
 @export var reveal_mode: RevealMode = RevealMode.LINEAR:
 	set(value):
@@ -105,16 +111,48 @@ enum TransitionMode { DISSOLVE, SWIPE_RIGHT }
 		depth_offset = value
 		queue_redraw()
 
+
+# --- VARIABLES ---
+
 var _source_layer: TileMapLayer
 var _transition_layer: TileMapLayer
 var _style_lookup: Dictionary[Vector3i, MazeTileStyle] = {}
 var _style_box_pool: Dictionary[Array, StyleBoxFlat] = {}
 
 
+# --- LIFECYCLE OVERRIDES ---
+
+
 func _ready() -> void:
 	_preload_style_boxes()
 	_update_source_reference()
 	_update_transition_reference()
+
+
+func _draw() -> void:
+	if not _source_layer:
+		return
+
+	var source_tile_set: TileSet = _source_layer.tile_set
+	if not source_tile_set:
+		return
+
+	_rebuild_style_lookup()
+
+	if _transition_layer:
+		_draw_layer(_transition_layer, false)
+
+	_draw_layer(_source_layer, true)
+
+
+# --- METHODS ---
+
+
+func has_cell(coords: Vector2i) -> bool:
+	# Returns true if the given cell has a matching style.
+	if not _source_layer:
+		return false
+	return _get_active_style(coords) != null
 
 
 func _preload_style_boxes() -> void:
@@ -128,16 +166,16 @@ func _preload_style_boxes() -> void:
 
 			# Cache glows
 			if style.glow_opacity > 0:
-				var glow_col: Color = style.glow_color
-				glow_col.a = style.glow_opacity
-				for i: int in range(glow_steps):
-					var current_padding: float = inner_padding + (i * glow_step_size)
+				var glow_color: Color = style.glow_color
+				glow_color.a = style.glow_opacity
+				for index: int in range(glow_steps):
+					var current_padding: float = inner_padding + (index * glow_step_size)
 					var inner_radius: float = 0.0
 					if custom_glow_radius >= 0.0:
-						inner_radius = max(0.0, custom_glow_radius - (i * glow_step_size))
+						inner_radius = max(0.0, custom_glow_radius - (index * glow_step_size))
 					else:
 						inner_radius = max(0.0, corner_radius - current_padding)
-					_create_style_box(glow_col, inner_radius)
+					_create_style_box(glow_color, inner_radius)
 
 
 func _update_source_reference() -> void:
@@ -212,111 +250,107 @@ func _get_active_style(coords: Vector2i) -> MazeTileStyle:
 	return null
 
 
-func has_cell(coords: Vector2i) -> bool:
-	# Returns true if the given cell has a matching style.
-	if not _source_layer:
-		return false
-	return _get_active_style(coords) != null
-
-
-func _draw() -> void:
-	if not _source_layer:
-		return
-
-	var source_tile_set: TileSet = _source_layer.tile_set
-	if not source_tile_set:
-		return
-
-	_rebuild_style_lookup()
-
-	if _transition_layer:
-		_draw_layer(_transition_layer, false)
-
-	_draw_layer(_source_layer, true)
-
-
 func _draw_layer(layer: TileMapLayer, is_source: bool) -> void:
 	if not layer or not layer.tile_set:
 		return
 
-	var tile_size: Vector2 = Vector2(layer.tile_set.tile_size)
-	var ref_w: float = float(_source_layer.tile_set.tile_size.x)
+	var current_tile_size: Vector2 = Vector2(layer.tile_set.tile_size)
+	var reference_width: float = float(_source_layer.tile_set.tile_size.x)
 
-	for coords: Vector2i in layer.get_used_cells():
-		var phys_x: float = (float(coords.x) + 0.5) * tile_size.x
-		var wipe_scale: float = _get_reveal_scale(phys_x, ref_w)
+	for coordinates: Vector2i in layer.get_used_cells():
+		var physical_x_coordinate: float = (
+			(float(coordinates.x) + 0.5) * current_tile_size.x
+		)
+		var wipe_scale: float = _get_reveal_scale(
+			physical_x_coordinate,
+			reference_width
+		)
 		if wipe_scale <= 0.001:
 			continue
 
-		var scale_anim_mult: float = 1.0
+		var scale_animation_multiplier: float = 1.0
 
 		if _transition_layer:
-			var dist: float = 0.0
+			var distance: float = 0.0
 
 			if transition_mode == TransitionMode.DISSOLVE:
 				var noise_hash: float = (
-					float((coords.x * 73856093) ^ (coords.y * 19349663)) / 2147483647.0
+					float(
+						(coordinates.x * 73_856_093) ^ (coordinates.y * 19_349_663)
+					) / 2_147_483_647.0
 				)
 				noise_hash = abs(noise_hash)
-				dist = transition_progress - noise_hash
+				distance = transition_progress - noise_hash
 
-				if is_source and dist <= 0:
+				if is_source and distance <= 0:
 					continue
-				if not is_source and dist > 0:
+				if not is_source and distance > 0:
 					continue
 
 				if transition_progress > 0.01 and transition_progress < 0.99:
-					var abs_dist: float = abs(dist)
-					if abs_dist < dissolve_anim_width:
-						scale_anim_mult = smoothstep(0.0, 1.0, abs_dist / dissolve_anim_width)
+					var absolute_distance: float = abs(distance)
+					if absolute_distance < dissolve_anim_width:
+						scale_animation_multiplier = smoothstep(
+							0.0, 1.0, absolute_distance / dissolve_anim_width
+						)
 
 			elif transition_mode == TransitionMode.SWIPE_RIGHT:
-				var total_width: float = float(grid_width) * ref_w
-				var norm_x: float = phys_x / total_width
+				var total_width: float = float(grid_width) * reference_width
+				var normalized_x_coordinate: float = (
+					physical_x_coordinate / total_width
+				)
 
 				# The transition sweeps from 0.0 to 1.0 + wipe_anim_width + swipe_gap
 				var base_threshold: float = (
 					transition_progress * (1.0 + wipe_anim_width + swipe_gap)
 				)
 
-				# Transition layer (Song) disappears when norm_x < threshold
-				var trans_threshold: float = base_threshold
-				# Source layer (Maze) appears when norm_x < threshold - swipe_gap
+				# Transition layer (Song) disappears when normalized_x_coordinate < threshold
+				var transition_threshold: float = base_threshold
+				# Source layer (Maze) appears when normalized_x_coordinate < threshold - swipe_gap
 				var source_threshold: float = base_threshold - swipe_gap
 
 				if is_source:
-					dist = source_threshold - norm_x
-					if dist <= 0:
+					distance = source_threshold - normalized_x_coordinate
+					if distance <= 0:
 						continue  # Not yet reached
-					if dist < wipe_anim_width / 2.0:
+					if distance < wipe_anim_width / 2.0:
 						# Wipe in soft edge for source
-						scale_anim_mult = smoothstep(0.0, 1.0, dist / (wipe_anim_width / 2.0))
+						scale_animation_multiplier = smoothstep(
+							0.0, 1.0, distance / (wipe_anim_width / 2.0)
+						)
 				else:
-					dist = trans_threshold - norm_x
-					if dist >= 0:
+					distance = transition_threshold - normalized_x_coordinate
+					if distance >= 0:
 						continue  # Already passed
 
 					# Wipe out soft edge for transition
-					# We want scale=0 at dist=0, and scale=1 at dist < -wipe_anim_width/2.0
-					if dist > -wipe_anim_width / 2.0:
-						scale_anim_mult = smoothstep(0.0, 1.0, -dist / (wipe_anim_width / 2.0))
+					# We want scale=0 at distance=0, and scale=1 at distance < -wipe_anim_width/2.0
+					if distance > -wipe_anim_width / 2.0:
+						scale_animation_multiplier = smoothstep(
+							0.0, 1.0, -distance / (wipe_anim_width / 2.0)
+						)
 
-		var source_id: int = layer.get_cell_source_id(coords)
-		var atlas_coords: Vector2i = layer.get_cell_atlas_coords(coords)
+		var source_id: int = layer.get_cell_source_id(coordinates)
+		var atlas_coords: Vector2i = layer.get_cell_atlas_coords(coordinates)
 		var key: Vector3i = Vector3i(source_id, atlas_coords.x, atlas_coords.y)
 		var style: MazeTileStyle = _style_lookup.get(key)
 
 		if not style:
 			continue
 
-		var cell_center: Vector2 = (Vector2(coords) * tile_size) + (tile_size / 2.0)
-		var available_size: Vector2 = (tile_size - depth_offset.abs()).max(Vector2.ZERO)
-		var draw_size: Vector2 = available_size * button_scale * scale_anim_mult * wipe_scale
+		var cell_center: Vector2 = (
+			(Vector2(coordinates) * current_tile_size) + (current_tile_size / 2.0)
+		)
+		var available_size: Vector2 = (current_tile_size - depth_offset.abs()).max(Vector2.ZERO)
+		var draw_size: Vector2 = (
+			available_size * button_scale * scale_animation_multiplier * wipe_scale
+		)
 
 		var centering_offset: Vector2 = -depth_offset * 0.5
-		var offset_pos: Vector2 = cell_center - (draw_size * 0.5) + centering_offset
+		var offset_position: Vector2 = cell_center - (draw_size * 0.5) + centering_offset
 
-		var face_rect: Rect2 = Rect2(offset_pos, draw_size)
+		var face_rect: Rect2 = Rect2(offset_position, draw_size)
 		var back_rect: Rect2 = face_rect
 		back_rect.position += depth_offset
 
@@ -324,8 +358,8 @@ func _draw_layer(layer: TileMapLayer, is_source: bool) -> void:
 		draw_style_box(_create_style_box(style.button_color, corner_radius), face_rect)
 
 		if inner_padding > 0 and style.glow_opacity > 0:
-			for i: int in range(glow_steps):
-				var current_padding: float = inner_padding + (i * glow_step_size)
+			for index: int in range(glow_steps):
+				var current_padding: float = inner_padding + (index * glow_step_size)
 				var inner_rect: Rect2 = face_rect.grow(-current_padding)
 
 				if inner_rect.size.x > 0 and inner_rect.size.y > 0:
@@ -334,58 +368,132 @@ func _draw_layer(layer: TileMapLayer, is_source: bool) -> void:
 
 					var inner_radius: float = 0.0
 					if custom_glow_radius >= 0.0:
-						inner_radius = max(0.0, custom_glow_radius - (i * glow_step_size))
+						inner_radius = max(0.0, custom_glow_radius - (index * glow_step_size))
 					else:
 						inner_radius = max(0.0, corner_radius - current_padding)
 
-					var sb_glow: StyleBoxFlat = _create_style_box(inner_color, inner_radius)
-					draw_style_box(sb_glow, inner_rect)
+					var stylebox_glow: StyleBoxFlat = _create_style_box(inner_color, inner_radius)
+					draw_style_box(stylebox_glow, inner_rect)
 
 
 func _draw_extrusion(front: Rect2, back: Rect2, color: Color) -> void:
 	# Draws the 3D extrusion connecting front and back faces.
 	# Uses 4 side strip quads + 4 corner "pills" (swept circles).
-	var r: float = min(corner_radius, min(front.size.x, front.size.y) * 0.5)
+	var radius: float = min(corner_radius, min(front.size.x, front.size.y) * 0.5)
 
 	# Draw the Back Face (Base) first
 	draw_style_box(_create_style_box(color, corner_radius), back)
 
 	# Front Face Tangents (horizontal)
-	var f_tl_h: Vector2 = Vector2(front.position.x + r, front.position.y)
-	var f_tr_h: Vector2 = Vector2(front.end.x - r, front.position.y)
-	var f_bl_h: Vector2 = Vector2(front.position.x + r, front.end.y)
-	var f_br_h: Vector2 = Vector2(front.end.x - r, front.end.y)
+	var front_top_left_horizontal: Vector2 = (
+		Vector2(front.position.x + radius, front.position.y)
+	)
+	var front_top_right_horizontal: Vector2 = (
+		Vector2(front.end.x - radius, front.position.y)
+	)
+	var front_bottom_left_horizontal: Vector2 = (
+		Vector2(front.position.x + radius, front.end.y)
+	)
+	var front_bottom_right_horizontal: Vector2 = (
+		Vector2(front.end.x - radius, front.end.y)
+	)
 	# Front Face Tangents (vertical)
-	var f_tl_v: Vector2 = Vector2(front.position.x, front.position.y + r)
-	var f_bl_v: Vector2 = Vector2(front.position.x, front.end.y - r)
-	var f_tr_v: Vector2 = Vector2(front.end.x, front.position.y + r)
-	var f_br_v: Vector2 = Vector2(front.end.x, front.end.y - r)
+	var front_top_left_vertical: Vector2 = (
+		Vector2(front.position.x, front.position.y + radius)
+	)
+	var front_bottom_left_vertical: Vector2 = (
+		Vector2(front.position.x, front.end.y - radius)
+	)
+	var front_top_right_vertical: Vector2 = (
+		Vector2(front.end.x, front.position.y + radius)
+	)
+	var front_bottom_right_vertical: Vector2 = (
+		Vector2(front.end.x, front.end.y - radius)
+	)
 
 	# Back Face Tangents
-	var b_tl_h: Vector2 = Vector2(back.position.x + r, back.position.y)
-	var b_tr_h: Vector2 = Vector2(back.end.x - r, back.position.y)
-	var b_bl_h: Vector2 = Vector2(back.position.x + r, back.end.y)
-	var b_br_h: Vector2 = Vector2(back.end.x - r, back.end.y)
-	var b_tl_v: Vector2 = Vector2(back.position.x, back.position.y + r)
-	var b_bl_v: Vector2 = Vector2(back.position.x, back.end.y - r)
-	var b_tr_v: Vector2 = Vector2(back.end.x, back.position.y + r)
-	var b_br_v: Vector2 = Vector2(back.end.x, back.end.y - r)
+	var back_top_left_horizontal: Vector2 = (
+		Vector2(back.position.x + radius, back.position.y)
+	)
+	var back_top_right_horizontal: Vector2 = (
+		Vector2(back.end.x - radius, back.position.y)
+	)
+	var back_bottom_left_horizontal: Vector2 = (
+		Vector2(back.position.x + radius, back.end.y)
+	)
+	var back_bottom_right_horizontal: Vector2 = (
+		Vector2(back.end.x - radius, back.end.y)
+	)
+	var back_top_left_vertical: Vector2 = (
+		Vector2(back.position.x, back.position.y + radius)
+	)
+	var back_bottom_left_vertical: Vector2 = (
+		Vector2(back.position.x, back.end.y - radius)
+	)
+	var back_top_right_vertical: Vector2 = (
+		Vector2(back.end.x, back.position.y + radius)
+	)
+	var back_bottom_right_vertical: Vector2 = (
+		Vector2(back.end.x, back.end.y - radius)
+	)
 
 	# Draw Corner Pills (thick line connecting front/back corner circle centres)
-	var c_tl: Vector2 = Vector2(front.position.x + r, front.position.y + r)
-	draw_line(c_tl, c_tl + depth_offset, color, r * 2.0)
-	var c_tr: Vector2 = Vector2(front.end.x - r, front.position.y + r)
-	draw_line(c_tr, c_tr + depth_offset, color, r * 2.0)
-	var c_br: Vector2 = Vector2(front.end.x - r, front.end.y - r)
-	draw_line(c_br, c_br + depth_offset, color, r * 2.0)
-	var c_bl: Vector2 = Vector2(front.position.x + r, front.end.y - r)
-	draw_line(c_bl, c_bl + depth_offset, color, r * 2.0)
+	var corner_top_left: Vector2 = (
+		Vector2(front.position.x + radius, front.position.y + radius)
+	)
+	draw_line(corner_top_left, corner_top_left + depth_offset, color, radius * 2.0)
+	var corner_top_right: Vector2 = (
+		Vector2(front.end.x - radius, front.position.y + radius)
+	)
+	draw_line(corner_top_right, corner_top_right + depth_offset, color, radius * 2.0)
+	var corner_bottom_right: Vector2 = (
+		Vector2(front.end.x - radius, front.end.y - radius)
+	)
+	draw_line(
+		corner_bottom_right,
+		corner_bottom_right + depth_offset,
+		color,
+		radius * 2.0
+	)
+	var corner_bottom_left: Vector2 = (
+		Vector2(front.position.x + radius, front.end.y - radius)
+	)
+	draw_line(
+		corner_bottom_left,
+		corner_bottom_left + depth_offset,
+		color,
+		radius * 2.0
+	)
 
 	# Draw Side Strip Quads
-	_draw_triangle_quad(f_tl_h, f_tr_h, b_tr_h, b_tl_h, color)  # Top
-	_draw_triangle_quad(f_br_h, f_bl_h, b_bl_h, b_br_h, color)  # Bottom
-	_draw_triangle_quad(f_bl_v, f_tl_v, b_tl_v, b_bl_v, color)  # Left
-	_draw_triangle_quad(f_tr_v, f_br_v, b_br_v, b_tr_v, color)  # Right
+	_draw_triangle_quad(
+		front_top_left_horizontal,
+		front_top_right_horizontal,
+		back_top_right_horizontal,
+		back_top_left_horizontal,
+		color
+	)  # Top
+	_draw_triangle_quad(
+		front_bottom_right_horizontal,
+		front_bottom_left_horizontal,
+		back_bottom_left_horizontal,
+		back_bottom_right_horizontal,
+		color
+	)  # Bottom
+	_draw_triangle_quad(
+		front_bottom_left_vertical,
+		front_top_left_vertical,
+		back_top_left_vertical,
+		back_bottom_left_vertical,
+		color
+	)  # Left
+	_draw_triangle_quad(
+		front_top_right_vertical,
+		front_bottom_right_vertical,
+		back_bottom_right_vertical,
+		back_top_right_vertical,
+		color
+	)  # Right
 
 
 func _draw_triangle_quad(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2, color: Color) -> void:
@@ -394,19 +502,23 @@ func _draw_triangle_quad(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2, col
 	_draw_safe_triangle(p1, p3, p4, color)
 
 
-func _draw_safe_triangle(a: Vector2, b: Vector2, c: Vector2, color: Color) -> void:
+func _draw_safe_triangle(
+	point_a: Vector2, point_b: Vector2, point_c: Vector2, color: Color
+) -> void:
 	# Draws a single triangle with winding correction.
-	var area: float = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y)
+	var area: float = (point_b.x - point_a.x) * (point_c.y - point_a.y) - (point_c.x - point_a.x) * (
+		point_b.y - point_a.y
+	)
 
 	# Force consistent winding (CCW)
 	if area < 0:
-		var temp: Vector2 = b
-		b = c
-		c = temp
+		var temporary_point: Vector2 = point_b
+		point_b = point_c
+		point_c = temporary_point
 		area = -area
 
 	if area > 0.1:  # Threshold to ignore degenerate/collinear triangles
-		draw_polygon([a, b, c], [color])
+		draw_polygon([point_a, point_b, point_c], [color])
 
 
 func _create_style_box(color: Color, radius: float) -> StyleBoxFlat:
@@ -426,31 +538,40 @@ func _create_style_box(color: Color, radius: float) -> StyleBoxFlat:
 	return sb
 
 
-func _get_reveal_scale(phys_x: float, ref_w: float) -> float:
+func _get_reveal_scale(
+	physical_x_coordinate: float,
+	reference_width: float
+) -> float:
 	# Returns 0.0 (Hidden) to 1.0 (Fully Visible) based on reveal_mode and reveal_ratio.
 	if reveal_mode == RevealMode.LINEAR:
-		if phys_x / (float(grid_width) * ref_w) <= reveal_ratio:
+		if (
+			physical_x_coordinate / (float(grid_width) * reference_width)
+			<= reveal_ratio
+		):
 			return 1.0
 		return 0.0
 
 	elif reveal_mode == RevealMode.CENTER_OUT:
-		var phys_center: float = float(center_column) * ref_w
-		var dist: float = abs(phys_x - phys_center)
-		var max_dist: float = max(
-			float(center_column) * ref_w, float(grid_width - center_column) * ref_w
+		var physical_center: float = float(center_column) * reference_width
+		var distance: float = abs(physical_x_coordinate - physical_center)
+		var maximum_distance: float = max(
+			float(center_column) * reference_width,
+			float(grid_width - center_column) * reference_width
 		)
 
 		# Normalised position of this tile (0.0 = centre, 1.0 = edge)
-		var norm_pos: float = dist / max_dist if max_dist > 0 else 0.0
+		var normalized_position: float = (
+			distance / maximum_distance if maximum_distance > 0 else 0.0
+		)
 
 		# If width is effectively zero, hard cut
 		if wipe_anim_width < 0.001:
-			return 1.0 if norm_pos <= reveal_ratio else 0.0
+			return 1.0 if normalized_position <= reveal_ratio else 0.0
 
 		# Soft scaling via a sliding smoothstep window
 		var leading_edge: float = reveal_ratio * (1.0 + wipe_anim_width)
 		var trailing_edge: float = leading_edge - wipe_anim_width
 
-		return 1.0 - smoothstep(trailing_edge, leading_edge, norm_pos)
+		return 1.0 - smoothstep(trailing_edge, leading_edge, normalized_position)
 
 	return 1.0

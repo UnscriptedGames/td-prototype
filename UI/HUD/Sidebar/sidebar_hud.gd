@@ -5,42 +5,22 @@
 class_name SidebarHUD
 extends Control
 
+# Resources
+const SIDEBAR_BUTTON_SCRIPT = preload("res://UI/HUD/Sidebar/sidebar_button.gd")
+const SIDEBAR_BUTTON_SCENE = preload("res://UI/HUD/Sidebar/sidebar_button.tscn")
+
+@export var preview_loadout: PlayerData:
+	set = _set_preview_loadout
+
+var _is_in_studio_context: bool = false
+
 # UI Nodes
 @onready var relic_container: HBoxContainer = %RelicContainer
 @onready var tower_grid: GridContainer = %TowerGrid
 @onready var buff_container: VBoxContainer = %BuffContainer
 
-# Resources
-const SIDEBAR_BUTTON_SCRIPT = preload("res://UI/HUD/Sidebar/sidebar_button.gd")
-const SIDEBAR_BUTTON_SCENE = preload("res://UI/HUD/Sidebar/sidebar_button.tscn")
 
-var _is_in_studio_context: bool = false
-
-@export var preview_loadout: PlayerData:
-	set = _set_preview_loadout
-
-
-## Setter for the editor preview loadout. Repopulates the sidebar when the
-## export is changed in the inspector.
-func _set_preview_loadout(val: PlayerData) -> void:
-	preview_loadout = val
-	if Engine.is_editor_hint() and is_node_ready():
-		populate(preview_loadout)
-
-
-## Sets the current context (called by GameWindow) to update child display logic.
-func set_context(mode: GameWindow.ContextMode) -> void:
-	var is_studio: bool = mode == GameWindow.ContextMode.STUDIO
-	_is_in_studio_context = is_studio
-	for child in tower_grid.get_children():
-		if child.has_method("set_studio_context"):
-			child.set_studio_context(is_studio)
-	for child in buff_container.get_children():
-		if child.has_method("set_studio_context"):
-			child.set_studio_context(is_studio)
-	for child in relic_container.get_children():
-		if child.has_method("set_studio_context"):
-			child.set_studio_context(is_studio)
+# --- OVERRIDES ---
 
 
 func _ready() -> void:
@@ -74,11 +54,11 @@ func _exit_tree() -> void:
 			GlobalSignals.buff_applied.disconnect(_on_buff_applied)
 
 	for child in relic_container.get_children():
-		var btn: TextureButton = child as TextureButton
-		if is_instance_valid(btn):
-			var callables: Array[Dictionary] = btn.pressed.get_connections()
-			for conn in callables:
-				btn.pressed.disconnect(conn["callable"])
+		var button: TextureButton = child as TextureButton
+		if is_instance_valid(button):
+			var callables: Array[Dictionary] = button.pressed.get_connections()
+			for connection in callables:
+				button.pressed.disconnect(connection["callable"])
 
 
 ## Clears and rebuilds the relic, tower, and buff button grids from the
@@ -91,16 +71,16 @@ func populate(player_data: Resource) -> void:
 	if player_data and "relics" in player_data:
 		relic_count = max(player_data.relics.size(), 3)
 
-	for i: int in range(relic_count):
-		var btn: Button = null
-		if i < relic_children.size():
-			btn = relic_children[i]
+	for index: int in range(relic_count):
+		var button: Button = null
+		if index < relic_children.size():
+			button = relic_children[index]
 
 		var data: RelicData = null
-		if player_data and "relics" in player_data and i < player_data.relics.size():
-			data = player_data.relics[i]
+		if player_data and "relics" in player_data and index < player_data.relics.size():
+			data = player_data.relics[index]
 
-		_update_or_create_relic(btn, data, i)
+		_update_or_create_relic(button, data, index)
 
 	# 2. Towers — always iterate exactly 6 fixed slots
 	var tower_children: Array[Node] = tower_grid.get_children()
@@ -108,9 +88,9 @@ func populate(player_data: Resource) -> void:
 		player_data._ensure_slots()
 
 	for slot_index: int in range(PlayerData.TOWER_SLOT_COUNT):
-		var btn: Button = null
+		var button: Button = null
 		if slot_index < tower_children.size():
-			btn = tower_children[slot_index]
+			button = tower_children[slot_index]
 
 		var info: Dictionary = {}
 		if player_data and slot_index < player_data.tower_slots.size():
@@ -118,7 +98,7 @@ func populate(player_data: Resource) -> void:
 			if slot != null and slot.has("data"):
 				info = slot
 
-		_update_or_create_tower(btn, info, slot_index)
+		_update_or_create_tower(button, info, slot_index)
 
 	# 3. Buffs
 	var buff_children: Array[Node] = buff_container.get_children()
@@ -128,120 +108,120 @@ func populate(player_data: Resource) -> void:
 
 	var buff_count: int = max(buff_items.size(), 6)
 
-	for i: int in range(buff_count):
-		var btn: Button = null
-		if i < buff_children.size():
-			btn = buff_children[i]
+	for index: int in range(buff_count):
+		var button: Button = null
+		if index < buff_children.size():
+			button = buff_children[index]
 
 		var data: BuffData = null
-		if i < buff_items.size():
-			data = buff_items[i]
+		if index < buff_items.size():
+			data = buff_items[index]
 
-		_update_or_create_buff(btn, data)
+		_update_or_create_buff(button, data)
 
 
 ## Creates or updates a relic button at the given index. Connects the
 ## pressed signal and sets availability based on relic usage state.
-func _update_or_create_relic(existing_btn: Button, relic_data: RelicData, index: int) -> void:
-	var btn: SidebarButton = existing_btn as SidebarButton
-	if not btn:
-		btn = SIDEBAR_BUTTON_SCRIPT.new()
-		btn.custom_minimum_size = Vector2(80, 80)
-		relic_container.add_child(btn)
+func _update_or_create_relic(existing_button: Button, relic_data: RelicData, index: int) -> void:
+	var button: SidebarButton = existing_button as SidebarButton
+	if not button:
+		button = SIDEBAR_BUTTON_SCRIPT.new()
+		button.custom_minimum_size = Vector2(80, 80)
+		relic_container.add_child(button)
 
-	if btn.get_script() != SIDEBAR_BUTTON_SCRIPT:
-		btn.set_script(SIDEBAR_BUTTON_SCRIPT)
+	if button.get_script() != SIDEBAR_BUTTON_SCRIPT:
+		button.set_script(SIDEBAR_BUTTON_SCRIPT)
 
 	if relic_data:
-		btn.setup_relic(relic_data)
+		button.setup_relic(relic_data)
 	else:
-		btn.text = "R%d" % (index + 1)
-		btn.disabled = true
-		if btn.stock_label:
-			btn.stock_label.visible = false
+		button.text = "R%d" % (index + 1)
+		button.disabled = true
+		if button.stock_label:
+			button.stock_label.visible = false
 
-	if btn.has_method("set_studio_context"):
-		btn.set_studio_context(_is_in_studio_context)
+	if button.has_method("set_studio_context"):
+		button.set_studio_context(_is_in_studio_context)
 
 	# Clean existing self-connections before reconnecting
-	var conns: Array = btn.pressed.get_connections()
-	for connection: Dictionary in conns:
+	var connections: Array = button.pressed.get_connections()
+	for connection: Dictionary in connections:
 		if connection.callable.get_object() == self:
-			btn.pressed.disconnect(connection.callable)
+			button.pressed.disconnect(connection.callable)
 
-	btn.pressed.connect(func() -> void: _on_relic_pressed(btn))
+	button.pressed.connect(func() -> void: _on_relic_pressed(button))
 
 	# Availability
 	if Engine.is_editor_hint():
-		btn.disabled = false
+		button.disabled = false
 	else:
-		btn.disabled = (relic_data == null) or GameManager.is_relic_used()
+		button.disabled = (relic_data == null) or GameManager.is_relic_used()
 
 
 ## Creates or updates a tower button. Replaces non-SidebarButton nodes with
 ## a fresh instance from the scene. Populates icon, stock, and drag metadata.
-func _update_or_create_tower(existing_btn: Button, info: Dictionary, slot_index: int) -> void:
-	var btn: SidebarButton = existing_btn as SidebarButton
-	if not btn:
-		btn = SIDEBAR_BUTTON_SCENE.instantiate()
-		btn.custom_minimum_size = Vector2(100, 100)
-		tower_grid.add_child(btn)
+func _update_or_create_tower(existing_button: Button, info: Dictionary, slot_index: int) -> void:
+	var button: SidebarButton = existing_button as SidebarButton
+	if not button:
+		button = SIDEBAR_BUTTON_SCENE.instantiate()
+		button.custom_minimum_size = Vector2(100, 100)
+		tower_grid.add_child(button)
 
-	if not btn is SidebarButton:
-		var new_btn: SidebarButton = SIDEBAR_BUTTON_SCENE.instantiate()
-		new_btn.custom_minimum_size = Vector2(100, 100)
-		existing_btn.replace_by(new_btn)
-		btn = new_btn
-		existing_btn.queue_free()
+	if not button is SidebarButton:
+		var new_button: SidebarButton = SIDEBAR_BUTTON_SCENE.instantiate()
+		new_button.custom_minimum_size = Vector2(100, 100)
+		existing_button.replace_by(new_button)
+		button = new_button
+		existing_button.queue_free()
 
 	# Always assign the slot index so the button knows its rack position
-	btn.slot_index = slot_index
+	button.slot_index = slot_index
 
 	if not info.is_empty():
 		var tower_data: TowerData = info.data
 		var stock: int = info.get("stock", 1)
-		btn.setup_tower(tower_data)
-		btn.set_stock(stock)
-		btn.set_meta("tower_data", tower_data)
-		btn.disabled = false
+		button.setup_tower(tower_data)
+		button.set_stock(stock)
+		button.set_meta("tower_data", tower_data)
+		button.disabled = false
 	else:
-		btn.reset_to_empty()
+		button.reset_to_empty()
 
-	if btn.has_method("set_studio_context"):
-		btn.set_studio_context(_is_in_studio_context)
+	if button.has_method("set_studio_context"):
+		button.set_studio_context(_is_in_studio_context)
 
 
 ## Creates or updates a buff button. Replaces non-SidebarButton nodes with
 ## a fresh instance from the scene.
-func _update_or_create_buff(existing_btn: Button, buff_data: BuffData) -> void:
-	var btn: SidebarButton = existing_btn as SidebarButton
-	if not btn:
-		btn = SIDEBAR_BUTTON_SCENE.instantiate()
-		btn.custom_minimum_size = Vector2(0, 64)
-		buff_container.add_child(btn)
+func _update_or_create_buff(existing_button: Button, buff_data: BuffData) -> void:
+	var button: SidebarButton = existing_button as SidebarButton
+	if not button:
+		button = SIDEBAR_BUTTON_SCENE.instantiate()
+		button.custom_minimum_size = Vector2(0, 64)
+		buff_container.add_child(button)
 
-	if not btn is SidebarButton:
-		var new_btn: SidebarButton = SIDEBAR_BUTTON_SCENE.instantiate()
-		new_btn.custom_minimum_size = Vector2(0, 64)
-		existing_btn.replace_by(new_btn)
-		btn = new_btn
-		existing_btn.queue_free()
+	if not button is SidebarButton:
+		var new_button: SidebarButton = SIDEBAR_BUTTON_SCENE.instantiate()
+		new_button.custom_minimum_size = Vector2(0, 64)
+		existing_button.replace_by(new_button)
+		button = new_button
+		existing_button.queue_free()
 
 	if buff_data:
-		btn.setup_buff(buff_data)
-		btn.disabled = false
+		button.setup_buff(buff_data)
+		button.disabled = false
 	else:
-		btn.text = "Empty"
-		btn.icon = null
-		btn.data = null
-		btn.disabled = true
-		if btn.cost_label:
-			btn.cost_label.visible = false
-		if btn.stock_label:
-			btn.stock_label.visible = false
+		button.text = "Empty"
+		button.icon = null
+		button.data = null
+		button.disabled = true
+		if button.cost_label:
+			button.cost_label.visible = false
+		if button.stock_label:
+			button.stock_label.visible = false
 
-	if btn.has_method("set_studio_context"):
-		btn.set_studio_context(_is_in_studio_context)
+	if button.has_method("set_studio_context"):
+		button.set_studio_context(_is_in_studio_context)
 
 
 ## Updates the stock count label and disabled state for a tower button when
@@ -249,25 +229,25 @@ func _update_or_create_buff(existing_btn: Button, buff_data: BuffData) -> void:
 func _on_loadout_stock_changed(tower_data: TowerData, new_stock: int) -> void:
 	for child: Node in tower_grid.get_children():
 		if child.has_meta("tower_data") and child.get_meta("tower_data") == tower_data:
-			var btn: SidebarButton = child as SidebarButton
-			if btn:
-				btn.set_stock(new_stock)
+			var button: SidebarButton = child as SidebarButton
+			if button:
+				button.set_stock(new_stock)
 
 
 ## Triggers the cooldown visual on the matching buff button when a buff is
 ## applied.
 func _on_buff_applied(buff_data: BuffData) -> void:
 	for child: Node in buff_container.get_children():
-		var btn_data: BuffData = child.get("data") as BuffData
-		if btn_data == buff_data:
+		var button_data: BuffData = child.get("data") as BuffData
+		if button_data == buff_data:
 			if child.has_method("show_cooldown"):
 				child.show_cooldown(buff_data.cooldown)
 			return
 
 
 ## Activates the pressed relic and executes its active effect.
-func _on_relic_pressed(btn: Button) -> void:
-	var data: RelicData = btn.data as RelicData
+func _on_relic_pressed(button: Button) -> void:
+	var data: RelicData = button.data as RelicData
 	if not data:
 		return
 
@@ -284,6 +264,35 @@ func _on_relic_state_changed(is_available: bool) -> void:
 	for child: Node in relic_container.get_children():
 		if child is Button:
 			child.disabled = not is_available
+
+
+# --- METHODS ---
+
+
+## Sets the current context (called by GameWindow) to update child display logic.
+func set_context(mode: GameWindow.ContextMode) -> void:
+	var is_studio: bool = mode == GameWindow.ContextMode.STUDIO
+	_is_in_studio_context = is_studio
+	for child in tower_grid.get_children():
+		if child.has_method("set_studio_context"):
+			child.set_studio_context(is_studio)
+	for child in buff_container.get_children():
+		if child.has_method("set_studio_context"):
+			child.set_studio_context(is_studio)
+	for child in relic_container.get_children():
+		if child.has_method("set_studio_context"):
+			child.set_studio_context(is_studio)
+
+
+# --- PRIVATE METHODS ---
+
+
+## Setter for the editor preview loadout. Repopulates the sidebar when the
+## export is changed in the inspector.
+func _set_preview_loadout(new_preview_loadout: PlayerData) -> void:
+	preview_loadout = new_preview_loadout
+	if Engine.is_editor_hint() and is_node_ready():
+		populate(preview_loadout)
 
 
 ## Animates a progress bar from full to empty over the given duration for

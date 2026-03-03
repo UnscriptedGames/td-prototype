@@ -9,34 +9,54 @@ var path_layer: TileMapLayer
 var highlight_layer: TileMapLayer
 var highlight_ids: Dictionary = {}
 
+## Internal State
+var is_placement_valid: bool = false
+var _last_tile_position: Vector2i = Vector2i(-1, -1)
+var _range_points: PackedVector2Array
+var _manual_update_mode: bool = false
+
+
 ## Node References
 @onready var sprite: Sprite2D = $Sprite
 @onready var range_shape: CollisionPolygon2D = $Range/RangeShape
 
-## Internal State
-var is_placement_valid: bool = false
-var _last_tile_pos: Vector2i = Vector2i(-1, -1)
-var _range_points: PackedVector2Array
-var _manual_update_mode: bool = false
+
+# --- OVERRIDES ---
 
 
 func _exit_tree() -> void:
 	# Ensure highlights are cleared when the ghost is destroyed
 	HighlightManager.hide_highlights(highlight_layer)
-	
-func set_manual_update_mode(enabled: bool) -> void:
-	_manual_update_mode = enabled
+
+
+func _process(_delta: float) -> void:
+	if _manual_update_mode:
+		return
+
+	if not is_instance_valid(path_layer):
+		return
+
+	# Only use internal mouse tracking if we are NOT in drag mode (implied by lack of manual calls)
+	# However, since we don't have a state flag, we'll just check if the mouse is moving?
+	# Better: Just prefer manual updates. If manual update happens, it overrides this frame.
+	# Standard clicking build mode relies on this.
+
+	var mouse_position: Vector2 = get_global_mouse_position()
+	_snap_and_update(mouse_position)
+
+
+# --- METHODS ---
 
 
 # Initialises the ghost with tower data and the required layers (no ObjectLayer parameter).
 func initialize(
-		bm: BuildManager,
-		tower_data: TowerData, # Data that defines visuals and behaviour for this ghost.
-		path_layer_node: TileMapLayer, # Path layer used to read the 'buildable' custom data.
-		highlight_layer_node: TileMapLayer, # Layer used for valid/invalid highlight tiles.
-		highlight_ids_map: Dictionary # Mapping of highlight tile IDs for quick lookups.
-	) -> void:
-	build_manager = bm
+	new_build_manager: BuildManager,
+	tower_data: TowerData,  # Data that defines visuals and behaviour for this ghost.
+	path_layer_node: TileMapLayer,  # Path layer used to read the 'buildable' custom data.
+	highlight_layer_node: TileMapLayer,  # Layer used for valid/invalid highlight tiles.
+	highlight_ids_map: Dictionary  # Mapping of highlight tile IDs for quick lookups.
+) -> void:
+	build_manager = new_build_manager
 	data = tower_data # Store tower data for sprite/range setup.
 	path_layer = path_layer_node # Cache the path layer reference for validity checks.
 	highlight_layer = highlight_layer_node # Cache the highlight layer for preview feedback.
@@ -53,45 +73,38 @@ func initialize(
 	_generate_range_polygon() # Precompute the range polygon so preview renders immediately.
 
 
-## Called every frame. Updates position and validity.
-func _process(_delta: float) -> void:
-	if _manual_update_mode:
-		return
-		
-	if not is_instance_valid(path_layer):
-		return
-
-	# Only use internal mouse tracking if we are NOT in drag mode (implied by lack of manual calls)
-	# However, since we don't have a state flag, we'll just check if the mouse is moving?
-	# Better: Just prefer manual updates. If manual update happens, it overrides this frame.
-	# Standard clicking build mode relies on this.
-	
-	var mouse_pos := get_global_mouse_position()
-	_snap_and_update(mouse_pos)
-
-
 ## Manually updates the ghost position (used during Drag-to-Build).
-func update_position_manually(local_viewport_pos: Vector2) -> void:
+func update_position_manually(local_viewport_position: Vector2) -> void:
 	if not is_instance_valid(path_layer):
 		return
-	_snap_and_update(local_viewport_pos)
+	_snap_and_update(local_viewport_position)
 
 
-func _snap_and_update(target_pos: Vector2) -> void:
-	var map_coords := path_layer.local_to_map(path_layer.to_local(target_pos))
-	var snapped_local_pos := path_layer.map_to_local(map_coords)
-	var final_pos: Vector2 = path_layer.to_global(snapped_local_pos)
-	
-	global_position = final_pos
-	
-	_update_placement_validity(map_coords)
+func set_manual_update_mode(enabled: bool) -> void:
+	_manual_update_mode = enabled
 
-	if map_coords != _last_tile_pos:
-		var tower_range: int = 0
+
+func _snap_and_update(target_position: Vector2) -> void:
+	var map_coordinates: Vector2i = path_layer.local_to_map(path_layer.to_local(target_position))
+	var snapped_local_position: Vector2 = path_layer.map_to_local(map_coordinates)
+	var final_position: Vector2 = path_layer.to_global(snapped_local_position)
+
+	global_position = final_position
+
+	_update_placement_validity(map_coordinates)
+
+	if map_coordinates != _last_tile_position:
+		var current_tower_range: int = 0
 		if not data.levels.is_empty():
-			tower_range = data.levels[0].tower_range
-		HighlightManager.show_ghost_highlights(highlight_layer, map_coords, tower_range, highlight_ids, is_placement_valid)
-		_last_tile_pos = map_coords
+			current_tower_range = data.levels[0].tower_range
+		HighlightManager.show_ghost_highlights(
+			highlight_layer,
+			map_coordinates,
+			current_tower_range,
+			highlight_ids,
+			is_placement_valid
+		)
+		_last_tile_position = map_coordinates
 
 
 # Updates preview validity using BuildManager's single rule (PathLayer 'buildable' only).

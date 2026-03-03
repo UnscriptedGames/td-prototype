@@ -12,11 +12,7 @@ extends Control
 var build_manager: Node = null
 
 
-## Called by GameWindow._bind_build_manager() once a level is loaded.
-func setup(bm: Node) -> void:
-	build_manager = bm
-	if OS.is_debug_build():
-		print("GameViewDropper setup triggered. Attached and ready.")
+# --- OVERRIDES ---
 
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
@@ -65,3 +61,13 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 		build_manager.apply_buff_at(get_local_mouse_position(), data.get("data"))
 	else:
 		build_manager.validate_and_place()
+
+
+# --- METHODS ---
+
+
+## Called by GameWindow._bind_build_manager() once a level is loaded.
+func setup(new_build_manager: Node) -> void:
+	build_manager = new_build_manager
+	if OS.is_debug_build():
+		print("GameViewDropper setup triggered. Attached and ready.")

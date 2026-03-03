@@ -1,6 +1,8 @@
 extends Resource
 class_name PlayerData
 
+const TOWER_SLOT_COUNT: int = 6
+
 ## Player Stats
 @export var currency: int = 100  # Player's starting currency
 @export var max_allocation_points: int = 50
@@ -15,8 +17,6 @@ class_name PlayerData
 
 ## The list of spells or buff cards available for this loadout (null = empty slot).
 @export var buffs: Array[BuffData] = []
-
-const TOWER_SLOT_COUNT: int = 6
 
 
 func _init() -> void:
@@ -83,6 +83,9 @@ func find_tower_slot(tower_data: TowerData) -> int:
 		if slot != null and slot.get("data") == tower_data:
 			return slot_index
 	return -1
+
+
+# --- PRIVATE METHODS ---
 
 
 ## Ensures tower_slots is always TOWER_SLOT_COUNT in length.

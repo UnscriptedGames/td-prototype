@@ -15,7 +15,7 @@ signal game_speed_changed(new_speed: float)
 signal start_wave_requested
 signal loadout_stock_changed(tower_data: TowerData, new_stock: int)
 signal relic_state_changed(is_available: bool)
-signal peak_meter_changed(current: float, max_val: float)
+signal peak_meter_changed(current: float, maximum_value: float)
 # Emitted when all spawn/enemies are done and the stem should grade and close.
 signal stem_completion_requested
 # Emitted when the peak meter clips to 100% — triggers immediate fail.
@@ -24,28 +24,8 @@ signal stem_failed
 signal force_complete_stem_requested
 
 enum GameState { PAUSED, PLAYING }
-var speed_steps: Array[float] = [1.0, 2.0, 4.0, 12.0]
 
-# Player and level state variables
-var _player_data: PlayerData
-var _level_data: StemData
-var _current_level: int = 0
-var _current_wave: int = 0
-var _total_waves: int = 0
-var _game_state: GameState = GameState.PLAYING
-var _is_wave_active: bool = false
-var _game_speed_index: int = 0
-var _current_peak: float = 0.0
-var _current_max_peak: float = 100.0  # Will be updated dynamically per wave
-
-# Loadout System
-# Key: TowerData, Value: int (Current Stock in this run)
-var _loadout_stock: Dictionary[TowerData, int] = {}
-
-# Relic Logic
-var _relic_used_this_level: bool = false
-
-# --- Getters ---
+# --- Variables ---
 
 var player_data: PlayerData:
 	get:
@@ -86,6 +66,28 @@ var max_peak: float:
 var loadout_stock: Dictionary:
 	get:
 		return _loadout_stock
+
+var speed_steps: Array[float] = [1.0, 2.0, 4.0, 12.0]
+
+# Player and level state variables
+var _player_data: PlayerData
+var _level_data: StemData
+var _current_level: int = 0
+var _current_wave: int = 0
+var _total_waves: int = 0
+var _game_state: GameState = GameState.PLAYING
+var _is_wave_active: bool = false
+var _game_speed_index: int = 0
+var _current_peak: float = 0.0
+var _current_max_peak: float = 100.0  # Will be updated dynamically per wave
+
+# Loadout System
+# Key: TowerData, Value: int (Current Stock in this run)
+var _loadout_stock: Dictionary[TowerData, int] = {}
+
+# Relic Logic
+var _relic_used_this_level: bool = false
+
 
 # --- Lifecycle ---
 
@@ -180,16 +182,16 @@ func _calculate_wave_max_peak(stem: StemData) -> void:
 	for instruction in stem.spawns:
 		if instruction and instruction.enemy_scene:
 			# Instantiate purely to extract max_health without hardcoding
-			var temp_state = instruction.enemy_scene.instantiate()
-			if temp_state:
-				var hp: int = 0
-				if "data" in temp_state and temp_state.data != null:
-					hp = temp_state.data.max_health
-				elif "max_health" in temp_state:
-					hp = temp_state.max_health
+			var temporary_enemy_instance = instruction.enemy_scene.instantiate()
+			if temporary_enemy_instance:
+				var health_points: int = 0
+				if "data" in temporary_enemy_instance and temporary_enemy_instance.data != null:
+					health_points = temporary_enemy_instance.data.max_health
+				elif "max_health" in temporary_enemy_instance:
+					health_points = temporary_enemy_instance.max_health
 
-				total_wave_health += (hp * instruction.count)
-			temp_state.free()
+				total_wave_health += (health_points * instruction.count)
+			temporary_enemy_instance.free()
 
 	if total_wave_health > 0:
 		_current_max_peak = float(total_wave_health) * stem.clip_tolerance

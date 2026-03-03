@@ -9,38 +9,24 @@ extends Node2D
 ## Layout data (MazeLayer / AnimationLayer tiles) is injected at runtime
 ## from a lightweight layout scene referenced by StemData.
 
-## Exported Variables
 
+# --- SIGNALS ---
+
+signal opening_sequence_started
+signal opening_sequence_finished
+
+
+# --- CONSTANTS ---
+
+
+# --- EXPORTS ---
+
+@export_group("Lane Settings")
 ## The active stem's data, injected by StageManager at runtime.
 var stem_data: StemData
 @export var lane_count: int = 4
 @export var max_lane_offset: float = 25.0
-
 @export var level_number: int = 1
-
-## Regular Variables
-
-var _current_wave_index: int = 0
-var _spawning: bool = false
-var _active_enemy_count: int = 0
-# Set to true by force_complete_stem() to skip the track-end penalty on next completion.
-var _bypass_track_end_penalty: bool = false
-# Set to true when the stem fails, to prevent wave completion from firing on the same frame.
-var _stem_has_failed: bool = false
-
-# AStarGrid2D Navigation
-var _astar_grid: AStarGrid2D
-
-# Spawn Queue System
-var _spawn_queue: Array[Dictionary] = []
-var _spawn_timer: float = 0.0
-
-## Onready Variables
-
-@onready var entities: Node2D = $Entities
-
-# Created and managed in _setup_stem_audio().
-var _stem_audio_player: AudioStreamPlayer
 
 @export_group("Renderers")
 @export var background_renderer: BackgroundRenderer
@@ -73,11 +59,34 @@ var _stem_audio_player: AudioStreamPlayer
 ## 6. Duration for individual pad animations (shrink/scale).
 @export var step6_pad_anim_duration: float = 0.5
 
-## Signals
-signal opening_sequence_started
-signal opening_sequence_finished
 
-## Built-in Methods
+# --- VARIABLES ---
+
+var _current_wave_index: int = 0
+var _spawning: bool = false
+var _active_enemy_count: int = 0
+# Set to true by force_complete_stem() to skip the track-end penalty on next completion.
+var _bypass_track_end_penalty: bool = false
+# Set to true when the stem fails, to prevent wave completion from firing on the same frame.
+var _stem_has_failed: bool = false
+
+# AStarGrid2D Navigation
+var _astar_grid: AStarGrid2D
+
+# Spawn Queue System
+var _spawn_queue: Array[Dictionary] = []
+var _spawn_timer: float = 0.0
+
+# Created and managed in _setup_stem_audio().
+var _stem_audio_player: AudioStreamPlayer
+
+
+# --- ONREADY ---
+
+@onready var entities: Node2D = $Entities
+
+
+# --- LIFECYCLE OVERRIDES ---
 
 
 func _ready() -> void:
@@ -143,7 +152,7 @@ func _exit_tree() -> void:
 		_stem_audio_player.stop()
 
 
-## Public Methods
+# --- METHODS ---
 
 
 func set_stem_data(data: StemData) -> void:
@@ -233,19 +242,19 @@ func _inject_layout() -> void:
 			maze_renderer.custom_styles = stem_data.maze_styles.duplicate()
 		elif "custom_styles" in maze_renderer and maze_renderer.custom_styles.is_empty():
 			# Fallback if StemData has no styles defined
-			var p_style = MazeTileStyle.new()
-			p_style.source_id = 1
-			p_style.button_color = Color("ffffff")
-			p_style.side_color = Color("c5c5c5")
-			p_style.glow_color = Color("00cdff")
-			p_style.glow_opacity = 0.5
-			var w_style = MazeTileStyle.new()
-			w_style.source_id = 5
-			w_style.button_color = Color("1a1a1a")
-			w_style.side_color = Color("0a0a0a")
-			w_style.glow_color = Color("ff0044")
-			w_style.glow_opacity = 0.2
-			maze_renderer.custom_styles = [p_style, w_style]
+			var primary_style := MazeTileStyle.new()
+			primary_style.source_id = 1
+			primary_style.button_color = Color("ffffff")
+			primary_style.side_color = Color("c5c5c5")
+			primary_style.glow_color = Color("00cdff")
+			primary_style.glow_opacity = 0.5
+			var wall_style := MazeTileStyle.new()
+			wall_style.source_id = 5
+			wall_style.button_color = Color("1a1a1a")
+			wall_style.side_color = Color("0a0a0a")
+			wall_style.glow_color = Color("ff0044")
+			wall_style.glow_opacity = 0.2
+			maze_renderer.custom_styles = [primary_style, wall_style]
 
 		maze_renderer.call_deferred("queue_redraw")
 
@@ -275,9 +284,6 @@ func _start_wave(wave_index: int) -> void:
 		_stem_audio_player.play()
 
 
-## Private Methods
-
-
 func _spawn_stem(stem: StemData) -> void:
 	# Flattens all SpawnInstructions into a single sorted timeline of spawn events.
 	# Each instruction can specify a start_delay and enemy_delay, which are accumulated
@@ -289,7 +295,7 @@ func _spawn_stem(stem: StemData) -> void:
 
 	for instruction: SpawnInstruction in stem.spawns:
 		var current_time: float = instruction.start_delay
-		for i: int in range(instruction.count):
+		for index: int in range(instruction.count):
 			master_timeline.append(
 				{
 					"time": current_time,
@@ -301,7 +307,8 @@ func _spawn_stem(stem: StemData) -> void:
 			current_time += instruction.enemy_delay
 
 	master_timeline.sort_custom(
-		func(a: Dictionary, b: Dictionary) -> bool: return a["time"] < b["time"]
+		func(event_first: Dictionary, event_second: Dictionary) -> bool:
+			return event_first["time"] < event_second["time"]
 	)
 
 	_spawn_queue = master_timeline
@@ -330,10 +337,10 @@ func _spawn_queued_enemy(event: Dictionary) -> void:
 	# Try to safely resolve the exact world coordinate of the center of that tile
 	var spawn_position: Vector2 = Vector2.ZERO
 	if maze_renderer:
-		var layer_node = maze_renderer.get_node_or_null(maze_renderer.source_layer_path)
+		var layer_node: Node = maze_renderer.get_node_or_null(maze_renderer.source_layer_path)
 		if layer_node is TileMapLayer:
-			var local_pos = layer_node.map_to_local(start_tile)
-			spawn_position = layer_node.to_global(local_pos)
+			var local_position: Vector2 = layer_node.map_to_local(start_tile)
+			spawn_position = layer_node.to_global(local_position)
 		else:
 			push_error("Failed to resolve spawn_position: maze layer not found.")
 			return
@@ -348,19 +355,19 @@ func _spawn_queued_enemy(event: Dictionary) -> void:
 
 	if not weighted_targets.is_empty():
 		var total_weight: float = 0.0
-		for wt: WeightedTarget in weighted_targets:
-			if wt:
-				total_weight += wt.weight
+		for weighted_target: WeightedTarget in weighted_targets:
+			if weighted_target:
+				total_weight += weighted_target.weight
 
-		var random_val: float = randf_range(0.0, total_weight)
+		var random_value: float = randf_range(0.0, total_weight)
 		var cumulative: float = 0.0
 
-		for wt: WeightedTarget in weighted_targets:
-			if not wt:
+		for weighted_target: WeightedTarget in weighted_targets:
+			if not weighted_target:
 				continue
-			cumulative += wt.weight
-			if random_val <= cumulative:
-				target_tile = wt.goal_tile
+			cumulative += weighted_target.weight
+			if random_value <= cumulative:
+				target_tile = weighted_target.goal_tile
 				break
 	elif _astar_grid:
 		# Fallback if the user hasn't set up the new WeightedTargets yet
@@ -400,8 +407,8 @@ func _spawn_enemy(
 	enemy.set_navigation_context(_astar_grid, start_tile, target_tile)
 	enemy.set_process(true)
 
-	if not enemy.reached_end_of_path.is_connected(_on_enemy_finished_path):
-		enemy.reached_end_of_path.connect(_on_enemy_finished_path)
+	if not enemy.path_finished.is_connected(_on_enemy_finished_path):
+		enemy.path_finished.connect(_on_enemy_finished_path)
 	if not enemy.died.is_connected(_on_enemy_died):
 		enemy.died.connect(_on_enemy_died)
 
@@ -552,10 +559,16 @@ func _initialize_navigation_grid() -> void:
 	_astar_grid.update()
 
 	# Make only the floor tiles walkable
-	for x in range(used_rect.position.x, used_rect.position.x + used_rect.size.x):
-		for y in range(used_rect.position.y, used_rect.position.y + used_rect.size.y):
-			var cell = Vector2i(x, y)
-			var source_id = maze_layer.get_cell_source_id(cell)
+	for horizontal_index in range(
+		used_rect.position.x,
+		used_rect.position.x + used_rect.size.x
+	):
+		for vertical_index in range(
+			used_rect.position.y,
+			used_rect.position.y + used_rect.size.y
+		):
+			var cell: Vector2i = Vector2i(horizontal_index, vertical_index)
+			var source_id: int = maze_layer.get_cell_source_id(cell)
 			if source_id == floor_tile_id:
 				_astar_grid.set_point_solid(cell, false)
 			else:
@@ -571,27 +584,34 @@ func _validate_spawn_data() -> void:
 
 	var region: Rect2i = _astar_grid.region
 
-	for inst_idx: int in range(stem_data.spawns.size()):
-		var instruction: SpawnInstruction = stem_data.spawns[inst_idx] as SpawnInstruction
+	for instruction_index: int in range(stem_data.spawns.size()):
+		var instruction: SpawnInstruction = (
+			stem_data.spawns[instruction_index] as SpawnInstruction
+		)
 		if not instruction:
 			continue
 
 		# Validate spawn_tile
-		var st: Vector2i = instruction.spawn_tile
-		if not region.has_point(st) or _astar_grid.is_point_solid(st):
-			push_warning("Instruction %d: spawn_tile %s is not walkable!" % [inst_idx + 1, st])
+		var spawn_tile: Vector2i = instruction.spawn_tile
+		if not region.has_point(spawn_tile) or _astar_grid.is_point_solid(spawn_tile):
+			push_warning(
+				"Instruction %d: spawn_tile %s is not walkable!"
+				% [instruction_index + 1, spawn_tile]
+			)
 
 		# Validate all weighted goal tiles
-		for wt_idx: int in range(instruction.weighted_targets.size()):
-			var wt: WeightedTarget = instruction.weighted_targets[wt_idx]
-			if not wt:
+		for target_index: int in range(instruction.weighted_targets.size()):
+			var weighted_target: WeightedTarget = (
+				instruction.weighted_targets[target_index]
+			)
+			if not weighted_target:
 				continue
-			var gt: Vector2i = wt.goal_tile
-			if not region.has_point(gt) or _astar_grid.is_point_solid(gt):
+			var goal_tile: Vector2i = weighted_target.goal_tile
+			if not region.has_point(goal_tile) or _astar_grid.is_point_solid(goal_tile):
 				push_warning(
 					(
 						"Instruction %d, Target %d: goal_tile %s is not walkable!"
-						% [inst_idx + 1, wt_idx + 1, gt]
+						% [instruction_index + 1, target_index + 1, goal_tile]
 					)
 				)
 
@@ -619,9 +639,15 @@ func _remove_background_tiles_under_path(animate: bool = true) -> void:
 	var used_rect: Rect2i = maze_layer.get_used_rect()
 	var found_start: bool = false
 
-	for x in range(used_rect.position.x, used_rect.position.x + used_rect.size.x):
-		for y in range(used_rect.position.y, used_rect.position.y + used_rect.size.y):
-			var cell: Vector2i = Vector2i(x, y)
+	for horizontal_index in range(
+		used_rect.position.x,
+		used_rect.position.x + used_rect.size.x
+	):
+		for vertical_index in range(
+			used_rect.position.y,
+			used_rect.position.y + used_rect.size.y
+		):
+			var cell: Vector2i = Vector2i(horizontal_index, vertical_index)
 			if maze_layer.get_cell_source_id(cell) == floor_tile_id:
 				start_coords = cell
 				found_start = true
@@ -640,19 +666,19 @@ func _remove_background_tiles_under_path(animate: bool = true) -> void:
 
 	while bfs_queue.size() > 0:
 		var current: Vector2i = bfs_queue.pop_front()
-		var current_dist: int = visited[current]
+		var current_distance: int = visited[current]
 
-		if current_dist > max_distance:
-			max_distance = current_dist
+		if current_distance > max_distance:
+			max_distance = current_distance
 
-		for dir: Vector2i in directions:
-			var next_cell: Vector2i = current + dir
+		for direction: Vector2i in directions:
+			var next_cell: Vector2i = current + direction
 
 			if visited.has(next_cell):
 				continue
 
 			if maze_layer.get_cell_source_id(next_cell) == floor_tile_id:
-				visited[next_cell] = current_dist + 1
+				visited[next_cell] = current_distance + 1
 				bfs_queue.append(next_cell)
 
 	# Animated sequential shrink.
@@ -662,8 +688,8 @@ func _remove_background_tiles_under_path(animate: bool = true) -> void:
 		step_delay = step5_path_flow_duration / float(max_distance)
 
 	for cell: Vector2i in visited.keys():
-		var dist: int = visited[cell]
-		var delay: float = float(dist) * step_delay
+		var distance: int = visited[cell]
+		var delay: float = float(distance) * step_delay
 		var shrink_duration: float = step6_pad_anim_duration
 
 		(
@@ -677,18 +703,15 @@ func _remove_background_tiles_under_path(animate: bool = true) -> void:
 func _hide_background_subcells(maze_cell: Vector2i, duration: float) -> void:
 	# An 84x84 maze cell maps to nine 28x28 background cells (a 3x3 grid).
 	# Calculate the top-left background cell.
-	var bg_start_x: int = maze_cell.x * 3
-	var bg_start_y: int = maze_cell.y * 3
+	var background_start_x: int = maze_cell.x * 3
+	var background_start_y: int = maze_cell.y * 3
 
 	# Hide all nine sub-cells.
-	for dx in range(3):
-		for dy in range(3):
+	for x_offset in range(3):
+		for y_offset in range(3):
 			background_renderer.animate_hide_cell(
-				Vector2i(bg_start_x + dx, bg_start_y + dy), duration
+				Vector2i(background_start_x + x_offset, background_start_y + y_offset), duration
 			)
-
-
-## Audio Stem Management
 
 
 func _setup_stem_audio() -> void:

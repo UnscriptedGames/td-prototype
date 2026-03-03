@@ -134,9 +134,9 @@ func _populate_quality_dropdown(result: StemResult) -> void:
 		)
 
 	# Reselect their currently active choice
-	for i in range(quality_select.item_count):
-		if quality_select.get_item_metadata(i) == result.active_playback_quality:
-			quality_select.select(i)
+	for index in range(quality_select.item_count):
+		if quality_select.get_item_metadata(index) == result.active_playback_quality:
+			quality_select.select(index)
 			break
 
 	# Reconnect

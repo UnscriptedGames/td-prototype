@@ -5,16 +5,12 @@ extends Area2D
 class_name TemplateEnemy
 
 ## Signals
-signal died(enemy: TemplateEnemy, reward_amount: int) # Emitted when the enemy dies
-signal reached_end_of_path(enemy: TemplateEnemy) # Emitted when the enemy reaches the end of a path
+signal died(enemy: TemplateEnemy, reward_amount: int)  # Emitted when the enemy dies
+signal path_finished(enemy: TemplateEnemy)  # Emitted when the enemy reaches the end of a path
 
 
 ## Enums
-enum State {
-	MOVING,
-	DYING,
-	REACHED_GOAL
-}
+enum State { MOVING, DYING, REACHED_GOAL }
 
 
 ## Inner Classes
@@ -24,21 +20,25 @@ class ActiveStatusEffect:
 	var initial_duration: float
 	var tick_timer: float = 0.0
 
-	func _init(p_data: StatusEffectData) -> void:
-		data = p_data
-		duration = p_data.duration
-		initial_duration = p_data.duration
+	func _init(initial_data: StatusEffectData) -> void:
+		data = initial_data
+		duration = initial_data.duration
+		initial_duration = initial_data.duration
 		tick_timer = 0.0
 
 
+## Constants
+const CORNER_SMOOTHING: float = 15.0  # How quickly the enemy turns at corners. Higher is sharper.
+
+
 ## Exported Data
-@export var data: EnemyData # Enemy data resource
+@export var data: EnemyData  # Enemy data resource
 
 
 ## Enemy Stats
-var max_health: int = 10 # Maximum health
-var speed: float = 60.0 # Movement speed
-var reward: int = 1 # Reward for defeating this enemy
+var max_health: int = 10  # Maximum health
+var speed: float = 60.0  # Movement speed
+var reward: int = 1  # Reward for defeating this enemy
 var health: int:
 	get:
 		return _health
@@ -52,15 +52,15 @@ var health: int:
 
 
 ## Internal State
-const CORNER_SMOOTHING: float = 15.0 # How quickly the enemy turns at corners. Higher is sharper.
+var state: State = State.MOVING  # Current state
+var lane_index: int = 0  # The specific lane index this enemy is following
+var path_follow: Node2D  # Kept for signature compatibility if something expects node.
 
-var state: State = State.MOVING # Current state
-var _health: int # Current health
-var lane_index: int = 0 # The specific lane index this enemy is following
-var _variant: String = "" # Current variant name
-var _last_direction: String = "south_west" # Last animation direction
-var _has_reached_end: bool = false # True if enemy reached end of path
-var _wander_offset: Vector2 = Vector2.ZERO # Organic offset
+var _health: int  # Current health
+var _variant: String = ""  # Current variant name
+var _last_direction: String = "south_west"  # Last animation direction
+var _has_reached_end: bool = false  # True if enemy reached end of path
+var _wander_offset: Vector2 = Vector2.ZERO  # Organic offset
 
 # AStar Navigation State
 var _astar_grid: AStarGrid2D
@@ -68,34 +68,30 @@ var _target_tile: Vector2i
 var _current_path: PackedVector2Array
 var _current_path_index: int = 0
 var _velocity: Vector2 = Vector2.ZERO
-var _time_lived: float = 0.0 # Time since spawn to drive organic wobble
+var _time_lived: float = 0.0  # Time since spawn to drive organic wobble
 
 
 ## Status Effect State
 var _active_status_effects: Dictionary[StatusEffectData.EffectType, ActiveStatusEffect] = {}
-var _speed_modifier: float = 1.0 # Multiplier for the enemy's speed
-var _is_stunned: bool = false # Is the enemy currently stunned?
+var _speed_modifier: float = 1.0  # Multiplier for the enemy's speed
+var _is_stunned: bool = false  # Is the enemy currently stunned?
+var _effect_bars: Dictionary[StatusEffectData.EffectType, ProgressBar] = {}  # Maps EffectType to its ProgressBar
 
 
 ## Node References
-@onready var sprite: CanvasItem = $Sprite as CanvasItem # Wave visual node (Sprite2D or TextureRect)
-@onready var animation := $Animation as AnimatedSprite2D # Death animation node
-@onready var hitbox := $PositionShape as CollisionShape2D # Hitbox node
-@onready var target_point: Node2D = $TargetPoint if has_node("TargetPoint") else self # Target point for towers
-@onready var shadow_panel := $Shadow as Panel # Shadow visual node
-@onready var progress_bar_container := $ProgressBarContainer as VBoxContainer
-@onready var health_bar := $ProgressBarContainer/HealthBar as TextureProgressBar # Health bar node
-@onready var dot_bar := $ProgressBarContainer/DotBar as ProgressBar
-@onready var slow_bar := $ProgressBarContainer/SlowBar as ProgressBar
-@onready var stun_bar := $ProgressBarContainer/StunBar as ProgressBar
+@onready var sprite: CanvasItem = ($Sprite as CanvasItem)  # Wave visual node (Sprite2D or TextureRect)
+@onready var animation: AnimatedSprite2D = ($Animation as AnimatedSprite2D)  # Death animation node
+@onready var hitbox: CollisionShape2D = ($PositionShape as CollisionShape2D)  # Hitbox node
+@onready var shadow_panel: Panel = ($Shadow as Panel)  # Shadow visual node
+@onready var progress_bar_container: VBoxContainer = ($ProgressBarContainer as VBoxContainer)
+@onready var dot_bar: ProgressBar = ($ProgressBarContainer/DotBar as ProgressBar)
+@onready var slow_bar: ProgressBar = ($ProgressBarContainer/SlowBar as ProgressBar)
+@onready var stun_bar: ProgressBar = ($ProgressBarContainer/StunBar as ProgressBar)
+@onready var health_bar: TextureProgressBar = ($ProgressBarContainer/HealthBar as TextureProgressBar)
+@onready var target_point: Node2D = ($TargetPoint if has_node("TargetPoint") else self)
 
 
-## Private Properties
-var _effect_bars: Dictionary[StatusEffectData.EffectType, ProgressBar] = {} # Maps EffectType to its ProgressBar
-
-
-## Public Properties
-var path_follow: Node2D # Kept for signature compatibility if something expects node, but unused for motion. Better to remove later if safe.
+# --- LIFECYCLE ---
 
 
 ## Called when the enemy enters the scene tree
@@ -134,6 +130,7 @@ func _ready() -> void:
 	if not Engine.is_editor_hint():
 		reset()
 
+
 func _exit_tree() -> void:
 	# Disconnect dynamic signals when the enemy is unexpectedly removed from the tree
 	# Note: We do not disconnect 'died' or 'reached_end_of_path' here because they are
@@ -141,6 +138,126 @@ func _exit_tree() -> void:
 	# by the listener when cleaning up.
 	if animation and animation.animation_finished.is_connected(_on_death_animation_finished):
 		animation.animation_finished.disconnect(_on_death_animation_finished)
+
+
+## Handles movement and animation each frame
+func _process(delta: float) -> void:
+	# Keep the shader scrolling accurate inside the editor based on the data!
+	if Engine.is_editor_hint():
+		if data and sprite and sprite.material is ShaderMaterial:
+			var speed_multiplier: float = data.scroll_speed
+			var computed_time: float = (float(Time.get_ticks_msec()) / 1_000.0) * speed_multiplier
+			(sprite.material as ShaderMaterial).set_shader_parameter("use_unscaled_time", true)
+			sprite.set_instance_shader_parameter("unscaled_time", computed_time)
+		return
+
+	_process_status_effects(delta)
+	_time_lived += delta
+
+	if state == State.DYING:
+		return
+
+	if _is_stunned:
+		# If stunned, do nothing else this frame.
+		# We might want to play a "stunned" animation here in the future.
+		return
+
+	if _current_path.size() == 0 or _current_path_index >= _current_path.size():
+		if not _has_reached_end:
+			_has_reached_end = true
+			emit_signal("path_finished", self)
+		return
+
+	# Determine current target waypoint
+	var target_waypoint: Vector2 = _current_path[_current_path_index] + _wander_offset
+
+	# Desired steering velocity
+	var desired_velocity: Vector2 = (
+		(target_waypoint - global_position).normalized() * speed * _speed_modifier
+	)
+
+	# Smoothly interpolate velocity to curve corners (using the existing constant, clamped to 1.0 to prevent high speed extrapolation)
+	if _velocity == Vector2.ZERO:
+		_velocity = desired_velocity
+	else:
+		_velocity = _velocity.lerp(desired_velocity, min(1.0, delta * CORNER_SMOOTHING))
+
+	# Add a sine-wave wobble perpendicular to the velocity
+	var wobble_amplitude: float = data.wobble_amplitude if data else 8.0
+	var wobble_frequency: float = data.wobble_frequency if data else 3.0
+	var speed_factor: float = _speed_modifier  # Slow down wobble if the enemy is slowed
+
+	# Calculate perpendicular normal (-y, x) of the normalized current velocity
+	var movement_direction_normalized: Vector2 = _velocity.normalized()
+	var perpendicular_direction: Vector2 = Vector2(
+		-movement_direction_normalized.y, movement_direction_normalized.x
+	)
+	var wobble_offset: Vector2 = (
+		perpendicular_direction
+		* sin(_time_lived * wobble_frequency * speed_factor)
+		* wobble_amplitude
+	)
+
+	var frame_velocity: Vector2 = _velocity + wobble_offset
+	var distance_to_move: float = frame_velocity.length() * delta
+	var move_direction: Vector2 = frame_velocity.normalized()
+
+	var current_position: Vector2 = global_position
+
+	# Sub-stepping loop for fast game speeds
+	while distance_to_move > 0.0 and _current_path_index < _current_path.size():
+		target_waypoint = _current_path[_current_path_index] + _wander_offset
+		var distance_to_target: float = current_position.distance_to(target_waypoint)
+
+		# Sub-step check: Would this move instantly blow past the waypoint?
+		if distance_to_move >= distance_to_target:
+			# Yes! Move EXACTLY to the waypoint corner to prevent wall clipping
+			current_position = target_waypoint
+			distance_to_move -= distance_to_target
+			_current_path_index += 1
+			# For the remaining distance, we must redirect towards the NEXT waypoint
+			if _current_path_index < _current_path.size():
+				move_direction = (
+					(_current_path[_current_path_index] + _wander_offset - current_position)
+					. normalized()
+				)
+		else:
+			# Normal movement frame, or the last sub-step of a fast frame
+			current_position += move_direction * distance_to_move
+			# If distance_to_target is within 12 pixels, we gracefully say it matched for smooth turning next frame (1x speed)
+			if current_position.distance_to(target_waypoint) <= 12.0:
+				_current_path_index += 1
+			distance_to_move = 0.0
+			break
+
+	global_position = current_position
+
+	# Determine animation direction based on mathematical velocity
+	var animation_direction: String = "north_west" if _velocity.y < 0 else "south_west"
+
+	# Store the last direction for the death animation
+	if _current_path_index < _current_path.size() - 1:
+		_last_direction = animation_direction
+
+	# Wave Visual: Update unscaled time and enable visibility
+	if sprite and sprite.material is ShaderMaterial:
+		(sprite.material as ShaderMaterial).set_shader_parameter("use_unscaled_time", true)
+
+		var speed_multiplier: float = data.scroll_speed if data else 1.0
+		var computed_time: float = (float(Time.get_ticks_msec()) / 1_000.0) * speed_multiplier
+		sprite.set_instance_shader_parameter("unscaled_time", computed_time)
+
+		# Enable visibility now that we are positioned correctly
+		if not sprite.visible:
+			sprite.visible = true
+			if shadow_panel:
+				shadow_panel.visible = true
+
+	# Play the moving animation
+	_play_animation("move", animation_direction)
+
+
+# --- METHODS ---
 
 
 ## Handles enemy death, gives a reward, and plays death animation
@@ -162,7 +279,7 @@ func reached_goal() -> void:
 	if state == State.DYING or state == State.REACHED_GOAL:
 		return
 	state = State.REACHED_GOAL
-	
+
 	if not animation.animation_finished.is_connected(_on_death_animation_finished):
 		animation.animation_finished.connect(_on_death_animation_finished)
 
@@ -171,31 +288,33 @@ func reached_goal() -> void:
 
 
 ## Assigns the navigation context so the enemy can calculate its path
-func set_navigation_context(grid: AStarGrid2D, start_tile: Vector2i, target: Vector2i) -> void:
-	_astar_grid = grid
+func set_navigation_context(
+	navigation_grid: AStarGrid2D, start_tile: Vector2i, target: Vector2i
+) -> void:
+	_astar_grid = navigation_grid
 	_target_tile = target
-	
+
 	if _astar_grid:
-		var r: Rect2i = _astar_grid.region
-		
+		var grid_region: Rect2i = _astar_grid.region
+
 		# Clamp points to the grid's strictly defined region to prevent out of bounds crashes
 		var safe_start: Vector2i = Vector2i(
-			clampi(start_tile.x, r.position.x, r.end.x - 1),
-			clampi(start_tile.y, r.position.y, r.end.y - 1)
+			clampi(start_tile.x, grid_region.position.x, grid_region.end.x - 1),
+			clampi(start_tile.y, grid_region.position.y, grid_region.end.y - 1)
 		)
-		
+
 		var safe_target: Vector2i = Vector2i(
-			clampi(_target_tile.x, r.position.x, r.end.x - 1),
-			clampi(_target_tile.y, r.position.y, r.end.y - 1)
+			clampi(_target_tile.x, grid_region.position.x, grid_region.end.x - 1),
+			clampi(_target_tile.y, grid_region.position.y, grid_region.end.y - 1)
 		)
-		
+
 		_current_path = _astar_grid.get_point_path(safe_start, safe_target)
-		
+
 		# Skip first point if it's the tile we're already standing on
 		_current_path_index = 0
 		if _current_path.size() > 0 and global_position.distance_to(_current_path[0]) < 10.0:
 			_current_path_index = 1
-		
+
 		# Assign a random wander offset to keep movement organic but firmly inside the tile
 		var cell_size = _astar_grid.cell_size
 		_wander_offset = Vector2(
@@ -208,124 +327,18 @@ func set_navigation_context(grid: AStarGrid2D, start_tile: Vector2i, target: Vec
 func get_remaining_distance() -> float:
 	if _current_path.size() == 0:
 		return 0.0
-		
+
 	var remaining: float = 0.0
-	
+
 	if _current_path_index < _current_path.size():
 		# Distance to the next waypoint
 		remaining += global_position.distance_to(_current_path[_current_path_index])
-		
+
 	# Distance of all subsequent waypoints
-	for i: int in range(_current_path_index, _current_path.size() - 1):
-		remaining += _current_path[i].distance_to(_current_path[i + 1])
-		
+	for index: int in range(_current_path_index, _current_path.size() - 1):
+		remaining += _current_path[index].distance_to(_current_path[index + 1])
+
 	return remaining
-
-
-## Handles movement and animation each frame
-func _process(delta: float) -> void:
-	# Keep the shader scrolling accurate inside the editor based on the data!
-	if Engine.is_editor_hint():
-		if data and sprite and sprite.material is ShaderMaterial:
-			var speed_mult: float = data.scroll_speed
-			var computed_time: float = (float(Time.get_ticks_msec()) / 1000.0) * speed_mult
-			(sprite.material as ShaderMaterial).set_shader_parameter("use_unscaled_time", true)
-			sprite.set_instance_shader_parameter("unscaled_time", computed_time)
-		return
-
-	_process_status_effects(delta)
-	_time_lived += delta
-
-	if state == State.DYING:
-		return
-
-	if _is_stunned:
-		# If stunned, do nothing else this frame.
-		# We might want to play a "stunned" animation here in the future.
-		return
-
-	if _current_path.size() == 0 or _current_path_index >= _current_path.size():
-		if not _has_reached_end:
-			_has_reached_end = true
-			emit_signal("reached_end_of_path", self)
-		return
-
-	# Determine current target waypoint
-	var target_waypoint: Vector2 = _current_path[_current_path_index] + _wander_offset
-
-	# Desired steering velocity
-	var desired_velocity: Vector2 = (target_waypoint - global_position).normalized() * speed * _speed_modifier
-	
-	# Smoothly interpolate velocity to curve corners (using the existing constant, clamped to 1.0 to prevent high speed extrapolation)
-	if _velocity == Vector2.ZERO:
-		_velocity = desired_velocity
-	else:
-		_velocity = _velocity.lerp(desired_velocity, min(1.0, delta * CORNER_SMOOTHING))
-		
-	# Add a sine-wave wobble perpendicular to the velocity
-	var wobble_amplitude: float = data.wobble_amplitude if data else 8.0
-	var wobble_frequency: float = data.wobble_frequency if data else 3.0
-	var speed_factor: float = _speed_modifier # Slow down wobble if the enemy is slowed
-	
-	# Calculate perpendicular normal (-y, x) of the normalized current velocity
-	var move_dir: Vector2 = _velocity.normalized()
-	var perp_dir: Vector2 = Vector2(-move_dir.y, move_dir.x)
-	var wobble_offset: Vector2 = perp_dir * sin(_time_lived * wobble_frequency * speed_factor) * wobble_amplitude
-	
-	var frame_velocity: Vector2 = _velocity + wobble_offset
-	var distance_to_move: float = frame_velocity.length() * delta
-	var move_direction: Vector2 = frame_velocity.normalized()
-	
-	var current_pos: Vector2 = global_position
-	
-	# Sub-stepping loop for fast game speeds
-	while distance_to_move > 0.0 and _current_path_index < _current_path.size():
-		target_waypoint = _current_path[_current_path_index] + _wander_offset
-		var dist_to_target: float = current_pos.distance_to(target_waypoint)
-		
-		# Sub-step check: Would this move instantly blow past the waypoint?
-		if distance_to_move >= dist_to_target:
-			# Yes! Move EXACTLY to the waypoint corner to prevent wall clipping
-			current_pos = target_waypoint
-			distance_to_move -= dist_to_target
-			_current_path_index += 1
-			# For the remaining distance, we must redirect towards the NEXT waypoint
-			if _current_path_index < _current_path.size():
-				move_direction = (_current_path[_current_path_index] + _wander_offset - current_pos).normalized()
-		else:
-			# Normal movement frame, or the last sub-step of a fast frame
-			current_pos += move_direction * distance_to_move
-			# If dist_to_target is within 12 pixels, we gracefully say it matched for smooth turning next frame (1x speed)
-			if current_pos.distance_to(target_waypoint) <= 12.0:
-				_current_path_index += 1
-			distance_to_move = 0.0
-			break
-			
-	global_position = current_pos
-
-	# Determine animation direction based on mathematical velocity
-	var anim_dir: String = "north_west" if _velocity.y < 0 else "south_west"
-
-	# Store the last direction for the death animation
-	if _current_path_index < _current_path.size() - 1:
-		_last_direction = anim_dir
-		
-	# Wave Visual: Update unscaled time and enable visibility
-	if sprite and sprite.material is ShaderMaterial:
-		(sprite.material as ShaderMaterial).set_shader_parameter("use_unscaled_time", true)
-		
-		var speed_mult: float = data.scroll_speed if data else 1.0
-		var computed_time: float = (float(Time.get_ticks_msec()) / 1000.0) * speed_mult
-		sprite.set_instance_shader_parameter("unscaled_time", computed_time)
-			
-		# Enable visibility now that we are positioned correctly
-		if not sprite.visible:
-			sprite.visible = true
-			if shadow_panel:
-				shadow_panel.visible = true
- 
-	# Play the moving animation
-	_play_animation("move", anim_dir)
 
 
 ## Plays the specified animation for the current variant
@@ -340,17 +353,17 @@ func _play_animation(action: String, direction: String) -> void:
 ## Plays the common death sequence.
 func _play_death_sequence(action_name: String) -> void:
 	set_process(false)
-	
+
 	hitbox.set_deferred("disabled", true)
 	if progress_bar_container:
 		progress_bar_container.visible = false
-	
+
 	# Swap visuals: Hide Wave, Show Animation
 	sprite.visible = false
 	if shadow_panel:
 		shadow_panel.visible = false
 	animation.visible = true
-	
+
 	# Play the death animation based on the last known direction
 	var animation_name: String = "%s_%s_%s" % [_variant, action_name, _last_direction]
 	if animation and animation.sprite_frames.has_animation(animation_name):
@@ -364,13 +377,13 @@ func _play_death_sequence(action_name: String) -> void:
 func _update_health_bar() -> void:
 	if not health_bar:
 		return
-	
+
 	# Keep the old progress bar disabled so it doesn't overlap the new shader effect!
 	# _ensure_bar_is_visible(health_bar)
 	# health_bar.value = ratio * 100.0
-	
+
 	var ratio: float = float(_health) / float(max_health)
-	
+
 	if sprite:
 		sprite.set_instance_shader_parameter("health_ratio", ratio)
 
@@ -384,7 +397,7 @@ func reset() -> void:
 
 	# Reset Visuals
 	if sprite:
-		sprite.visible = false # Logic in _process will enable it once positioned
+		sprite.visible = false  # Logic in _process will enable it once positioned
 		sprite.set_instance_shader_parameter("health_ratio", 1.0)
 	if shadow_panel:
 		shadow_panel.visible = false
@@ -423,10 +436,11 @@ func is_dying() -> bool:
 
 ## Status Effect Handling ##
 
+
 func _ensure_bar_is_visible(bar: Control) -> void:
 	# Helper to ensure the container and the specific bar are visible.
 	if not progress_bar_container.visible:
-		pass # Disabled while testing shader health visuals
+		pass  # Disabled while testing shader health visuals
 		# progress_bar_container.visible = true
 	if not bar.visible:
 		bar.visible = true
@@ -446,10 +460,11 @@ func apply_status_effect(effect: StatusEffectData) -> void:
 	# If the effect is not already active, add it.
 	if not _active_status_effects.has(effect_type):
 		_active_status_effects[effect_type] = ActiveStatusEffect.new(effect)
-		
+
 		# Handle initial application for certain effects
 		match effect_type:
-			StatusEffectData.EffectType.SLOW: _recalculate_speed()
+			StatusEffectData.EffectType.SLOW:
+				_recalculate_speed()
 			StatusEffectData.EffectType.STUN:
 				_is_stunned = true
 				animation.pause()
@@ -507,9 +522,12 @@ func _process_status_effects(delta: float) -> void:
 
 			# Process effect logic
 			match effect_type:
-				StatusEffectData.EffectType.DOT: _handle_dot_effect(effect, delta)
-				StatusEffectData.EffectType.SLOW: _handle_slow_effect(effect, delta)
-				StatusEffectData.EffectType.STUN: _handle_stun_effect(effect, delta)
+				StatusEffectData.EffectType.DOT:
+					_handle_dot_effect(effect, delta)
+				StatusEffectData.EffectType.SLOW:
+					_handle_slow_effect(effect, delta)
+				StatusEffectData.EffectType.STUN:
+					_handle_stun_effect(effect, delta)
 
 	# Remove expired effects
 	for effect_type in effects_to_remove:
@@ -520,7 +538,8 @@ func _process_status_effects(delta: float) -> void:
 
 		# Handle effect removal logic
 		match effect_type:
-			StatusEffectData.EffectType.SLOW: _recalculate_speed()
+			StatusEffectData.EffectType.SLOW:
+				_recalculate_speed()
 			StatusEffectData.EffectType.STUN:
 				_is_stunned = false
 				animation.play()

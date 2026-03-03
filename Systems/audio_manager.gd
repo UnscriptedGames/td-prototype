@@ -93,37 +93,37 @@ func play_stem(stem_data: StemData) -> void:
 		var current_index: int = StageManager.current_stem_index
 		
 		# Iterate through all stems in the stage
-		for i in range(StageManager.stem_results.size()):
+		for index in range(StageManager.stem_results.size()):
 			# Skip the currently active stem (it's handled by the dynamic players)
-			if i == current_index:
+			if index == current_index:
 				continue
 				
 			# Ensure we have a valid result and stem data to read from
-			if i >= StageManager.active_stage.stems.size():
+			if index >= StageManager.active_stage.stems.size():
 				continue
 				
-			var result: StemResult = StageManager.stem_results[i]
-			var hist_stem: StemData = StageManager.active_stage.stems[i]
+			var result: StemResult = StageManager.stem_results[index]
+			var historical_stem_data: StemData = StageManager.active_stage.stems[index]
 			
-			if result.status == StemResult.StemStatus.COMPLETED and is_instance_valid(hist_stem):
+			if result.status == StemResult.StemStatus.COMPLETED and is_instance_valid(historical_stem_data):
 				# Pick the stream matching their manual playback selection
 				var stream: AudioStream = null
 				if result.active_playback_quality == StemResult.StemQuality.ABOMINATION:
-					stream = hist_stem.stem_audio_bad
+					stream = historical_stem_data.stem_audio_bad
 				elif result.active_playback_quality == StemResult.StemQuality.AVERAGE:
-					stream = hist_stem.stem_audio_avg
+					stream = historical_stem_data.stem_audio_avg
 				else:
 					# Default to Good if None or Good
-					stream = hist_stem.stem_audio_good
+					stream = historical_stem_data.stem_audio_good
 					
 				# Create a dedicated player for this historical stem
 				if stream:
-					var hist_player := AudioStreamPlayer.new()
-					hist_player.name = "HistoricalStem_%d" % i
-					hist_player.bus = "Music"
-					hist_player.stream = stream
-					add_child(hist_player)
-					_historical_players.append(hist_player)
+					var historical_player := AudioStreamPlayer.new()
+					historical_player.name = "HistoricalStem_%d" % index
+					historical_player.bus = "Music"
+					historical_player.stream = stream
+					add_child(historical_player)
+					_historical_players.append(historical_player)
 
 	# 4. Play EVERYTHING at the precise same moment for perfect phase sync
 	_player_good.play()
@@ -146,12 +146,12 @@ func _stop_all() -> void:
 
 ## Called when the GameManager updates the peak meter.
 ## current: specific distortion number
-## max_val: the failure point (100% capacity)
-func _on_peak_meter_changed(current: float, max_val: float) -> void:
-	if max_val <= 0.0:
+## maximum_value: the failure point (100% capacity)
+func _on_peak_meter_changed(current: float, maximum_value: float) -> void:
+	if maximum_value <= 0.0:
 		return
 		
-	var ratio: float = current / max_val
+	var ratio: float = current / maximum_value
 	var target_quality: StemQuality = StemQuality.GOOD
 	
 	if ratio >= THRESHOLD_BAD:
@@ -173,22 +173,22 @@ func _transition_to_quality(quality: StemQuality) -> void:
 		print("AudioManager: Stem Quality Shifted -> ", StemQuality.keys()[quality])
 
 func _set_volumes(target_quality: StemQuality) -> void:
-	var vol_on: float = 0.0
-	var vol_off: float = -80.0 # Effectively muted but keeps playing
+	var volume_on: float = 0.0
+	var volume_off: float = -80.0 # Effectively muted but keeps playing
 	
 	match target_quality:
 		StemQuality.GOOD:
-			_player_good.volume_db = vol_on
-			_player_avg.volume_db = vol_off
-			_player_bad.volume_db = vol_off
+			_player_good.volume_db = volume_on
+			_player_avg.volume_db = volume_off
+			_player_bad.volume_db = volume_off
 		StemQuality.AVERAGE:
-			_player_good.volume_db = vol_off
-			_player_avg.volume_db = vol_on
-			_player_bad.volume_db = vol_off
+			_player_good.volume_db = volume_off
+			_player_avg.volume_db = volume_on
+			_player_bad.volume_db = volume_off
 		StemQuality.ABOMINATION:
-			_player_good.volume_db = vol_off
-			_player_avg.volume_db = vol_off
-			_player_bad.volume_db = vol_on
+			_player_good.volume_db = volume_off
+			_player_avg.volume_db = volume_off
+			_player_bad.volume_db = volume_on
 
 func _on_wave_changed(_current_wave: int, _total_waves: int) -> void:
 	# Hook to grab the new stem data from GameManager when it starts

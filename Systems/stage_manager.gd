@@ -67,7 +67,40 @@ var loadout_locked: bool:
 	get:
 		return _loadout_locked
 
-# --- Public Methods ---
+# --- LIFECYCLE ---
+
+
+func _exit_tree() -> void:
+	if is_instance_valid(GameManager):
+		if GameManager.stem_completion_requested.is_connected(_on_stem_completion_requested):
+			GameManager.stem_completion_requested.disconnect(_on_stem_completion_requested)
+		if GameManager.stem_failed.is_connected(_on_stem_failed):
+			GameManager.stem_failed.disconnect(_on_stem_failed)
+
+
+# --- METHODS ---
+
+
+func get_completed_stem_count() -> int:
+	var count: int = 0
+	for index: int in range(STEM_COUNT):
+		if _stem_results[index].status == StemResult.StemStatus.COMPLETED:
+			count += 1
+	return count
+
+
+func determine_quality_from_peak() -> StemResult.StemQuality:
+	if GameManager.max_peak <= 0.0:
+		return StemResult.StemQuality.GOOD
+
+	var ratio: float = GameManager.current_peak / GameManager.max_peak
+
+	if ratio >= THRESHOLD_BAD:
+		return StemResult.StemQuality.ABOMINATION
+	elif ratio >= THRESHOLD_AVG:
+		return StemResult.StemQuality.AVERAGE
+	else:
+		return StemResult.StemQuality.GOOD
 
 
 ## Initialises the stage run. Sets Stem 1 to AVAILABLE, all others LOCKED.
@@ -79,13 +112,6 @@ func load_stage(stage_data: StageData) -> void:
 	GameManager.stem_completion_requested.connect(_on_stem_completion_requested)
 	GameManager.stem_failed.connect(_on_stem_failed)
 	stage_loaded.emit(stage_data)
-
-func _exit_tree() -> void:
-	if is_instance_valid(GameManager):
-		if GameManager.stem_completion_requested.is_connected(_on_stem_completion_requested):
-			GameManager.stem_completion_requested.disconnect(_on_stem_completion_requested)
-		if GameManager.stem_failed.is_connected(_on_stem_failed):
-			GameManager.stem_failed.disconnect(_on_stem_failed)
 
 
 ## Starts a specific stem level by index. Validates availability first.
@@ -165,29 +191,6 @@ func restart_stage() -> void:
 		print("StageManager: Stage restarted. All progress wiped.")
 
 
-## Returns the number of completed stems (excluding the boss).
-func get_completed_stem_count() -> int:
-	var count: int = 0
-	for index: int in range(STEM_COUNT):
-		if _stem_results[index].status == StemResult.StemStatus.COMPLETED:
-			count += 1
-	return count
-
-
-## Determines the quality grade from the current peak meter ratio.
-## Called at wave/stem end to translate the meter position into a grade.
-func determine_quality_from_peak() -> StemResult.StemQuality:
-	if GameManager.max_peak <= 0.0:
-		return StemResult.StemQuality.GOOD
-
-	var ratio: float = GameManager.current_peak / GameManager.max_peak
-
-	if ratio >= THRESHOLD_BAD:
-		return StemResult.StemQuality.ABOMINATION
-	elif ratio >= THRESHOLD_AVG:
-		return StemResult.StemQuality.AVERAGE
-	else:
-		return StemResult.StemQuality.GOOD
 
 
 ## Retries the currently failed stem by using the remembered index.
@@ -249,7 +252,30 @@ func _stop_current_stem_audio() -> void:
 			return
 
 
-# --- Private Methods ---
+# --- PRIVATE METHODS ---
+
+
+func _stop_current_stem_audio() -> void:
+	# 1. Stop the new global audio manager (which plays the layered stems)
+	if AudioManager and AudioManager.has_method("_stop_all"):
+		AudioManager._stop_all()
+
+	# 2. Stop the local TemplateStage audio player (if it hasn't been removed yet)
+	var root: Window = get_tree().root
+	for child: Node in root.get_children():
+		if child is GameWindow:
+			var subviewport: Node = child.get_node_or_null(
+				"MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport"
+			)
+			if not subviewport:
+				return
+			for level: Node in subviewport.get_children():
+				var player: Node = level.get_node_or_null("StemAudioPlayer")
+				if player is AudioStreamPlayer and player.playing:
+					player.stop()
+					if OS.is_debug_build():
+						print("StageManager: Local Stem audio stopped before scene transition.")
+			return
 
 
 ## Handles a normal stem completion event from GameManager.

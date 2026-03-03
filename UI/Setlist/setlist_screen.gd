@@ -13,18 +13,19 @@ extends Control
 
 const STEM_CARD_SCENE: PackedScene = preload("res://UI/Setlist/stem_card.tscn")
 
-# --- Node References ---
+# --- VARIABLES ---
+
+## References to the instantiated StemCard nodes, indexed 0-5.
+var _stem_cards: Array = []
+
+
+# --- ONREADY ---
 
 @onready var stem1_slot: Control = $MarginContainer/HBoxContainer/Stem1Slot
 @onready var middle_column: VBoxContainer = $MarginContainer/HBoxContainer/MiddleColumn
 @onready var boss_slot: Control = $MarginContainer/HBoxContainer/BossSlot
 
-# --- State ---
-
-## References to the instantiated StemCard nodes, indexed 0-5.
-var _stem_cards: Array = []
-
-# --- Lifecycle ---
+# --- OVERRIDES ---
 
 
 func _ready() -> void:
@@ -49,7 +50,7 @@ func _exit_tree() -> void:
 			card.stem_selected.disconnect(_on_stem_selected)
 
 
-# --- Private Methods ---
+# --- METHODS ---
 
 
 ## Builds all 6 stem cards from the active StageData.
@@ -143,13 +144,13 @@ func _prewarm_pools() -> void:
 
 ## Updates the "X/5" counter on the boss card.
 func _update_boss_counter() -> void:
-	var completed: int = StageManager.get_completed_stem_count()
-	var boss_lbl: Label = boss_slot.get_node_or_null("BossCounterLabel")
-	if boss_lbl:
-		boss_lbl.text = "%d / %d Stems Complete" % [completed, StageManager.STEM_COUNT]
+	var completed_count: int = StageManager.get_completed_stem_count()
+	var boss_label: Label = boss_slot.get_node_or_null("BossCounterLabel")
+	if boss_label:
+		boss_label.text = "%d / %d Stems Complete" % [completed_count, StageManager.STEM_COUNT]
 
 
-# --- Signal Callbacks ---
+# --- PRIVATE METHODS ---
 
 
 ## Handles stem card click — starts the selected stem via StageManager.

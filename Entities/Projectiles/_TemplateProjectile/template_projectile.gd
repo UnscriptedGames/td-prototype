@@ -54,14 +54,20 @@ func _physics_process(delta: float) -> void:
 
 
 ## Called by the tower that fires the projectile.
-func initialize(target_enemy: TemplateEnemy, damage_amount: int, projectile_speed: float, use_aoe_behavior: bool, status_effects: Array[StatusEffectData] = []) -> void:
+func initialize(
+	target_enemy: TemplateEnemy,
+	damage_amount: int,
+	projectile_speed: float,
+	use_aoe_behavior: bool,
+	initial_status_effects: Array[StatusEffectData] = []
+) -> void:
 	_target = target_enemy
-	
+
 	# Set simple properties
 	damage = damage_amount
 	speed = projectile_speed
 	_aoe_projectile = use_aoe_behavior
-	_status_effects.assign(status_effects if status_effects else [])
+	_status_effects.assign(initial_status_effects if initial_status_effects else [])
 	_is_returning = false
 	
 	# Set the initial destination from the target enemy using the optimized lookup.
@@ -80,14 +86,20 @@ func initialize(target_enemy: TemplateEnemy, damage_amount: int, projectile_spee
 
 
 ## Called by the tower for a "dud" shot when the target is already dead.
-func initialize_dud_shot(destination: Vector2, damage_amount: int, projectile_speed: float, use_aoe_behavior: bool, status_effects: Array[StatusEffectData] = []) -> void:
+func initialize_dud_shot(
+	destination: Vector2,
+	damage_amount: int,
+	projectile_speed: float,
+	use_aoe_behavior: bool,
+	initial_status_effects: Array[StatusEffectData] = []
+) -> void:
 	_target = null
-	
+
 	# Set simple properties
 	damage = damage_amount
 	speed = projectile_speed
 	_aoe_projectile = use_aoe_behavior
-	_status_effects.assign(status_effects if status_effects else [])
+	_status_effects.assign(initial_status_effects if initial_status_effects else [])
 	_is_returning = false
 	
 	# Set the destination directly.
