@@ -65,20 +65,6 @@ Follow these steps to safely run maintenance tasks and sync changes back to your
 
 ---
 
-## 🤖 Antigravity Review Protocols
-
-Use these specialized prompts when interacting with Antigravity during the maintenance workflow to ensure consistent, high-quality results.
-
-### 📝 Implementation Plan Review
-Copy/Paste this prompt after Jules presents a multi-step plan but **before** clicking "Approve":
-> Antigravity, review the attached Jules plan. Compare it against our Project Constitution, technical standards, and recent handover state. Provide only a cohesive message addressed to Jules that:
-> 1. Evaluates the logic and technical sequence of the plan.
-> 2. Includes Mentorship Notes (using the "expert mentor" persona) on specific steps to warn about "gotchas" or best practices.
-> 3. Concludes with a definitive final directive: either "Proceed with the plan as a whole" or "Amend the plan according to the notes above before starting."
-> 
-> Avoid any meta-commentary; the entire response should be formatted for me to copy and paste to Jules.
-
----
 
 ## 1. The Signal Janitor (Memory Management) — [Mode: Interactive]
 **Description:** Audits the codebase to ensure all signals are properly disconnected in `_exit_tree()` to prevent memory leaks.
@@ -219,3 +205,29 @@ Present a list of all mismatches with the current path vs. the expected path. Do
 
 Finally, update the 'Last Executed' column for **Task 9 (The Cartographer)** in the 'Task Schedule' table at the top of this document (`Knowledge/scheduled_tasks.md`) with today's date (YYYY-MM-DD).
 ```
+
+---
+
+## 🤖 Antigravity Review Protocols
+
+Use these standardized prompts to get Antigravity (the Godot Mentor AI) to perform technical audits of Jules' work.
+
+### 📝 Protocol: Plan Review
+**When to use:** Before Jules starts a task, once a plan has been proposed in the browser.
+
+> Antigravity, review the attached Jules plan. Compare it against our Project Constitution, technical standards, and recent handover state. Provide only a cohesive message addressed to Jules that:
+> 1. Evaluates the logic and technical sequence of the plan.
+> 2. Includes Mentorship Notes (using the 'expert mentor' persona) on specific steps to warn about 'gotchas' or best practices.
+> 3. Concludes with a definitive final directive: either 'Proceed with the plan as a whole' or 'Amend the plan according to the notes above before starting.'
+>
+> Avoid any meta-commentary; the entire response should be formatted for me to copy and paste to Jules.
+
+### 🔍 Protocol: Branch Review (Final Audit)
+**When to use:** Once Jules finishes a task and the changes have been synced to the local `maint/` branch for review before merging to `main`.
+
+> Antigravity, Jules has finished the task and the changes are synced to the local branch. Perform a comprehensive technical audit of the changes by running a `git diff` between `main` and the current `maint/` branch.
+> 1. Verify every change against our **Project Constitution** (naming standards, formatting, script order).
+> 2. Check for logic errors, accidental deletions, or code that violates our performance guidelines.
+> 3. Provide a clear 'Verdict': either '100% compliant and safe to merge' or a list of specific 'Amendments Required' for Jules to fix.
+> 
+> Format your review as a **Walkthrough Artifact** so I can see the visual proof of your audit.

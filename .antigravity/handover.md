@@ -1,20 +1,18 @@
-# Session Handover: Signal Janitor & Documentation Sync
-**Timestamp:** 2026-03-03 12:57 PM (AEDT)
+# Session Handover: Maintenance Sweep & Protocol Hardening
+**Timestamp:** 2026-03-04 09:10 AM (AEDT)
 
-- **Current State:** Signal Janitor practice successful; `_exit_tree()` cleanup implemented across 15+ files with `is_instance_valid` / `is_connected` safety patterns. The "Sell Tower" bug (inspector signal loss) was resolved by rebinding signals on level transitions in `game_window.gd`. Project documentation (`game_brief.md`, `towers_brief.md`) is now 100% synchronized with current design decisions and technical standards.
+- **Current State:** The project has undergone three major maintenance passes. **Task 5 (Static Typing)**, **Task 2 (Naming & Standards)**, and **Task 7 (Dead Code Cleanup)** are 100% complete and verified. A compilation error in `stage_manager.gd` (duplicated function) was resolved. **Antigravity Review Protocols** and **Model Tiering** have been integrated into the maintenance documentation to optimize token usage and accuracy.
 - **Signal Maps:** 
-    - `TowerInspector.sell_tower_requested` -> `BuildManager._on_sell_tower_requested` (Re-bound in `GameWindow._bind_build_manager()`)
-    - `TowerInspector.target_priority_changed` -> `BuildManager._on_target_priority_changed` (Re-bound in `GameWindow._bind_build_manager()`)
-    - `SidebarMainMenu.setlist_pressed` -> `GameWindow._on_sidebar_setlist`
-    - `SidebarMainMenu.quit_pressed` -> `GameWindow._on_close_pressed`
-- **Immediate Next Step:** Run **Task 5 (The Typist)** to harden the codebase with static typing.
+    - `RestartButton.pressed` -> `GameWindow._on_restart_button_requested` (Re-wired in `game_window.gd` after removing duplicate handler).
+    - `StageManager.retry_stem` -> Calls `_stop_current_stem_audio` (Fixed collision).
+- **Immediate Next Step:** Run **Task 6: The Inspector** to audit `_process` loops for bottlenecks.
 
 ## 🟢 Green Light Tasks (Next Order)
-1. **Task 5: The Typist** — [Mode: Start] — High reward for autocomplete and code health.
-2. **Task 2: The Constitution Specialist** — [Mode: Review] — Ensures project rules are followed.
-3. **Task 7: The Custodian** — [Mode: Review] — Prunes dead code after recent cleanup refactors.
+1. **Task 6: The Inspector** — [Mode: Review] — Essential post-refactor performance check.
+2. **Task 9: The Cartographer** — [Mode: Review] — Verify all `@onready` paths after the `GameWindow` restructuring.
+3. **Task 3: The Documentation Clerk** — [Mode: Interactive] — Update design briefs with the new static typing/system changes.
 
 ## ⚠️ Maintenance Alerts
-- **Task 2 (The Constitution Specialist):** PENDING (Critical for post-refactor naming compliance).
-- **Task 5 (The Typist):** PENDING (Recommended as the first task of the next session).
-- **Task 7 (The Custodian):** PENDING (Ideal for after a major "Signal Janitor" sweep).
+- **Task 6 (The Inspector):** OVERDUE (Last: None). High priority for ensuring optimized frame loops.
+- **Task 9 (The Cartographer):** OVERDUE (Last: None). Critical after the `GameWindow` and `Sidebar` refactors.
+- **Task 8 (The UI Architect):** PENDING. Recommended after recent sidebar nesting changes.
