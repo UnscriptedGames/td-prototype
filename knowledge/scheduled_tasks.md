@@ -65,6 +65,21 @@ Follow these steps to safely run maintenance tasks and sync changes back to your
 
 ---
 
+## 🤖 Antigravity Review Protocols
+
+Use these specialized prompts when interacting with Antigravity during the maintenance workflow to ensure consistent, high-quality results.
+
+### 📝 Implementation Plan Review
+Copy/Paste this prompt after Jules presents a multi-step plan but **before** clicking "Approve":
+> Antigravity, review the attached Jules plan. Compare it against our Project Constitution, technical standards, and recent handover state. Provide only a cohesive message addressed to Jules that:
+> 1. Evaluates the logic and technical sequence of the plan.
+> 2. Includes Mentorship Notes (using the "expert mentor" persona) on specific steps to warn about "gotchas" or best practices.
+> 3. Concludes with a definitive final directive: either "Proceed with the plan as a whole" or "Amend the plan according to the notes above before starting."
+> 
+> Avoid any meta-commentary; the entire response should be formatted for me to copy and paste to Jules.
+
+---
+
 ## 1. The Signal Janitor (Memory Management) — [Mode: Interactive]
 **Description:** Audits the codebase to ensure all signals are properly disconnected in `_exit_tree()` to prevent memory leaks.
 **Frequency:** Weekly or after major system refactors.
