@@ -7,12 +7,23 @@ extends Node2D
 ## Handles the "Ghost" tower during placement, validating grid coordinates against
 ## the path layer, and managing drag-and-drop interactions for both towers and buffs.
 
+# --- SIGNALS ---
+
 signal tower_selected(tower: TemplateTower)
 signal tower_deselected
 
+
+# --- ENUMS ---
+
 enum State { VIEWING, BUILDING_TOWER, TOWER_SELECTED }
 
+
+# --- CONSTANTS ---
+
 const GHOST_TOWER_SCENE = preload("res://Entities/Towers/_GhostTower/ghost_tower.tscn")
+
+
+# --- EXPORTS ---
 
 # IDs for the selected tower's permanent highlights
 @export var selected_tower_id: int = -1
@@ -23,24 +34,35 @@ const GHOST_TOWER_SCENE = preload("res://Entities/Towers/_GhostTower/ghost_tower
 @export var valid_range_id: int = -1
 @export var invalid_range_id: int = -1
 
+
+# --- VARIABLES ---
+
 ## Internal State
 var state: State = State.VIEWING
+var towers_container: Node2D
+var highlight_layer: TileMapLayer
+var path_layer: TileMapLayer
+
 var _ghost_tower: Node2D
 var _selected_tower: TemplateTower
 var _is_placing: bool = false  ## Prevents cancel signal on successful placement.
 var _occupied_build_tiles: Dictionary[Vector2i, Node2D] = {}
 var _pending_tower_scene: PackedScene  ## Decoupled from TowerData to avoid circular dependencies.
 
-## Node References
-var towers_container: Node2D
-var highlight_layer: TileMapLayer
-var path_layer: TileMapLayer
-
 var _bound_viewport: Viewport
 var _bound_container: Control
 var _is_dragging: bool = false  ## Track drag state to prevent auto-exit
 var _highlighted_tower_for_buff: TemplateTower = null  ## Track tower under mouse for buffing
 var _build_mode_grace_frames: int = 0
+
+# Drag and Drop Support
+var _current_drag_id: int = -1
+var _banished_drag_ids: Dictionary = {}  # Using Dict for fast lookup
+var _current_draggable_loadout: Node = null  # Reference to card for visual reset
+var _buff_ghost: Sprite2D = null
+
+
+# --- LIFECYCLE OVERRIDES ---
 
 
 ## Called when the node enters the scene tree.
@@ -53,50 +75,11 @@ func _ready() -> void:
 		# Register with the InputManager
 		InputManager.register_build_manager(self)
 
+
 func _exit_tree() -> void:
 	if is_instance_valid(GlobalSignals):
 		if GlobalSignals.build_tower_requested.is_connected(_on_build_tower_requested):
 			GlobalSignals.build_tower_requested.disconnect(_on_build_tower_requested)
-
-
-# --- SETUP METHODS ---
-
-
-## Binds the manager to a specific viewport for physics queries.
-## @param viewport: The SubViewport containing the game world.
-## @param container: The Control (SubViewportContainer) holding the viewport.
-func bind_to_viewport(viewport: Viewport, container: Control) -> void:
-	_bound_viewport = viewport
-	_bound_container = container
-	print("BuildManager bound to viewport: ", viewport.name)
-
-
-## Updates references to level-specific nodes (called when level loads).
-## @param new_path_layer: The TileMapLayer used for path/grid validation.
-## @param new_highlight_layer: The TileMapLayer used for visual feedback.
-## @param new_towers_container: The Node2D parent for tower instances.
-func update_level_references(
-	new_path_layer: TileMapLayer, new_highlight_layer: TileMapLayer, new_towers_container: Node2D
-) -> void:
-	path_layer = new_path_layer
-	highlight_layer = new_highlight_layer
-	towers_container = new_towers_container
-	# Reset state just in case
-	deselect_current_tower()
-	_occupied_build_tiles.clear()
-	print("BuildManager level references updated.")
-
-
-## Clears references to level-specific nodes to prevent memory leaks during scene transitions.
-func clear_level_references() -> void:
-	path_layer = null
-	highlight_layer = null
-	towers_container = null
-	_bound_viewport = null
-	_bound_container = null
-	deselect_current_tower()
-	_occupied_build_tiles.clear()
-	print("BuildManager level references cleared.")
 
 
 ## Called every frame. Checks for inputs and ensures Drag liveness.
@@ -182,7 +165,44 @@ func _unhandled_input(event: InputEvent) -> void:
 						# Note: We don't mark as handled here so background clicks can still trigger animations
 
 
-# --- PUBLIC GETTERS ---
+# --- METHODS ---
+
+
+## Binds the manager to a specific viewport for physics queries.
+## @param viewport: The SubViewport containing the game world.
+## @param container: The Control (SubViewportContainer) holding the viewport.
+func bind_to_viewport(viewport: Viewport, container: Control) -> void:
+	_bound_viewport = viewport
+	_bound_container = container
+	print("BuildManager bound to viewport: ", viewport.name)
+
+
+## Updates references to level-specific nodes (called when level loads).
+## @param new_path_layer: The TileMapLayer used for path/grid validation.
+## @param new_highlight_layer: The TileMapLayer used for visual feedback.
+## @param new_towers_container: The Node2D parent for tower instances.
+func update_level_references(
+	new_path_layer: TileMapLayer, new_highlight_layer: TileMapLayer, new_towers_container: Node2D
+) -> void:
+	path_layer = new_path_layer
+	highlight_layer = new_highlight_layer
+	towers_container = new_towers_container
+	# Reset state just in case
+	deselect_current_tower()
+	_occupied_build_tiles.clear()
+	print("BuildManager level references updated.")
+
+
+## Clears references to level-specific nodes to prevent memory leaks during scene transitions.
+func clear_level_references() -> void:
+	path_layer = null
+	highlight_layer = null
+	towers_container = null
+	_bound_viewport = null
+	_bound_container = null
+	deselect_current_tower()
+	_occupied_build_tiles.clear()
+	print("BuildManager level references cleared.")
 
 
 func get_selected_tower() -> TemplateTower:
@@ -219,12 +239,12 @@ func validate_and_place() -> bool:
 	if (not is_instance_valid(path_layer)) or (not is_instance_valid(_ghost_tower)):
 		return false
 
-	var map_coords: Vector2i = path_layer.local_to_map(
+	var map_coordinates: Vector2i = path_layer.local_to_map(
 		path_layer.to_local(_ghost_tower.global_position)
 	)
 
 	# Check Placement Validity
-	if not is_buildable_at(map_coords):
+	if not is_buildable_at(map_coordinates):
 		return false
 
 	# Check Resources
@@ -249,6 +269,250 @@ func validate_and_place() -> bool:
 	_place_tower(tower_data, _ghost_tower.global_position, range_points)
 	_exit_build_mode()
 	return true
+
+
+func is_buildable_at(map_coordinates: Vector2i) -> bool:
+	if not is_instance_valid(path_layer):
+		return false
+	if _occupied_build_tiles.has(map_coordinates):
+		return false
+	var tile_data: TileData = path_layer.get_cell_tile_data(map_coordinates)
+	if tile_data == null:
+		return false
+	return bool(tile_data.get_custom_data("buildable"))
+
+
+func banish_drag_session() -> void:
+	print("BuildManager: banish_drag_session called! Cursor outside valid area?")
+	if _current_drag_id != -1:
+		_banished_drag_ids[_current_drag_id] = true
+
+	# Reset card visuals
+	if (
+		is_instance_valid(_current_draggable_loadout)
+		and _current_draggable_loadout.has_method("reset_drag_visuals")
+	):
+		_current_draggable_loadout.reset_drag_visuals()
+
+	# Clean up local state
+	_is_dragging = false
+	_current_drag_id = -1
+	_current_draggable_loadout = null
+
+	# Clean up ghosts/highlights
+	_exit_build_mode()
+	cancel_drag_buff()
+
+
+func is_drag_banished(drag_id: int) -> bool:
+	return drag_id != -1 and _banished_drag_ids.has(drag_id)
+
+
+func is_dragging() -> bool:
+	return _is_dragging
+
+
+func start_drag_ghost_with_scene(
+	tower_data: TowerData, tower_scene: PackedScene, drag_id: int = -1, card_ref: Node = null
+) -> void:
+	# STRICT CHECK: If banished, refuse entirely.
+	if drag_id != -1 and _banished_drag_ids.has(drag_id):
+		return
+
+	_is_dragging = true  ## Enable drag mode
+	_current_drag_id = drag_id
+	_current_draggable_loadout = card_ref
+
+	if state == State.BUILDING_TOWER:
+		if _ghost_tower and _ghost_tower.data == tower_data:
+			return  # Stability Check Passed
+		_exit_build_mode()
+		_is_dragging = true  # Re-enable since exit cleared it
+
+	_enter_build_mode(tower_data, tower_scene)
+
+
+func cancel_drag_ghost() -> void:
+	if state == State.BUILDING_TOWER:
+		_exit_build_mode()
+
+
+func update_drag_ghost(screen_position: Vector2) -> void:
+	# STRICT CHECK: If not dragging (because banished or cancelled), ignore updates.
+	if not _is_dragging:
+		return
+
+	if state != State.BUILDING_TOWER or not is_instance_valid(_ghost_tower):
+		return
+
+	# 1. Incoming screen_position is now assumed to be viewport-local
+	var viewport_position: Vector2 = screen_position
+
+	# 2. Convert pixel position to World2D (accounting for Camera2D).
+	var world_position: Vector2 = (
+		get_viewport().get_canvas_transform().affine_inverse() * viewport_position
+	)
+
+	# Tell the ghost to update specifically to this position
+	if is_instance_valid(_ghost_tower):
+		if _ghost_tower.has_method("set_manual_update_mode"):
+			_ghost_tower.set_manual_update_mode(true)
+
+		if _ghost_tower.has_method("update_position_manually"):
+			_ghost_tower.update_position_manually(world_position)
+		else:
+			_ghost_tower.global_position = world_position
+
+
+func start_drag_buff(card_ref: Node, drag_id: int = -1) -> void:
+	print("BuildManager: start_drag_buff called for %s" % drag_id)
+	# STRICT CHECK: If banished, refuse entirely.
+	if drag_id != -1 and _banished_drag_ids.has(drag_id):
+		print("BuildManager: Drag banished, ignoring.")
+		return
+
+	# Idempotency check: If already dragging this card, don't reset state.
+	if _is_dragging and _current_draggable_loadout == card_ref:
+		return
+
+	_is_dragging = true
+	_current_draggable_loadout = card_ref
+	_current_drag_id = drag_id
+
+	# Add grace frames to prevent immediate banishment on boundary check
+	_build_mode_grace_frames = 10
+
+	# Ensure no tower ghost exists
+	if is_instance_valid(_ghost_tower):
+		_ghost_tower.queue_free()
+		_ghost_tower = null
+
+	# Create Buff Ghost Cursor (if needed)
+	if not is_instance_valid(_buff_ghost):
+		print("BuildManager: Creating new buff ghost sprite.")
+		_buff_ghost = Sprite2D.new()
+		_buff_ghost.z_index = 4_096  # Ensure visibility on top of everything
+
+		# Load Texture (Robust Fallback)
+		var texture = null
+		if ResourceLoader.exists("res://UI/Icons/buff_cursor.png"):
+			texture = load("res://UI/Icons/buff_cursor.png")
+		elif FileAccess.file_exists("res://UI/Icons/buff_cursor.png"):
+			var img = Image.load_from_file("res://UI/Icons/buff_cursor.png")
+			if img:
+				texture = ImageTexture.create_from_image(img)
+
+		if texture:
+			_buff_ghost.texture = texture
+			_buff_ghost.centered = true
+		else:
+			push_warning("Buff cursor texture not found at res://UI/Icons/buff_cursor.png")
+
+		# Add to Viewport (match GhostTower behavior)
+		if is_instance_valid(_bound_viewport):
+			_bound_viewport.add_child(_buff_ghost)
+		else:
+			add_child(_buff_ghost)
+
+
+func update_drag_buff(screen_position: Vector2) -> void:
+	# STRICT CHECK: If not dragging (banished), ignore updates.
+	if not _is_dragging:
+		return
+
+	# 1. Incoming screen_position is now assumed to be viewport-local
+	var viewport_position: Vector2 = screen_position
+
+	# 2. Convert pixel position to World2D (accounting for Camera2D).
+	var world_position: Vector2 = (
+		get_viewport().get_canvas_transform().affine_inverse() * viewport_position
+	)
+
+	# --- 1. Update Ghost Position (Snapped) ---
+	if is_instance_valid(_buff_ghost):
+		if is_instance_valid(path_layer):
+			var local_position = path_layer.to_local(world_position)  # Convert Viewport Global to Layer Local
+			# Snap to Grid
+			var map_position = path_layer.local_to_map(local_position)
+			var snapped_position = path_layer.map_to_local(map_position)
+
+			# Use global_position to be safe
+			_buff_ghost.global_position = path_layer.to_global(snapped_position)
+		else:
+			_buff_ghost.global_position = world_position  # Fallback if no path layer
+
+	# --- 2. Highlight Logic ---
+	# Note: Highlight logic acts on Hitboxes which are likely in Viewport Global space?
+	# _get_tower_at_position handles the offset internally!
+	var hovered_tower = _get_tower_at_position(screen_position)
+
+	# If we moved off a tower, or moved to a DIFFERENT tower
+	if hovered_tower != _highlighted_tower_for_buff:
+		# Reset the OLD tower (if valid)
+		if is_instance_valid(_highlighted_tower_for_buff):
+			_highlighted_tower_for_buff.modulate = Color.WHITE
+
+		# Update reference
+		_highlighted_tower_for_buff = hovered_tower
+
+		# Highlight the NEW tower (if valid)
+		if is_instance_valid(_highlighted_tower_for_buff):
+			_highlighted_tower_for_buff.modulate = Color(1.2, 1.5, 1.2)
+
+
+func cancel_drag_buff() -> void:
+	print("BuildManager: cancel_drag_buff called.")
+	if is_instance_valid(_buff_ghost):
+		_buff_ghost.queue_free()
+		_buff_ghost = null
+
+	if is_instance_valid(_highlighted_tower_for_buff):
+		_highlighted_tower_for_buff.modulate = Color.WHITE
+		_highlighted_tower_for_buff = null
+
+
+func apply_buff_at(screen_position: Vector2, item_data: Resource) -> bool:
+	if not _is_dragging:
+		return false  # Banished
+
+	var buff_data: BuffData = item_data as BuffData
+	if not buff_data:
+		push_error("BuildManager: apply_buff_at called with invalid data type. Expected BuffData.")
+		return false
+
+	var target_tower: TemplateTower = _get_tower_at_position(screen_position)
+
+	# Cleanup highlight
+	if is_instance_valid(_highlighted_tower_for_buff):
+		_highlighted_tower_for_buff.modulate = Color.WHITE
+		_highlighted_tower_for_buff = null
+
+	_is_dragging = false
+	_current_draggable_loadout = null
+
+	if is_instance_valid(target_tower):
+		# Check Resources
+		if GameManager.player_data.currency < buff_data.gold_cost:
+			print("Not enough gold to apply buff!")
+			return false
+
+		# Create execution context
+		var context: Dictionary = {"tower": target_tower}
+
+		# Execute the effect
+		if buff_data.effect:
+			buff_data.effect.execute(context)
+
+			# Consume Resources
+			GameManager.remove_currency(buff_data.gold_cost)
+
+			GlobalSignals.buff_applied.emit(buff_data)
+			GlobalSignals.loadout_effect_completed.emit()
+			return true
+		else:
+			push_error("BuffData '%s' has no effect assigned." % buff_data.display_name)
+
+	return false
 
 
 # --- PRIVATE SIGNAL HANDLERS ---
@@ -293,6 +557,51 @@ func _on_target_priority_changed(priority: TargetPriority.Priority) -> void:
 # --- PRIVATE METHODS ---
 
 
+func _enter_build_mode(tower_data: TowerData, tower_scene: PackedScene) -> void:
+	deselect_current_tower()
+	state = State.BUILDING_TOWER
+	_pending_tower_scene = tower_scene
+	_is_placing = false  ## Reset the placing flag.
+	InputManager.set_state(InputManager.State.BUILDING_TOWER)  # Notify InputManager
+	GlobalSignals.build_mode_entered.emit()
+
+	if GHOST_TOWER_SCENE:
+		_ghost_tower = GHOST_TOWER_SCENE.instantiate()
+
+		# Parenting: Add to the bound viewport if available to match coordinate space.
+		if is_instance_valid(_bound_viewport):
+			_bound_viewport.add_child(_ghost_tower)
+		else:
+			add_child(_ghost_tower)
+
+		var highlight_ids_map := {
+			"valid_tower": valid_tower_id,
+			"invalid_tower": invalid_tower_id,
+			"valid_range": valid_range_id,
+			"invalid_range": invalid_range_id,
+		}
+
+		_ghost_tower.initialize(self, tower_data, path_layer, highlight_layer, highlight_ids_map)
+
+		# Reset grace frames to prevent immediate cancellation
+		_build_mode_grace_frames = 10
+
+
+func _exit_build_mode() -> void:
+	state = State.VIEWING
+	_is_dragging = false
+	InputManager.set_state(InputManager.State.DEFAULT)
+	GlobalSignals.build_mode_exited.emit()
+
+	# If we are NOT successfully placing a tower, it means this was a cancellation.
+	if not _is_placing:
+		GlobalSignals.loadout_effect_cancelled.emit()
+
+	if is_instance_valid(_ghost_tower):
+		_ghost_tower.queue_free()
+		_ghost_tower = null
+
+
 func _place_tower(
 	tower_data: TowerData, build_position: Vector2, range_points: PackedVector2Array
 ) -> void:
@@ -304,8 +613,8 @@ func _place_tower(
 	new_tower.global_position = build_position
 	towers_container.add_child(new_tower)
 
-	var map_coords: Vector2i = path_layer.local_to_map(build_position)
-	_occupied_build_tiles[map_coords] = new_tower
+	var map_coordinates: Vector2i = path_layer.local_to_map(build_position)
+	_occupied_build_tiles[map_coordinates] = new_tower
 
 	new_tower.initialize(tower_data, highlight_layer, selected_tower_id, selected_range_id)
 	new_tower.set_range_polygon(range_points)
@@ -358,11 +667,11 @@ func _get_tower_at_position(screen_position: Vector2) -> TemplateTower:
 		space_state = get_world_2d().direct_space_state
 
 	# 1. Incoming screen_position is now assumed to be viewport-local
-	var viewport_pos: Vector2 = screen_position
+	var viewport_position: Vector2 = screen_position
 
 	# 2. Convert pixel position to World2D (accounting for Camera2D).
 	var query_position: Vector2 = (
-		get_viewport().get_canvas_transform().affine_inverse() * viewport_pos
+		get_viewport().get_canvas_transform().affine_inverse() * viewport_position
 	)
 
 	var query := PhysicsPointQueryParameters2D.new()
@@ -377,324 +686,3 @@ func _get_tower_at_position(screen_position: Vector2) -> TemplateTower:
 			return collider.get_parent()
 
 	return null
-
-
-func _enter_build_mode(tower_data: TowerData, tower_scene: PackedScene) -> void:
-	deselect_current_tower()
-	state = State.BUILDING_TOWER
-	_pending_tower_scene = tower_scene
-	_is_placing = false  ## Reset the placing flag.
-	InputManager.set_state(InputManager.State.BUILDING_TOWER)  # Notify InputManager
-	GlobalSignals.build_mode_entered.emit()
-
-	if GHOST_TOWER_SCENE:
-		_ghost_tower = GHOST_TOWER_SCENE.instantiate()
-
-		# Parenting: Add to the bound viewport if available to match coordinate space.
-		if is_instance_valid(_bound_viewport):
-			_bound_viewport.add_child(_ghost_tower)
-		else:
-			add_child(_ghost_tower)
-
-		var highlight_ids := {
-			"valid_tower": valid_tower_id,
-			"invalid_tower": invalid_tower_id,
-			"valid_range": valid_range_id,
-			"invalid_range": invalid_range_id,
-		}
-
-		_ghost_tower.initialize(self, tower_data, path_layer, highlight_layer, highlight_ids)
-
-		# Reset grace frames to prevent immediate cancellation
-		_build_mode_grace_frames = 10
-
-
-func _exit_build_mode() -> void:
-	state = State.VIEWING
-	_is_dragging = false
-	InputManager.set_state(InputManager.State.DEFAULT)
-	GlobalSignals.build_mode_exited.emit()
-
-	# If we are NOT successfully placing a tower, it means this was a cancellation.
-	if not _is_placing:
-		GlobalSignals.loadout_effect_cancelled.emit()
-
-	if is_instance_valid(_ghost_tower):
-		_ghost_tower.queue_free()
-		_ghost_tower = null
-
-
-# --- DRAG AND DROP SUPPORT ---
-
-var _current_drag_id: int = -1
-var _banished_drag_ids: Dictionary = {}  # Using Dict for fast lookup
-var _current_draggable_loadout: Node = null  # Reference to card for visual reset
-
-
-## Public API: Permanently cancels the current drag session.
-## This prevents the card from being used again until a NEW drag starts.
-func banish_drag_session() -> void:
-	print("BuildManager: banish_drag_session called! Cursor outside valid area?")
-	if _current_drag_id != -1:
-		_banished_drag_ids[_current_drag_id] = true
-
-	# Reset card visuals
-	if (
-		is_instance_valid(_current_draggable_loadout)
-		and _current_draggable_loadout.has_method("reset_drag_visuals")
-	):
-		_current_draggable_loadout.reset_drag_visuals()
-
-	# Clean up local state
-	_is_dragging = false
-	_current_drag_id = -1
-	_current_draggable_loadout = null
-
-	# Clean up ghosts/highlights
-	_exit_build_mode()
-	cancel_drag_buff()
-
-
-## Checks if the given drag ID has been banished.
-func is_drag_banished(drag_id: int) -> bool:
-	return drag_id != -1 and _banished_drag_ids.has(drag_id)
-
-
-func is_dragging() -> bool:
-	return _is_dragging
-
-
-## Starts the ghost tower drag logic.
-## @param tower_data: resource for the tower to build.
-## @param tower_scene: scene to instantiate later.
-## @param drag_id: unique ID for this drag session.
-## @param card_ref: origin card node.
-func start_drag_ghost_with_scene(
-	tower_data: TowerData, tower_scene: PackedScene, drag_id: int = -1, card_ref: Node = null
-) -> void:
-	# STRICT CHECK: If banished, refuse entirely.
-	if drag_id != -1 and _banished_drag_ids.has(drag_id):
-		return
-
-	_is_dragging = true  ## Enable drag mode
-	_current_drag_id = drag_id
-	_current_draggable_loadout = card_ref
-
-	if state == State.BUILDING_TOWER:
-		if _ghost_tower and _ghost_tower.data == tower_data:
-			return  # Stability Check Passed
-		_exit_build_mode()
-		_is_dragging = true  # Re-enable since exit cleared it
-
-	_enter_build_mode(tower_data, tower_scene)
-
-
-## Cancels a ghost drag operation.
-func cancel_drag_ghost() -> void:
-	if state == State.BUILDING_TOWER:
-		_exit_build_mode()
-
-
-## Updates the ghost tower's position during a drag.
-## @param screen_position: The mouse position in screen coordinates.
-func update_drag_ghost(screen_position: Vector2) -> void:
-	# STRICT CHECK: If not dragging (because banished or cancelled), ignore updates.
-	if not _is_dragging:
-		return
-
-	if state != State.BUILDING_TOWER or not is_instance_valid(_ghost_tower):
-		return
-
-	# 1. Incoming screen_position is now assumed to be viewport-local
-	var viewport_pos: Vector2 = screen_position
-
-	# 2. Convert pixel position to World2D (accounting for Camera2D).
-	var world_pos: Vector2 = get_viewport().get_canvas_transform().affine_inverse() * viewport_pos
-
-	# Tell the ghost to update specifically to this position
-	if is_instance_valid(_ghost_tower):
-		if _ghost_tower.has_method("set_manual_update_mode"):
-			_ghost_tower.set_manual_update_mode(true)
-
-		if _ghost_tower.has_method("update_position_manually"):
-			_ghost_tower.update_position_manually(world_pos)
-		else:
-			_ghost_tower.global_position = world_pos
-
-
-## Returns true if the given map coordinates are valid for building.
-func is_buildable_at(map_coords: Vector2i) -> bool:
-	if not is_instance_valid(path_layer):
-		return false
-	if _occupied_build_tiles.has(map_coords):
-		return false
-	var tile_data: TileData = path_layer.get_cell_tile_data(map_coords)
-	if tile_data == null:
-		return false
-	return bool(tile_data.get_custom_data("buildable"))
-
-
-# --- BUFF DRAG LOGIC ---
-
-var _buff_ghost: Sprite2D = null
-
-
-## Starts dragging a buff card.
-## @param card_ref: The origin card node.
-## @param drag_id: Unique session ID.
-func start_drag_buff(card_ref: Node, drag_id: int = -1) -> void:
-	print("BuildManager: start_drag_buff called for %s" % drag_id)
-	# STRICT CHECK: If banished, refuse entirely.
-	if drag_id != -1 and _banished_drag_ids.has(drag_id):
-		print("BuildManager: Drag banished, ignoring.")
-		return
-
-	# Idempotency check: If already dragging this card, don't reset state.
-	if _is_dragging and _current_draggable_loadout == card_ref:
-		return
-
-	_is_dragging = true
-	_current_draggable_loadout = card_ref
-	_current_drag_id = drag_id
-
-	# Add grace frames to prevent immediate banishment on boundary check
-	_build_mode_grace_frames = 10
-
-	# Ensure no tower ghost exists
-	if is_instance_valid(_ghost_tower):
-		_ghost_tower.queue_free()
-		_ghost_tower = null
-
-	# Create Buff Ghost Cursor (if needed)
-	if not is_instance_valid(_buff_ghost):
-		print("BuildManager: Creating new buff ghost sprite.")
-		_buff_ghost = Sprite2D.new()
-		_buff_ghost.z_index = 4096  # Ensure visibility on top of everything
-
-		# Load Texture (Robust Fallback)
-		var texture = null
-		if ResourceLoader.exists("res://UI/Icons/buff_cursor.png"):
-			texture = load("res://UI/Icons/buff_cursor.png")
-		elif FileAccess.file_exists("res://UI/Icons/buff_cursor.png"):
-			var img = Image.load_from_file("res://UI/Icons/buff_cursor.png")
-			if img:
-				texture = ImageTexture.create_from_image(img)
-
-		if texture:
-			_buff_ghost.texture = texture
-			_buff_ghost.centered = true
-		else:
-			push_warning("Buff cursor texture not found at res://UI/Icons/buff_cursor.png")
-
-		# Add to Viewport (match GhostTower behavior)
-		if is_instance_valid(_bound_viewport):
-			_bound_viewport.add_child(_buff_ghost)
-		else:
-			add_child(_buff_ghost)
-
-
-## Updates the buff ghost position and highlights validity.
-## @param screen_position: Mouse position in screen coordinates.
-func update_drag_buff(screen_position: Vector2) -> void:
-	# STRICT CHECK: If not dragging (banished), ignore updates.
-	if not _is_dragging:
-		return
-
-	# 1. Incoming screen_position is now assumed to be viewport-local
-	var viewport_pos: Vector2 = screen_position
-
-	# 2. Convert pixel position to World2D (accounting for Camera2D).
-	var world_pos: Vector2 = get_viewport().get_canvas_transform().affine_inverse() * viewport_pos
-
-	# --- 1. Update Ghost Position (Snapped) ---
-	if is_instance_valid(_buff_ghost):
-		if is_instance_valid(path_layer):
-			var local_pos = path_layer.to_local(world_pos)  # Convert Viewport Global to Layer Local
-			# Snap to Grid
-			var map_pos = path_layer.local_to_map(local_pos)
-			var snapped_pos = path_layer.map_to_local(map_pos)
-
-			# Use global_position to be safe
-			_buff_ghost.global_position = path_layer.to_global(snapped_pos)
-		else:
-			_buff_ghost.global_position = world_pos  # Fallback if no path layer
-
-	# --- 2. Highlight Logic ---
-	# Note: Highlight logic acts on Hitboxes which are likely in Viewport Global space?
-	# _get_tower_at_position handles the offset internally!
-	var hovered_tower = _get_tower_at_position(screen_position)
-
-	# If we moved off a tower, or moved to a DIFFERENT tower
-	if hovered_tower != _highlighted_tower_for_buff:
-		# Reset the OLD tower (if valid)
-		if is_instance_valid(_highlighted_tower_for_buff):
-			_highlighted_tower_for_buff.modulate = Color.WHITE
-
-		# Update reference
-		_highlighted_tower_for_buff = hovered_tower
-
-		# Highlight the NEW tower (if valid)
-		if is_instance_valid(_highlighted_tower_for_buff):
-			_highlighted_tower_for_buff.modulate = Color(1.2, 1.5, 1.2)
-
-
-## Cancels the current buff drag session.
-func cancel_drag_buff() -> void:
-	print("BuildManager: cancel_drag_buff called.")
-	if is_instance_valid(_buff_ghost):
-		_buff_ghost.queue_free()
-		_buff_ghost = null
-
-	if is_instance_valid(_highlighted_tower_for_buff):
-		_highlighted_tower_for_buff.modulate = Color.WHITE
-		_highlighted_tower_for_buff = null
-
-	# We don't unset _is_dragging here because this might be a temporary hover-off.
-	# But if called from banish, banish handles the flags.
-
-
-## Applies the buff at the given position if a valid tower is present.
-## @param screen_position: Mouse position in screen coordinates.
-## @param item_data: The BuffData resource to apply.
-func apply_buff_at(screen_position: Vector2, item_data: Resource) -> bool:
-	if not _is_dragging:
-		return false  # Banished
-
-	var buff_data: BuffData = item_data as BuffData
-	if not buff_data:
-		push_error("BuildManager: apply_buff_at called with invalid data type. Expected BuffData.")
-		return false
-
-	var target_tower: TemplateTower = _get_tower_at_position(screen_position)
-
-	# Cleanup highlight
-	if is_instance_valid(_highlighted_tower_for_buff):
-		_highlighted_tower_for_buff.modulate = Color.WHITE
-		_highlighted_tower_for_buff = null
-
-	_is_dragging = false
-	_current_draggable_loadout = null
-
-	if is_instance_valid(target_tower):
-		# Check Resources
-		if GameManager.player_data.currency < buff_data.gold_cost:
-			print("Not enough gold to apply buff!")
-			return false
-
-		# Create execution context
-		var context: Dictionary = {"tower": target_tower}
-
-		# Execute the effect
-		if buff_data.effect:
-			buff_data.effect.execute(context)
-
-			# Consume Resources
-			GameManager.remove_currency(buff_data.gold_cost)
-
-			GlobalSignals.buff_applied.emit(buff_data)
-			GlobalSignals.loadout_effect_completed.emit()
-			return true
-		else:
-			push_error("BuffData '%s' has no effect assigned." % buff_data.display_name)
-
-	return false

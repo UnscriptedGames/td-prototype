@@ -43,11 +43,10 @@ class_name TurntableTower
 
 # --- NODE REFERENCES ---
 
+var _fire_tween: Tween  ## Current tween for the fire sequence. Tracked so we don't overlap.
+
 @onready var vinyl: Sprite2D = $Sprite/Vinyl
 @onready var tone_arm: Sprite2D = $Sprite/ToneArm
-
-## Current tween for the fire sequence. Tracked so we don't overlap.
-var _fire_tween: Tween
 
 
 # --- LIFECYCLE ---
@@ -80,15 +79,15 @@ func _attack() -> void:
 
 	# Store target positions at the moment of attack.
 	_targets_last_known_positions.clear()
-	for target: TemplateEnemy in _current_targets:
-		if is_instance_valid(target):
-			if is_instance_valid(target.target_point):
+	for target_enemy: TemplateEnemy in _current_targets:
+		if is_instance_valid(target_enemy):
+			if is_instance_valid(target_enemy.target_point):
 				_targets_last_known_positions.append(
-					target.target_point.global_position
+					target_enemy.target_point.global_position
 				)
 			else:
 				_targets_last_known_positions.append(
-					target.global_position
+					target_enemy.global_position
 				)
 
 	# Kill any existing fire tween to avoid overlaps.

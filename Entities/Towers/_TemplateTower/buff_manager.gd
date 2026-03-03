@@ -5,7 +5,7 @@ class_name BuffManager
 ## buffs on a tower.
 
 signal buff_started(duration: float)
-signal buff_progress(time_left: float)
+signal buff_progressed(time_left: float)
 signal buff_ended
 
 # A dictionary to keep track of active buffs and their associated timers.
@@ -17,15 +17,51 @@ var _active_buffs: Dictionary[BuffEffectStandard, Timer] = {}
 var _stashed_status_effects: Dictionary[StatusEffectData.EffectType, StatusEffectData] = {}
 
 
+# --- OVERRIDES ---
+
+
 func _process(_delta: float) -> void:
 	if not _active_buffs.is_empty():
 		# Get the timer of the most recently added buff.
-		var latest_buff_effect: BuffEffectStandard = _active_buffs.keys()[_active_buffs.size() - 1] as BuffEffectStandard
+		var latest_buff_effect: BuffEffectStandard = (
+			_active_buffs.keys()[_active_buffs.size() - 1] as BuffEffectStandard
+		)
 		assert(latest_buff_effect != null)
 		var timer: Timer = _active_buffs[latest_buff_effect] as Timer
 		assert(timer != null)
 		if is_instance_valid(timer):
-			buff_progress.emit(timer.time_left)
+			buff_progressed.emit(timer.time_left)
+
+
+func _exit_tree() -> void:
+	for buff_effect in _active_buffs:
+		var timer: Timer = _active_buffs[buff_effect]
+		if is_instance_valid(timer):
+			if timer.timeout.is_connected(_on_buff_expired.bind(buff_effect)):
+				timer.timeout.disconnect(_on_buff_expired.bind(buff_effect))
+
+
+# --- METHODS ---
+
+
+func resend_state() -> void:
+	if not _active_buffs.is_empty():
+		var latest_buff_effect: BuffEffectStandard = (
+			_active_buffs.keys()[_active_buffs.size() - 1] as BuffEffectStandard
+		)
+		assert(latest_buff_effect != null)
+		var timer: Timer = _active_buffs[latest_buff_effect] as Timer
+		assert(timer != null)
+		if is_instance_valid(timer):
+			buff_started.emit(timer.wait_time)
+			buff_progressed.emit(timer.time_left)
+	else:
+		buff_ended.emit()
+
+
+func has_active_buffs() -> bool:
+	## Returns true if the tower has at least one active buff.
+	return not _active_buffs.is_empty()
 
 
 ## Applies a buff to the parent tower.
@@ -48,17 +84,19 @@ func apply_buff(buff_effect: BuffEffectStandard) -> void:
 
 	# Handle status effects
 	for new_effect in buff_effect.status_effects:
-		var existing_effect_index = -1
-		for i in range(tower.status_effects.size()):
-			if tower.status_effects[i].effect_type == new_effect.effect_type:
-				existing_effect_index = i
+		var existing_effect_index: int = -1
+		for index in range(tower.status_effects.size()):
+			if tower.status_effects[index].effect_type == new_effect.effect_type:
+				existing_effect_index = index
 				break
 
 		# If a status effect of the same type exists, stash it before replacing.
 		if existing_effect_index != -1:
 			# We only stash the *first* time a buff of this type is applied.
 			if not _stashed_status_effects.has(new_effect.effect_type):
-				_stashed_status_effects[new_effect.effect_type] = tower.status_effects[existing_effect_index]
+				_stashed_status_effects[new_effect.effect_type] = tower.status_effects[
+					existing_effect_index
+				]
 			tower.status_effects[existing_effect_index] = new_effect
 		else:
 			tower.status_effects.append(new_effect)
@@ -112,12 +150,14 @@ func _on_buff_expired(buff_effect: BuffEffectStandard) -> void:
 	for buff_status_effect in buff_effect.status_effects:
 		# Check if we have a stashed (original) status effect to restore
 		if _stashed_status_effects.has(buff_status_effect.effect_type):
-			var original_effect: StatusEffectData = _stashed_status_effects[buff_status_effect.effect_type]
+			var original_effect: StatusEffectData = _stashed_status_effects[
+				buff_status_effect.effect_type
+			]
 			var was_restored: bool = false
 			# Find the buff's effect and replace it with the original one
-			for i in range(tower.status_effects.size()):
-				if tower.status_effects[i] == buff_status_effect:
-					tower.status_effects[i] = original_effect
+			for index in range(tower.status_effects.size()):
+				if tower.status_effects[index] == buff_status_effect:
+					tower.status_effects[index] = original_effect
 					was_restored = true
 					break
 			# If for some reason it wasn't found, just ensure the stashed one is there
@@ -127,13 +167,13 @@ func _on_buff_expired(buff_effect: BuffEffectStandard) -> void:
 			_stashed_status_effects.erase(buff_status_effect.effect_type)
 		else:
 			# If there was no stashed effect, the buff added a new one, so we remove it.
-			var effect_to_remove_idx: int = -1
-			for i in range(tower.status_effects.size()):
-				if tower.status_effects[i] == buff_status_effect:
-					effect_to_remove_idx = i
+			var effect_to_remove_index: int = -1
+			for index in range(tower.status_effects.size()):
+				if tower.status_effects[index] == buff_status_effect:
+					effect_to_remove_index = index
 					break
-			if effect_to_remove_idx != -1:
-				tower.status_effects.remove_at(effect_to_remove_idx)
+			if effect_to_remove_index != -1:
+				tower.status_effects.remove_at(effect_to_remove_index)
 
 	# Re-apply tower stats and update range display
 	tower._apply_level_stats()
@@ -160,26 +200,3 @@ func _cleanup_buff(buff_effect: BuffEffectStandard) -> void:
 		buff_ended.emit()
 
 
-func resend_state() -> void:
-	if not _active_buffs.is_empty():
-		var latest_buff_effect: BuffEffectStandard = _active_buffs.keys()[_active_buffs.size() - 1] as BuffEffectStandard
-		assert(latest_buff_effect != null)
-		var timer: Timer = _active_buffs[latest_buff_effect] as Timer
-		assert(timer != null)
-		if is_instance_valid(timer):
-			buff_started.emit(timer.wait_time)
-			buff_progress.emit(timer.time_left)
-	else:
-		buff_ended.emit()
-
-
-func has_active_buffs() -> bool:
-	## Returns true if the tower has at least one active buff.
-	return not _active_buffs.is_empty()
-
-func _exit_tree() -> void:
-	for buff_effect in _active_buffs:
-		var timer: Timer = _active_buffs[buff_effect]
-		if is_instance_valid(timer):
-			if timer.timeout.is_connected(_on_buff_expired.bind(buff_effect)):
-				timer.timeout.disconnect(_on_buff_expired.bind(buff_effect))

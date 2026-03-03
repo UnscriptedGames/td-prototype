@@ -8,10 +8,10 @@ extends Node
 ## 3. Swap to Game Window
 ## 4. Inject Level into Game Window
 
+enum ViewType { MENU, LEVEL }
+
 const LOADING_SCREEN_PATH: String = "res://UI/LoadingScreen/loading_screen.tscn"
 const GAME_WINDOW_PATH: String = "res://UI/Layout/game_window.tscn"
-
-enum ViewType { MENU, LEVEL }
 
 ## The scene that will be displayed during loading.
 var loading_screen_scene: PackedScene = preload(LOADING_SCREEN_PATH)

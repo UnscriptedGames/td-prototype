@@ -20,8 +20,8 @@ func show_selection_highlights(layer: TileMapLayer, center: Vector2i, tower_rang
 	
 	if range_id != -1 and tower_range > 0:
 		var tiles_in_range := _get_tiles_in_range(center, tower_range)
-		for tile_pos in tiles_in_range:
-			layer.set_cell(tile_pos, range_id, _HIGHLIGHT_ATLAS_COORDS)
+		for tile_position in tiles_in_range:
+			layer.set_cell(tile_position, range_id, _HIGHLIGHT_ATLAS_COORDS)
 
 
 ## Shows highlights for the ghost tower, using valid/invalid tile IDs.
@@ -39,18 +39,23 @@ func show_ghost_highlights(layer: TileMapLayer, center: Vector2i, tower_range: i
 	
 	if range_id != -1 and tower_range > 0:
 		var tiles_in_range := _get_tiles_in_range(center, tower_range)
-		for tile_pos in tiles_in_range:
-			layer.set_cell(tile_pos, range_id, _HIGHLIGHT_ATLAS_COORDS)
+		for tile_position in tiles_in_range:
+			layer.set_cell(tile_position, range_id, _HIGHLIGHT_ATLAS_COORDS)
 
 
 ## Returns all tiles within a square range (Chebyshev distance).
-func _get_tiles_in_range(start_pos: Vector2i, p_range: int) -> Array[Vector2i]:
+func _get_tiles_in_range(
+	start_position: Vector2i,
+	placement_range: int
+) -> Array[Vector2i]:
 	var tiles_in_range: Array[Vector2i] = []
 	
-	for x in range(-p_range, p_range + 1):
-		for y in range(-p_range, p_range + 1):
+	for horizontal_offset in range(-placement_range, placement_range + 1):
+		for vertical_offset in range(-placement_range, placement_range + 1):
 			# Determine the tile position relative to the center
-			var tile_pos := start_pos + Vector2i(x, y)
-			tiles_in_range.append(tile_pos)
+			var tile_position := (
+				start_position + Vector2i(horizontal_offset, vertical_offset)
+			)
+			tiles_in_range.append(tile_position)
 			
 	return tiles_in_range

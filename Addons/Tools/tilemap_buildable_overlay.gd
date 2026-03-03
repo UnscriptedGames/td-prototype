@@ -89,7 +89,8 @@ var _tile_set_connected: bool = false
 
 
 
-## Built-ins
+# --- OVERRIDES ---
+
 
 func _enter_tree() -> void:
 	# Cache target and listen to TileSet edits.
@@ -106,7 +107,8 @@ func _exit_tree() -> void:
 
 
 
-## Public Helpers
+# --- METHODS ---
+
 
 func refresh_now() -> void:
 	# Manual rebuild callable from the editor.

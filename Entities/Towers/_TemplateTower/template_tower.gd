@@ -33,6 +33,8 @@ var _highlight_layer: TileMapLayer
 var _highlight_tower_source_id: int = -1
 var _highlight_range_source_id: int = -1
 
+var _projectiles_container: Node2D
+
 ## Target Management
 var _enemies_in_range: Array[TemplateEnemy] = []
 var _current_targets: Array[TemplateEnemy] = []
@@ -49,18 +51,9 @@ var _is_selected: bool = false
 @onready var hitbox: Area2D = $Hitbox
 @onready var fire_rate_timer: Timer = $FireRateTimer
 @onready var muzzle: Marker2D = $Muzzle
-var _projectiles_container: Node2D
 
 
-func has_attack_modifier(property_name: String) -> bool:
-	for modifier in attack_modifiers:
-		if property_name == "aoe_projectile":
-			if modifier.aoe_projectile:
-				return true
-		elif property_name == "attack_flying":
-			if modifier.attack_flying:
-				return true
-	return false
+# --- LIFECYCLE OVERRIDES ---
 
 
 func _ready() -> void:
@@ -231,16 +224,37 @@ func _sort_enemies(enemies: Array) -> void:
 	match target_priority:
 		TargetPriority.Priority.MOST_PROGRESS:
 			# Smallest distance remaining = further along the path
-			enemies.sort_custom(func(a, b): return a.get_remaining_distance() < b.get_remaining_distance())
+			enemies.sort_custom(
+				func(enemy_first: TemplateEnemy, enemy_second: TemplateEnemy) -> bool:
+					return (
+						enemy_first.get_remaining_distance()
+						< enemy_second.get_remaining_distance()
+					)
+			)
 		TargetPriority.Priority.LEAST_PROGRESS:
 			# Largest distance remaining = least along the path
-			enemies.sort_custom(func(a, b): return a.get_remaining_distance() > b.get_remaining_distance())
+			enemies.sort_custom(
+				func(enemy_first: TemplateEnemy, enemy_second: TemplateEnemy) -> bool:
+					return (
+						enemy_first.get_remaining_distance()
+						> enemy_second.get_remaining_distance()
+					)
+			)
 		TargetPriority.Priority.STRONGEST_ENEMY:
-			enemies.sort_custom(func(a, b): return a.max_health > b.max_health)
+			enemies.sort_custom(
+				func(enemy_first: TemplateEnemy, enemy_second: TemplateEnemy) -> bool:
+					return enemy_first.max_health > enemy_second.max_health
+			)
 		TargetPriority.Priority.WEAKEST_ENEMY:
-			enemies.sort_custom(func(a, b): return a.max_health < b.max_health)
+			enemies.sort_custom(
+				func(enemy_first: TemplateEnemy, enemy_second: TemplateEnemy) -> bool:
+					return enemy_first.max_health < enemy_second.max_health
+			)
 		TargetPriority.Priority.LOWEST_HEALTH:
-			enemies.sort_custom(func(a, b): return a.health < b.health)
+			enemies.sort_custom(
+				func(enemy_first: TemplateEnemy, enemy_second: TemplateEnemy) -> bool:
+					return enemy_first.health < enemy_second.health
+			)
 
 
 func _update_targets(new_targets: Array[TemplateEnemy]) -> void:
@@ -317,9 +331,12 @@ func _on_animation_finished(_anim_name: StringName) -> void:
 
 # Called via AnimationPlayer method track
 func _spawn_projectiles() -> void:
-	for i in range(min(_current_targets.size(), _targets_last_known_positions.size())):
-		var target: TemplateEnemy = _current_targets[i]
-		var projectile: TemplateProjectile = ObjectPoolManager.get_object(projectile_scene) as TemplateProjectile
+	var target_count: int = min(_current_targets.size(), _targets_last_known_positions.size())
+	for index in range(target_count):
+		var target: TemplateEnemy = _current_targets[index]
+		var projectile: TemplateProjectile = (
+			ObjectPoolManager.get_object(projectile_scene) as TemplateProjectile
+		)
 		if not is_instance_valid(projectile):
 			push_error("ObjectPoolManager failed to provide a projectile.")
 			continue
@@ -339,9 +356,9 @@ func _spawn_projectiles() -> void:
 			)
 		# Otherwise, initialize a "dud" shot to the last known position.
 		else:
-			var last_known_pos: Vector2 = _targets_last_known_positions[i]
+			var last_known_position: Vector2 = _targets_last_known_positions[index]
 			projectile.initialize_dud_shot(
-				last_known_pos,
+				last_known_position,
 				damage,
 				projectile_speed,
 				has_attack_modifier("aoe_projectile"),
@@ -397,9 +414,9 @@ func upgrade_path(level_index: int) -> void:
 			# and add new ones. A more sophisticated system could
 			# merge or stack effects. For now, we'll just add.
 			var existing_effect_index: int = -1
-			for i in range(status_effects.size()):
-				if status_effects[i].effect_type == effect.effect_type:
-					existing_effect_index = i
+			for index in range(status_effects.size()):
+				if status_effects[index].effect_type == effect.effect_type:
+					existing_effect_index = index
 					break
 
 			if existing_effect_index != -1:
@@ -421,6 +438,19 @@ func upgrade_path(level_index: int) -> void:
 	select()
 	_find_new_target()
 	upgraded.emit()
+
+
+# --- HELPER METHODS ---
+
+func has_attack_modifier(property_name: String) -> bool:
+	for modifier in attack_modifiers:
+		if property_name == "aoe_projectile":
+			if modifier.aoe_projectile:
+				return true
+		elif property_name == "attack_flying":
+			if modifier.attack_flying:
+				return true
+	return false
 
 
 func _update_range_polygon() -> void:

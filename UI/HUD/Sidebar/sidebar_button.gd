@@ -8,13 +8,17 @@ extends Button
 ## via their respective [code]setup_*[/code] method. Generates a ghost
 ## preview on drag and manages a cooldown overlay for buffs.
 
+const COOLDOWN_TINT: Color = Color(0, 0, 0, 0.75)
+
 ## Loadout item backing this button (TowerData, BuffData, or RelicData).
 var data: LoadoutItem
+
 var type: String = "tower"
+var slot_index: int = -1  ## The fixed rack index this button occupies (set by SidebarHUD).
+
 var _is_on_cooldown: bool = false
 var _current_stock: int = 0
-## The fixed rack index this button occupies (set by SidebarHUD).
-var slot_index: int = -1
+var _is_in_studio_context: bool = false
 
 @onready var icon_rect: TextureRect = $IconRect
 @onready var background_rect: TextureRect = $BackgroundRect
@@ -24,9 +28,6 @@ var slot_index: int = -1
 @onready var minus_button: Button = $AdjusterBox/MinusButton
 @onready var plus_button: Button = $AdjusterBox/PlusButton
 @onready var cooldown_overlay: TextureProgressBar = $CooldownOverlay
-
-const COOLDOWN_TINT: Color = Color(0, 0, 0, 0.75)
-var _is_in_studio_context: bool = false
 
 
 func _ready() -> void:
@@ -63,6 +64,138 @@ func _ready() -> void:
 
 	# Clear the button's built-in icon to avoid duplication/offset issues.
 	icon = null
+
+
+# --- OVERRIDES ---
+
+
+func _get_drag_data(_at_position: Vector2) -> Variant:
+	# Builds a ghost preview showing only the icon texture (semi-transparent)
+	# then returns the loadout_drag payload dictionary.
+	if not data:
+		return null
+	if _is_on_cooldown:
+		return null
+
+	# Prevent dragging if out of stock (only applies to towers).
+	if type == "tower" and _current_stock <= 0 and not _is_in_studio_context:
+		return null
+
+	# Determine the drag texture from the IconRect (same source as the sidebar display).
+	var drag_texture: Texture2D = null
+	if icon_rect and icon_rect.texture:
+		drag_texture = icon_rect.texture
+	elif data.icon:
+		drag_texture = data.icon
+	elif data is TowerData and data.ghost_texture:
+		drag_texture = data.ghost_texture
+
+	if not drag_texture:
+		return null
+
+	# Ghost icon — just the icon texture, semi-transparent, matching the IconRect size.
+	var icon_size: Vector2 = icon_rect.size if icon_rect else self.size
+	var preview: TextureRect = TextureRect.new()
+	preview.custom_minimum_size = icon_size
+	preview.size = icon_size
+	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview.texture = drag_texture
+	preview.modulate = Color(1.0, 1.0, 1.0, 0.75)
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# Offset container — keeps the cursor aligned to where the user clicked.
+	var offset_root: Control = Control.new()
+	offset_root.z_index = 100
+	offset_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	offset_root.add_child(preview)
+	preview.position = -_at_position
+
+	set_drag_preview(offset_root)
+
+	var drag_id: int = Time.get_ticks_msec() + get_instance_id()
+
+	return {
+		"type": "loadout_drag",
+		"subtype": type,
+		"data": data,
+		"drag_id": drag_id,
+		"source": self,
+		"preview": preview
+	}
+
+
+func _can_drop_data(_at_position: Vector2, drag_data: Variant) -> bool:
+	if typeof(drag_data) != TYPE_DICTIONARY or not drag_data.has("type"):
+		return false
+
+	if drag_data["type"] == "catalog_drag":
+		# Only accept drops of matching resource types!
+		if type == "tower" and drag_data["data"] is TowerData:
+			return true
+		if type == "buff" and drag_data["data"] is BuffData:
+			return true
+		if type == "relic" and drag_data["data"] is RelicData:
+			return true
+
+	if drag_data["type"] == "loadout_drag" and _is_in_studio_context:
+		# Accept drops from other sidebar buttons of the same type
+		if drag_data["subtype"] == type and drag_data["source"] != self:
+			return true
+
+	return false
+
+
+func _drop_data(_at_position: Vector2, drag_data: Variant) -> void:
+	if not _can_drop_data(_at_position, drag_data):
+		return
+
+	var incoming_data: Resource = drag_data["data"]
+
+	if drag_data["type"] == "catalog_drag":
+		# Drop a catalog item directly into this specific slot
+		if incoming_data is TowerData:
+			var tower_data: TowerData = incoming_data as TowerData
+
+			# Validate AP budget
+			var test_cost: int = (
+				GameManager.player_data.get_total_allocation_cost() + tower_data.allocation_cost
+			)
+			if test_cost <= GameManager.player_data.max_allocation_points:
+				# Erase any existing tower that was in this slot from the stock dict
+				var old_slot = GameManager.player_data.tower_slots[slot_index]
+				if old_slot != null and old_slot.get("data") is TowerData:
+					GameManager._loadout_stock.erase(old_slot["data"] as TowerData)
+
+				# Write the new item into this slot with stock 1
+				GameManager.player_data.tower_slots[slot_index] = {"data": tower_data, "stock": 1}
+				GameManager._loadout_stock[tower_data] = 1
+				GameManager.loadout_stock_changed.emit(tower_data, 1)
+				GlobalSignals.loadout_rebuild_requested.emit()
+
+	elif drag_data["type"] == "loadout_drag":
+		var source_button: SidebarButton = drag_data["source"] as SidebarButton
+		if (
+			source_button
+			and source_button.slot_index >= 0
+			and source_button.slot_index != slot_index
+		):
+			var source_index: int = source_button.slot_index
+			var target_index: int = slot_index
+			var slots: Array = GameManager.player_data.tower_slots
+
+			# Swap the two slot entries in the canonical array
+			var temporary_slot = slots[source_index]
+			slots[source_index] = slots[target_index]
+			slots[target_index] = temporary_slot
+
+			# Rebuild the sidebar so buttons reflect the updated order
+			GlobalSignals.loadout_rebuild_requested.emit()
+
+	# NOTE: Buff and Relic slot swapping will be handled similarly when implemented.
+
+
+# --- METHODS ---
 
 
 func setup_tower(tower_data: TowerData) -> void:
@@ -230,7 +363,7 @@ func _on_minus_pressed() -> void:
 	if not data or type != "tower" or not _is_in_studio_context:
 		return
 
-	var td: TowerData = data as TowerData
+	var tower_data: TowerData = data as TowerData
 	if _current_stock <= 0:
 		return
 
@@ -242,13 +375,13 @@ func _on_minus_pressed() -> void:
 			if new_stock <= 0:
 				# Erase the slot entirely
 				GameManager.player_data.tower_slots[slot_index] = null
-				GameManager._loadout_stock.erase(td)
-				GameManager.loadout_stock_changed.emit(td, 0)
+				GameManager._loadout_stock.erase(tower_data)
+				GameManager.loadout_stock_changed.emit(tower_data, 0)
 				GlobalSignals.loadout_rebuild_requested.emit()
 			else:
 				current_slot["stock"] = new_stock
-				GameManager._loadout_stock[td] = new_stock
-				GameManager.loadout_stock_changed.emit(td, new_stock)
+				GameManager._loadout_stock[tower_data] = new_stock
+				GameManager.loadout_stock_changed.emit(tower_data, new_stock)
 				set_stock(new_stock)
 
 
@@ -256,11 +389,11 @@ func _on_plus_pressed() -> void:
 	if not data or type != "tower" or not _is_in_studio_context:
 		return
 
-	var td: TowerData = data as TowerData
+	var tower_data: TowerData = data as TowerData
 
 	# Check AP budget
 	var current_cost: int = GameManager.player_data.get_total_allocation_cost()
-	var test_cost: int = current_cost + td.allocation_cost
+	var test_cost: int = current_cost + tower_data.allocation_cost
 	if test_cost > GameManager.player_data.max_allocation_points:
 		return  # Over budget
 
@@ -269,128 +402,6 @@ func _on_plus_pressed() -> void:
 		if current_slot != null:
 			var new_stock: int = current_slot.get("stock", 1) + 1
 			current_slot["stock"] = new_stock
-			GameManager._loadout_stock[td] = new_stock
-			GameManager.loadout_stock_changed.emit(td, new_stock)
+			GameManager._loadout_stock[tower_data] = new_stock
+			GameManager.loadout_stock_changed.emit(tower_data, new_stock)
 			set_stock(new_stock)
-
-
-func _get_drag_data(_at_position: Vector2) -> Variant:
-	# Builds a ghost preview showing only the icon texture (semi-transparent)
-	# then returns the loadout_drag payload dictionary.
-	if not data:
-		return null
-	if _is_on_cooldown:
-		return null
-
-	# Prevent dragging if out of stock (only applies to towers).
-	if type == "tower" and _current_stock <= 0 and not _is_in_studio_context:
-		return null
-
-	# Determine the drag texture from the IconRect (same source as the sidebar display).
-	var drag_texture: Texture2D = null
-	if icon_rect and icon_rect.texture:
-		drag_texture = icon_rect.texture
-	elif data.icon:
-		drag_texture = data.icon
-	elif data is TowerData and data.ghost_texture:
-		drag_texture = data.ghost_texture
-
-	if not drag_texture:
-		return null
-
-	# Ghost icon — just the icon texture, semi-transparent, matching the IconRect size.
-	var icon_size: Vector2 = icon_rect.size if icon_rect else self.size
-	var preview: TextureRect = TextureRect.new()
-	preview.custom_minimum_size = icon_size
-	preview.size = icon_size
-	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	preview.texture = drag_texture
-	preview.modulate = Color(1.0, 1.0, 1.0, 0.75)
-	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	# Offset container — keeps the cursor aligned to where the user clicked.
-	var offset_root: Control = Control.new()
-	offset_root.z_index = 100
-	offset_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	offset_root.add_child(preview)
-	preview.position = -_at_position
-
-	set_drag_preview(offset_root)
-
-	var drag_id: int = Time.get_ticks_msec() + get_instance_id()
-
-	return {
-		"type": "loadout_drag",
-		"subtype": type,
-		"data": data,
-		"drag_id": drag_id,
-		"source": self,
-		"preview": preview
-	}
-
-
-func _can_drop_data(_at_position: Vector2, drag_data: Variant) -> bool:
-	if typeof(drag_data) != TYPE_DICTIONARY or not drag_data.has("type"):
-		return false
-
-	if drag_data["type"] == "catalog_drag":
-		# Only accept drops of matching resource types!
-		if type == "tower" and drag_data["data"] is TowerData:
-			return true
-		if type == "buff" and drag_data["data"] is BuffData:
-			return true
-		if type == "relic" and drag_data["data"] is RelicData:
-			return true
-
-	if drag_data["type"] == "loadout_drag" and _is_in_studio_context:
-		# Accept drops from other sidebar buttons of the same type
-		if drag_data["subtype"] == type and drag_data["source"] != self:
-			return true
-
-	return false
-
-
-func _drop_data(_at_position: Vector2, drag_data: Variant) -> void:
-	if not _can_drop_data(_at_position, drag_data):
-		return
-
-	var incoming_data: Resource = drag_data["data"]
-
-	if drag_data["type"] == "catalog_drag":
-		# Drop a catalog item directly into this specific slot
-		if incoming_data is TowerData:
-			var td: TowerData = incoming_data as TowerData
-
-			# Validate AP budget
-			var test_cost: int = (
-				GameManager.player_data.get_total_allocation_cost() + td.allocation_cost
-			)
-			if test_cost <= GameManager.player_data.max_allocation_points:
-				# Erase any existing tower that was in this slot from the stock dict
-				var old_slot = GameManager.player_data.tower_slots[slot_index]
-				if old_slot != null and old_slot.get("data") is TowerData:
-					GameManager._loadout_stock.erase(old_slot["data"] as TowerData)
-
-				# Write the new item into this slot with stock 1
-				GameManager.player_data.tower_slots[slot_index] = {"data": td, "stock": 1}
-				GameManager._loadout_stock[td] = 1
-				GameManager.loadout_stock_changed.emit(td, 1)
-				GlobalSignals.loadout_rebuild_requested.emit()
-
-	elif drag_data["type"] == "loadout_drag":
-		var source_btn: SidebarButton = drag_data["source"] as SidebarButton
-		if source_btn and source_btn.slot_index >= 0 and source_btn.slot_index != slot_index:
-			var source_idx: int = source_btn.slot_index
-			var target_idx: int = slot_index
-			var slots: Array = GameManager.player_data.tower_slots
-
-			# Swap the two slot entries in the canonical array
-			var temp = slots[source_idx]
-			slots[source_idx] = slots[target_idx]
-			slots[target_idx] = temp
-
-			# Rebuild the sidebar so buttons reflect the updated order
-			GlobalSignals.loadout_rebuild_requested.emit()
-
-	# NOTE: Buff and Relic slot swapping will be handled similarly when implemented.

@@ -47,13 +47,16 @@ func create_pool(scene: PackedScene, initial_size: int, batch_size: int = 5) -> 
 
 
 ## Creates and pre-populates a pool for a given node type name.
-func create_node_pool(p_class_name: String, initial_size: int, batch_size: int = 10) -> void:
-	if _node_pools.has(p_class_name):
+func create_node_pool(target_class_name: String, initial_size: int, batch_size: int = 10) -> void:
+	if _node_pools.has(target_class_name):
 		return
 
-	print("POOL MANAGER: Creating node pool for '%s' with %d objects (batch size: %d)..." % [p_class_name, initial_size, batch_size])
+	print(
+		"POOL MANAGER: Creating node pool for '%s' with %d objects (batch size: %d)..."
+		% [target_class_name, initial_size, batch_size]
+	)
 
-	_node_pools[p_class_name] = {
+	_node_pools[target_class_name] = {
 		"objects": [],
 		"batch_size": batch_size,
 		"total_size": initial_size,
@@ -63,20 +66,20 @@ func create_node_pool(p_class_name: String, initial_size: int, batch_size: int =
 	}
 
 	var container := Node.new()
-	container.name = "%s_pool" % p_class_name
+	container.name = "%s_pool" % target_class_name
 	add_child(container)
 	container.owner = self
 
 	for index in range(initial_size):
-		var object := ClassDB.instantiate(p_class_name) as Node
+		var object := ClassDB.instantiate(target_class_name) as Node
 		if not object:
-			push_error("Failed to instantiate node of type '%s'" % p_class_name)
+			push_error("Failed to instantiate node of type '%s'" % target_class_name)
 			return
-		object.set_meta("pool_class_name", p_class_name)
-		_node_pools[p_class_name]["objects"].append(object)
+		object.set_meta("pool_class_name", target_class_name)
+		_node_pools[target_class_name]["objects"].append(object)
 		container.add_child(object)
 
-	print("POOL MANAGER: Node pool for '%s' created." % p_class_name)
+	print("POOL MANAGER: Node pool for '%s' created." % target_class_name)
 
 
 ## Retrieves an object from the specified scene pool and resets it.
@@ -104,14 +107,14 @@ func get_object(scene: PackedScene) -> Node:
 
 
 ## Retrieves a node from the specified node pool.
-func get_pooled_node(p_class_name: String) -> Node:
-	if not _node_pools.has(p_class_name):
-		push_error("This node pool does not exist: %s" % p_class_name)
+func get_pooled_node(target_class_name: String) -> Node:
+	if not _node_pools.has(target_class_name):
+		push_error("This node pool does not exist: %s" % target_class_name)
 		return null
 
-	var pool: Dictionary = _node_pools[p_class_name]
+	var pool: Dictionary = _node_pools[target_class_name]
 	if pool["objects"].is_empty():
-		_grow_node_pool(p_class_name)
+		_grow_node_pool(target_class_name)
 
 	var object: Node = pool["objects"].pop_front()
 	if is_instance_valid(object.get_parent()):
@@ -166,22 +169,24 @@ func return_node(object: Node) -> void:
 		object.queue_free()
 		return
 
-	var p_class_name: String = object.get_meta("pool_class_name")
-	if not _node_pools.has(p_class_name):
-		push_error("Cannot return node. Pool does not exist for: %s" % p_class_name)
+	var target_class_name: String = object.get_meta("pool_class_name")
+	if not _node_pools.has(target_class_name):
+		push_error("Cannot return node. Pool does not exist for: %s" % target_class_name)
 		object.queue_free()
 		return
 
-	var container_name: String = "%s_pool" % p_class_name
+	var container_name: String = "%s_pool" % target_class_name
 	var container: Node = find_child(container_name, false)
 
 	# Prevent node from being returned twice.
 	if is_instance_valid(container) and object.get_parent() == container:
 		if OS.is_debug_build():
-			push_warning("Attempted to return a node that is already in the pool: %s" % object.name)
+			push_warning(
+				"Attempted to return a node that is already in the pool: %s" % object.name
+			)
 		return
 
-	_node_pools[p_class_name].in_use -= 1
+	_node_pools[target_class_name].in_use -= 1
 
 	if is_instance_valid(container):
 		if object.get_parent():
@@ -190,7 +195,7 @@ func return_node(object: Node) -> void:
 	else:
 		push_error("Pool container not found: %s" % container_name)
 
-	_node_pools[p_class_name]["objects"].append(object)
+	_node_pools[target_class_name]["objects"].append(object)
 
 
 func _grow_pool(scene_path: String) -> void:
@@ -221,16 +226,19 @@ func _grow_pool(scene_path: String) -> void:
 		container.add_child(new_object)
 
 
-func _grow_node_pool(p_class_name: String) -> void:
-	var pool: Dictionary = _node_pools[p_class_name]
+func _grow_node_pool(target_class_name: String) -> void:
+	var pool: Dictionary = _node_pools[target_class_name]
 
 	pool.growth_count += 1
 	pool.total_size += pool.batch_size
 
 	if OS.is_debug_build():
-		print("Node pool for '%s' was empty. Instantiating a new batch of %d." % [p_class_name, pool.batch_size])
+		print(
+			"Node pool for '%s' was empty. Instantiating a new batch of %d."
+			% [target_class_name, pool.batch_size]
+		)
 
-	var container_name: String = "%s_pool" % p_class_name
+	var container_name: String = "%s_pool" % target_class_name
 	var container: Node = find_child(container_name, false)
 	if not is_instance_valid(container):
 		push_error("Pool container not found: %s" % container_name)
@@ -240,11 +248,11 @@ func _grow_node_pool(p_class_name: String) -> void:
 		container.owner = self
 
 	for index in range(pool.batch_size):
-		var new_object: Node = ClassDB.instantiate(p_class_name) as Node
+		var new_object: Node = ClassDB.instantiate(target_class_name) as Node
 		if not new_object:
-			push_error("Failed to instantiate node of type '%s'" % p_class_name)
+			push_error("Failed to instantiate node of type '%s'" % target_class_name)
 			return
-		new_object.set_meta("pool_class_name", p_class_name)
+		new_object.set_meta("pool_class_name", target_class_name)
 		pool["objects"].append(new_object)
 		container.add_child(new_object)
 
