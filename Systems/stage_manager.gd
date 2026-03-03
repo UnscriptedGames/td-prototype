@@ -191,8 +191,6 @@ func restart_stage() -> void:
 		print("StageManager: Stage restarted. All progress wiped.")
 
 
-
-
 ## Retries the currently failed stem by using the remembered index.
 func retry_stem() -> void:
 	if _current_stem_index >= 0:
@@ -225,31 +223,6 @@ func cheat_complete_all_stems() -> void:
 
 	if OS.is_debug_build():
 		print("StageManager: Debug Cheat — All non-boss stems completed.")
-
-
-## Finds the StemAudioPlayer node in the live scene tree and stops it immediately.
-## Called before any scene transition to prevent audio from bleeding into the next scene.
-func _stop_current_stem_audio() -> void:
-	# 1. Stop the new global audio manager (which plays the layered stems)
-	if AudioManager and AudioManager.has_method("_stop_all"):
-		AudioManager._stop_all()
-
-	# 2. Stop the local TemplateStage audio player (if it hasn't been removed yet)
-	var root: Window = get_tree().root
-	for child: Node in root.get_children():
-		if child is GameWindow:
-			var subviewport: Node = child.get_node_or_null(
-				"MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport"
-			)
-			if not subviewport:
-				return
-			for level: Node in subviewport.get_children():
-				var player: Node = level.get_node_or_null("StemAudioPlayer")
-				if player is AudioStreamPlayer and player.playing:
-					player.stop()
-					if OS.is_debug_build():
-						print("StageManager: Local Stem audio stopped before scene transition.")
-			return
 
 
 # --- PRIVATE METHODS ---
