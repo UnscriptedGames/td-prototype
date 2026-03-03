@@ -679,7 +679,7 @@ func _on_restart_confirmed() -> void:
 		StageManager.restart_stem()
 	else:
 		GameManager.reset_state()  # Ensure timing variables reset
-		var current_path = DEFAULT_LEVEL_PATH
+		var current_path: String = DEFAULT_LEVEL_PATH
 
 		_load_level(current_path)  # Reload logic; later mapped to current level path
 
@@ -884,7 +884,7 @@ func _update_sidebar_content(mode: ContextMode) -> void:
 			status_label.hide()
 			var menu_scene: PackedScene = load(SIDEBAR_MENU_SCENE_PATH)
 			if menu_scene:
-				var menu_instance = menu_scene.instantiate()
+				var menu_instance: Node = menu_scene.instantiate()
 				overlay_content.add_child(menu_instance)
 				# Connect signals
 				menu_instance.setlist_pressed.connect(_on_sidebar_setlist)

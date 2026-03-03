@@ -20,8 +20,10 @@ var _stashed_status_effects: Dictionary[StatusEffectData.EffectType, StatusEffec
 func _process(_delta: float) -> void:
 	if not _active_buffs.is_empty():
 		# Get the timer of the most recently added buff.
-		var latest_buff_effect = _active_buffs.keys()[_active_buffs.size() - 1]
-		var timer = _active_buffs[latest_buff_effect]
+		var latest_buff_effect: BuffEffectStandard = _active_buffs.keys()[_active_buffs.size() - 1] as BuffEffectStandard
+		assert(latest_buff_effect != null)
+		var timer: Timer = _active_buffs[latest_buff_effect] as Timer
+		assert(timer != null)
 		if is_instance_valid(timer):
 			buff_progress.emit(timer.time_left)
 
@@ -110,8 +112,8 @@ func _on_buff_expired(buff_effect: BuffEffectStandard) -> void:
 	for buff_status_effect in buff_effect.status_effects:
 		# Check if we have a stashed (original) status effect to restore
 		if _stashed_status_effects.has(buff_status_effect.effect_type):
-			var original_effect = _stashed_status_effects[buff_status_effect.effect_type]
-			var was_restored = false
+			var original_effect: StatusEffectData = _stashed_status_effects[buff_status_effect.effect_type]
+			var was_restored: bool = false
 			# Find the buff's effect and replace it with the original one
 			for i in range(tower.status_effects.size()):
 				if tower.status_effects[i] == buff_status_effect:
@@ -125,7 +127,7 @@ func _on_buff_expired(buff_effect: BuffEffectStandard) -> void:
 			_stashed_status_effects.erase(buff_status_effect.effect_type)
 		else:
 			# If there was no stashed effect, the buff added a new one, so we remove it.
-			var effect_to_remove_idx = -1
+			var effect_to_remove_idx: int = -1
 			for i in range(tower.status_effects.size()):
 				if tower.status_effects[i] == buff_status_effect:
 					effect_to_remove_idx = i
@@ -148,7 +150,8 @@ func _on_buff_expired(buff_effect: BuffEffectStandard) -> void:
 ## Cleans up the buff from the tracking dictionaries and frees the timer.
 func _cleanup_buff(buff_effect: BuffEffectStandard) -> void:
 	if _active_buffs.has(buff_effect):
-		var timer = _active_buffs[buff_effect]
+		var timer: Timer = _active_buffs[buff_effect] as Timer
+		assert(timer != null)
 		if is_instance_valid(timer):
 			timer.queue_free()
 		_active_buffs.erase(buff_effect)
@@ -159,8 +162,10 @@ func _cleanup_buff(buff_effect: BuffEffectStandard) -> void:
 
 func resend_state() -> void:
 	if not _active_buffs.is_empty():
-		var latest_buff_effect = _active_buffs.keys()[_active_buffs.size() - 1]
-		var timer = _active_buffs[latest_buff_effect]
+		var latest_buff_effect: BuffEffectStandard = _active_buffs.keys()[_active_buffs.size() - 1] as BuffEffectStandard
+		assert(latest_buff_effect != null)
+		var timer: Timer = _active_buffs[latest_buff_effect] as Timer
+		assert(timer != null)
 		if is_instance_valid(timer):
 			buff_started.emit(timer.wait_time)
 			buff_progress.emit(timer.time_left)

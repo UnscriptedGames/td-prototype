@@ -161,7 +161,7 @@ func set_range_polygon(points: PackedVector2Array) -> void:
 func _on_range_area_entered(area: Area2D) -> void:
 	if not area is TemplateEnemy:
 		return
-	var enemy = area as TemplateEnemy
+	var enemy: TemplateEnemy = area as TemplateEnemy
 	_enemies_in_range.append(enemy)
 	_find_new_target()
 
@@ -169,9 +169,9 @@ func _on_range_area_entered(area: Area2D) -> void:
 func _on_range_area_exited(area: Area2D) -> void:
 	if not area is TemplateEnemy:
 		return
-	var enemy = area as TemplateEnemy
+	var enemy: TemplateEnemy = area as TemplateEnemy
 	
-	var index = _enemies_in_range.find(enemy)
+	var index: int = _enemies_in_range.find(enemy)
 	if index != -1:
 		_enemies_in_range.remove_at(index)
 
@@ -202,7 +202,7 @@ func _find_new_target() -> void:
 			return is_instance_valid(enemy)
 	)
 
-	var valid_targets = _enemies_in_range.filter(
+	var valid_targets: Array[TemplateEnemy] = _enemies_in_range.filter(
 		func(enemy: TemplateEnemy) -> bool:
 			if not enemy.state == TemplateEnemy.State.MOVING:
 				return false
@@ -216,8 +216,8 @@ func _find_new_target() -> void:
 
 	_sort_enemies(valid_targets)
 
-	var num_targets_to_find = targets
-	var new_targets = valid_targets.slice(0, num_targets_to_find)
+	var num_targets_to_find: int = targets
+	var new_targets: Array[TemplateEnemy] = valid_targets.slice(0, num_targets_to_find)
 
 	_update_targets(new_targets)
 
@@ -244,7 +244,7 @@ func _sort_enemies(enemies: Array) -> void:
 
 
 func _update_targets(new_targets: Array[TemplateEnemy]) -> void:
-	var old_targets = _current_targets.duplicate()
+	var old_targets: Array[TemplateEnemy] = _current_targets.duplicate()
 
 	# Remove old targets that are not in the new list
 	for target in old_targets:
@@ -318,7 +318,7 @@ func _on_animation_finished(_anim_name: StringName) -> void:
 # Called via AnimationPlayer method track
 func _spawn_projectiles() -> void:
 	for i in range(min(_current_targets.size(), _targets_last_known_positions.size())):
-		var target = _current_targets[i]
+		var target: TemplateEnemy = _current_targets[i]
 		var projectile: TemplateProjectile = ObjectPoolManager.get_object(projectile_scene) as TemplateProjectile
 		if not is_instance_valid(projectile):
 			push_error("ObjectPoolManager failed to provide a projectile.")
@@ -339,7 +339,7 @@ func _spawn_projectiles() -> void:
 			)
 		# Otherwise, initialize a "dud" shot to the last known position.
 		else:
-			var last_known_pos = _targets_last_known_positions[i]
+			var last_known_pos: Vector2 = _targets_last_known_positions[i]
 			projectile.initialize_dud_shot(
 				last_known_pos,
 				damage,
@@ -396,7 +396,7 @@ func upgrade_path(level_index: int) -> void:
 			# This logic assumes we replace effects of the same type,
 			# and add new ones. A more sophisticated system could
 			# merge or stack effects. For now, we'll just add.
-			var existing_effect_index = -1
+			var existing_effect_index: int = -1
 			for i in range(status_effects.size()):
 				if status_effects[i].effect_type == effect.effect_type:
 					existing_effect_index = i
@@ -429,7 +429,7 @@ func _update_range_polygon() -> void:
 	var range_multiplier: float = tower_range + 0.5
 	
 	# Generate a square polygon for top-down grid
-	var extent = full_tile_size * range_multiplier
+	var extent: Vector2 = full_tile_size * range_multiplier
 	
 	points.append(Vector2(-extent.x, -extent.y)) # Top Left
 	points.append(Vector2(extent.x, -extent.y)) # Top Right
