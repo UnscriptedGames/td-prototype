@@ -1,7 +1,7 @@
 # Tower Design Brief — TD-Prototype
 
 **Version:** 0.1 (Living Document)
-**Last Updated:** 2026-02-25
+**Last Updated:** 2026-03-03
 
 ## 1. Design Philosophy
 
@@ -17,7 +17,7 @@ intuitively to the gear, it's the wrong fit.
 
 ### Core Mechanics
 - **Target Priority Swapping:** Every tower supports real-time priority swapping (Closest, Strongest, Most Progress, etc.).
-- **DAW Plug-in Inspector**: The Tower Inspector resides in the right-side shell of the `GameWindow`. It remains active for **Selection** and attribute review during the paused state, allowing for tactical planning while the simulation is frozen.
+- **DAW Plug-in Inspector**: The Tower Inspector resides in the right-side shell of the `GameWindow`. It remains active for **Selection** and attribute review during the paused state. To ensure reliability across level transitions, the `GameWindow` explicitly re-binds the inspector's signals (Sell, Priority) every time a new `BuildManager` is instantiated.
 
 ### Target Roster
 - **6–8 unique towers** covering a range of attack types, effects, and upgrade paths.

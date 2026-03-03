@@ -14,7 +14,8 @@ extends Control
 const SIDEBAR_BUTTON_SCRIPT = preload("res://UI/HUD/Sidebar/sidebar_button.gd")
 const SIDEBAR_BUTTON_SCENE = preload("res://UI/HUD/Sidebar/sidebar_button.tscn")
 
-@export var preview_loadout: PlayerData: set = _set_preview_loadout
+@export var preview_loadout: PlayerData:
+	set = _set_preview_loadout
 
 
 ## Setter for the editor preview loadout. Repopulates the sidebar when the
@@ -37,9 +38,16 @@ func _ready() -> void:
 	GlobalSignals.buff_applied.connect(_on_buff_applied)
 	GameManager.relic_state_changed.connect(_on_relic_state_changed)
 
+	# Initial population
+	populate(GameManager.player_data)
+
+
 func _exit_tree() -> void:
 	if is_instance_valid(GameManager):
-		if GameManager.has_signal("loadout_stock_changed") and GameManager.loadout_stock_changed.is_connected(_on_loadout_stock_changed):
+		if (
+			GameManager.has_signal("loadout_stock_changed")
+			and GameManager.loadout_stock_changed.is_connected(_on_loadout_stock_changed)
+		):
 			GameManager.loadout_stock_changed.disconnect(_on_loadout_stock_changed)
 		if GameManager.relic_state_changed.is_connected(_on_relic_state_changed):
 			GameManager.relic_state_changed.disconnect(_on_relic_state_changed)
@@ -48,14 +56,12 @@ func _exit_tree() -> void:
 		if GlobalSignals.buff_applied.is_connected(_on_buff_applied):
 			GlobalSignals.buff_applied.disconnect(_on_buff_applied)
 
-	for child in relics_container.get_children():
+	for child in relic_container.get_children():
 		var btn = child as TextureButton
 		if is_instance_valid(btn):
 			var callables = btn.pressed.get_connections()
 			for conn in callables:
 				btn.pressed.disconnect(conn["callable"])
-
-	populate(GameManager.player_data)
 
 
 ## Clears and rebuilds the relic, tower, and buff button grids from the
@@ -136,7 +142,8 @@ func _update_or_create_relic(existing_btn: Button, relic_data: RelicData, index:
 	else:
 		btn.text = "R%d" % (index + 1)
 		btn.disabled = true
-		if btn.stock_label: btn.stock_label.visible = false
+		if btn.stock_label:
+			btn.stock_label.visible = false
 
 	# Clean existing self-connections before reconnecting
 	var conns: Array = btn.pressed.get_connections()
@@ -181,7 +188,8 @@ func _update_or_create_tower(existing_btn: Button, info: Dictionary) -> void:
 		btn.data = null
 		btn.disabled = true
 		btn.flat = false
-		if btn.stock_label: btn.stock_label.visible = false
+		if btn.stock_label:
+			btn.stock_label.visible = false
 
 
 ## Creates or updates a buff button. Replaces non-SidebarButton nodes with
@@ -208,8 +216,10 @@ func _update_or_create_buff(existing_btn: Button, buff_data: BuffData) -> void:
 		btn.icon = null
 		btn.data = null
 		btn.disabled = true
-		if btn.cost_label: btn.cost_label.visible = false
-		if btn.stock_label: btn.stock_label.visible = false
+		if btn.cost_label:
+			btn.cost_label.visible = false
+		if btn.stock_label:
+			btn.stock_label.visible = false
 
 
 ## Updates the stock count label and disabled state for a tower button when
@@ -236,7 +246,8 @@ func _on_buff_applied(buff_data: BuffData) -> void:
 ## Activates the pressed relic and executes its active effect.
 func _on_relic_pressed(btn: Button) -> void:
 	var data: RelicData = btn.data as RelicData
-	if not data: return
+	if not data:
+		return
 
 	if GameManager.try_use_relic(data):
 		if OS.is_debug_build():

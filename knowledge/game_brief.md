@@ -1,7 +1,7 @@
 # Game Brief — TD-Prototype
 
 **Version:** 0.1 (Living Document)
-**Last Updated:** 2026-03-02
+**Last Updated:** 2026-03-03
 
 ## 1. Game Identity
 
@@ -162,6 +162,24 @@ Two independent audio layers operate simultaneously:
 - Replaying a stem does *not* unlock the Loadout; it uses the loadout currently locked to 
 	the stage.
 - All unlocked versions are stored in the **Codex** (see Section 5).
+
+---
+
+## 5. Maintenance & Technical Standards
+
+### The Jules Maintenance Workflow
+Project hygiene is managed via a tiered, scheduled maintenance system within `.agent/scheduled_tasks.md`. 
+- **The Execution Log:** Every maintenance task (Signal Janitor, Typist, etc.) tracks its "Last Executed" date directly within the schedule to ensure 100% visibility.
+- **Workflow Phases:**
+    1. **Branching:** Maintenance is performed on dedicated `maint/*` branches.
+    2. **Review:** AI-proposed plans and code batches must be reviewed before merging.
+    3. **Closing:** Merges happen via Pull Request to maintain a clean git history.
+
+### The "Signal Janitor" Standard
+To prevent memory leaks in the dynamic SPA architecture, all nodes that connect to persistent systems (GameManager, StageManager, GlobalSignals) or handle dynamic child buttons must follow the Signal Janitor pattern:
+- **Disconnect in `_exit_tree()`**: All connections made in `_ready()` or `populate()` must be explicitly disconnected.
+- **Safety Guards**: Use `is_instance_valid(Node)` and `is_connected(Signal, Callable)` before every disconnection to prevent crash-on-exit during scene unloads.
+- **Dynamic Cleanup**: For containers with dynamic children (e.g., Relic HBox), use `get_children()` and `get_connections()` to sweep and clear all anonymous or bound connections.
 
 ---
 
@@ -364,6 +382,7 @@ The game operates as a Single Page Application within a persistent shell (`GameW
 - **Animation Strategy**: To ensure layout stability, sidebar transitions animate `offset_left` and `offset_right` properties rather than `position.x`. This utilizes Godot 4's anchor system reliably. Animations use a `TRANS_CUBIC` ease (`0.4s`) and a `call_deferred` pattern to allow layout settlement before the Tween begins.
 - **Animation Lock**: An `_is_sidebar_animating` flag prevents rapid-fire button presses from desynchronizing the sidebar state during transitions.
 - **Context-Aware Sidebar Overlay**: The Left Sidebar features a dynamic **OverlayContent** container. This system swaps its content (e.g., Main Menu buttons) based on the game's context.
+- **Inspector Signal Persistence**: Because the `TowerInspector` is a persistent UI element while the `BuildManager` is recreated per level, the `GameWindow` uses a **Signal Rebinding Pattern**. Whenever a new level is wired up, the inspector's `sell_tower_requested` and `target_priority_changed` signals are explicitly re-connected to the fresh `BuildManager` instance.
 - **Refined Navigation Flow**:
     - **Menu Toggle**: The "Menu" button in the Top Bar toggles the sidebar overlay.
     - **Click-to-Close (Auto-Hide)**: During gameplay, clicking in the maze viewport, selecting a tower, or interacting with transport controls (Play/Restart) automatically closes the sidebar.
@@ -481,6 +500,8 @@ future design sessions and playtesting:
 - [x] **Sidebar Main Menu:** Refactored main navigation into a context-aware sidebar overlay (Resolved Mar 02).
 - [x] **Auto-Load Stage 1:** The Setlist button now automatically loads the first stage if no active stage exists (Resolved Mar 02).
 - [x] **Selection Reliability:** Synchronized `BuildManager` and `GameWindow` state to ensure reliable tower clicking during pause (Resolved Mar 02).
+- [x] **Signal Management:** Implemented mandatory `_exit_tree()` cleanup across all UI and core systems (Resolved Mar 03).
+- [x] **Inspector Persistence:** Resolved broken sell/priority signals by rebinding inspector to BuildManager on every level load (Resolved Mar 03).
 - [ ] **AP Growth:** How does the player's maximum AP increase? Fixed per stage, or a
 	separate upgrade currency?
 - [ ] **Unlock Economy:** Full mapping of what unlocks where (towers, buffs, relics, AP).

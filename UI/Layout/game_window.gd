@@ -130,7 +130,10 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if is_instance_valid(menu_button) and menu_button.pressed.is_connected(_on_menu_button_pressed):
 		menu_button.pressed.disconnect(_on_menu_button_pressed)
-	if is_instance_valid(_game_view_wrapper) and _game_view_wrapper.gui_input.is_connected(_on_game_view_gui_input):
+	if (
+		is_instance_valid(_game_view_wrapper)
+		and _game_view_wrapper.gui_input.is_connected(_on_game_view_gui_input)
+	):
 		_game_view_wrapper.gui_input.disconnect(_on_game_view_gui_input)
 	if is_instance_valid(_build_manager):
 		if _build_manager.tower_selected.is_connected(_on_tower_selected):
@@ -148,15 +151,29 @@ func _exit_tree() -> void:
 			GameManager.peak_meter_changed.disconnect(_on_peak_changed)
 		if GameManager.wave_status_changed.is_connected(_on_wave_status_changed):
 			GameManager.wave_status_changed.disconnect(_on_wave_status_changed)
-	if is_instance_valid(volume_slider) and volume_slider.value_changed.is_connected(_on_volume_changed):
+	if (
+		is_instance_valid(volume_slider)
+		and volume_slider.value_changed.is_connected(_on_volume_changed)
+	):
 		volume_slider.value_changed.disconnect(_on_volume_changed)
-	if is_instance_valid(volume_button) and volume_button.pressed.is_connected(_on_volume_button_pressed):
+	if (
+		is_instance_valid(volume_button)
+		and volume_button.pressed.is_connected(_on_volume_button_pressed)
+	):
 		volume_button.pressed.disconnect(_on_volume_button_pressed)
 	if is_instance_valid(_tower_inspector) and is_instance_valid(_build_manager):
-		if _tower_inspector.sell_tower_requested.is_connected(_build_manager._on_sell_tower_requested):
-			_tower_inspector.sell_tower_requested.disconnect(_build_manager._on_sell_tower_requested)
-		if _tower_inspector.target_priority_changed.is_connected(_build_manager._on_target_priority_changed):
-			_tower_inspector.target_priority_changed.disconnect(_build_manager._on_target_priority_changed)
+		if _tower_inspector.sell_tower_requested.is_connected(
+			_build_manager._on_sell_tower_requested
+		):
+			_tower_inspector.sell_tower_requested.disconnect(
+				_build_manager._on_sell_tower_requested
+			)
+		if _tower_inspector.target_priority_changed.is_connected(
+			_build_manager._on_target_priority_changed
+		):
+			_tower_inspector.target_priority_changed.disconnect(
+				_build_manager._on_target_priority_changed
+			)
 	if is_instance_valid(btn_minimize) and btn_minimize.pressed.is_connected(_on_minimize_pressed):
 		btn_minimize.pressed.disconnect(_on_minimize_pressed)
 	if is_instance_valid(btn_maximize) and btn_maximize.pressed.is_connected(_on_maximize_pressed):
@@ -165,9 +182,15 @@ func _exit_tree() -> void:
 		btn_close.pressed.disconnect(_on_close_pressed)
 	if is_instance_valid(play_button) and play_button.pressed.is_connected(_on_play_button_pressed):
 		play_button.pressed.disconnect(_on_play_button_pressed)
-	if is_instance_valid(restart_button) and restart_button.pressed.is_connected(_on_restart_button_pressed):
+	if (
+		is_instance_valid(restart_button)
+		and restart_button.pressed.is_connected(_on_restart_button_pressed)
+	):
 		restart_button.pressed.disconnect(_on_restart_button_pressed)
-	if is_instance_valid(setlist_restart_button) and setlist_restart_button.pressed.is_connected(_on_setlist_restart_button_pressed):
+	if (
+		is_instance_valid(setlist_restart_button)
+		and setlist_restart_button.pressed.is_connected(_on_setlist_restart_button_pressed)
+	):
 		setlist_restart_button.pressed.disconnect(_on_setlist_restart_button_pressed)
 	if is_instance_valid(main_menu_confirm):
 		if main_menu_confirm.confirmed.is_connected(_on_main_menu_confirmed):
@@ -195,7 +218,6 @@ func _exit_tree() -> void:
 
 	if is_instance_valid(_build_manager) and _build_manager.has_method("clear_level_references"):
 		_build_manager.clear_level_references()
-
 
 
 ## Attempts to acquire the BuildManager from InputManager if available.
@@ -226,7 +248,18 @@ func _bind_build_manager() -> void:
 	if is_instance_valid(drop_zone) and drop_zone.has_method("setup"):
 		drop_zone.setup(_build_manager)
 
-	# Setup initial overlay state removed to prevent snapping. Overlay animation is now driven purely by change_workspace ContextMode swaps.
+	# Bind Inspector Signals to the new BuildManager
+	if is_instance_valid(_tower_inspector):
+		if not _tower_inspector.sell_tower_requested.is_connected(
+			_build_manager._on_sell_tower_requested
+		):
+			_tower_inspector.sell_tower_requested.connect(_build_manager._on_sell_tower_requested)
+		if not _tower_inspector.target_priority_changed.is_connected(
+			_build_manager._on_target_priority_changed
+		):
+			_tower_inspector.target_priority_changed.connect(
+				_build_manager._on_target_priority_changed
+			)
 
 
 ## Instantiates the SidebarHUD scene into the left sidebar panel, replacing

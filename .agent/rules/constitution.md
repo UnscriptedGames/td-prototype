@@ -60,6 +60,7 @@ Agents must navigate these phases sequentially. The user may trigger a `RESET FL
 
 ## 5. Session Management
 - **Handover Protocol:** Update `/.antigravity/handover.md` at the end of every session. 
+- **Timezone Standard:** All AI execution logs, internal dates, and scheduled task updates MUST use **Sydney Time (AEST/AEDT)**.
 - **Maintenance Alert:** Check `Knowledge/scheduled_tasks.md`. If any tasks are overdue based on their `Frequency` vs `Last Executed` date, list them under a "Maintenance Alerts" sub-header in the handover.
 - **Standard State:** Provide current state, signal maps, and immediate next step.
 - **Stable State:** If the user specifies "clear" or "no pending tasks," the file must be set to:

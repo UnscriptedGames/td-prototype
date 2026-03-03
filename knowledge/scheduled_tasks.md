@@ -4,17 +4,17 @@ This document contains a list of recurring maintenance tasks for the Jules async
 
 ## Task Schedule
 
-| # | Task Name | Category | Frequency | Last Executed |
-|:--|:----------|:---------|:----------|:--------------|
-| 1 | The Signal Janitor | Memory Management | Weekly / After refactors | 2026-03-02 |
-| 2 | The Constitution Specialist | Naming & Standards | Every 3–4 features | — |
-| 3 | The Documentation Clerk | Project Tracking | Fortnightly / Milestone | 2026-03-03 |
-| 4 | The Test Architect | Quality Assurance | Per major new system | — |
-| 5 | The Typist | Static Typing | Monthly / Pre-break | — |
-| 6 | The Inspector | Performance Guard | Bi-weekly | — |
-| 7 | The Custodian | Dead Code Cleanup | Per dev phase | — |
-| 8 | The UI Architect | Hierarchy Enforcer | Per new UI element | — |
-| 9 | The Cartographer | Scene Tree Auditor | Monthly / After restructures | — |
+| # | Task Name | Category | Frequency | Mode | Last Executed |
+|:--|:----------|:---------|:----------|:-----|:--------------|
+| 1 | The Signal Janitor | Memory Management | Weekly+ | **Interactive** | 2026-03-02 |
+| 2 | The Constitution Specialist | Naming & Standards | 3–4 Features | **Review** | — |
+| 3 | The Documentation Clerk | Project Tracking | Fortnightly | **Interactive** | 2026-03-03 |
+| 4 | The Test Architect | Quality Assurance | Major System | **Interactive** | — |
+| 5 | The Typist | Static Typing | Monthly | **Start** | — |
+| 6 | The Inspector | Performance Guard | Bi-weekly | **Review** | — |
+| 7 | The Custodian | Dead Code Cleanup | Per Phase | **Review** | — |
+| 8 | The UI Architect | Hierarchy Enforcer | New UI | **Interactive** | — |
+| 9 | The Cartographer | Scene Tree Auditor | Monthly | **Review** | — |
 
 ---
 
@@ -28,8 +28,11 @@ Follow these steps to safely run maintenance tasks and sync changes back to your
 
 ### 2. Configure Jules (Web UI)
 1.  **Paste Prompt:** Select your branch and paste the corresponding **Jules Prompt** into the Jules task window.
-2.  **Toggle Interactive Mode:** Change the start button dropdown to **Interactive plan**. This allows Jules to clarify goals before it begins.
-3.  **Confirm Scope:** Respond to Jules' initial clarification questions (e.g., "Documentation only," "Do not delete planned features").
+2.  **Set Recommended Mode:** Look at the **Mode** column in the Task Schedule and set the start button dropdown accordingly:
+    -   🚀 **Start:** Get started immediately. Best for low-risk tasks (Typing, Cleanup).
+    -   📄 **Review:** Jules generates a plan and waits for your "Yes" before starting.
+    -   🔮 **Interactive plan:** Chat with Jules first to clarify goals and target files. **Best for most tasks.**
+3.  **Confirm Scope:** If using Interactive, respond to Jules' initial clarification questions (e.g., "Documentation only," "Ignore the `/addons/` folder").
 
 ### 3. Review & Approve
 1.  **Review Plan:** Jules will provide a multi-step plan. Ensure it targets the correct files and respects project rules.
@@ -47,7 +50,7 @@ Follow these steps to safely run maintenance tasks and sync changes back to your
 
 ---
 
-## 1. The Signal Janitor (Memory Management)
+## 1. The Signal Janitor (Memory Management) — [Mode: Interactive]
 **Description:** Audits the codebase to ensure all signals are properly disconnected in `_exit_tree()` to prevent memory leaks.
 **Frequency:** Weekly or after major system refactors.
 
@@ -60,7 +63,7 @@ Finally, update the 'Last Executed' column for **Task 1 (The Signal Janitor)** i
 
 ---
 
-## 2. The Constitution Specialist (Naming & Standards)
+## 2. The Constitution Specialist (Naming & Standards) — [Mode: Review]
 **Description:** Verifies that all variables, functions, and file names strictly adhere to the `constitution.md` naming and formatting rules.
 **Frequency:** After every 3–4 feature implementations.
 
@@ -80,7 +83,7 @@ Finally, update the 'Last Executed' column for **Task 2 (The Constitution Specia
 
 ---
 
-## 3. The Documentation Clerk (Project Tracking)
+## 3. The Documentation Clerk (Project Tracking) — [Mode: Interactive]
 **Description:** Synchronises newly implemented code features back into the core knowledge briefs to maintain a single source of truth.
 **Frequency:** Fortnightly or at the end of a developmental "milestone."
 
@@ -93,7 +96,7 @@ Finally, update the 'Last Executed' column for **Task 3 (The Documentation Clerk
 
 ---
 
-## 4. The Test Architect (Quality Assurance)
+## 4. The Test Architect (Quality Assurance) — [Mode: Interactive]
 **Description:** Generates boilerplate unit tests for core systems to ensure mathematical and logic stability.
 **Frequency:** Once per major new system (e.g., armor/damage rework).
 
@@ -110,7 +113,7 @@ Finally, update the 'Last Executed' column for **Task 4 (The Test Architect)** i
 
 ---
 
-## 5. The Typist (Static Typing Enforcer)
+## 5. The Typist (Static Typing Enforcer) — [Mode: Start]
 **Description:** Audits the codebase for missing return types (e.g., `-> void`) and missing variable type hints (e.g., `var health: int`).
 **Frequency:** Monthly or before long breaks in development.
 
@@ -123,7 +126,7 @@ Finally, update the 'Last Executed' column for **Task 5 (The Typist)** in the 'T
 
 ---
 
-## 6. The Inspector (Performance Guard)
+## 6. The Inspector (Performance Guard) — [Mode: Review]
 **Description:** Scans the `_process()` and `_physics_process()` functions across all scripts to ensure performance best practices.
 **Frequency:** Bi-weekly, especially when handling many instances (like projectiles or enemies).
 
@@ -141,7 +144,7 @@ Finally, update the 'Last Executed' column for **Task 6 (The Inspector)** in the
 
 ---
 
-## 7. The Custodian (Dead Code Cleanup)
+## 7. The Custodian (Dead Code Cleanup) — [Mode: Review]
 **Description:** Scans the codebase for unused variables, orphan functions, and deprecated logic.
 **Frequency:** At the end of every major development phase before committing to main.
 
@@ -159,7 +162,7 @@ Finally, update the 'Last Executed' column for **Task 7 (The Custodian)** in the
 
 ---
 
-## 8. The UI Architect (Hierarchy Enforcer)
+## 8. The UI Architect (Hierarchy Enforcer) — [Mode: Interactive]
 **Description:** Analyses UI `.tscn` files and scripts to ensure they follow layering and viewport architecture rules.
 **Frequency:** Whenever new UI overlays, menus, or HUD elements are introduced.
 
@@ -172,7 +175,7 @@ Finally, update the 'Last Executed' column for **Task 8 (The UI Architect)** in 
 
 ---
 
-## 9. The Cartographer (Scene Tree Auditor)
+## 9. The Cartographer (Scene Tree Auditor) — [Mode: Review]
 **Description:** Cross-references all `NodePath` strings in `.gd` scripts and `.tscn` files against the actual scene tree structure to detect broken references caused by node renames or restructures.
 **Frequency:** Monthly or after any significant scene tree restructuring (e.g., SPA refactors, sidebar changes).
 
