@@ -51,352 +51,22 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"WorkspacePanel"
 
-[node name="MainLayout" type="VBoxContainer" parent="." unique_id=741348368]
+[node name="WorkspaceSplit" type="HBoxContainer" parent="." unique_id=1499982377]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = 72.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 0
 
-[node name="TopBar" type="PanelContainer" parent="MainLayout" unique_id=925509776]
-z_index = 2
-custom_minimum_size = Vector2(0, 72)
-layout_mode = 2
-theme_type_variation = &"TopBarPanel"
-
-[node name="Content" type="HBoxContainer" parent="MainLayout/TopBar" unique_id=1225175078]
-layout_mode = 2
-
-[node name="Spacer1" type="Control" parent="MainLayout/TopBar/Content" unique_id=1957524981]
-custom_minimum_size = Vector2(10, 0)
-layout_mode = 2
-
-[node name="MenuButton" type="Button" parent="MainLayout/TopBar/Content" unique_id=1995104034]
-layout_mode = 2
-focus_mode = 0
-text = " Menu "
-flat = true
-
-[node name="SettingsButton" type="Button" parent="MainLayout/TopBar/Content" unique_id=1594096625]
-layout_mode = 2
-focus_mode = 0
-text = " Settings "
-flat = true
-
-[node name="HelpButton" type="Button" parent="MainLayout/TopBar/Content" unique_id=1334326068]
-layout_mode = 2
-focus_mode = 0
-text = " Help "
-flat = true
-
-[node name="VSeparator1" type="VSeparator" parent="MainLayout/TopBar/Content" unique_id=73948576]
-layout_mode = 2
-
-[node name="Spacer2" type="Control" parent="MainLayout/TopBar/Content" unique_id=62018420]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.5
-
-[node name="PerformanceMeterContainer" type="PanelContainer" parent="MainLayout/TopBar/Content" unique_id=1077080360]
-custom_minimum_size = Vector2(225, 22)
-layout_mode = 2
-size_flags_vertical = 4
-theme_type_variation = &"MeterBackground"
-
-[node name="MeterHBox" type="HBoxContainer" parent="MainLayout/TopBar/Content/PerformanceMeterContainer" unique_id=184920401]
-layout_mode = 2
-theme_override_constants/separation = 10
-alignment = 1
-
-[node name="HealthLabel" type="Label" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=182939402]
-layout_mode = 2
-text = "Distortion:"
-vertical_alignment = 1
-
-[node name="Spacer5" type="Control" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=836429443]
-custom_minimum_size = Vector2(1, 0)
-layout_mode = 2
-
-[node name="MeterVBox" type="VBoxContainer" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=532243765]
-custom_minimum_size = Vector2(350, 35)
-layout_mode = 2
-theme_override_constants/separation = 2
-alignment = 1
-
-[node name="BarContainerL" type="Panel" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox" unique_id=982736451]
-clip_children = 2
-custom_minimum_size = Vector2(350, 6)
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = ExtResource("8_clipper")
-
-[node name="BarL" type="ProgressBar" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL" unique_id=2084685703]
-material = SubResource("ShaderMaterial_peak")
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_styles/background = SubResource("StyleBoxEmpty_bar_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_white")
-min_value = -5.0
-value = -5.0
-show_percentage = false
-
-[node name="Marker0" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL" unique_id=111111111]
-custom_minimum_size = Vector2(2, 0)
-layout_mode = 1
-anchors_preset = 9
-anchor_bottom = 1.0
-offset_left = 16.66
-offset_right = 18.66
-grow_vertical = 2
-color = Color(0.2, 0.2, 0.2, 0.8)
-
-[node name="Marker33" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL" unique_id=222222222]
-custom_minimum_size = Vector2(2, 0)
-layout_mode = 1
-anchors_preset = 9
-anchor_bottom = 1.0
-offset_left = 126.66
-offset_right = 128.66
-grow_vertical = 2
-color = Color(0.2, 0.2, 0.2, 0.8)
-
-[node name="Marker66" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL" unique_id=333333333]
-custom_minimum_size = Vector2(2, 0)
-layout_mode = 1
-anchors_preset = 9
-anchor_bottom = 1.0
-offset_left = 236.66
-offset_right = 238.66
-grow_vertical = 2
-color = Color(0.2, 0.2, 0.2, 0.8)
-
-[node name="PeakLineL" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL" unique_id=2027420559]
-custom_minimum_size = Vector2(2, 0)
-layout_mode = 1
-anchors_preset = 11
-anchor_left = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -2.0
-grow_horizontal = 0
-grow_vertical = 2
-color = Color(0.5137255, 0.5137255, 0.5137255, 1)
-
-[node name="BarContainerR" type="Panel" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox" unique_id=827364519]
-clip_children = 2
-custom_minimum_size = Vector2(350, 6)
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = ExtResource("8_clipper")
-
-[node name="BarR" type="ProgressBar" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR" unique_id=1229082749]
-material = SubResource("ShaderMaterial_peak")
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_styles/background = SubResource("StyleBoxEmpty_bar_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_white")
-min_value = -5.0
-value = -5.0
-show_percentage = false
-
-[node name="Marker0" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR" unique_id=444444444]
-custom_minimum_size = Vector2(2, 0)
-layout_mode = 1
-anchors_preset = 9
-anchor_bottom = 1.0
-offset_left = 16.66
-offset_right = 18.66
-grow_vertical = 2
-color = Color(0.2, 0.2, 0.2, 0.8)
-
-[node name="Marker33" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR" unique_id=555555555]
-custom_minimum_size = Vector2(2, 0)
-layout_mode = 1
-anchors_preset = 9
-anchor_bottom = 1.0
-offset_left = 126.66
-offset_right = 128.66
-grow_vertical = 2
-color = Color(0.2, 0.2, 0.2, 0.8)
-
-[node name="Marker66" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR" unique_id=666666666]
-custom_minimum_size = Vector2(2, 0)
-layout_mode = 1
-anchors_preset = 9
-anchor_bottom = 1.0
-offset_left = 236.66
-offset_right = 238.66
-grow_vertical = 2
-color = Color(0.2, 0.2, 0.2, 0.8)
-
-[node name="PeakLineR" type="ColorRect" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR" unique_id=632731713]
-custom_minimum_size = Vector2(2, 0)
-layout_mode = 1
-anchors_preset = 11
-anchor_left = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -2.0
-grow_horizontal = 0
-grow_vertical = 2
-color = Color(0.5137255, 0.5137255, 0.5137255, 1)
-
-[node name="Spacer6" type="Control" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=888135602]
-custom_minimum_size = Vector2(1, 0)
-layout_mode = 2
-
-[node name="IntegrityValueLabel" type="Label" parent="MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=987654321]
-layout_mode = 2
-text = "100%"
-vertical_alignment = 1
-
-[node name="Spacer4" type="Control" parent="MainLayout/TopBar/Content" unique_id=92806510]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.5
-
-[node name="VSeparator5" type="VSeparator" parent="MainLayout/TopBar/Content" unique_id=1709007433]
-layout_mode = 2
-
-[node name="TransportControls" type="HBoxContainer" parent="MainLayout/TopBar/Content" unique_id=1503373109]
-layout_mode = 2
-theme_override_constants/separation = 15
-
-[node name="PlayButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls" unique_id=1372303758]
-custom_minimum_size = Vector2(35, 35)
-layout_mode = 2
-size_flags_vertical = 4
-focus_mode = 0
-disabled = true
-icon = ExtResource("4_648vu")
-flat = true
-expand_icon = true
-
-[node name="RestartButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls" unique_id=996963216]
-custom_minimum_size = Vector2(35, 35)
-layout_mode = 2
-size_flags_vertical = 4
-focus_mode = 0
-disabled = true
-icon = ExtResource("6_j48ql")
-flat = true
-expand_icon = true
-
-[node name="VolumeButton" type="Button" parent="MainLayout/TopBar/Content/TransportControls" unique_id=1707035131]
-custom_minimum_size = Vector2(35, 35)
-layout_mode = 2
-size_flags_vertical = 4
-focus_mode = 0
-icon = ExtResource("6_q8a2y")
-flat = true
-expand_icon = true
-
-[node name="VolumeSlider" type="HSlider" parent="MainLayout/TopBar/Content/TransportControls" unique_id=1422392630]
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-size_flags_vertical = 4
-focus_mode = 0
-value = 100.0
-
-[node name="VSeparator2" type="VSeparator" parent="MainLayout/TopBar/Content" unique_id=84059687]
-layout_mode = 2
-
-[node name="Spacer3" type="Control" parent="MainLayout/TopBar/Content" unique_id=1173521741]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="WaveInfoPanel" type="PanelContainer" parent="MainLayout/TopBar/Content" unique_id=1437747474]
-custom_minimum_size = Vector2(350, 32)
-layout_mode = 2
-size_flags_vertical = 4
-theme_type_variation = &"DisplayPanel"
-
-[node name="InfoHBox" type="HBoxContainer" parent="MainLayout/TopBar/Content/WaveInfoPanel" unique_id=192214825]
-layout_mode = 2
-theme_override_constants/separation = 20
-alignment = 1
-
-[node name="WaveLabel" type="Label" parent="MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox" unique_id=1299038656]
-layout_mode = 2
-text = "Track: 0 / 0"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="GainLabel" type="Label" parent="MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox" unique_id=498584933]
-layout_mode = 2
-text = "Gain: 0 dB"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="StageTitleLabel" type="Label" parent="MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox" unique_id=836421945]
-visible = false
-layout_mode = 2
-text = "Stage Title"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="SetlistRestartButton" type="Button" parent="MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox" unique_id=748291884]
-visible = false
-layout_mode = 2
-text = "Restart Stage"
-
-[node name="RightSpacer" type="Control" parent="MainLayout/TopBar/Content" unique_id=829581726]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="VSeparator4" type="VSeparator" parent="MainLayout/TopBar/Content" unique_id=106271809]
-layout_mode = 2
-
-[node name="WindowControls" type="HBoxContainer" parent="MainLayout/TopBar/Content" unique_id=29384756]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="MinimizeButton" type="Button" parent="MainLayout/TopBar/Content/WindowControls" unique_id=38475629]
-custom_minimum_size = Vector2(35, 35)
-layout_mode = 2
-focus_mode = 0
-icon = ExtResource("9_0yftj")
-flat = true
-expand_icon = true
-
-[node name="MaximizeButton" type="Button" parent="MainLayout/TopBar/Content/WindowControls" unique_id=48576293]
-custom_minimum_size = Vector2(35, 35)
-layout_mode = 2
-focus_mode = 0
-icon = ExtResource("10_fcxat")
-flat = true
-expand_icon = true
-
-[node name="CloseButton" type="Button" parent="MainLayout/TopBar/Content/WindowControls" unique_id=37582946]
-custom_minimum_size = Vector2(35, 35)
-layout_mode = 2
-focus_mode = 0
-icon = ExtResource("11_4r27i")
-flat = true
-expand_icon = true
-
-[node name="WorkspaceSplit" type="HBoxContainer" parent="MainLayout" unique_id=1499982377]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 0
-
-[node name="SidebarContainer" type="Control" parent="MainLayout/WorkspaceSplit" unique_id=297071280]
+[node name="SidebarContainer" type="Control" parent="WorkspaceSplit" unique_id=297071280]
 custom_minimum_size = Vector2(324, 0)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="LeftSidebar" type="PanelContainer" parent="MainLayout/WorkspaceSplit/SidebarContainer" unique_id=1963009277]
-z_index = 1
+[node name="LeftSidebar" type="PanelContainer" parent="WorkspaceSplit/SidebarContainer" unique_id=1963009277]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -405,9 +75,8 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"SideBarPanel"
 
-[node name="SidebarOverlay" type="ColorRect" parent="MainLayout/WorkspaceSplit/SidebarContainer" unique_id=1418290223]
+[node name="SidebarOverlay" type="ColorRect" parent="WorkspaceSplit/SidebarContainer" unique_id=1418290223]
 visible = false
-z_index = 2
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -416,7 +85,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.121569, 0.121569, 0.141176, 1)
 
-[node name="Background" type="Panel" parent="MainLayout/WorkspaceSplit/SidebarContainer/SidebarOverlay" unique_id=1352415614]
+[node name="Background" type="Panel" parent="WorkspaceSplit/SidebarContainer/SidebarOverlay" unique_id=1352415614]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -425,7 +94,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"SideBarPanel"
 
-[node name="OverlayContent" type="MarginContainer" parent="MainLayout/WorkspaceSplit/SidebarContainer/SidebarOverlay" unique_id=1418290224]
+[node name="OverlayContent" type="MarginContainer" parent="WorkspaceSplit/SidebarContainer/SidebarOverlay" unique_id=1418290224]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -437,7 +106,7 @@ theme_override_constants/margin_top = 40
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 40
 
-[node name="StatusLabel" type="Label" parent="MainLayout/WorkspaceSplit/SidebarContainer/SidebarOverlay/OverlayContent" unique_id=-1356491686]
+[node name="StatusLabel" type="Label" parent="WorkspaceSplit/SidebarContainer/SidebarOverlay/OverlayContent" unique_id=-1356491686]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
 theme_override_font_sizes/font_size = 24
@@ -445,11 +114,11 @@ text = "[ OFFLINE ]"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="GameViewWrapper" type="Control" parent="MainLayout/WorkspaceSplit" unique_id=491534373]
+[node name="GameViewWrapper" type="Control" parent="WorkspaceSplit" unique_id=491534373]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="GameViewContainer" type="SubViewportContainer" parent="MainLayout/WorkspaceSplit/GameViewWrapper" unique_id=1688367999]
+[node name="GameViewContainer" type="SubViewportContainer" parent="WorkspaceSplit/GameViewWrapper" unique_id=1688367999]
 clip_contents = true
 layout_mode = 1
 anchors_preset = 15
@@ -459,12 +128,12 @@ grow_horizontal = 2
 grow_vertical = 2
 stretch = true
 
-[node name="SubViewport" type="SubViewport" parent="MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer" unique_id=135730004]
+[node name="SubViewport" type="SubViewport" parent="WorkspaceSplit/GameViewWrapper/GameViewContainer" unique_id=135730004]
 handle_input_locally = false
-size = Vector2i(1596, 1008)
+size = Vector2i(1596, 936)
 render_target_update_mode = 4
 
-[node name="DropZone" type="Control" parent="MainLayout/WorkspaceSplit/GameViewWrapper" unique_id=2011257287]
+[node name="DropZone" type="Control" parent="WorkspaceSplit/GameViewWrapper" unique_id=2011257287]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -474,7 +143,7 @@ grow_vertical = 2
 mouse_filter = 1
 script = ExtResource("1_dropper")
 
-[node name="UIWorkspaceContainer" type="MarginContainer" parent="MainLayout/WorkspaceSplit/GameViewWrapper" unique_id=1441491149]
+[node name="UIWorkspaceContainer" type="MarginContainer" parent="WorkspaceSplit/GameViewWrapper" unique_id=1441491149]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -487,10 +156,338 @@ theme_override_constants/margin_top = 0
 theme_override_constants/margin_right = 0
 theme_override_constants/margin_bottom = 0
 
-[node name="DebugToolbar" parent="MainLayout/WorkspaceSplit/GameViewWrapper" unique_id=839140025 instance=ExtResource("13_debug")]
+[node name="DebugToolbar" parent="WorkspaceSplit/GameViewWrapper" unique_id=839140025 instance=ExtResource("13_debug")]
 layout_mode = 1
 
+[node name="TopBar" type="PanelContainer" parent="." unique_id=925509776]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+theme_type_variation = &"TopBarPanel"
+
+[node name="Content" type="HBoxContainer" parent="TopBar" unique_id=1225175078]
+layout_mode = 2
+
+[node name="Spacer1" type="Control" parent="TopBar/Content" unique_id=1957524981]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+
+[node name="MenuButton" type="Button" parent="TopBar/Content" unique_id=1995104034]
+layout_mode = 2
+focus_mode = 0
+text = " Menu "
+flat = true
+
+[node name="SettingsButton" type="Button" parent="TopBar/Content" unique_id=1594096625]
+layout_mode = 2
+focus_mode = 0
+text = " Settings "
+flat = true
+
+[node name="HelpButton" type="Button" parent="TopBar/Content" unique_id=1334326068]
+layout_mode = 2
+focus_mode = 0
+text = " Help "
+flat = true
+
+[node name="VSeparator1" type="VSeparator" parent="TopBar/Content" unique_id=73948576]
+layout_mode = 2
+
+[node name="Spacer2" type="Control" parent="TopBar/Content" unique_id=62018420]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.5
+
+[node name="PerformanceMeterContainer" type="PanelContainer" parent="TopBar/Content" unique_id=1077080360]
+custom_minimum_size = Vector2(225, 22)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"MeterBackground"
+
+[node name="MeterHBox" type="HBoxContainer" parent="TopBar/Content/PerformanceMeterContainer" unique_id=184920401]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="HealthLabel" type="Label" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=182939402]
+layout_mode = 2
+text = "Distortion:"
+vertical_alignment = 1
+
+[node name="Spacer5" type="Control" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=836429443]
+custom_minimum_size = Vector2(1, 0)
+layout_mode = 2
+
+[node name="MeterVBox" type="VBoxContainer" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=532243765]
+custom_minimum_size = Vector2(350, 35)
+layout_mode = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="BarContainerL" type="Panel" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox" unique_id=982736451]
+clip_children = 2
+custom_minimum_size = Vector2(350, 6)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = ExtResource("8_clipper")
+
+[node name="BarL" type="ProgressBar" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL" unique_id=2084685703]
+material = SubResource("ShaderMaterial_peak")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/background = SubResource("StyleBoxEmpty_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_white")
+min_value = -5.0
+value = -5.0
+show_percentage = false
+
+[node name="Marker0" type="ColorRect" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL" unique_id=111111111]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 16.66
+offset_right = 18.66
+grow_vertical = 2
+color = Color(0.2, 0.2, 0.2, 0.8)
+
+[node name="Marker33" type="ColorRect" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL" unique_id=222222222]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 126.66
+offset_right = 128.66
+grow_vertical = 2
+color = Color(0.2, 0.2, 0.2, 0.8)
+
+[node name="Marker66" type="ColorRect" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL" unique_id=333333333]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 236.66
+offset_right = 238.66
+grow_vertical = 2
+color = Color(0.2, 0.2, 0.2, 0.8)
+
+[node name="PeakLineL" type="ColorRect" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL" unique_id=2027420559]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -2.0
+grow_horizontal = 0
+grow_vertical = 2
+color = Color(0.5137255, 0.5137255, 0.5137255, 1)
+
+[node name="BarContainerR" type="Panel" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox" unique_id=827364519]
+clip_children = 2
+custom_minimum_size = Vector2(350, 6)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = ExtResource("8_clipper")
+
+[node name="BarR" type="ProgressBar" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR" unique_id=1229082749]
+material = SubResource("ShaderMaterial_peak")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/background = SubResource("StyleBoxEmpty_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_white")
+min_value = -5.0
+value = -5.0
+show_percentage = false
+
+[node name="Marker0" type="ColorRect" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR" unique_id=444444444]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 16.66
+offset_right = 18.66
+grow_vertical = 2
+color = Color(0.2, 0.2, 0.2, 0.8)
+
+[node name="Marker33" type="ColorRect" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR" unique_id=555555555]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 126.66
+offset_right = 128.66
+grow_vertical = 2
+color = Color(0.2, 0.2, 0.2, 0.8)
+
+[node name="Marker66" type="ColorRect" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR" unique_id=666666666]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 236.66
+offset_right = 238.66
+grow_vertical = 2
+color = Color(0.2, 0.2, 0.2, 0.8)
+
+[node name="PeakLineR" type="ColorRect" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR" unique_id=632731713]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -2.0
+grow_horizontal = 0
+grow_vertical = 2
+color = Color(0.5137255, 0.5137255, 0.5137255, 1)
+
+[node name="Spacer6" type="Control" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=888135602]
+custom_minimum_size = Vector2(1, 0)
+layout_mode = 2
+
+[node name="IntegrityValueLabel" type="Label" parent="TopBar/Content/PerformanceMeterContainer/MeterHBox" unique_id=987654321]
+layout_mode = 2
+text = "100%"
+vertical_alignment = 1
+
+[node name="Spacer4" type="Control" parent="TopBar/Content" unique_id=92806510]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.5
+
+[node name="VSeparator5" type="VSeparator" parent="TopBar/Content" unique_id=1709007433]
+layout_mode = 2
+
+[node name="TransportControls" type="HBoxContainer" parent="TopBar/Content" unique_id=1503373109]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="PlayButton" type="Button" parent="TopBar/Content/TransportControls" unique_id=1372303758]
+custom_minimum_size = Vector2(35, 35)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+disabled = true
+icon = ExtResource("4_648vu")
+flat = true
+expand_icon = true
+
+[node name="RestartButton" type="Button" parent="TopBar/Content/TransportControls" unique_id=996963216]
+custom_minimum_size = Vector2(35, 35)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+disabled = true
+icon = ExtResource("6_j48ql")
+flat = true
+expand_icon = true
+
+[node name="VolumeButton" type="Button" parent="TopBar/Content/TransportControls" unique_id=1707035131]
+custom_minimum_size = Vector2(35, 35)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+icon = ExtResource("6_q8a2y")
+flat = true
+expand_icon = true
+
+[node name="VolumeSlider" type="HSlider" parent="TopBar/Content/TransportControls" unique_id=1422392630]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+value = 100.0
+
+[node name="VSeparator2" type="VSeparator" parent="TopBar/Content" unique_id=84059687]
+layout_mode = 2
+
+[node name="Spacer3" type="Control" parent="TopBar/Content" unique_id=1173521741]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="WaveInfoPanel" type="PanelContainer" parent="TopBar/Content" unique_id=1437747474]
+custom_minimum_size = Vector2(350, 32)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"DisplayPanel"
+
+[node name="InfoHBox" type="HBoxContainer" parent="TopBar/Content/WaveInfoPanel" unique_id=192214825]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="WaveLabel" type="Label" parent="TopBar/Content/WaveInfoPanel/InfoHBox" unique_id=1299038656]
+layout_mode = 2
+text = "Track: 0 / 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GainLabel" type="Label" parent="TopBar/Content/WaveInfoPanel/InfoHBox" unique_id=498584933]
+layout_mode = 2
+text = "Gain: 0 dB"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StageTitleLabel" type="Label" parent="TopBar/Content/WaveInfoPanel/InfoHBox" unique_id=836421945]
+visible = false
+layout_mode = 2
+text = "Stage Title"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SetlistRestartButton" type="Button" parent="TopBar/Content/WaveInfoPanel/InfoHBox" unique_id=748291884]
+visible = false
+layout_mode = 2
+text = "Restart Stage"
+
+[node name="RightSpacer" type="Control" parent="TopBar/Content" unique_id=829581726]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VSeparator4" type="VSeparator" parent="TopBar/Content" unique_id=106271809]
+layout_mode = 2
+
+[node name="WindowControls" type="HBoxContainer" parent="TopBar/Content" unique_id=29384756]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MinimizeButton" type="Button" parent="TopBar/Content/WindowControls" unique_id=38475629]
+custom_minimum_size = Vector2(35, 35)
+layout_mode = 2
+focus_mode = 0
+icon = ExtResource("9_0yftj")
+flat = true
+expand_icon = true
+
+[node name="MaximizeButton" type="Button" parent="TopBar/Content/WindowControls" unique_id=48576293]
+custom_minimum_size = Vector2(35, 35)
+layout_mode = 2
+focus_mode = 0
+icon = ExtResource("10_fcxat")
+flat = true
+expand_icon = true
+
+[node name="CloseButton" type="Button" parent="TopBar/Content/WindowControls" unique_id=37582946]
+custom_minimum_size = Vector2(35, 35)
+layout_mode = 2
+focus_mode = 0
+icon = ExtResource("11_4r27i")
+flat = true
+expand_icon = true
+
 [node name="StemFailPopup" parent="." unique_id=748293481 instance=ExtResource("14_popup")]
+visible = false
 layout_mode = 1
 
 [node name="MainMenuConfirmation" type="ConfirmationDialog" parent="." unique_id=1158682758]

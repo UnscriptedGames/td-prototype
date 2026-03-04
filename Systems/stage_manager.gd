@@ -238,7 +238,7 @@ func _stop_current_stem_audio() -> void:
 	for child: Node in root.get_children():
 		if child is GameWindow:
 			var subviewport: Node = child.get_node_or_null(
-				"MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport"
+				"WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport"
 			)
 			if not subviewport:
 				return
