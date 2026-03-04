@@ -13,7 +13,7 @@ This document contains a list of recurring maintenance tasks for the Jules async
 | 5 | The Typist | Static Typing | Monthly | **Start** | 2026-03-03 |
 | 6 | The Inspector | Performance Guard | Bi-weekly | **Review** | 2026-03-03 |
 | 7 | The Custodian | Dead Code Cleanup | Per Phase | **Review** | 2026-03-04 |
-| 8 | The UI Architect | Hierarchy Enforcer | New UI | **Interactive** | — |
+| 8 | The UI Architect | Hierarchy Enforcer | New UI | **Interactive** | 2026-03-04 |
 | 9 | The Cartographer | Scene Tree Auditor | Monthly | **Review** | 2026-03-04 |
 
 ### 🧪 Model Tiering Guide

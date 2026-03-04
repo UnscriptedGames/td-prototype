@@ -60,60 +60,60 @@ var icon_mute: Texture2D = preload("res://UI/Icons/volume_mute.svg")
 # --- ONREADY ---
 
 @onready var game_viewport: SubViewport = (
-	$MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport
+	$WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport
 )
 @onready var ui_workspace: MarginContainer = (
-	$MainLayout/WorkspaceSplit/GameViewWrapper/UIWorkspaceContainer
+	$WorkspaceSplit/GameViewWrapper/UIWorkspaceContainer
 )
 @onready var game_view_container: SubViewportContainer = (
-	$MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
+	$WorkspaceSplit/GameViewWrapper/GameViewContainer
 )
-@onready var sidebar_overlay: Control = $MainLayout/WorkspaceSplit/SidebarContainer/SidebarOverlay
+@onready var sidebar_overlay: Control = $WorkspaceSplit/SidebarContainer/SidebarOverlay
 @onready var overlay_content: MarginContainer = (
-	$MainLayout/WorkspaceSplit/SidebarContainer/SidebarOverlay/OverlayContent
+	$WorkspaceSplit/SidebarContainer/SidebarOverlay/OverlayContent
 )
 @onready var status_label: Label = (
-	$MainLayout/WorkspaceSplit/SidebarContainer/SidebarOverlay/OverlayContent/StatusLabel
+	$WorkspaceSplit/SidebarContainer/SidebarOverlay/OverlayContent/StatusLabel
 )
-@onready var menu_button: Button = $MainLayout/TopBar/Content/MenuButton
+@onready var menu_button: Button = $TopBar/Content/MenuButton
 @onready var main_menu_confirm: ConfirmationDialog = $MainMenuConfirmation
 @onready var setlist_confirm: ConfirmationDialog = $SetlistConfirmation
 @onready var quit_confirm: ConfirmationDialog = $QuitConfirmation
-@onready var play_button: Button = $MainLayout/TopBar/Content/TransportControls/PlayButton
-@onready var restart_button: Button = $MainLayout/TopBar/Content/TransportControls/RestartButton
+@onready var play_button: Button = $TopBar/Content/TransportControls/PlayButton
+@onready var restart_button: Button = $TopBar/Content/TransportControls/RestartButton
 @onready var gauge_l: ProgressBar = (
-	$MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL
+	$TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL
 )
 @onready var gauge_r: ProgressBar = (
-	$MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR
+	$TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR
 )
 @onready var peak_line_l: ColorRect = (
-	$MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL/PeakLineL
+	$TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL/PeakLineL
 )
 @onready var peak_line_r: ColorRect = (
-	$MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR/PeakLineR
+	$TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR/PeakLineR
 )
 @onready var integrity_label: Label = (
-	$MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/IntegrityValueLabel
+	$TopBar/Content/PerformanceMeterContainer/MeterHBox/IntegrityValueLabel
 )
 @onready var performance_meter_container: PanelContainer = (
-	$MainLayout/TopBar/Content/PerformanceMeterContainer
+	$TopBar/Content/PerformanceMeterContainer
 )
-@onready var minimize_button: Button = $MainLayout/TopBar/Content/WindowControls/MinimizeButton
-@onready var maximize_button: Button = $MainLayout/TopBar/Content/WindowControls/MaximizeButton
-@onready var close_button: Button = $MainLayout/TopBar/Content/WindowControls/CloseButton
-@onready var wave_label: Label = $MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox/WaveLabel
-@onready var gain_label: Label = $MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox/GainLabel
+@onready var minimize_button: Button = $TopBar/Content/WindowControls/MinimizeButton
+@onready var maximize_button: Button = $TopBar/Content/WindowControls/MaximizeButton
+@onready var close_button: Button = $TopBar/Content/WindowControls/CloseButton
+@onready var wave_label: Label = $TopBar/Content/WaveInfoPanel/InfoHBox/WaveLabel
+@onready var gain_label: Label = $TopBar/Content/WaveInfoPanel/InfoHBox/GainLabel
 @onready var stage_title_label: Label = (
-	$MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox/StageTitleLabel
+	$TopBar/Content/WaveInfoPanel/InfoHBox/StageTitleLabel
 )
 @onready var setlist_restart_button: Button = (
-	$MainLayout/TopBar/Content/WaveInfoPanel/InfoHBox/SetlistRestartButton
+	$TopBar/Content/WaveInfoPanel/InfoHBox/SetlistRestartButton
 )
-@onready var volume_button: Button = $MainLayout/TopBar/Content/TransportControls/VolumeButton
-@onready var volume_slider: HSlider = $MainLayout/TopBar/Content/TransportControls/VolumeSlider
+@onready var volume_button: Button = $TopBar/Content/TransportControls/VolumeButton
+@onready var volume_slider: HSlider = $TopBar/Content/TransportControls/VolumeSlider
 @onready var restart_confirm: ConfirmationDialog = $RestartConfirmation
-@onready var _game_view_wrapper: Control = $MainLayout/WorkspaceSplit/GameViewWrapper
+@onready var _game_view_wrapper: Control = $WorkspaceSplit/GameViewWrapper
 
 
 # --- OVERRIDES ---
@@ -336,13 +336,13 @@ func _exit_tree() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_DRAG_BEGIN or what == NOTIFICATION_DRAG_END:
-		var top_bar: PanelContainer = get_node_or_null("MainLayout/TopBar") as PanelContainer
+		var top_bar: PanelContainer = get_node_or_null("TopBar") as PanelContainer
 		var left_sidebar: PanelContainer = (
-			get_node_or_null("MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar")
+			get_node_or_null("WorkspaceSplit/SidebarContainer/LeftSidebar")
 			as PanelContainer
 		)
 		var drop_zone: Control = (
-			get_node_or_null("MainLayout/WorkspaceSplit/GameViewWrapper/DropZone") as Control
+			get_node_or_null("WorkspaceSplit/GameViewWrapper/DropZone") as Control
 		)
 
 		if what == NOTIFICATION_DRAG_BEGIN:
@@ -383,7 +383,7 @@ func set_context_mode(mode: ContextMode) -> void:
 	_current_context = mode
 
 	@warning_ignore("unsafe_property_access")
-	var health_label: Label = $MainLayout/TopBar/Content/PerformanceMeterContainer/MeterHBox/HealthLabel
+	var health_label: Label = $TopBar/Content/PerformanceMeterContainer/MeterHBox/HealthLabel
 	if is_instance_valid(health_label):
 		if mode == ContextMode.STUDIO:
 			health_label.text = "CPU Usage:"
@@ -541,12 +541,12 @@ func _bind_build_manager() -> void:
 		_build_manager.tower_deselected.connect(_on_tower_deselected)
 
 	# Bind Viewport
-	var viewport: SubViewport = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport
-	var container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
+	var viewport: SubViewport = $WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport
+	var container: SubViewportContainer = $WorkspaceSplit/GameViewWrapper/GameViewContainer
 	_build_manager.bind_to_viewport(viewport, container)
 
 	# Inject BuildManager into the static DropZone node defined in the scene file
-	var drop_zone: Control = $MainLayout/WorkspaceSplit/GameViewWrapper.get_node_or_null("DropZone")
+	var drop_zone: Control = $WorkspaceSplit/GameViewWrapper.get_node_or_null("DropZone")
 	if is_instance_valid(drop_zone) and drop_zone.has_method("setup"):
 		drop_zone.setup(_build_manager)
 
@@ -565,7 +565,7 @@ func _bind_build_manager() -> void:
 
 
 func _setup_sidebar_hud() -> void:
-	var sidebar_container: PanelContainer = $MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar
+	var sidebar_container: PanelContainer = $WorkspaceSplit/SidebarContainer/LeftSidebar
 	if not sidebar_container:
 		return
 
@@ -633,9 +633,9 @@ func _setup_input_propagation() -> void:
 			viewport_instance.process_mode = Node.PROCESS_MODE_ALWAYS
 
 	# Allow drag data to fall through containers (prevents "Forbidden" cursor)
-	var top_bar: PanelContainer = $MainLayout/TopBar
-	var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar
-	var drop_zone: Control = $MainLayout/WorkspaceSplit/GameViewWrapper/DropZone
+	var top_bar: PanelContainer = $TopBar
+	var left_sidebar: PanelContainer = $WorkspaceSplit/SidebarContainer/LeftSidebar
+	var drop_zone: Control = $WorkspaceSplit/GameViewWrapper/DropZone
 
 	if top_bar:
 		_set_container_mouse_ignore_recursive(top_bar)
@@ -652,8 +652,7 @@ func _setup_inspector() -> void:
 		return
 
 	_tower_inspector = inspector_scene.instantiate()
-	game_view_container.add_child(_tower_inspector)
-	_tower_inspector.move_to_front()
+	_game_view_wrapper.add_child(_tower_inspector)
 	_tower_inspector.visible = false
 
 	if _build_manager:
@@ -746,9 +745,9 @@ func _on_game_state_changed(new_state: int) -> void:
 
 	var is_paused: bool = new_state == GameManager.GameState.PAUSED
 
-	if has_node("MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar"):
+	if has_node("WorkspaceSplit/SidebarContainer/LeftSidebar"):
 		_set_container_input_state(
-			$MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar, not is_paused
+			$WorkspaceSplit/SidebarContainer/LeftSidebar, not is_paused
 		)
 
 
@@ -905,7 +904,7 @@ func _on_tower_selected(tower: TemplateTower) -> void:
 			var viewport_local_position: Vector2 = tower.get_global_transform_with_canvas().origin
 			var current_container_offset: Vector2 = Vector2.ZERO
 
-			var container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
+			var container: SubViewportContainer = $WorkspaceSplit/GameViewWrapper/GameViewContainer
 			if container:
 				current_container_offset = container.global_position
 
@@ -1047,8 +1046,8 @@ func _on_opening_sequence_finished() -> void:
 
 
 func _set_ui_interaction(enabled: bool) -> void:
-	var top_bar: PanelContainer = $MainLayout/TopBar
-	var left_sidebar: PanelContainer = $MainLayout/WorkspaceSplit/SidebarContainer/LeftSidebar
+	var top_bar: PanelContainer = $TopBar
+	var left_sidebar: PanelContainer = $WorkspaceSplit/SidebarContainer/LeftSidebar
 
 	if top_bar:
 		_set_container_input_state(top_bar, enabled)
