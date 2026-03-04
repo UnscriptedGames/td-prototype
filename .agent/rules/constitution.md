@@ -53,6 +53,7 @@ Agents must navigate these phases sequentially. The user may trigger a `RESET FL
 - **Physics:** Always use `delta` for movement. Use `move_toward()` for velocity damping.
 - **Safety:** Use `as` for safe type casting followed by an `assert(node != null)`.
 - **Numbers:** Leading/trailing zeroes in floats (`0.5`). Underscores for large numbers (`1_000_000`).
+- **UIDs:** Omit `uid` attributes in `.tscn`/`.res` files if unsure. Let the Godot Editor re-assign them to avoid mismatches.
 
 ## 4. UI Architecture Rules
 - **SubViewport Input:** For UI overlays on top of a game view, place them as **siblings** to the `SubViewportContainer` inside a shared `Control` wrapper.

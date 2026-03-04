@@ -1,7 +1,7 @@
 # Game Brief — TD-Prototype
 
 **Version:** 0.1 (Living Document)
-**Last Updated:** 2026-03-03
+**Last Updated:** 2026-03-04
 
 ## 1. Game Identity
 
@@ -180,6 +180,17 @@ To prevent memory leaks in the dynamic SPA architecture, all nodes that connect 
 - **Disconnect in `_exit_tree()`**: All connections made in `_ready()` or `populate()` must be explicitly disconnected.
 - **Safety Guards**: Use `is_instance_valid(Node)` and `is_connected(Signal, Callable)` before every disconnection to prevent crash-on-exit during scene unloads.
 - **Dynamic Cleanup**: For containers with dynamic children (e.g., Relic HBox), use `get_children()` and `get_connections()` to sweep and clear all anonymous or bound connections.
+
+### UID Management (Filesystem Integrity)
+To prevent "Invalid UID" console warnings during bulk refactors or manual text-edits:
+- **Omit on Creation**: When adding `ext_resource` to `.tscn` or `.res` files manually, omit the `uid` attribute if the specific string is unknown.
+- **Auto-Healing**: The Godot Editor will automatically re-assign and write back valid UIDs upon the next save.
+- **Root UID Purge**: Removing the `uid` from the root `[gd_scene]` line forces the engine to re-index the scene based on its file path.
+
+### Allocation Caching (AP Budget Optimization)
+To keep the main `_process` loop lean, the AP budget meter does NOT calculate loadout costs per-frame:
+- **Property Cache**: `PlayerData` stores a `total_cost` integer.
+- **Manual Invalidation**: The cache is recalculated via `player_data.update_total_cost()` only during context switches (e.g., entering The Studio) or when `GlobalSignals.loadout_rebuild_requested` is emitted.
 
 ---
 
@@ -379,6 +390,12 @@ equipment.
 
 The entire interface is modelled after professional DAW software.
 
+### Layering & Depth Philosophy
+To ensure layout stability and prevent input routing bugs, the project strictly **avoids hardcoded `z_index` usage**:
+- **Tree-Order Rendering**: Depth is managed via node child ordering (bottom nodes render on top).
+- **HUD Siblings**: UI overlays (popups, dropzones, debug bars) must be placed as **siblings** (not children) of the `SubViewportContainer` within the `GameViewWrapper`. This ensures they render cleanly over the game world without being affected by viewport clipping.
+- **Overlay Transparency**: Most UI panels use `~95%` opacity with dark charcoal styling to mirror DAW "floating plugin" aesthetics.
+
 ### SPA Desktop Architecture
 The game operates as a Single Page Application within a persistent shell (`GameWindow`).
 - **Persistent DAW Shell**: The Top Bar (Transport Controls, Peak Meter) and Left Sidebar remain on screen during transitions to maintain immersion.
@@ -509,6 +526,8 @@ future design sessions and playtesting:
 - [x] **Inspector Persistence:** Resolved broken sell/priority signals by rebinding inspector to BuildManager on every level load (Resolved Mar 03).
 - [x] **Slot-Based Loadout:** Transitioned towers to a fixed 6-slot array for precise placement and swapping (Resolved Mar 03).
 - [x] **Sidebar Interaction:** Fixed drag-locking issue by ensuring sidebar remains interactive during Studio drags (Resolved Mar 03).
+- [x] **UI Hierarchy:** Enforced tree-order rendering and sibling overlays (Resolved Mar 04).
+- [x] **AP Performance:** Optimized AP budget meter via PlayerData caching (Resolved Mar 04).
 - [ ] **AP Growth:** How does the player's maximum AP increase? Fixed per stage, or a
 	separate upgrade currency?
 - [ ] **Unlock Economy:** Full mapping of what unlocks where (towers, buffs, relics, AP).

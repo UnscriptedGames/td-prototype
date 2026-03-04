@@ -1,7 +1,7 @@
-[gd_scene format=3 uid="uid://studio01000"]
+[gd_scene format=3]
 
 [ext_resource type="Theme" uid="uid://dpov18qpoqhlb" path="res://UI/Themes/daw_theme.tres" id="1_theme"]
-[ext_resource type="Script" uid="uid://studio02000" path="res://UI/Studio/studio_screen.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://dm1fhk6g6p0to" path="res://UI/Studio/studio_screen.gd" id="2_script"]
 
 [node name="StudioScreen" type="Control"]
 layout_mode = 3

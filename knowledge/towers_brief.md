@@ -231,3 +231,21 @@ Equalizer.**
 - [ ] **Upgrade cost:** Gold, AP, or a separate upgrade currency?
 - [ ] **Stat values:** Base damage, range, fire rate, and cost for each tower.
 - [ ] **Visual design:** Detailed art direction for each tower.
+
+---
+
+## 4. Technical Standards (Performance & Safety)
+
+To ensure stability across high entity counts, all Instruments (Towers) and Entities (Enemies/Projectiles) must follow these implementation rules:
+
+### Node Caching
+- **Rule:** Never use `get_node()` or `$` inside `_process` or `_physics_process`.
+- **Requirement:** Cache all target nodes using `@onready` variables during initialization.
+
+### Movement & Damping
+- **Velocity Damping:** Only use `move_toward()` for velocity damping and UI smoothing. Avoid `lerp()` for these specific cases to ensure frame-rate independence and "snappy" feedback.
+- **Delta Scaling:** All movement and rotation must be multiplied by `delta` (or `unscaled_delta` for UI).
+
+### Type Safety
+- **Safe Casting:** Use the `as` keyword for type casting followed immediately by an `assert(node != null)`. 
+- **Example:** `var enemy = area.get_parent() as TemplateEnemy; assert(enemy != null)`

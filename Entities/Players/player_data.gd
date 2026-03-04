@@ -7,6 +7,9 @@ const TOWER_SLOT_COUNT: int = 6
 @export var currency: int = 100  # Player's starting currency
 @export var max_allocation_points: int = 50
 
+## Allocation Cache
+var total_cost: int = 0
+
 ## Loadout Data
 ## The list of relic cards available for this loadout (null = empty slot).
 @export var relics: Array[RelicData] = []
@@ -27,25 +30,30 @@ func _init() -> void:
 
 ## Helper to calculate total allocation cost of this loadout
 func get_total_allocation_cost() -> int:
-	var total_cost: int = 0
+	var computed_cost: int = 0
 
 	# Calculate Relic Costs
 	for loadout_data in relics:
 		if loadout_data is RelicData:
-			total_cost += loadout_data.allocation_cost
+			computed_cost += loadout_data.allocation_cost
 
 	# Calculate Tower Costs
 	for slot in tower_slots:
 		if slot != null and slot.has("data") and slot["data"] is TowerData:
 			var quantity: int = slot.get("stock", 1)
-			total_cost += (slot["data"] as TowerData).allocation_cost * quantity
+			computed_cost += (slot["data"] as TowerData).allocation_cost * quantity
 
 	# Calculate Buff Costs
 	for loadout_data in buffs:
 		if loadout_data is BuffData:
-			total_cost += loadout_data.allocation_cost
+			computed_cost += loadout_data.allocation_cost
 
-	return total_cost
+	return computed_cost
+
+
+## Recalculates the cached total_cost property.
+func update_total_cost() -> void:
+	total_cost = get_total_allocation_cost()
 
 
 ## Validates if the loadout fits within a max allocation limit

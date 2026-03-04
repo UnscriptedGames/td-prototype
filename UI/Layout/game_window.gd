@@ -17,11 +17,9 @@ const SETLIST_SCENE_PATH: String = "res://UI/Setlist/setlist_screen.tscn"
 const SIDEBAR_MENU_SCENE_PATH: String = "res://UI/HUD/Sidebar/sidebar_main_menu.tscn"
 const STUDIO_SCENE_PATH: String = "res://UI/Studio/studio_screen.tscn"
 
-
 # --- EXPORTS ---
 
 @export var sidebar_overlay_anim_time: float = 0.4
-
 
 # --- VARIABLES ---
 
@@ -56,65 +54,47 @@ var icon_pause: Texture2D = preload("res://UI/Icons/pause.svg")
 var icon_volume: Texture2D = preload("res://UI/Icons/volume.svg")
 var icon_mute: Texture2D = preload("res://UI/Icons/volume_mute.svg")
 
-
 # --- ONREADY ---
 
-@onready var game_viewport: SubViewport = (
-	$WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport
-)
-@onready var ui_workspace: MarginContainer = (
-	$WorkspaceSplit/GameViewWrapper/UIWorkspaceContainer
-)
-@onready var game_view_container: SubViewportContainer = (
-	$WorkspaceSplit/GameViewWrapper/GameViewContainer
-)
+@onready
+var game_viewport: SubViewport = $WorkspaceSplit/GameViewWrapper/GameViewContainer/SubViewport
+@onready var ui_workspace: MarginContainer = $WorkspaceSplit/GameViewWrapper/UIWorkspaceContainer
+@onready
+var game_view_container: SubViewportContainer = $WorkspaceSplit/GameViewWrapper/GameViewContainer
 @onready var sidebar_overlay: Control = $WorkspaceSplit/SidebarContainer/SidebarOverlay
-@onready var overlay_content: MarginContainer = (
-	$WorkspaceSplit/SidebarContainer/SidebarOverlay/OverlayContent
-)
-@onready var status_label: Label = (
-	$WorkspaceSplit/SidebarContainer/SidebarOverlay/OverlayContent/StatusLabel
-)
+@onready
+var overlay_content: MarginContainer = $WorkspaceSplit/SidebarContainer/SidebarOverlay/OverlayContent
+@onready
+var status_label: Label = $WorkspaceSplit/SidebarContainer/SidebarOverlay/OverlayContent/StatusLabel
 @onready var menu_button: Button = $TopBar/Content/MenuButton
 @onready var main_menu_confirm: ConfirmationDialog = $MainMenuConfirmation
 @onready var setlist_confirm: ConfirmationDialog = $SetlistConfirmation
 @onready var quit_confirm: ConfirmationDialog = $QuitConfirmation
 @onready var play_button: Button = $TopBar/Content/TransportControls/PlayButton
 @onready var restart_button: Button = $TopBar/Content/TransportControls/RestartButton
-@onready var gauge_l: ProgressBar = (
-	$TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL
-)
-@onready var gauge_r: ProgressBar = (
-	$TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR
-)
-@onready var peak_line_l: ColorRect = (
-	$TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL/PeakLineL
-)
-@onready var peak_line_r: ColorRect = (
-	$TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR/PeakLineR
-)
-@onready var integrity_label: Label = (
-	$TopBar/Content/PerformanceMeterContainer/MeterHBox/IntegrityValueLabel
-)
-@onready var performance_meter_container: PanelContainer = (
-	$TopBar/Content/PerformanceMeterContainer
-)
+@onready
+var gauge_l: ProgressBar = $TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL
+@onready
+var gauge_r: ProgressBar = $TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR
+@onready
+var peak_line_l: ColorRect = $TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerL/BarL/PeakLineL
+@onready
+var peak_line_r: ColorRect = $TopBar/Content/PerformanceMeterContainer/MeterHBox/MeterVBox/BarContainerR/BarR/PeakLineR
+@onready
+var integrity_label: Label = $TopBar/Content/PerformanceMeterContainer/MeterHBox/IntegrityValueLabel
+@onready var performance_meter_container: PanelContainer = $TopBar/Content/PerformanceMeterContainer
 @onready var minimize_button: Button = $TopBar/Content/WindowControls/MinimizeButton
 @onready var maximize_button: Button = $TopBar/Content/WindowControls/MaximizeButton
 @onready var close_button: Button = $TopBar/Content/WindowControls/CloseButton
 @onready var wave_label: Label = $TopBar/Content/WaveInfoPanel/InfoHBox/WaveLabel
 @onready var gain_label: Label = $TopBar/Content/WaveInfoPanel/InfoHBox/GainLabel
-@onready var stage_title_label: Label = (
-	$TopBar/Content/WaveInfoPanel/InfoHBox/StageTitleLabel
-)
-@onready var setlist_restart_button: Button = (
-	$TopBar/Content/WaveInfoPanel/InfoHBox/SetlistRestartButton
-)
+@onready var stage_title_label: Label = $TopBar/Content/WaveInfoPanel/InfoHBox/StageTitleLabel
+@onready
+var setlist_restart_button: Button = $TopBar/Content/WaveInfoPanel/InfoHBox/SetlistRestartButton
 @onready var volume_button: Button = $TopBar/Content/TransportControls/VolumeButton
 @onready var volume_slider: HSlider = $TopBar/Content/TransportControls/VolumeSlider
 @onready var restart_confirm: ConfirmationDialog = $RestartConfirmation
 @onready var _game_view_wrapper: Control = $WorkspaceSplit/GameViewWrapper
-
 
 # --- OVERRIDES ---
 
@@ -187,14 +167,10 @@ func _process(delta: float) -> void:
 		_noise_target_difference = randf_range(-1.0, 1.0)
 
 	_noise_value_common = lerp(
-		_noise_value_common,
-		_noise_target_common,
-		unscaled_delta * JITTER_SPEED
+		_noise_value_common, _noise_target_common, unscaled_delta * JITTER_SPEED
 	)
 	_noise_value_difference = lerp(
-		_noise_value_difference,
-		_noise_target_difference,
-		unscaled_delta * JITTER_SPEED
+		_noise_value_difference, _noise_target_difference, unscaled_delta * JITTER_SPEED
 	)
 
 	# Final offsets: L = Common + Diff, R = Common - Diff
@@ -219,21 +195,13 @@ func _process(delta: float) -> void:
 
 	# L Channel
 	var smoothed_left: float = move_toward(gauge_l.value, bar_target, move_speed_left)
-	var final_left: float = clamp(
-		smoothed_left + _meter_noise_offset_left,
-		-5.0,
-		target_value
-	)
+	var final_left: float = clamp(smoothed_left + _meter_noise_offset_left, -5.0, target_value)
 	gauge_l.value = final_left
 	_update_peak_hold(target_value, true)
 
 	# R Channel
 	var smoothed_right: float = move_toward(gauge_r.value, bar_target, move_speed_right)
-	var final_right: float = clamp(
-		smoothed_right + _meter_noise_offset_right,
-		-5.0,
-		target_value
-	)
+	var final_right: float = clamp(smoothed_right + _meter_noise_offset_right, -5.0, target_value)
 	gauge_r.value = final_right
 	_update_peak_hold(target_value, false)
 
@@ -338,8 +306,7 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_DRAG_BEGIN or what == NOTIFICATION_DRAG_END:
 		var top_bar: PanelContainer = get_node_or_null("TopBar") as PanelContainer
 		var left_sidebar: PanelContainer = (
-			get_node_or_null("WorkspaceSplit/SidebarContainer/LeftSidebar")
-			as PanelContainer
+			get_node_or_null("WorkspaceSplit/SidebarContainer/LeftSidebar") as PanelContainer
 		)
 		var drop_zone: Control = (
 			get_node_or_null("WorkspaceSplit/GameViewWrapper/DropZone") as Control
@@ -428,6 +395,10 @@ func set_context_mode(mode: ContextMode) -> void:
 			stage_title_label.show()
 			if setlist_restart_button:
 				setlist_restart_button.hide()
+
+			if is_instance_valid(GameManager.player_data):
+				GameManager.player_data.update_total_cost()
+
 			# Specifically keep the sidebar online so players can drag into it
 			_set_sidebar_offline(false)
 			_update_sidebar_content(ContextMode.EMPTY)
@@ -620,7 +591,7 @@ func _setup_input_propagation() -> void:
 	if has_node("Background"):
 		$Background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var viewport_container: SubViewportContainer = $MainLayout/WorkspaceSplit/GameViewWrapper/GameViewContainer
+	var viewport_container: SubViewportContainer = $WorkspaceSplit/GameViewWrapper/GameViewContainer
 	if viewport_container:
 		# ALWAYS so clicks reach BuildManager even while paused.
 		# Game entities remain PAUSABLE by default via their own process_mode.
@@ -746,9 +717,7 @@ func _on_game_state_changed(new_state: int) -> void:
 	var is_paused: bool = new_state == GameManager.GameState.PAUSED
 
 	if has_node("WorkspaceSplit/SidebarContainer/LeftSidebar"):
-		_set_container_input_state(
-			$WorkspaceSplit/SidebarContainer/LeftSidebar, not is_paused
-		)
+		_set_container_input_state($WorkspaceSplit/SidebarContainer/LeftSidebar, not is_paused)
 
 
 func _set_container_input_state(node: Node, enabled: bool) -> void:
@@ -832,6 +801,7 @@ func _on_sidebar_studio() -> void:
 
 func _on_loadout_rebuild_requested() -> void:
 	if is_instance_valid(_sidebar_hud) and is_instance_valid(GameManager.player_data):
+		GameManager.player_data.update_total_cost()
 		_sidebar_hud.populate(GameManager.player_data)
 		_sidebar_hud.set_context(_current_context)
 
@@ -1186,5 +1156,3 @@ func _start_sidebar_tween(target_offset: float, is_offline: bool) -> void:
 
 	if not is_offline:
 		tween.tween_callback(sidebar_overlay.hide)
-
-
