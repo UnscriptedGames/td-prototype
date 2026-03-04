@@ -326,8 +326,8 @@ Enemies are modular **audio waveform tracks** defined by `EnemyData` resources.
 - When health reaches zero, the waveform **flatlines** and the enemy disappears.
 
 ### Movement & Navigation
-- **Grid-Based (AStarGrid2D):** Enemies no longer follow fixed geometric splines. Instead, they find the shortest path through the maze using a 24x16 grid.
-- **Weighted Targets:** Spawners can define multiple "Goal Tiles" with proportional weightings (e.g., 50% of enemies go to Goal A, 50% to Goal B).
+- **Grid-Based (AStarGrid2D):** Enemies no longer follow fixed geometric splines. Instead, they find the shortest path through the maze using a **19x12** grid.
+- **Topology:** The maze supports **1–3 Spawn Points** that converge into a **Single Exit**. This allows for multiple entry streams while maintaining musical balance for the final exit.
 - **Sub-Stepping Math:** Movement is calculated via a path-consumption loop. This ensures stability at high game speeds (up to 12x) and prevents enemies from "clipping" through walls at corners without needing heavy physics bodies.
 - **Visual Directions:** Enemies follow paths in **4 cardinal directions**. No sprite flipping or rotation is applied.
 - **Editor Preview:** Visuals are driven by `@tool` scripts, allowing real-time previews of wave scrolling directly in the Godot inspector.
@@ -416,6 +416,10 @@ The game operates as a Single Page Application within a persistent shell (`GameW
 	cooldown bars), Relic slots.
 - **Right Panel:** Tower Inspector / Selection details.
 - **Debug Overlay:** Developmental tools (Game Speed, Framerate, Debug Logs) are grouped in a dedicated `DebugToolbar` overlay. This sits on top of the Game Viewport but is visually distinct from the main Top Bar to preserve the "DAW" aesthetic.
+- **Offline Maze Generator:** A specialized `@tool` script (`maze_generator.gd`) manages 19x12 grid generation. It implements the following safeguards:
+    - **1-Tile Wide Paths:** Forced by AStar pruning and "Corner Shaving" cleanup.
+    - **2-Tile Clearance:** Ensures paths don't clump, maintaining visual clarity.
+    - **Phase-Based Exploration:** Moves from chaotic wandering to goal-seeking to ensure varied but efficient maze shapes.
 - **High-Contrast Popups:** The Tower Inspector uses a solid, high-opacity background (`~95%`) specifically to mirror DAW "floating plugin" aesthetics and ensure stats are readable over the complex maze geometry.
 
 **Context-Aware Transport Controls**
@@ -528,6 +532,8 @@ future design sessions and playtesting:
 - [x] **Sidebar Interaction:** Fixed drag-locking issue by ensuring sidebar remains interactive during Studio drags (Resolved Mar 03).
 - [x] **UI Hierarchy:** Enforced tree-order rendering and sibling overlays (Resolved Mar 04).
 - [x] **AP Performance:** Optimized AP budget meter via PlayerData caching (Resolved Mar 04).
+- [x] **Maze Generation Topology:** Confirmed 1-3 Spawns converging to a Single Exit (Resolved Mar 04).
+- [x] **Multi-Spawn Support:** Implemented Multi-Pass carving with AStar path union and auto-retry reliability (Resolved Mar 04).
 - [ ] **AP Growth:** How does the player's maximum AP increase? Fixed per stage, or a
 	separate upgrade currency?
 - [ ] **Unlock Economy:** Full mapping of what unlocks where (towers, buffs, relics, AP).

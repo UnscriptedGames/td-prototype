@@ -31,4 +31,4 @@ To change the base physical appearance of the waveform (rounding or borders) for
 > Because all enemies share this material for performance, these values are global. Unique per-enemy visual traits (like scroll speed and glitch intensity) are strictly handled via code using `instance_shader_parameters`.
 
 ## 4. Spawning
-Enemies are spawned by the `SpawnManager` using their `.tres` file path. The `SpawnManager` now uses **AStarGrid2D** navigation to direct enemies towards **Weighted Targets** (Goals).
+Enemies are spawned by the `SpawnManager` using their `.tres` file path. The `SpawnManager` now uses **AStarGrid2D** navigation to direct enemies towards the single goal defined in the maze layout.

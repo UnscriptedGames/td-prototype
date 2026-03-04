@@ -8,7 +8,7 @@ The level data system is built using Godot's **Resource** system. It follows a t
 
 1.  **StageData (`stage_data.gd`)**: The root resource for a stage. It defines the available loadout and links to its 5 stems.
 2.  **StemData (`stem_data.gd`)**: Defines a single stem level. It contains the audio reference, performance thresholds, and an array of Spawn Instructions.
-3.  **SpawnInstruction (`spawn_instruction.gd`)**: The most granular unit. It defines which enemy scene to spawn, the path it follows, how many to spawn, and the timing.
+3.  **SpawnInstruction (`spawn_instruction.gd`)**: The most granular unit. It defines which enemy variant to spawn, how many to spawn, and the timing.
 
 ---
 
@@ -71,5 +71,5 @@ Spawn Instructions are kept **local** to the Stem file (Sub-resources) rather th
 -   **Sequential Order**: Ensure Stem 1 is placed in the first slot, as it is mandatory.
 -   **No-Underscore Convention**: Use `stage01.tres` style naming to prevent automated path failures.
 -   **Injection Pattern**: `BaseStage` handles all rendering logic; stems only provide the data and layout scenes.
--   **Weighted Targets**: Always define goal tiles in the spawner to ensure enemies have a destination.
--   **Damage Logic**: Distortion (Peak Meter) increases based on the enemy's **remaining health** when they reach a goal.
+-   **Single Exit Pattern**: All enemies automatically find the shortest path to the exit coordinate defined in the maze layout. Weighted exit targets are no longer used.
+-   **Damage Logic**: Distortion (Peak Meter) increases based on the enemy's **remaining health** when they reach the single goal at the end of their path.

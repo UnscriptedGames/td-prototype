@@ -1,7 +1,7 @@
 # Tower Design Brief — TD-Prototype
 
 **Version:** 0.1 (Living Document)
-**Last Updated:** 2026-03-03
+**Last Updated:** 2026-03-04
 
 ## 1. Design Philosophy
 

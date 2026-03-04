@@ -184,7 +184,7 @@ Finally, update the 'Last Executed' column for **Task 7 (The Custodian)** in the
 
 ### Jules Prompt
 ```text
-Review the project's UI structure, specifically focusing on any `.tscn` files that contain a `SubViewport` or `SubViewportContainer`. Check against the architectural rules in `/.antigravity/constitution.md` (Section 4: UI Architecture Rules). Ensure that any UI overlays intended to sit "on top" of a game view are placed as siblings to the `SubViewportContainer` within a shared `Control` wrapper, relying on node tree order instead of hardcoded Z-indexing where possible. Suggest the necessary structural tree changes if violations are found.
+Review the project's UI structure, specifically focusing on any `.tscn` files that contain a `SubViewport` or `SubViewportContainer`. Check against the architectural rules in `.agent/rules/constitution.md` (Section 4: UI Architecture Rules). Ensure that any UI overlays intended to sit "on top" of a game view are placed as siblings to the `SubViewportContainer` within a shared `Control` wrapper, relying on node tree order instead of hardcoded Z-indexing where possible. Suggest the necessary structural tree changes if violations are found.
 
 Finally, update the 'Last Executed' column for **Task 8 (The UI Architect)** in the 'Task Schedule' table at the top of this document (`Knowledge/scheduled_tasks.md`) with today's date (YYYY-MM-DD).
 ```

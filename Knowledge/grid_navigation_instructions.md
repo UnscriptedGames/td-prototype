@@ -7,8 +7,9 @@ This document explains how to set up enemy navigation in **TD-Prototype** using 
 The system uses a **19x12** grid (84px tiles for a 1536x1024 workspace) where:
 - **Wall Tiles**: Are automatically marked as "solid" in the AStar grid. Enemies cannot walk through them.
 - **Path Tiles**: Are reachable (Source ID 1 by default).
-- **Spawn Tiles**: The starting coordinate for a wave.
-- **Goal Tiles (Weighted Targets)**: The destinations enemies must reach.
+- **Spawn Tiles**: The starting coordinates for waves (Supports 1–3 distinct entry points).
+- **Goal Tile**: The single exit destination all enemies must reach.
+- **Merge Point**: An internal coordinate where secondary paths converge onto the primary path.
 
 ---
 
@@ -18,25 +19,20 @@ Instead of drawing curves, you now simply define coordinates in the **SpawnInstr
 
 ### Defining Spawn Points
 1.  Open your **Level/Layout Scene**.
-2.  Determine the grid coordinates of your entrance.
-3.  In your **SpawnInstruction** resource, set the `spawn_tile` property to this Vector2i.
+2.  Determine the grid coordinates of your primary and secondary entrances.
+3.  In your **StemData** resource, set the `spawns` array to these Vector2i coordinates.
 
-### Defining Goals (Weighted Targets)
-Levels support multiple exit points via the `WeightedTarget` resource.
-1.  Create a `WeightedTarget` resource (found in `Core/Data/Waves/`).
-2.  Set the **Goal Tile** (the exit coordinate).
-3.  Set the **Weight** (relative probability of choice).
-4.  Add these to the `weighted_targets` array in your **SpawnInstruction**.
+### Defining the Exit
+1.  Set the `goal_x` and `goal_y` in the `maze_generator.gd` tool.
+2.  All enemies automatically navigate towards this single goal using AStar.
 
 ---
 
-## 3. Handling Symmetrical & Branching Paths
-
-AStar finds the single shortest path. To distribute enemies across multiple symmetrical routes, use these strategies:
-
-- **Weighted Target Split**: Place two `WeightedTarget` resources at the exit, offset slightly so one is mathematically closer to each branch.
-- **Path Weight Noise**: (Planned) Injecting tiny random costs (e.g., `1.0 + rand * 0.01`) into walkable tiles to disrupt tie-breaking.
-- **Intermediary Waypoints**: Use a "Bus" waypoint in the middle of a loop. Direct enemies to the loop first, then to the exit on Arrival.
+### Handling Convergence
+Because AStar finds the single shortest path, distribution is now handled by the **Maze Generator**'s topology:
+- **Primary Lane:** Carves a direct route from Spawn 0 to the Exit.
+- **Secondary Lanes:** Carve from Spawn 1/2 toward the **Merge Point** and stop on contact with the primary lane.
+- **Visual Crossing:** Lanes may naturally cross or overlap depending on the merge point's location.
 
 ---
 
@@ -48,7 +44,15 @@ Movement is mathematically calculated to be "corner-perfect."
 
 ---
 
+## 5. Path Standards (Insulation Rules)
+To ensure the game is readable and tower placement is fair, all generated mazes MUST follow these standards:
+- **Strict 1-Tile Width:** Paths never form 2x2 "clumps."
+- **2-Tile Clearance:** Parallel paths must have a minimum of 2 wall tiles between them to prevent towers from "double-dipping" too easily without a deliberate strategy.
+- **Guaranteed Entrance/Exit:** All paths are forced to run straight for 2 tiles when entering or exiting the grid.
+
+---
+
 ## 💡 Tips for Level Designers
-- **Maze Layout:** Ensure there is at least one valid path from spawn to goal, or the enemies will fail to find a path.
-- **Randomization:** Multiple Goal Tiles in the same area will naturally create distribution due to float-precision tie-breaking and weighting.
+- **Maze Layout:** Use the `@tool` generator to iterate quickly. Ensure the `merge_point` is centrally located for interesting lane overlaps.
+- **Reliability:** The generator includes an auto-retry loop. If a valid path cannot be found for all spawns, it will automatically attempt a new seed.
 - **Blocked Paths:** If a path is blocked (e.g., by a future tower system), the AStar system will automatically reroute enemies.
