@@ -76,11 +76,13 @@ func _build_setlist(stage_data: StageData) -> void:
 	_stem_cards.append(boss_card)
 
 	# Phase 2: Now that cards are in the tree, configure them with data.
-	_stem_cards[0].setup(0, stage_data.stems[0])
+	var stem0: StemData = stage_data.stems[0] if stage_data.stems.size() > 0 else null
+	_stem_cards[0].setup(0, stem0)
 	_stem_cards[0].stem_selected.connect(_on_stem_selected)
 
 	for index: int in range(1, StageManager.STEM_COUNT):
-		_stem_cards[index].setup(index, stage_data.stems[index])
+		var stem: StemData = stage_data.stems[index] if index < stage_data.stems.size() else null
+		_stem_cards[index].setup(index, stem)
 		_stem_cards[index].stem_selected.connect(_on_stem_selected)
 
 	_stem_cards[StageManager.BOSS_INDEX].setup(StageManager.BOSS_INDEX, stage_data.boss_stem)

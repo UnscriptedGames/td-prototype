@@ -4,7 +4,6 @@
 [ext_resource type="Script" uid="uid://cub41ifvd2n7o" path="res://Core/Data/Stages/stem_data.gd" id="1_lau1e"]
 [ext_resource type="Script" uid="uid://c6sd68ghkditp" path="res://Core/Data/Waves/spawn_instruction.gd" id="2_pqcga"]
 [ext_resource type="PackedScene" uid="uid://dj2xubaiwg7dq" path="res://Entities/Enemies/BasicEnemy/basic_enemy.tscn" id="3_m4vk0"]
-[ext_resource type="Script" uid="uid://cwhwoc5lm1of7" path="res://Core/Data/Waves/weighted_target.gd" id="4_ug0b2"]
 [ext_resource type="AudioStream" uid="uid://esux35npd6so" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_01_drums_average.wav" id="5_ug0b2"]
 [ext_resource type="AudioStream" uid="uid://rn4t0a7uc60n" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_01_drums_bad.wav" id="6_45yd0"]
 [ext_resource type="AudioStream" uid="uid://bmxhm52ctmse2" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_01_drums_good.mp3" id="7_08w3w"]
@@ -16,29 +15,17 @@ side_color = Color(0.101960786, 0.101960786, 0.10980392, 1)
 glow_color = Color(0.011764706, 0.34509805, 0.2627451, 1)
 metadata/_custom_type_script = "uid://0x3lyn1cjhr1"
 
-[sub_resource type="Resource" id="Resource_itrpl"]
-script = ExtResource("4_ug0b2")
-goal_tile = Vector2i(18, 3)
-metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
-
-[sub_resource type="Resource" id="Resource_m4vk0"]
-script = ExtResource("4_ug0b2")
-goal_tile = Vector2i(14, 11)
-metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
-
 [sub_resource type="Resource" id="Resource_45yd0"]
 script = ExtResource("2_pqcga")
 enemy_scene = ExtResource("3_m4vk0")
-spawn_tile = Vector2i(2, -1)
 count = 20
 start_delay = 0.5
-weighted_targets = Array[ExtResource("4_ug0b2")]([SubResource("Resource_itrpl"), SubResource("Resource_m4vk0")])
 metadata/_custom_type_script = "uid://c6sd68ghkditp"
 
 [resource]
 script = ExtResource("1_lau1e")
 stem_label = "Drums"
-layout_scene_path = "uid://b353bf7u8pgdw"
+layout_scene_path = "uid://df5bqqr0g8hnu"
 is_mandatory_first = true
 enemy_preview_hint = "Standard Waveforms"
 maze_styles = Array[ExtResource("1_45yd0")]([SubResource("Resource_08w3w")])

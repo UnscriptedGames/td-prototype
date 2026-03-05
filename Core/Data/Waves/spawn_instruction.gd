@@ -6,9 +6,6 @@ extends Resource
 ## Scene to spawn for this instruction.
 @export var enemy_scene: PackedScene
 
-## Grid coordinate (Vector2i) where enemies will spawn.
-@export var spawn_tile: Vector2i = Vector2i(0, 8)
-
 ## Number of enemies to spawn.
 @export var count: int = 1
 
@@ -19,5 +16,7 @@ extends Resource
 @export var start_delay: float = 0.0
 
 @export_group("Pathing")
-## Array of weighted goal tiles. If empty, defaults to the closest valid goal.
-@export var weighted_targets: Array[WeightedTarget] = []
+## Tag identifying which Marker2D spawn point to use in the layout scene.
+## Matches the name of a Marker2D node (e.g. "Spawn_0", "Spawn_1").
+## Use "Random" or leave empty to pick a random available spawn point.
+@export var spawn_location_tag: String = "Random"

@@ -4,7 +4,6 @@
 [ext_resource type="Script" uid="uid://cub41ifvd2n7o" path="res://Core/Data/Stages/stem_data.gd" id="2_gt4k4"]
 [ext_resource type="Script" uid="uid://c6sd68ghkditp" path="res://Core/Data/Waves/spawn_instruction.gd" id="3_1nmdv"]
 [ext_resource type="PackedScene" uid="uid://dj2xubaiwg7dq" path="res://Entities/Enemies/BasicEnemy/basic_enemy.tscn" id="4_4qmka"]
-[ext_resource type="Script" uid="uid://cwhwoc5lm1of7" path="res://Core/Data/Waves/weighted_target.gd" id="5_wpoqh"]
 [ext_resource type="AudioStream" uid="uid://b3mafcmbppb6u" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_05_lead_vocals_average.wav" id="6_hllwq"]
 [ext_resource type="AudioStream" uid="uid://crmoqlvtf6isa" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_05_lead_vocals_bad.wav" id="7_4pbl4"]
 [ext_resource type="AudioStream" uid="uid://6sa543cpsdt" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_05_lead_vocals_good.mp3" id="8_2nqed"]
@@ -16,18 +15,11 @@ side_color = Color(0.101960786, 0.101960786, 0.10980392, 1)
 glow_color = Color(0.07058824, 0.22745098, 0.24705882, 1)
 metadata/_custom_type_script = "uid://0x3lyn1cjhr1"
 
-[sub_resource type="Resource" id="Resource_m02wr"]
-script = ExtResource("5_wpoqh")
-goal_tile = Vector2i(9, 11)
-metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
-
 [sub_resource type="Resource" id="Resource_45yd0"]
 script = ExtResource("3_1nmdv")
 enemy_scene = ExtResource("4_4qmka")
-spawn_tile = Vector2i(9, -1)
 count = 20
 start_delay = 0.5
-weighted_targets = Array[ExtResource("5_wpoqh")]([SubResource("Resource_m02wr")])
 metadata/_custom_type_script = "uid://c6sd68ghkditp"
 
 [resource]

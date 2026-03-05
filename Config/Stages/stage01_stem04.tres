@@ -4,7 +4,6 @@
 [ext_resource type="Script" uid="uid://cub41ifvd2n7o" path="res://Core/Data/Stages/stem_data.gd" id="1_jvhn6"]
 [ext_resource type="Script" uid="uid://c6sd68ghkditp" path="res://Core/Data/Waves/spawn_instruction.gd" id="2_i7ms1"]
 [ext_resource type="PackedScene" uid="uid://dj2xubaiwg7dq" path="res://Entities/Enemies/BasicEnemy/basic_enemy.tscn" id="3_1oh8h"]
-[ext_resource type="Script" uid="uid://cwhwoc5lm1of7" path="res://Core/Data/Waves/weighted_target.gd" id="4_tqgf3"]
 [ext_resource type="AudioStream" uid="uid://bmn5c0lfc187i" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_04_electric_guitars_average.wav" id="5_jvhn6"]
 [ext_resource type="AudioStream" uid="uid://m5d7ht1215np" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_04_electric_guitars_bad.wav" id="6_i7ms1"]
 [ext_resource type="AudioStream" uid="uid://d1j1edo7grw3s" path="res://Stages/Stage01_FunkyGoldenSun/Audio/stem_04_electric_guitars_good.mp3" id="7_1oh8h"]
@@ -16,36 +15,17 @@ side_color = Color(0.101960786, 0.101960786, 0.10980392, 1)
 glow_color = Color(0.19607843, 0.20392157, 0.05490196, 1)
 metadata/_custom_type_script = "uid://0x3lyn1cjhr1"
 
-[sub_resource type="Resource" id="Resource_6py77"]
-script = ExtResource("4_tqgf3")
-goal_tile = Vector2i(11, 0)
-weight = 0.5
-metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
-
-[sub_resource type="Resource" id="Resource_q0god"]
-script = ExtResource("4_tqgf3")
-goal_tile = Vector2i(18, 4)
-weight = 0.5
-metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
-
-[sub_resource type="Resource" id="Resource_m7miv"]
-script = ExtResource("4_tqgf3")
-goal_tile = Vector2i(11, 11)
-metadata/_custom_type_script = "uid://cwhwoc5lm1of7"
-
 [sub_resource type="Resource" id="Resource_45yd0"]
 script = ExtResource("2_i7ms1")
 enemy_scene = ExtResource("3_1oh8h")
-spawn_tile = Vector2i(2, -1)
 count = 20
 start_delay = 0.5
-weighted_targets = Array[ExtResource("4_tqgf3")]([SubResource("Resource_6py77"), SubResource("Resource_q0god"), SubResource("Resource_m7miv")])
 metadata/_custom_type_script = "uid://c6sd68ghkditp"
 
 [resource]
 script = ExtResource("1_jvhn6")
 stem_label = "Electric Guitar"
-layout_scene_path = "uid://cq02jxay4slwb"
+layout_scene_path = "uid://0t805q7y2bql"
 is_mandatory_first = true
 enemy_preview_hint = "Standard Waveforms"
 maze_styles = Array[ExtResource("1_i7ms1")]([SubResource("Resource_1oh8h")])

@@ -774,6 +774,8 @@ func _save_maze() -> void:
 	new_anim.owner = root
 	new_anim.visible = false
 
+	_create_terrain_markers(root)
+
 	scene.pack(root)
 	var path: String = out_dir + "/" + output_filename + ".tscn"
 	var err = ResourceSaver.save(scene, path)
@@ -784,6 +786,52 @@ func _save_maze() -> void:
 	else:
 		push_error("MazeGenerator: Failed to save maze. Error code: ", err)
 	root.free()
+
+
+## Creates a TerrainTags node under root containing:
+## - One Marker2D per spawn, named sequentially: Spawn_0, Spawn_1, Spawn_2, etc.
+## - One Marker2D named "Goal" for the exit point.
+## Positions are set to the world-space centre of each tile.
+## The virtual spawn coordinates in _preview_spawns are 1 cell off the grid,
+## so we use _resolve_virtual_to_grid() to get the on-grid edge tile position,
+## then apply the maze_layer tile map to find the correct world position.
+func _create_terrain_markers(root: Node2D) -> void:
+	if _preview_spawns.is_empty() or _preview_goal == Vector2i(-1, -1):
+		push_warning("MazeGenerator: Skipping terrain marker creation — no placement data.")
+		return
+
+	# Remove any existing TerrainTags node to avoid duplicates on re-save.
+	var existing_tags: Node = root.get_node_or_null("TerrainTags")
+	if existing_tags:
+		existing_tags.queue_free()
+
+	# Create a clean parent node to group all markers.
+	var terrain_tags_node: Node2D = Node2D.new()
+	terrain_tags_node.name = "TerrainTags"
+	root.add_child(terrain_tags_node)
+	terrain_tags_node.owner = root
+
+	# Bake spawn markers using the virtual coordinates (resolved to on-grid edge tiles).
+	for spawn_index: int in range(_preview_spawns.size()):
+		var virtual_spawn: Vector2i = _preview_spawns[spawn_index]
+		var on_grid_spawn: Vector2i = _resolve_virtual_to_grid(virtual_spawn)
+		var spawn_marker: Marker2D = Marker2D.new()
+		spawn_marker.name = "Spawn_" + str(spawn_index)
+		spawn_marker.position = maze_layer.map_to_local(on_grid_spawn)
+		terrain_tags_node.add_child(spawn_marker)
+		spawn_marker.owner = root
+
+	# Bake the single goal marker.
+	var goal_marker: Marker2D = Marker2D.new()
+	goal_marker.name = "Goal"
+	goal_marker.position = maze_layer.map_to_local(_preview_goal)
+	terrain_tags_node.add_child(goal_marker)
+	goal_marker.owner = root
+
+	print(
+		"MazeGenerator: Baked %d spawn marker(s) and 1 goal marker into scene."
+		% _preview_spawns.size()
+	)
 
 
 func _validate_maze(spawns: Array[Vector2i], goal: Vector2i) -> bool:

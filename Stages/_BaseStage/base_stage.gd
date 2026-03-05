@@ -79,6 +79,10 @@ var _astar_grid: AStarGrid2D
 var _spawn_queue: Array[Dictionary] = []
 var _spawn_timer: float = 0.0
 
+# Caches Marker2D world positions keyed by marker name (e.g. "Spawn_0", "Goal").
+# Populated during _inject_layout() from the loaded layout scene's TerrainTags node.
+var _spawn_markers: Dictionary[String, Vector2] = {}
+
 # Created and managed in _setup_stem_audio().
 var _stem_audio_player: AudioStreamPlayer
 
@@ -220,6 +224,17 @@ func _inject_layout() -> void:
 	if local_anim:
 		local_anim.visible = false
 
+	# Harvest terrain marker world positions from the layout scene's TerrainTags node.
+	var terrain_tags_node: Node = layout_instance.get_node_or_null("TerrainTags")
+	if terrain_tags_node:
+		for marker_node: Node in terrain_tags_node.get_children():
+			if marker_node is Marker2D:
+				var terrain_marker: Marker2D = marker_node as Marker2D
+				_spawn_markers[terrain_marker.name] = terrain_marker.global_position
+				print("BaseStage: Cached terrain marker '%s' at %s" % [terrain_marker.name, terrain_marker.global_position])
+	else:
+		push_warning("BaseStage: Layout scene has no TerrainTags node. Spawn tags will not resolve.")
+
 	# The layout instance is no longer needed.
 	layout_instance.queue_free()
 
@@ -302,8 +317,7 @@ func _spawn_stem(stem: StemData) -> void:
 				{
 					"time": current_time,
 					"scene": instruction.enemy_scene,
-					"spawn_tile": instruction.spawn_tile,
-					"weighted_targets": instruction.weighted_targets
+					"spawn_location_tag": instruction.spawn_location_tag,
 				}
 			)
 			current_time += instruction.enemy_delay
@@ -333,56 +347,63 @@ func _process_spawn_queue(delta: float) -> void:
 
 
 func _spawn_queued_enemy(event: Dictionary) -> void:
-	# Use the explicit coordinate from the Weighted Spawn Instruction
-	var start_tile: Vector2i = event.get("spawn_tile", Vector2i.ZERO)
+	var spawn_location_tag: String = event.get("spawn_location_tag", "Random")
 
-	# Try to safely resolve the exact world coordinate of the center of that tile
+	# Resolve the tag to a world position via the cached spawn markers.
 	var spawn_position: Vector2 = Vector2.ZERO
-	if maze_renderer:
-		var layer_node: Node = maze_renderer.get_node_or_null(maze_renderer.source_layer_path)
-		if layer_node is TileMapLayer:
-			var local_position: Vector2 = layer_node.map_to_local(start_tile)
-			spawn_position = layer_node.to_global(local_position)
-		else:
-			push_error("Failed to resolve spawn_position: maze layer not found.")
+	if spawn_location_tag == "Random" or spawn_location_tag.is_empty():
+		# Collect all keys that start with "Spawn_" and pick one at random.
+		var available_spawn_keys: Array[String] = []
+		for marker_key: String in _spawn_markers.keys():
+			if marker_key.begins_with("Spawn_"):
+				available_spawn_keys.append(marker_key)
+		if available_spawn_keys.is_empty():
+			push_error("BaseStage: No spawn markers cached. Cannot spawn enemy.")
 			return
+		spawn_position = _spawn_markers[available_spawn_keys[randi() % available_spawn_keys.size()]]
+	elif _spawn_markers.has(spawn_location_tag):
+		spawn_position = _spawn_markers[spawn_location_tag]
+	else:
+		push_error("BaseStage: Spawn tag '%s' not found in cached markers. Cannot spawn enemy." % spawn_location_tag)
+		return
 
-	# Wait for AStar to be ready if it isn't
+	# Wait for AStar to be ready if it isn't.
 	if not _astar_grid:
 		_initialize_navigation_grid()
 
-	# Resolve Target
-	var target_tile: Vector2i = Vector2i.ZERO  # Default/fallback
-	var weighted_targets: Array = event.get("weighted_targets", [])
+	# Resolve the start tile from world position via the maze layer.
+	var start_tile: Vector2i = Vector2i.ZERO
+	if maze_renderer:
+		var layer_node: Node = maze_renderer.get_node_or_null(maze_renderer.source_layer_path)
+		if layer_node is TileMapLayer:
+			var maze_layer: TileMapLayer = layer_node as TileMapLayer
+			start_tile = maze_layer.local_to_map(maze_layer.to_local(spawn_position))
+		else:
+			push_error("BaseStage: Failed to resolve start_tile: maze layer not found.")
+			return
 
-	if not weighted_targets.is_empty():
-		var total_weight: float = 0.0
-		for weighted_target: WeightedTarget in weighted_targets:
-			if weighted_target:
-				total_weight += weighted_target.weight
-
-		var random_value: float = randf_range(0.0, total_weight)
-		var cumulative: float = 0.0
-
-		for weighted_target: WeightedTarget in weighted_targets:
-			if not weighted_target:
-				continue
-			cumulative += weighted_target.weight
-			if random_value <= cumulative:
-				target_tile = weighted_target.goal_tile
-				break
+	# Resolve goal tile: find the nearest walkable edge tile in the AStar grid.
+	# Since there is only one exit, we look for the "Goal" marker's closest AStar tile.
+	var target_tile: Vector2i = Vector2i.ZERO
+	if _spawn_markers.has("Goal"):
+		if maze_renderer:
+			var layer_node: Node = maze_renderer.get_node_or_null(maze_renderer.source_layer_path)
+			if layer_node is TileMapLayer:
+				var maze_layer: TileMapLayer = layer_node as TileMapLayer
+				target_tile = maze_layer.local_to_map(maze_layer.to_local(_spawn_markers["Goal"]))
 	elif _astar_grid:
-		# Fallback if the user hasn't set up the new WeightedTargets yet
+		# Fallback: pick a suitable edge tile from the AStar region.
 		var region: Rect2i = _astar_grid.region
 		target_tile = Vector2i(region.end.x - 1, region.position.y + int(region.size.y / 2.0))
+		push_warning("BaseStage: No Goal marker found. Using fallback target tile %s." % target_tile)
 
 	# Runtime validation: skip spawn if either tile is not walkable.
 	var grid_region: Rect2i = _astar_grid.region
 	if not grid_region.has_point(start_tile) or _astar_grid.is_point_solid(start_tile):
-		push_warning("Skipping enemy spawn: spawn_tile %s is not walkable." % start_tile)
+		push_warning("Skipping enemy spawn: start_tile %s (from tag '%s') is not walkable." % [start_tile, spawn_location_tag])
 		return
 	if not grid_region.has_point(target_tile) or _astar_grid.is_point_solid(target_tile):
-		push_warning("Skipping enemy spawn: target_tile %s is not walkable." % target_tile)
+		push_warning("Skipping enemy spawn: target_tile %s (Goal marker) is not walkable." % target_tile)
 		return
 
 	_spawn_enemy(event["scene"], spawn_position, start_tile, target_tile)
@@ -581,11 +602,9 @@ func _initialize_navigation_grid() -> void:
 
 
 func _validate_spawn_data() -> void:
-	# Validates all spawn and goal tiles against the navigation grid at load time.
-	if not _astar_grid or not stem_data:
+	# Validates all spawn location tags against the cached terrain markers at load time.
+	if not stem_data:
 		return
-
-	var region: Rect2i = _astar_grid.region
 
 	for instruction_index: int in range(stem_data.spawns.size()):
 		var instruction: SpawnInstruction = (
@@ -594,29 +613,24 @@ func _validate_spawn_data() -> void:
 		if not instruction:
 			continue
 
-		# Validate spawn_tile
-		var spawn_tile: Vector2i = instruction.spawn_tile
-		if not region.has_point(spawn_tile) or _astar_grid.is_point_solid(spawn_tile):
-			push_warning(
-				"Instruction %d: spawn_tile %s is not walkable!"
-				% [instruction_index + 1, spawn_tile]
-			)
-
-		# Validate all weighted goal tiles
-		for target_index: int in range(instruction.weighted_targets.size()):
-			var weighted_target: WeightedTarget = (
-				instruction.weighted_targets[target_index]
-			)
-			if not weighted_target:
-				continue
-			var goal_tile: Vector2i = weighted_target.goal_tile
-			if not region.has_point(goal_tile) or _astar_grid.is_point_solid(goal_tile):
+		var tag: String = instruction.spawn_location_tag
+		if tag == "Random" or tag.is_empty():
+			# Random is always valid as long as at least one Spawn_ marker exists.
+			var has_any_spawn: bool = false
+			for marker_key: String in _spawn_markers.keys():
+				if marker_key.begins_with("Spawn_"):
+					has_any_spawn = true
+					break
+			if not has_any_spawn:
 				push_warning(
-					(
-						"Instruction %d, Target %d: goal_tile %s is not walkable!"
-						% [instruction_index + 1, target_index + 1, goal_tile]
-					)
+					"Instruction %d uses 'Random' tag but no Spawn_ markers are cached!"
+					% (instruction_index + 1)
 				)
+		elif not _spawn_markers.has(tag):
+			push_warning(
+				"Instruction %d: spawn_location_tag '%s' not found in layout markers!"
+				% [instruction_index + 1, tag]
+			)
 
 
 func _remove_background_tiles_under_path(animate: bool = true) -> void:

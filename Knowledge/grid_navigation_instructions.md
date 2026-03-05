@@ -15,16 +15,18 @@ The system uses a **19x12** grid (84px tiles for a 1536x1024 workspace) where:
 
 ## 2. Setting Up Navigation in a Level
 
-Instead of drawing curves, you now simply define coordinates in the **SpawnInstruction** resource inside your **StemData**.
+Spawn and goal positions are defined by **Terrain Tags** — `Marker2D` nodes baked into the layout `.tscn` by the **Maze Generator** tool. You no longer define coordinates manually in StemData.
 
-### Defining Spawn Points
-1.  Open your **Level/Layout Scene**.
-2.  Determine the grid coordinates of your primary and secondary entrances.
-3.  In your **StemData** resource, set the `spawns` array to these Vector2i coordinates.
+### Terrain Tag Nodes
+When you click **Save to Disk** in the `MazeGenerator` tool inspector, a `TerrainTags` node is automatically created inside the saved layout scene with these children:
+-   **`Spawn_0`, `Spawn_1`, ...** — One `Marker2D` per entrance, positioned at the on-grid edge tile.
+-   **`Goal`** — A single `Marker2D` at the exit tile.
 
-### Defining the Exit
-1.  Set the `goal_x` and `goal_y` in the `maze_generator.gd` tool.
-2.  All enemies automatically navigate towards this single goal using AStar.
+### Configuring Spawn Instructions
+1.  Open your **StemData** `.tres` file.
+2.  Expand the `Spawns` array and create or edit a `SpawnInstruction`.
+3.  Set **Spawn Location Tag** to the desired entry: `"Spawn_0"`, `"Spawn_1"`, etc., or leave it as `"Random"` to pick a random entrance at runtime.
+4.  At runtime, `BaseStage` reads the layout scene's `TerrainTags`, caches the positions, and resolves each tag on spawn.
 
 ---
 
