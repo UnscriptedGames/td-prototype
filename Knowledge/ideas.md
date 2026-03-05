@@ -25,7 +25,13 @@ This document tracks all pending ideas, brainstorms, and open design questions t
 *   **Strategic Placement Challenge:** Forces players to decide whether to place towers in front of the healing zone to burn them down early, or pack everything behind the zone and deal with a larger, fully-healed wave.
 *   **Secondary Penalty for Ignoring:** If a player places zero towers *before* reaching the healing zone, the mobs gain an additional speed buff along with their health regeneration.
 
-## 2. Outstanding Design Questions (from Game Brief)
+## 2. Batch Generation & Difficulty Ranking
+
+- **Concept:** Generate N candidate mazes behind the scenes, score them against criteria (path length, coverage, chokepoint distribution, branching complexity), and automatically select the highest-ranked result for the level.
+- **Difficulty Scoring Challenge:** "Difficulty" for a maze is not a standalone mathematical property — it's relative to the towers the player brings. A long open corridor is easy for sniper towers but brutal for short-range AoE. Meaningful difficulty scoring requires a theoretical tower placement simulator to run against the path.
+- **Hold Status:** Deferred until at least 3–4 mazes have been successfully play-tested in the game engine. We need empirical data on what separates "good" layouts from "mediocre" ones before we can write a scoring algorithm that ranks them.
+
+## 3. Outstanding Design Questions (from Game Brief)
 
 This section contains existing open questions from previous design sessions that remain unresolved.
 

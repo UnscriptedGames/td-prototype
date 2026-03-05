@@ -3,6 +3,7 @@ extends Node2D
 
 ## Offline generator tool for building 19x12 maze layouts.
 ## Supports 1-3 spawn points converging into a single exit.
+## Spawn and exit placement is fully automated using a Goal-First semantic system.
 
 const GRID_WIDTH: int = 19
 const GRID_HEIGHT: int = 12
@@ -10,24 +11,39 @@ const WALL_TILE_ID: int = 5
 const FLOOR_TILE_ID: int = 1
 const FORCED_SEGMENT_LENGTH: int = 2
 
+## The virtual edge indices used to identify the 4 sides of the grid.
+enum Edge { TOP = 0, BOTTOM = 1, LEFT = 2, RIGHT = 3 }
+
 @export_group("Generator Settings")
 @export var output_filename: String = "stage01_stem03"
 @export_range(0.0, 2.0) var wander_strength: float = 1.2
 ## Minimum tiles to move in a straight line after each turn. Prevents staircase patterns.
 @export_range(1, 8) var min_straight_steps: int = 3
+## Number of spawn points to generate (1–3).
+@export_range(1, 3) var spawn_count: int = 1
+## Minimum Euclidean distance required between any spawn and the goal.
+@export_range(5, 25) var min_spawn_goal_distance: float = 12.0
+## Minimum Euclidean distance required between any two spawn points.
+@export_range(3, 15) var min_spawn_spawn_distance: float = 5.0
+## Optional seed for reproducible layouts. Set to 0 for a fully random seed.
+@export var placement_seed: int = 0
 
-## Spawn coordinates. Use virtual coords (e.g. y=-1 for top edge). Add 1–3 entries.
-@export var spawns: Array[Vector2i] = [Vector2i(4, -1)]
+@export_group("Path Quality")
+## Minimum number of tiles each spawn's path must travel before reaching the goal.
+## Scaled recommendation: 1 spawn=50, 2 spawns=35, 3 spawns=25.
+@export_range(10, 80) var min_path_length_per_spawn: int = 35
+## Minimum fraction of the grid (0.0–1.0) that must be covered by floor tiles.
+## Ensures the maze uses enough of the available space. Recommended: 0.30.
+@export_range(0.10, 0.60) var min_floor_coverage: float = 0.30
+## Gravitational pull toward the grid centre during the wander phase.
+## 0.0 = no effect (current behaviour). 0.8 = subtle arc. 1.5+ = strong centrist paths.
+@export_range(0.0, 2.0) var centre_bias: float = 0.8
 
-## Merge point: where secondary paths converge onto the primary path.
-## Uses the same virtual coordinate rules as spawns/goal.
-## Only relevant when spawns.size() > 1.
-@export_range(-2, 21) var merge_x: int = 9
-@export_range(-2, 13) var merge_y: int = 3
-
-## Exit coordinate. Use virtual coords (e.g. x=19 for right edge).
-@export_range(-2, 21) var goal_x: int = 19
-@export_range(-2, 13) var goal_y: int = 5
+@export_group("Preview (Read-Only)")
+## These fields show the computed placement from the last generation. Do not edit manually.
+@export var _preview_goal: Vector2i = Vector2i(-1, -1)
+@export var _preview_spawns: Array[Vector2i] = []
+@export var _preview_merge: Vector2i = Vector2i(-1, -1)
 
 @export_group("Actions")
 ## Check this box in the inspector to generate a new maze preview.
@@ -53,70 +69,66 @@ func _generate_maze() -> void:
 	if not maze_layer or not animation_layer:
 		push_error("MazeGenerator: Missing layer references")
 		return
-	if spawns.is_empty():
-		push_error("MazeGenerator: No spawn points defined.")
+
+	# Seed the random number generator for placement.
+	if placement_seed != 0:
+		seed(placement_seed)
+
+	# --- STEP 1: Automated Semantic Placement ---
+	var placement: Dictionary = _pick_placements()
+	if placement.is_empty():
+		push_error(
+			"MazeGenerator: Could not generate valid placement after all retries. Try adjusting distance constraints or spawn count."
+		)
 		return
 
-	# --- AUTO-RETRY LOOP (Max 10 attempts to find a valid layout) ---
-	for attempt in range(10):
+	# Spawns are stored as virtual coords (off-grid), goal is on-grid.
+	var virtual_spawns: Array[Vector2i] = placement["spawns"]
+	var computed_goal: Vector2i = placement["goal"]  # The goal is explicitly on-grid.
+	var computed_merge: Vector2i = placement["merge"]
+
+	# Write coords back to inspector preview fields.
+	_preview_goal = computed_goal
+	_preview_spawns = virtual_spawns
+	_preview_merge = computed_merge
+
+	# Resolve each virtual spawn coord to the real grid-edge tile that sits just inside the boundary.
+	var computed_spawns: Array[Vector2i] = []
+	for virtual_spawn in virtual_spawns:
+		computed_spawns.append(_resolve_virtual_to_grid(virtual_spawn))
+
+	# Infer goal outward edge direction from the grid-edge tile.
+	var exit_dir: Vector2i = -_get_edge_direction_for_tile(computed_goal)
+
+	# Pre-compute the approach point for the guaranteed straight exit run.
+	# Pulled inward by FORCED_SEGMENT_LENGTH from the grid-edge goal tile.
+	var approach_point: Vector2i
+	if exit_dir == Vector2i.RIGHT:
+		approach_point = Vector2i(computed_goal.x - FORCED_SEGMENT_LENGTH, computed_goal.y)
+	elif exit_dir == Vector2i.LEFT:
+		approach_point = Vector2i(computed_goal.x + FORCED_SEGMENT_LENGTH, computed_goal.y)
+	elif exit_dir == Vector2i.DOWN:
+		approach_point = Vector2i(computed_goal.x, computed_goal.y - FORCED_SEGMENT_LENGTH)
+	elif exit_dir == Vector2i.UP:
+		approach_point = Vector2i(computed_goal.x, computed_goal.y + FORCED_SEGMENT_LENGTH)
+	else:
+		approach_point = computed_goal
+	approach_point.x = clampi(approach_point.x, 1, GRID_WIDTH - 2)
+	approach_point.y = clampi(approach_point.y, 1, GRID_HEIGHT - 2)
+
+	# --- AUTO-RETRY LOOP (Max 30 attempts to find a valid carved layout) ---
+	for attempt in range(30):
 		maze_layer.clear()
 		animation_layer.clear()
 
-		# Infer virtual goal tile and exit direction.
-		var virtual_goal: Vector2i
-		var exit_dir: Vector2i
-		if goal_y < 0:
-			virtual_goal = Vector2i(clampi(goal_x, 0, GRID_WIDTH - 1), 0)
-			exit_dir = Vector2i.UP
-		elif goal_y >= GRID_HEIGHT:
-			virtual_goal = Vector2i(clampi(goal_x, 0, GRID_WIDTH - 1), GRID_HEIGHT - 1)
-			exit_dir = Vector2i.DOWN
-		elif goal_x < 0:
-			virtual_goal = Vector2i(0, clampi(goal_y, 0, GRID_HEIGHT - 1))
-			exit_dir = Vector2i.LEFT
-		elif goal_x >= GRID_WIDTH:
-			virtual_goal = Vector2i(GRID_WIDTH - 1, clampi(goal_y, 0, GRID_HEIGHT - 1))
-			exit_dir = Vector2i.RIGHT
-		else:
-			virtual_goal = Vector2i(goal_x, goal_y)
-			exit_dir = Vector2i.ZERO
-
-		# Infer merge tile (the convergence point for secondary paths).
-		var merge_tile: Vector2i
-		if merge_y < 0:
-			merge_tile = Vector2i(clampi(merge_x, 0, GRID_WIDTH - 1), 0)
-		elif merge_y >= GRID_HEIGHT:
-			merge_tile = Vector2i(clampi(merge_x, 0, GRID_WIDTH - 1), GRID_HEIGHT - 1)
-		elif merge_x < 0:
-			merge_tile = Vector2i(0, clampi(merge_y, 0, GRID_HEIGHT - 1))
-		elif merge_x >= GRID_WIDTH:
-			merge_tile = Vector2i(GRID_WIDTH - 1, clampi(merge_y, 0, GRID_HEIGHT - 1))
-		else:
-			merge_tile = Vector2i(merge_x, merge_y)
-
-		# Pre-compute the approach point for the guaranteed straight exit run.
-		var approach_point: Vector2i
-		if exit_dir == Vector2i.RIGHT:
-			approach_point = Vector2i(virtual_goal.x - FORCED_SEGMENT_LENGTH, virtual_goal.y)
-		elif exit_dir == Vector2i.LEFT:
-			approach_point = Vector2i(virtual_goal.x + FORCED_SEGMENT_LENGTH, virtual_goal.y)
-		elif exit_dir == Vector2i.DOWN:
-			approach_point = Vector2i(virtual_goal.x, virtual_goal.y - FORCED_SEGMENT_LENGTH)
-		elif exit_dir == Vector2i.UP:
-			approach_point = Vector2i(virtual_goal.x, virtual_goal.y + FORCED_SEGMENT_LENGTH)
-		else:
-			approach_point = virtual_goal
-		approach_point.x = clampi(approach_point.x, 0, GRID_WIDTH - 1)
-		approach_point.y = clampi(approach_point.y, 0, GRID_HEIGHT - 1)
-
 		# --- PASS 1: Primary Spawn (spawns[0]) carves the full route to the exit. ---
-		var primary_spawn_tile: Vector2i = _infer_spawn_tile(spawns[0])
-		var primary_heading: Vector2i = _get_spawn_direction(spawns[0])
+		var primary_spawn_tile: Vector2i = computed_spawns[0]
+		var primary_heading: Vector2i = _get_edge_direction_for_virtual(virtual_spawns[0])
 		_carve_lane(
 			primary_spawn_tile,
 			primary_heading,
 			approach_point,
-			virtual_goal,
+			computed_goal,
 			exit_dir,
 			true,
 			exit_dir,
@@ -124,25 +136,26 @@ func _generate_maze() -> void:
 		)
 
 		# --- PASS 2+: Secondary Spawns carve toward the merge point and stop on contact. ---
-		for spawn_index in range(1, spawns.size()):
-			var secondary_spawn_tile: Vector2i = _infer_spawn_tile(spawns[spawn_index])
-			var secondary_heading: Vector2i = _get_spawn_direction(spawns[spawn_index])
+		for spawn_index in range(1, computed_spawns.size()):
+			var secondary_spawn_tile: Vector2i = computed_spawns[spawn_index]
+			var secondary_heading: Vector2i = _get_edge_direction_for_virtual(
+				virtual_spawns[spawn_index]
+			)
 			_carve_lane(
 				secondary_spawn_tile,
 				secondary_heading,
-				merge_tile,
-				merge_tile,
+				computed_merge,
+				computed_merge,
 				Vector2i.ZERO,
 				false,
 				exit_dir,
-				15  # Secondary lanes must run at least 15 tiles before merging
+				15  # Secondary lanes must run at least 15 tiles before merging.
 			)
 
 		# --- PRUNING: Union AStar search to clean dead-end stubs from all paths. ---
 		var all_pruned_tiles: Dictionary = {}
-		for spawn_entry in spawns:
-			var spawn_tile: Vector2i = _infer_spawn_tile(spawn_entry)
-			var path_tiles: Array[Vector2i] = _prune_path(spawn_tile, virtual_goal)
+		for spawn_tile in computed_spawns:
+			var path_tiles: Array[Vector2i] = _prune_path(spawn_tile, computed_goal)
 			for tile in path_tiles:
 				all_pruned_tiles[tile] = true
 
@@ -156,21 +169,229 @@ func _generate_maze() -> void:
 
 		_build_constrained_walls()
 
+		# Stamp standalone off-grid floor tiles for each virtual spawn.
+		# These tiles sit 1 cell beyond the grid boundary and are NOT wall-filled,
+		# allowing enemies to spawn off-screen and walk in.
+		# The goal is already inside the grid and carved as part of the path.
+		for virtual_spawn in virtual_spawns:
+			maze_layer.set_cell(virtual_spawn, FLOOR_TILE_ID, Vector2i(0, 0))
+
+		# --- PATH QUALITY GUARD ---
+		# Check 1: Each spawn's pruned path must meet the minimum tile count.
+		var all_paths_long_enough: bool = true
+		for spawn_tile in computed_spawns:
+			var pruned_path: Array[Vector2i] = _prune_path(spawn_tile, computed_goal)
+			if pruned_path.size() < min_path_length_per_spawn:
+				all_paths_long_enough = false
+				break
+		if not all_paths_long_enough:
+			continue  # Path too short — retry.
+
+		# Check 2: Total carved floor coverage must meet the minimum fraction.
+		var total_tiles: int = GRID_WIDTH * GRID_HEIGHT
+		var floor_tile_count: int = maze_layer.get_used_cells().size()
+		var floor_fraction: float = float(floor_tile_count) / float(total_tiles)
+		if floor_fraction < min_floor_coverage:
+			continue  # Coverage too sparse — retry.
+
 		# Validation check: Did all spawns successfully reach the goal without being blocked?
-		if _validate_maze():
+		if _validate_maze(computed_spawns, computed_goal):
 			print(
 				"MazeGenerator: Generation complete on attempt ",
 				attempt + 1,
 				". Spawns: ",
-				spawns.size()
+				computed_spawns.size(),
+				". Floor coverage: ",
+				snapped(floor_fraction * 100.0, 0.1),
+				"%"
 			)
 			return  # Success! Escape the retry loop.
 
 		# If invalid, the loop continues and tries a new random seed over a fresh layer.
 
+	# All 30 attempts exhausted — clear the canvas so no dirty/partial maze is shown.
+	maze_layer.clear()
+	animation_layer.clear()
 	push_error(
-		"MazeGenerator: Failed to generate a valid multi-spawn maze after 10 attempts. The requested layout might be too constrained."
+		"MazeGenerator: Failed to generate a valid maze after 30 attempts. Try reducing min_path_length_per_spawn or min_floor_coverage."
 	)
+
+
+## Automated Goal-First placement algorithm.
+## Returns a Dictionary with keys: "goal", "spawns", "merge".
+## Returns an empty Dictionary on failure.
+func _pick_placements() -> Dictionary:
+	# Allow up to 50 full placement retries before giving up.
+	for _placement_attempt in range(50):
+		# Step 1: Pick a random goal edge and tile along it (avoiding corners).
+		# Returns a grid-edge coordinate (on-grid, so enemies die visibly).
+		var goal_edge: int = randi() % 4
+		var computed_goal: Vector2i = _resolve_virtual_to_grid(
+			_random_virtual_tile_on_edge(goal_edge)
+		)
+
+		# Step 2: Build candidate spawn pool from all 4 edges (as virtual coords).
+		var all_candidates: Array[Vector2i] = []
+		for edge_index in range(4):
+			var edge_tiles: Array[Vector2i] = _get_all_virtual_tiles_on_edge(edge_index)
+			for edge_tile in edge_tiles:
+				# Guard: candidate must not be on the no-go zone around the computed goal.
+				var resolved_candidate: Vector2i = _resolve_virtual_to_grid(edge_tile)
+				if _is_in_goal_buffer(resolved_candidate, computed_goal):
+					continue
+				all_candidates.append(edge_tile)
+
+		# Sort candidates by descending distance from the computed goal (furthest first).
+		all_candidates.sort_custom(
+			func(tile_a: Vector2i, tile_b: Vector2i) -> bool:
+				var resolved_a: Vector2i = _resolve_virtual_to_grid(tile_a)
+				var resolved_b: Vector2i = _resolve_virtual_to_grid(tile_b)
+				return resolved_a.distance_to(computed_goal) > resolved_b.distance_to(computed_goal)
+		)
+
+		# Greedily pick spawns from the sorted candidates.
+		var virtual_spawns: Array[Vector2i] = []
+		for candidate in all_candidates:
+			if virtual_spawns.size() >= spawn_count:
+				break
+
+			var resolved_candidate: Vector2i = _resolve_virtual_to_grid(candidate)
+
+			# Guard: Distance from candidate to goal (using resolved coords).
+			var distance_to_goal: float = resolved_candidate.distance_to(computed_goal)
+			if distance_to_goal < min_spawn_goal_distance:
+				continue
+
+			# Guard: Distance from candidate to all already-chosen spawns.
+			var too_close_to_existing_spawn: bool = false
+			for existing_virtual_spawn in virtual_spawns:
+				var resolved_existing: Vector2i = _resolve_virtual_to_grid(existing_virtual_spawn)
+				if resolved_candidate.distance_to(resolved_existing) < min_spawn_spawn_distance:
+					too_close_to_existing_spawn = true
+					break
+			if too_close_to_existing_spawn:
+				continue
+
+			virtual_spawns.append(candidate)
+
+		# Validate we got the requested number of spawns.
+		if virtual_spawns.size() < spawn_count:
+			continue  # Not enough valid candidates — retry with a new goal.
+
+		# Guard: Not all spawns on the same edge (only enforced when spawn_count > 1).
+		if spawn_count > 1:
+			var unique_edges: Dictionary = {}
+			for virtual_spawn in virtual_spawns:
+				unique_edges[_get_edge_index_for_virtual(virtual_spawn)] = true
+			if unique_edges.size() < 2:
+				continue  # All spawns landed on the same edge — retry.
+
+		# Step 5: Compute the automatic merge point using resolved (in-grid) coords.
+		# Average all resolved spawn positions, then lerp 20% toward the computed goal.
+		var centroid_x: float = 0.0
+		var centroid_y: float = 0.0
+		for virtual_spawn in virtual_spawns:
+			var resolved_spawn: Vector2i = _resolve_virtual_to_grid(virtual_spawn)
+			centroid_x += float(resolved_spawn.x)
+			centroid_y += float(resolved_spawn.y)
+		centroid_x /= float(virtual_spawns.size())
+		centroid_y /= float(virtual_spawns.size())
+
+		var computed_merge: Vector2i = Vector2i(
+			roundi(lerpf(centroid_x, float(computed_goal.x), 0.2)),
+			roundi(lerpf(centroid_y, float(computed_goal.y), 0.2))
+		)
+		computed_merge.x = clampi(computed_merge.x, 1, GRID_WIDTH - 2)
+		computed_merge.y = clampi(computed_merge.y, 1, GRID_HEIGHT - 2)
+
+		return {"goal": computed_goal, "spawns": virtual_spawns, "merge": computed_merge}
+
+	return {}  # All retries exhausted.
+
+
+## Returns whether a candidate tile falls within the no-go buffer zone around the goal.
+## Uses a Chebyshev (square) distance check equal to the forced segment length + 1.
+func _is_in_goal_buffer(candidate: Vector2i, goal: Vector2i) -> bool:
+	var buffer: int = FORCED_SEGMENT_LENGTH + 1
+	return abs(candidate.x - goal.x) <= buffer and abs(candidate.y - goal.y) <= buffer
+
+
+## Returns all valid non-corner virtual tile positions along a given edge.
+## Virtual coords sit 1 tile outside the grid boundary (e.g., y=-1 for TOP edge).
+func _get_all_virtual_tiles_on_edge(edge_index: int) -> Array[Vector2i]:
+	var tiles: Array[Vector2i] = []
+	match edge_index:
+		Edge.TOP:
+			# Virtual y = -1. Avoid virtual corners by keeping x in [1, GRID_WIDTH-2].
+			for x_coord in range(1, GRID_WIDTH - 1):
+				tiles.append(Vector2i(x_coord, -1))
+		Edge.BOTTOM:
+			# Virtual y = GRID_HEIGHT.
+			for x_coord in range(1, GRID_WIDTH - 1):
+				tiles.append(Vector2i(x_coord, GRID_HEIGHT))
+		Edge.LEFT:
+			# Virtual x = -1.
+			for y_coord in range(1, GRID_HEIGHT - 1):
+				tiles.append(Vector2i(-1, y_coord))
+		Edge.RIGHT:
+			# Virtual x = GRID_WIDTH.
+			for y_coord in range(1, GRID_HEIGHT - 1):
+				tiles.append(Vector2i(GRID_WIDTH, y_coord))
+	return tiles
+
+
+## Picks a random non-corner virtual tile along a given edge index.
+func _random_virtual_tile_on_edge(edge_index: int) -> Vector2i:
+	var candidates: Array[Vector2i] = _get_all_virtual_tiles_on_edge(edge_index)
+	return candidates[randi() % candidates.size()]
+
+
+## Resolves a virtual (off-grid) coordinate to the nearest real grid-edge tile.
+## e.g., Vector2i(5, -1) → Vector2i(5, 0)  |  Vector2i(-1, 3) → Vector2i(0, 3)
+func _resolve_virtual_to_grid(virtual_tile: Vector2i) -> Vector2i:
+	if virtual_tile.y < 0:
+		return Vector2i(virtual_tile.x, 0)
+	if virtual_tile.y >= GRID_HEIGHT:
+		return Vector2i(virtual_tile.x, GRID_HEIGHT - 1)
+	if virtual_tile.x < 0:
+		return Vector2i(0, virtual_tile.y)
+	if virtual_tile.x >= GRID_WIDTH:
+		return Vector2i(GRID_WIDTH - 1, virtual_tile.y)
+	return virtual_tile
+
+
+## Returns the Edge enum index that a virtual coordinate belongs to.
+func _get_edge_index_for_virtual(virtual_tile: Vector2i) -> int:
+	if virtual_tile.y < 0:
+		return Edge.TOP
+	if virtual_tile.y >= GRID_HEIGHT:
+		return Edge.BOTTOM
+	if virtual_tile.x < 0:
+		return Edge.LEFT
+	return Edge.RIGHT
+
+
+## Returns the inward-facing cardinal direction for a tile sitting on a grid edge.
+func _get_edge_direction_for_tile(tile: Vector2i) -> Vector2i:
+	if tile.y == 0:
+		return Vector2i.DOWN
+	if tile.y == GRID_HEIGHT - 1:
+		return Vector2i.UP
+	if tile.x == 0:
+		return Vector2i.RIGHT
+	return Vector2i.LEFT
+
+
+## Returns the inward-facing cardinal direction for a virtual off-grid coordinate.
+## This is the direction a lane will march into the grid interior.
+func _get_edge_direction_for_virtual(virtual_tile: Vector2i) -> Vector2i:
+	if virtual_tile.y < 0:
+		return Vector2i.DOWN
+	if virtual_tile.y >= GRID_HEIGHT:
+		return Vector2i.UP
+	if virtual_tile.x < 0:
+		return Vector2i.RIGHT
+	return Vector2i.LEFT
 
 
 ## Carves a single lane from start_tile toward target_tile, then optionally
@@ -284,7 +505,23 @@ func _carve_lane(
 		elif current_heading == Vector2i.DOWN:
 			weights[3] += 0.8
 
-		# Hard grid boundaries.
+		# Centre-bias: boost directions that move toward the grid interior.
+		# Strength is proportional to distance from centre so it decays naturally.
+		if centre_bias > 0.0:
+			var centre_x: float = (GRID_WIDTH - 1) * 0.5
+			var centre_y: float = (GRID_HEIGHT - 1) * 0.5
+			var dx_to_centre: float = centre_x - float(current.x)
+			var dy_to_centre: float = centre_y - float(current.y)
+			if dx_to_centre > 0.0:
+				weights[0] += centre_bias * (dx_to_centre / centre_x)
+			elif dx_to_centre < 0.0:
+				weights[1] += centre_bias * (abs(dx_to_centre) / centre_x)
+			if dy_to_centre > 0.0:
+				weights[3] += centre_bias * (dy_to_centre / centre_y)
+			elif dy_to_centre < 0.0:
+				weights[2] += centre_bias * (abs(dy_to_centre) / centre_y)
+
+		# Hard grid boundaries: prevent escape from the grid.
 		if current.x <= 0:
 			weights[1] = 0.0
 		if current.x >= GRID_WIDTH - 1:
@@ -293,6 +530,19 @@ func _carve_lane(
 			weights[2] = 0.0
 		if current.y >= GRID_HEIGHT - 1:
 			weights[3] = 0.0
+
+		# Boundary no-wander guard: ban the path from hugging the extreme edge tiles
+		# during the free-wander phase. The wander interior is [1, GRID_WIDTH-2] x [1, GRID_HEIGHT-2].
+		for i in range(4):
+			if weights[i] > 0.0:
+				var proposed_wander: Vector2i = current + options[i]
+				if (
+					proposed_wander.x == 0
+					or proposed_wander.x == GRID_WIDTH - 1
+					or proposed_wander.y == 0
+					or proposed_wander.y == GRID_HEIGHT - 1
+				):
+					weights[i] = 0.0
 
 		# Corridor guard: prevent accidental early entry into the exit approach zone.
 		if is_primary:
@@ -381,42 +631,6 @@ func _is_adjacent_to_existing_path(tile: Vector2i, own_recent_path: Array[Vector
 		if maze_layer.get_cell_source_id(neighbor) == FLOOR_TILE_ID:
 			return true
 	return false
-
-
-## Resolves a virtual spawn coordinate into a real grid tile.
-func _infer_spawn_tile(spawn: Vector2i) -> Vector2i:
-	if spawn.y <= -1:
-		return Vector2i(clampi(spawn.x, 0, GRID_WIDTH - 1), 0)
-	elif spawn.y >= GRID_HEIGHT:
-		return Vector2i(clampi(spawn.x, 0, GRID_WIDTH - 1), GRID_HEIGHT - 1)
-	elif spawn.x <= -1:
-		return Vector2i(0, clampi(spawn.y, 0, GRID_HEIGHT - 1))
-	elif spawn.x >= GRID_WIDTH:
-		return Vector2i(GRID_WIDTH - 1, clampi(spawn.y, 0, GRID_HEIGHT - 1))
-	return spawn
-
-
-## Returns the perpendicular entry direction for a virtual spawn.
-func _get_spawn_direction(spawn: Vector2i) -> Vector2i:
-	if spawn.y <= -1:
-		return Vector2i.DOWN
-	if spawn.y >= GRID_HEIGHT:
-		return Vector2i.UP
-	if spawn.x <= -1:
-		return Vector2i.RIGHT
-	if spawn.x >= GRID_WIDTH:
-		return Vector2i.LEFT
-	# Default fallback if spawn is already in-grid
-	return Vector2i.DOWN
-
-
-func _get_initial_heading(from: Vector2i, to: Vector2i) -> Vector2i:
-	var dx: int = to.x - from.x
-	var dy: int = to.y - from.y
-	if abs(dx) > abs(dy):
-		return Vector2i.RIGHT if dx > 0 else Vector2i.LEFT
-	else:
-		return Vector2i.DOWN if dy > 0 else Vector2i.UP
 
 
 func _build_constrained_walls() -> void:
@@ -512,14 +726,24 @@ func _save_maze() -> void:
 	if output_filename.is_empty():
 		push_error("MazeGenerator: Output filename is empty.")
 		return
-	if not _validate_maze():
+	if _preview_spawns.is_empty() or _preview_goal == Vector2i(-1, -1):
+		push_error("MazeGenerator: No placement data found. Please generate a maze first.")
+		return
+	if not _validate_maze(_preview_spawns, _preview_goal):
 		push_error("MazeGenerator: Discarding invalid maze (no clear path). Please generate again.")
 		return
 
 	var out_dir: String = "res://Stages/LevelLayouts"
-	var dir = DirAccess.open("res://Stages")
-	if dir and not dir.dir_exists("LevelLayouts"):
-		dir.make_dir("LevelLayouts")
+	if not DirAccess.dir_exists_absolute(out_dir):
+		var dir_err = DirAccess.make_dir_recursive_absolute(out_dir)
+		if dir_err != OK:
+			push_error(
+				"MazeGenerator: Failed to create directories for '",
+				out_dir,
+				"'. Error code: ",
+				dir_err
+			)
+			return
 
 	var scene = PackedScene.new()
 	var root = Node2D.new()
@@ -555,28 +779,32 @@ func _save_maze() -> void:
 	var err = ResourceSaver.save(scene, path)
 	if err == OK:
 		print("MazeGenerator: Successfully saved baked layout to -> ", path)
+		if Engine.is_editor_hint() and FileAccess.file_exists(path):
+			EditorInterface.get_resource_filesystem().scan()
 	else:
 		push_error("MazeGenerator: Failed to save maze. Error code: ", err)
 	root.free()
 
 
-func _validate_maze() -> bool:
+func _validate_maze(spawns: Array[Vector2i], goal: Vector2i) -> bool:
 	var grid = AStarGrid2D.new()
 	grid.region = Rect2i(0, 0, GRID_WIDTH, GRID_HEIGHT)
 	grid.cell_size = Vector2(84, 84)
 	grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_NEVER
 	grid.update()
 	var actual_goal: Vector2i = Vector2i(
-		clampi(goal_x, 0, GRID_WIDTH - 1), clampi(goal_y, 0, GRID_HEIGHT - 1)
+		clampi(goal.x, 0, GRID_WIDTH - 1), clampi(goal.y, 0, GRID_HEIGHT - 1)
 	)
 	for x in range(GRID_WIDTH):
 		for y in range(GRID_HEIGHT):
 			var cell = Vector2i(x, y)
 			grid.set_point_solid(cell, maze_layer.get_cell_source_id(cell) != FLOOR_TILE_ID)
 	# All spawns must be able to reach the goal.
-	for spawn_entry in spawns:
-		var spawn_tile: Vector2i = _infer_spawn_tile(spawn_entry)
-		var path = grid.get_id_path(spawn_tile, actual_goal)
-		if path.size() == 0:
+	for spawn_tile in spawns:
+		var actual_spawn: Vector2i = Vector2i(
+			clampi(spawn_tile.x, 0, GRID_WIDTH - 1), clampi(spawn_tile.y, 0, GRID_HEIGHT - 1)
+		)
+		var id_path = grid.get_id_path(actual_spawn, actual_goal)
+		if id_path.size() == 0:
 			return false
 	return true

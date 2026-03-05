@@ -1,23 +1,16 @@
-# Session Handover: 2026-03-04 (Sydney Time)
+# Session Handover: 2026-03-05 (Sydney Time)
 
 ## Current State: Stable
-The Maze Generator (`maze_generator.gd`) has been successfully evolved into a robust multi-spawn system. It now supports 1–3 entrances converging onto a single exit with guaranteed 1-tile path width and built-in reliability retries. All project documentation has been synchronized to reflect the new 19x12 grid standard and topology.
+The Maze Generator (`maze_generator.gd`) has been fully refined for path quality and spawn integrity. Spawns are generated as virtual off-grid tiles, while the goal is constrained strictly to the grid edge so enemies die visibly on-screen. We have implemented strict Path Quality guards (minimum path length and floor coverage fraction) and raised the auto-retry limit to 30. A centre-bias wander weight system was added to encourage sweeping arcs instead of edge-hugging routes. Directory creation and FileSystem rescanning on save have been fixed. All generator knowledge (Level Layout Tool) and design ideas (Batch Generation) have been documented in the `Knowledge/` folder.
 
 ## Signal Maps: None
 (No active long-running signals or broken connections in the current workspace).
 
-## Immediate Next Step: Discussions on Generator Safeguards
+## Immediate Next Step: Terrain Tags and Stem Data Refactor
 
 ### Next Session Talking Points:
-1.  **Refining Spawn/Exit Integrity:** Implement logic to prevent invalid configurations, such as spawn points being placed too close to the goal or multiple spawns sharing the same virtual coordinate.
-2.  **Path Diversity:** Discuss strategies for increasing the variety of "branching" behavior, potentially using random weight noise in the AStar grid.
-3.  **Wander vs. Structure:** Fine-tuning the balance between `wander_strength` and `min_straight_steps` to achieve organic but legible TD layouts.
+1. **Terrain Tags / Metadata Export**: Bake `spawn_tiles`, `goal_tile`, and `merge_tile` into the saved `.tscn` scene as `Marker2D` nodes so downstream systems (enemy spawner) can read them.
+2. **Stem Data Refactoring**: Discuss how to adapt the Stem Data spawn instructions and weighted target system so they intelligently interface with the new multi-spawn maze generator outputs.
 
 ## Maintenance Alerts
 - None. All scheduled tasks are within their required frequency bounds.
-
-## Summary of Today's Evolutions:
-- **Iteration 7:** Multi-Spawn support with 1–3 inlets and a designer-defined merge point.
-- **Iteration 8:** Reliability loop (10-attempt auto-retry) and Min-15-Step rule for secondary lanes.
-- **Iteration 9:** "Corner Shave" post-pruning pass to eliminate 2x2 floor clumps at junctions.
-- **Documentation Sync:** Updated `game_brief.md` and technical guides to reflect 19x12 grid and single-exit topology.

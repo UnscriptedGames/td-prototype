@@ -513,7 +513,24 @@ The pause state acts as a "Strategic Planning" mode. The music/action freezes, b
 
 ---
 
-## 13. Open Design Questions
+## 13. Level Layout Tool (Maze Generator)
+
+The `MazeGenerator` tool automates the creation of 19×12 tile-based arenas. It guarantees solvable paths for tower-defense routing before saving the result as a `.tscn` file for the runtime.
+
+### Placement Rules
+- **Grid Dimensions:** 19 (Width) × 12 (Height). Usable interior for wandering is `[1, GRID_WIDTH-2]` × `[1, GRID_HEIGHT-2]`.
+- **Spawn Geometry:** Supports 1–3 spawns converging to a single exit.
+- **Virtual Off-Grid Spawns:** Spawn origin tiles are stamped strictly 1 cell outside the grid boundaries (e.g., `x = 19` or `y = -1`). These standalone tiles act as off-screen entry points for the enemy spawner so units can natively walk into view without "popping" in.
+- **On-Grid Goal:** The exit goal is strictly restricted to interior edge tiles (`x = 0`, `x = 18`, `y = 0`, `y = 11`) to ensure enemies hit their target and transition into their death animation visibly on-screen.
+- **Goal-First Pathing:** Generation semantic order: (1) Goal selected on a random edge, (2) Spawns selected based on minimum distance to the goal and each other, (3) Centroid merge tile calculated. No single edge may contain 100% of the spawns.
+
+### Pathing Integrity
+- **Boundary No-Wander:** During the free-wander carving phase, the path is banned from touching the absolute edges of the grid. It may only touch edges for the forced entry/exit runs. This prevents boring edge-hugging routes.
+- **Quality Guard:** Before validation, the generator ensures (1) no individual path is too short (min default ~35) and (2) the combined structure covers at least 30% of the grid total floor tiles. Sparse or direct mazes are rejected and retried automatically.
+
+---
+
+## 14. Open Design Questions
 
 The following items are acknowledged as **not yet finalised** and will be resolved through
 future design sessions and playtesting:
@@ -534,6 +551,9 @@ future design sessions and playtesting:
 - [x] **AP Performance:** Optimized AP budget meter via PlayerData caching (Resolved Mar 04).
 - [x] **Maze Generation Topology:** Confirmed 1-3 Spawns converging to a Single Exit (Resolved Mar 04).
 - [x] **Multi-Spawn Support:** Implemented Multi-Pass carving with AStar path union and auto-retry reliability (Resolved Mar 04).
+- [x] **Maze Spawn/Exit Placement:** Spawn and exit coordinates are fully automated via a Goal-First semantic algorithm. Manual input removed. (Resolved Mar 05)
+- [x] **Spawn Off-Grid Behavior:** Spawn tiles are stamped 1 cell outside the grid boundary as virtual floor tiles, allowing enemies to walk in from off-screen. The exit goal tile is strictly on-grid so enemies die visibly. (Resolved Mar 05)
+- [x] **Path Quality Minimum:** Maze generation enforces a minimum path length per spawn and a minimum floor coverage fraction before a layout can be accepted or saved. (Resolved Mar 05)
 - [ ] **AP Growth:** How does the player's maximum AP increase? Fixed per stage, or a
 	separate upgrade currency?
 - [ ] **Unlock Economy:** Full mapping of what unlocks where (towers, buffs, relics, AP).
@@ -550,7 +570,7 @@ future design sessions and playtesting:
 
 ---
 
-## 14. Future / Stretch Goals
+## 15. Future / Stretch Goals
 
 ### Dynamic Audio Effects Layer
 Temporary, gameplay-triggered audio effects layered on top of the active stem quality track via Godot's AudioBus system. 
