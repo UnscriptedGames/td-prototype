@@ -7,8 +7,10 @@
 [ext_resource type="Resource" uid="uid://d2lb3bi5qtvjv" path="res://Config/Stages/stage01_stem03.tres" id="6_ry1br"]
 [ext_resource type="Resource" uid="uid://bfvcmxv3ebo12" path="res://Config/Stages/stage01_stem04.tres" id="7_v4qsm"]
 [ext_resource type="Resource" uid="uid://cg3oyt4l6w7n6" path="res://Config/Stages/stage01_stem05.tres" id="8_pfhh4"]
+[ext_resource type="Resource" uid="uid://cs20eumdgxjwh" path="res://Config/Stages/stage01_stem06.tres" id="9_boss"]
 
 [resource]
 script = ExtResource("1_stage")
 stage_name = "Funky Golden Sun"
-stems = Array[ExtResource("2_stem")]([ExtResource("4_grwt2"), ExtResource("5_txdv4"), ExtResource("6_ry1br"), ExtResource("7_v4qsm"), ExtResource("8_pfhh4")])
+stems = Array[ExtResource("2_stem")]([ExtResource("4_grwt2"), ExtResource("5_txdv4"), ExtResource("6_ry1br"), ExtResource("7_v4qsm"), ExtResource("8_pfhh4"), ExtResource("9_boss")])
+boss_stem = ExtResource("9_boss")

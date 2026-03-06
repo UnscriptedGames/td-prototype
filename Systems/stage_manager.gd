@@ -320,7 +320,11 @@ func _get_stem_data(stem_index: int) -> StemData:
 		return null
 
 	if stem_index == BOSS_INDEX:
-		return _active_stage.boss_stem
+		if is_instance_valid(_active_stage.boss_stem):
+			return _active_stage.boss_stem
+		else:
+			push_error("StageManager: boss_stem is null on active stage!")
+			return null
 
 	if stem_index >= 0 and stem_index < _active_stage.stems.size():
 		return _active_stage.stems[stem_index]

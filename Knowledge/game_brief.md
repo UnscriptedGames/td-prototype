@@ -95,7 +95,13 @@ When the Peak Meter hits 100% capacity ("Clips"):
   - **Retry Stem:** Resets the current wave/stem encounter immediately using the same loadout.
   - **Return to Setlist:** Exits the level and returns the player to the Stage menu to potentially reconfigure their approach or try a different stem.
 
-During the **Boss Wave (Wave 6)**, the Peak Meter is a pure survival mechanic — there is no stem quality to grade. The player must prevent the meter from filling while defeating the mini boss.
+During the **Boss Wave (Wave 6)**, the Peak Meter acts as a pure survival (health) mechanic — there is no underlying stem quality to grade. The previously unlocked Stems 1–5 play layered together at a **locked, full quality**.
+
+Instead of degrading the core music, the Peak Meter triggers an **Inverse Tension Layer**:
+- **0–33% (Low)**: Subtle, barely audible (e.g., quiet pulse or drone).
+- **33–66% (Mid)**: Present and unsettling (e.g., a driving or distorted motif driving pressure).
+- **66–100% (High)**: Urgent and chaotic (a full panic-inducing audio layer).
+This creates a deliberate contrast — the player’s hard-earned, polished track is increasingly intruded upon by a panicked, desperate audio stem as they approach failure.
 
 ---
 
@@ -143,7 +149,7 @@ The player is given two levels of reset depending on whether they want to optimi
 - While playing Stem Level N, the current active stem plays in the foreground and dynamically shifts its audio quality (Good/Average/Abomination) in real-time as the Peak Meter rises.
 - Previously completed stems (1 through N-1) play in the background layered over it at their permanently locked, earned quality.
 - On the Boss Wave, all 5 stems play simultaneously — the player hears the full song they
-	assembled.
+	assembled at its locked, full quality, overlaid dynamically by the **Inverse Tension Layer**.
 
 ### Audio Quality Approach (Hybrid)
 Two independent audio layers operate simultaneously:

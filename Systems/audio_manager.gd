@@ -81,9 +81,14 @@ func play_stem(stem_data: StemData) -> void:
 	_historical_players.clear()
 	
 	# 2. Setup active stem's 3-track dynamic playback
-	_player_good.stream = stem_data.stem_audio_good
-	_player_avg.stream = stem_data.stem_audio_avg
-	_player_bad.stream = stem_data.stem_audio_bad
+	if stem_data.is_boss_stem:
+		_player_good.stream = null
+		_player_avg.stream = null
+		_player_bad.stream = null
+	else:
+		_player_good.stream = stem_data.stem_audio_good
+		_player_avg.stream = stem_data.stem_audio_avg
+		_player_bad.stream = stem_data.stem_audio_bad
 	
 	_current_quality = StemQuality.GOOD
 	_set_volumes(_current_quality)
@@ -126,9 +131,12 @@ func play_stem(stem_data: StemData) -> void:
 					_historical_players.append(historical_player)
 
 	# 4. Play EVERYTHING at the precise same moment for perfect phase sync
-	_player_good.play()
-	_player_avg.play()
-	_player_bad.play()
+	if _player_good.stream:
+		_player_good.play()
+	if _player_avg.stream:
+		_player_avg.play()
+	if _player_bad.stream:
+		_player_bad.play()
 	
 	for hist_player in _historical_players:
 		hist_player.play()

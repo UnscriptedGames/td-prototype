@@ -25,7 +25,7 @@ metadata/_custom_type_script = "uid://c6sd68ghkditp"
 [resource]
 script = ExtResource("1_4iq47")
 stem_label = "Lead Vocals"
-layout_scene_path = "uid://c2keng0dnn8bh"
+layout_scene_path = "uid://c2luxv0tbwgyf"
 is_mandatory_first = true
 enemy_preview_hint = "Standard Waveforms"
 maze_styles = Array[ExtResource("1_tv8b7")]([SubResource("Resource_qkwde")])

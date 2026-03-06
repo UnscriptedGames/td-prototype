@@ -1,29 +1,29 @@
-[gd_scene format=4 uid="uid://muk3lb4d2ro7"]
+[gd_scene format=4 uid="uid://b27bj7cjkcdkj"]
 
-[ext_resource type="Script" uid="uid://dugxy8wywhn1x" path="res://Tools/MazeGenerator/maze_generator.gd" id="1_script"]
-[ext_resource type="TileSet" uid="uid://deanuyo4c5m1j" path="res://Stages/Tilesets/maze_tileset.tres" id="2_maze"]
-[ext_resource type="TileSet" uid="uid://lcs2qipbyflc" path="res://Stages/Tilesets/animation_tileset.tres" id="3_anim"]
+[ext_resource type="TileSet" uid="uid://deanuyo4c5m1j" path="res://Stages/Tilesets/maze_tileset.tres" id="1_ppfvk"]
+[ext_resource type="TileSet" uid="uid://lcs2qipbyflc" path="res://Stages/Tilesets/animation_tileset.tres" id="2_j4psj"]
 
-[node name="MazeGenerator" type="Node2D" unique_id=950542341 node_paths=PackedStringArray("maze_layer", "animation_layer")]
-script = ExtResource("1_script")
-output_filename = "stage01_stem01"
-preview_goal = Vector2i(18, 6)
-preview_spawns = Array[Vector2i]([Vector2i(-1, 1)])
-preview_merge = Vector2i(4, 2)
-maze_layer = NodePath("MazeLayer")
-animation_layer = NodePath("AnimationLayer")
+[node name="MazeData" type="Node2D" unique_id=1553206857]
 
-[node name="DesignGuide" type="ReferenceRect" parent="." unique_id=439099499]
+[node name="DesignGuide" type="ReferenceRect" parent="." unique_id=613145199]
 offset_right = 1596.0
 offset_bottom = 1008.0
 mouse_filter = 2
 border_color = Color(1, 0, 0, 0.5)
 border_width = 2.0
 
-[node name="MazeLayer" type="TileMapLayer" parent="." unique_id=1304150270]
+[node name="MazeLayer" type="TileMapLayer" parent="." unique_id=331978747]
 tile_map_data = PackedByteArray("AAALAAYABQAAAAAAAAAJAAYABQAAAAAAAAAKAAYAAQAAAAAAAAAMAAYAAQAAAAAAAAAKAAcAAQAAAAAAAAAJAAcABQAAAAAAAAAJAAgAAQAAAAAAAAAGAAcABQAAAAAAAAAGAAgABQAAAAAAAAAHAAcABQAAAAAAAAAIAAcABQAAAAAAAAAIAAYABQAAAAAAAAAIAAgAAQAAAAAAAAAEAAYABQAAAAAAAAAFAAYABQAAAAAAAAAHAAgAAQAAAAAAAAAJAAUAAQAAAAAAAAAKAAUAAQAAAAAAAAALAAUABQAAAAAAAAAMAAUABQAAAAAAAAAIAAUAAQAAAAAAAAAGAAkABQAAAAAAAAAKAAQABQAAAAAAAAALAAQABQAAAAAAAAALAAcABQAAAAAAAAAMAAcAAQAAAAAAAAADAAYABQAAAAAAAAAJAAQABQAAAAAAAAAIAAQABQAAAAAAAAAHAAQABQAAAAAAAAAGAAQABQAAAAAAAAAFAAQABQAAAAAAAAAFAAMABQAAAAAAAAAFAAIABQAAAAAAAAADAAMABQAAAAAAAAADAAQABQAAAAAAAAADAAUABQAAAAAAAAAEAAUAAQAAAAAAAAAHAAkAAQAAAAAAAAAIAAkABQAAAAAAAAAIAAoAAQAAAAAAAAAIAAsABQAAAAAAAAAJAAkABQAAAAAAAAANAAUABQAAAAAAAAAHAAoAAQAAAAAAAAAJAAoAAQAAAAAAAAAHAAsABQAAAAAAAAAJAAsABQAAAAAAAAANAAYAAQAAAAAAAAANAAcABQAAAAAAAAAEAAQAAQAAAAAAAAAEAAMAAQAAAAAAAAAEAAIAAQAAAAAAAAAFAAUAAQAAAAAAAAADAAIABQAAAAAAAAAAAAEAAQAAAAAAAAABAAEAAQAAAAAAAAACAAEAAQAAAAAAAAADAAEAAQAAAAAAAAAEAAEAAQAAAAAAAAAGAAUAAQAAAAAAAAAHAAUAAQAAAAAAAAAHAAYABQAAAAAAAAAKAAgAAQAAAAAAAAAKAAoAAQAAAAAAAAALAAoAAQAAAAAAAAAMAAoAAQAAAAAAAAAMAAkAAQAAAAAAAAAMAAgAAQAAAAAAAAAOAAYAAQAAAAAAAAAOAAUABQAAAAAAAAAPAAUABQAAAAAAAAAPAAYAAQAAAAAAAAAQAAYAAQAAAAAAAAARAAYAAQAAAAAAAAASAAYAAQAAAAAAAAALAAgABQAAAAAAAAAKAAkABQAAAAAAAAANAAgABQAAAAAAAAAGAAoABQAAAAAAAAAGAAsABQAAAAAAAAAKAAsABQAAAAAAAAAOAAcABQAAAAAAAAAFAAEABQAAAAAAAAAGAAYABQAAAAAAAAAAAAAABQAAAAAAAAAAAAIABQAAAAAAAAABAAAABQAAAAAAAAABAAIABQAAAAAAAAACAAAABQAAAAAAAAACAAIABQAAAAAAAAADAAAABQAAAAAAAAAEAAAABQAAAAAAAAAFAAAABQAAAAAAAAALAAkABQAAAAAAAAALAAsABQAAAAAAAAAMAAsABQAAAAAAAAANAAkABQAAAAAAAAANAAoABQAAAAAAAAANAAsABQAAAAAAAAAPAAcABQAAAAAAAAAQAAUABQAAAAAAAAAQAAcABQAAAAAAAAARAAUABQAAAAAAAAARAAcABQAAAAAAAAASAAUABQAAAAAAAAASAAcABQAAAAAAAAD//wEAAQAAAAAAAAA=")
-tile_set = ExtResource("2_maze")
+tile_set = ExtResource("1_ppfvk")
 
-[node name="AnimationLayer" type="TileMapLayer" parent="." unique_id=1525118900]
+[node name="AnimationLayer" type="TileMapLayer" parent="." unique_id=1588035461]
 visible = false
-tile_set = ExtResource("3_anim")
+tile_set = ExtResource("2_j4psj")
+
+[node name="TerrainTags" type="Node2D" parent="." unique_id=1863043984]
+
+[node name="Spawn_0" type="Marker2D" parent="TerrainTags" unique_id=1185519789]
+position = Vector2(42, 126)
+
+[node name="Goal" type="Marker2D" parent="TerrainTags" unique_id=2064050207]
+position = Vector2(1554, 546)
