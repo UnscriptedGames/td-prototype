@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="TowerData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_tdsubw"]
+[ext_resource type="Resource" path="res://Config/Towers/Levels/subwoofer_level_01.tres" id="2_lvl01"]
+
+[ext_resource type="Texture2D" uid="uid://b0tmm4r16vrt3" path="res://UI/Assets/white_square_64.png" id="3_icon"]
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_icon"]
+size = Vector2(64, 64)
+
+[resource]
+script = ExtResource("1_tdsubw")
+levels = Array[Resource("res://Entities/Towers/_TemplateTower/tower_level_data.gd")]([ExtResource("2_lvl01")])
+tower_scene_path = "res://Entities/Towers/Subwoofer/subwoofer.tscn"
+ghost_texture = SubResource("PlaceholderTexture2D_icon")
+ghost_scale = Vector2(1, 1)
+ghost_texture_offset = Vector2(0, 0)
+display_name = "Subwoofer"
+icon = SubResource("PlaceholderTexture2D_icon")
+description = "Emits deep bass frequencies that slow enemies in range."
+allocation_cost = 15
+is_unlocked = true

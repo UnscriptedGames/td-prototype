@@ -289,7 +289,7 @@ func _attack() -> void:
 		state = State.IDLE
 		return
 
-	if not fire_rate_timer.is_stopped() or _is_firing or not projectile_scene:
+	if not fire_rate_timer.is_stopped() or _is_firing:
 		return
 	
 	_is_firing = true
@@ -333,16 +333,19 @@ func _on_animation_finished(_anim_name: StringName) -> void:
 
 # Called via AnimationPlayer method track
 func _spawn_projectiles() -> void:
+	if not is_instance_valid(projectile_scene):
+		return
+		
 	var target_count: int = min(_current_targets.size(), _targets_last_known_positions.size())
 	for index in range(target_count):
 		var target: TemplateEnemy = _current_targets[index]
-		var projectile: TemplateProjectile = (
-			ObjectPoolManager.get_object(projectile_scene) as TemplateProjectile
-		)
-		assert(projectile != null)
-		if not is_instance_valid(projectile):
-			push_error("ObjectPoolManager failed to provide a projectile.")
+		var pooled_obj: Node2D = ObjectPoolManager.get_object(projectile_scene)
+		if not pooled_obj is TemplateProjectile:
+			push_error("ObjectPoolManager failed to provide a valid TemplateProjectile.")
 			continue
+			
+		var projectile: TemplateProjectile = pooled_obj as TemplateProjectile
+		assert(projectile != null)
 
 		projectile.visible = true
 		_projectiles_container.add_child(projectile)

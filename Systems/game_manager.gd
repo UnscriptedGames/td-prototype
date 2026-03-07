@@ -94,7 +94,11 @@ var _relic_used_this_level: bool = false
 
 func _ready() -> void:
 	if OS.is_debug_build():
+		# Windows focus stealing workaround: temporarily set Always On Top, then disable it
 		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP, true)
+		get_tree().create_timer(0.5).timeout.connect(func():
+			DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP, false)
+		)
 
 	_player_data = load("res://Config/Players/player_config.tres")
 	_initialize_loadout_stock()

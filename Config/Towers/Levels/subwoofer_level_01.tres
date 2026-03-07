@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="TowerLevelData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Entities/Towers/_TemplateTower/tower_level_data.gd" id="1_tlvl"]
+[ext_resource type="Script" path="res://Core/Data/StatusEffects/status_effect_data.gd" id="2_stat"]
+
+[sub_resource type="Resource" id="Resource_slow"]
+script = ExtResource("2_stat")
+effect_type = 1
+duration = 1.25
+magnitude = 0.4
+damage_per_tick = 0
+tick_rate = 0.0
+
+[resource]
+script = ExtResource("1_tlvl")
+upgrade_name = "Base"
+tower_level = "Level 1"
+cost = 0
+tower_range = 2
+damage = 0
+fire_rate = 1.0
+projectile_speed = 0.0
+targets = 100
+attack_modifiers = Array[Resource("res://Core/Data/AttackModifiers/attack_modifier_data.gd")]([])
+status_effects = Array[ExtResource("2_stat")]([SubResource("Resource_slow")])
+shoot_animation = &"level_01_shoot"
+idle_animation = &"level_01_idle"

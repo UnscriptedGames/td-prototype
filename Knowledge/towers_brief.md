@@ -74,8 +74,8 @@ intuitively to the gear, it's the wrong fit.
 
 ### 2.3. The Subwoofer
 
-> [!NOTE]
-> **Status: Planned / Not yet implemented**
+> [!TIP]
+> **Status: Implemented** (v0.1 — Base level, AoE slow aura)
 
 - **Archetype:** Crowd Control (slow)
 - **Attack:** Emits deep bass frequencies that vibrate the ground, slowing all enemies
