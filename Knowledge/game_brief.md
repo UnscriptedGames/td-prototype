@@ -1,7 +1,7 @@
 # Game Brief — TD-Prototype
 
-**Version:** 0.1 (Living Document)
-**Last Updated:** 2026-03-04
+**Version:** 0.2 (Living Document)
+**Last Updated:** 2026-03-07
 
 ## 1. Game Identity
 
@@ -270,17 +270,21 @@ The loadout is organized into a fixed-size grid (The Rack), separating it from a
 > [!NOTE]
 > **Status: Planned / Not yet implemented**
 
+- **Roster:** 20 unique buffs across 3 pricing tiers (see Section 8 for FX Credit costs).
 - Repeatable utility effects that temporarily modify tower attributes.
 - **Gold Cost:** Deducted on play.
 - **Global Cooldown:** After any Buff is used, all Buffs enter a shared cooldown before
 	another can be played.
 - Applied via drag-to-target (existing system).
+- **Unlock:** Buffs are purchased by the player from a **Buff Catalog** in The Studio
+	using FX Credits earned from stem completions (see Section 8).
 
 ### Relics — "Mastering Plugins"
 
 > [!NOTE]
 > **Status: Planned / Not yet implemented**
 
+- **Roster:** 10 relics total, 3 loadout slots.
 - Passive modifiers that are always active once the stage begins.
 - Each Relic also has an **Active Ability**.
 - **Critical Rule:** Regardless of how many Relics are in the Loadout, the player may only
@@ -288,6 +292,7 @@ The loadout is organized into a fixed-size grid (The Rack), separating it from a
 	others until the next stage.
 - This creates a "save it or spend it" tension — use the active early for safety, or hold
 	it for the boss?
+- **Unlock:** 1 Relic awarded per boss clear (fixed, designer-chosen order).
 
 ### Loadout Scope
 - **Current thinking:** The loadout is strictly locked for the entirety of a Stage (all 5 stems + boss) to reinforce the "prepare in the Studio, perform in the Live Set" metaphor. This prevents tedious reconfiguration between stem levels.
@@ -307,16 +312,59 @@ The loadout is organized into a fixed-size grid (The Rack), separating it from a
 	in the stage config. This prevents "snowballing" economy where an easy first stem 
 	makes the remaining 4 trivial.
 
-### Progression & Unlocks (TBD)
-- **Stage Completion:** Unlocks the next stage sequentially.
-- **Stem Completion:** May unlock new towers or buffs.
-- **Boss Defeats:** May unlock Relics.
+### Progression & Unlocks
+
+The unlock economy uses three distinct channels to ensure pacing control while giving
+the player meaningful choices:
+
+#### Tower Unlocks (Designer-Controlled)
+- **Mechanism:** Fixed, designer-curated order. 1 starter tower (Turntable) is available
+	from the start. 1 new tower is unlocked automatically per boss clear (Stages 1–7).
+- **Rationale:** Towers define the player's fundamental strategy. The designer must
+	control which tower unlocks when to ensure the difficulty curve works. Each stage
+	can be designed around "the player now has access to X for the first time."
+- **Full roster** is available by Stage 8. Stages 8–10 become the mastery gauntlet.
+
+#### FX Credits (Quality-Based Buff Currency)
+- **Earning:** Completing any stem earns FX Credits based on quality grade:
+  - **Good:** 3 credits
+  - **Average:** 2 credits
+  - **Abomination:** 1 credit
+- **Total Available:** 5 stems × 10 stages = 50 completions. Range: 50–150 credits
+	depending on overall performance.
+- **Replay Incentive:** Replaying a stem and improving the grade earns the *difference*
+	(e.g., upgrading Abomination→Good earns 2 additional credits). No farming exploits.
+- **Spending:** FX Credits are spent in The Studio's **Buff Catalog** to unlock buffs
+	of the player's choice.
+- **Pricing Tiers:**
+  | Tier | Cost Each | Count | Subtotal |
+  |:---|:---|:---|:---|
+  | Basic | 3 credits | 10 | 30 |
+  | Advanced | 5 credits | 7 | 35 |
+  | Premium | 8 credits | 3 | 24 |
+  | **Total** | | **20 buffs** | **89 credits** |
+- **Balance Target:** Floor (50 credits / all Abomination) unlocks ~70% of the catalog.
+	A competent player (~100 credits) can unlock everything. Surplus credits are banked
+	for future cosmetic/completionist sinks.
+
+#### Relic Unlocks (Boss Rewards)
+- **Mechanism:** 1 Relic per boss clear across all 10 stages. Fixed, designer-chosen.
+- **Rationale:** Relics are prestigious milestone rewards. Tying them to boss defeats
+	makes every boss encounter feel significant.
+
+#### Unlock Pacing Per Stage
+| Encounter | Reward |
+|:---|:---|
+| **Stem 1–5** | FX Credits (1–3 per stem based on quality) |
+| **Boss** | Tower unlock (Stages 1–7) + Relic unlock (all stages) |
+
 - **AP Growth:** Mechanism TBD — fixed progression per stage or a separate upgrade system.
 - **The Codex:** Acts as a long-term completionist goal (unlock all stem variants).
 
-> [!NOTE]
-> The full progression and unlock economy has not been designed yet. This section will be
-> expanded as the design matures through playtesting.
+> [!TIP]
+> The progression system uses **"Nouns before Adjectives"** ordering: towers (the core
+> verbs) unlock first via designer control, buffs (the tactical modifiers) are chosen by
+> the player, and relics (the strategic meta-layer) are prestigious boss rewards.
 
 ---
 
@@ -361,7 +409,7 @@ Enemies are modular **audio waveform tracks** defined by `EnemyData` resources.
 Towers are the player's primary defence. Each is themed around audio/music production
 equipment.
 
-### Confirmed Concepts
+### Confirmed Roster (8 Towers)
 | Tower | Archetype | Attack | Notes |
 |:---|:---|:---|:---|
 | **Turntable** | Projectile DPS | Vinyl records | Workhorse tower. Formerly "Record Player." |
@@ -371,10 +419,10 @@ equipment.
 | **Delay Pedal** | Damage-over-Time | Echo damage ticks | Tag-and-forget sustained pressure. |
 | **Tuning Fork** | Burst / Sniper | Resonance strike | Slow charge, massive single hit. |
 | **Equalizer** | Debuff / Support | Frequency filtering | Amplifies other towers' damage. |
-| **Theremin** | Sustained Beam | Ramp-up laser | Damage increases with lock-on time. |
+| **Metronome** | Tower Buffer / Aura | Rhythmic speed aura | Boosts adjacent towers. BPM-synced. |
 
 ### Design Direction
-- **Roster Target:** 6–8 unique towers, each filling a distinct TD archetype.
+- **Roster Target:** 8 unique towers confirmed, each filling a distinct TD archetype.
 - Towers must pass the litmus test: the attack behaviour should feel like a natural
 	extension of the equipment.
 - **Upgrade System:** 3 tiers × 2 choices per tier. Visual changes are per-tier
@@ -387,8 +435,8 @@ equipment.
 	mass-instantiating Nodes or complex `_draw` geometry to stay within 
 	performance budgets.
 - Detailed designs are in individual `Knowledge/tower_design_*.md` documents.
-- See `Knowledge/towers_brief.md` for the full roster, synergy map, and trimming
-	guidance.
+- See `Knowledge/towers_brief.md` for the full roster, synergy map, and upgrade
+	direction.
 
 ---
 
@@ -562,12 +610,13 @@ future design sessions and playtesting:
 - [x] **Path Quality Minimum:** Maze generation enforces a minimum path length per spawn and a minimum floor coverage fraction before a layout can be accepted or saved. (Resolved Mar 05)
 - [ ] **AP Growth:** How does the player's maximum AP increase? Fixed per stage, or a
 	separate upgrade currency?
-- [ ] **Unlock Economy:** Full mapping of what unlocks where (towers, buffs, relics, AP).
+- [x] **Unlock Economy:** Tower, Buff, and Relic unlock sources defined. Towers via fixed boss order, Buffs via FX Credits, Relics via boss rewards (Resolved Mar 07).
 - [ ] **Enemy Variants:** Detailed design for shielded, resistant, and other enemy types.
 - [ ] **Upgrade Branching:** Can the player mix upgrade choices across tiers (e.g.,
 	Tier 1A + Tier 2B), or must they commit to a single path?
-- [ ] **Relic Design:** Specific passive/active ability designs for each relic.
-- [ ] **Buff Design:** Specific buff effects, costs, and cooldown values.
+- [x] **Relic Design (Scope):** 10 relics, 1 per boss, 3 loadout slots confirmed. Individual ability designs TBD (Resolved Mar 07).
+- [x] **Buff Design (Scope):** 20 buffs across 3 pricing tiers via FX Credits confirmed. Individual buff effects TBD (Resolved Mar 07).
+- [x] **Tower Roster Size:** 8 towers confirmed. Theremin replaced by Metronome (Resolved Mar 07).
 - [ ] **Final Stage Mechanics:** Does the custom song selection affect gameplay, or is it
 	purely aesthetic?
 - [ ] **Difficulty Scaling:** How does difficulty ramp across stages and within stem levels?

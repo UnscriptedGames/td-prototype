@@ -1,7 +1,7 @@
 # Pending Ideas and Open Questions
 
-**Version:** 0.1 (Living Document)
-**Last Updated:** 2026-03-03
+**Version:** 0.2 (Living Document)
+**Last Updated:** 2026-03-07
 
 This document tracks all pending ideas, brainstorms, and open design questions that have not yet been implemented or finalized.
 
@@ -36,13 +36,16 @@ This document tracks all pending ideas, brainstorms, and open design questions t
 This section contains existing open questions from previous design sessions that remain unresolved.
 
 ### Economy & Progression
+*   ~~**Unlock Economy:** What is the full mapping of what unlocks where across the 10 stages (towers, buffs, relics, AP)?~~
+    **Resolved Mar 07:** Towers via fixed boss order (Stages 1–7), Buffs via player-chosen FX Credits (quality-based stem rewards), Relics via fixed boss rewards (all 10 stages). See `game_brief.md` Section 8.
 *   **AP Growth:** How does the player's maximum Allocation Points (AP) increase? Is it a fixed progression per stage or a separate upgrade currency?
-*   **Unlock Economy:** What is the full mapping of what unlocks where across the 10 stages (towers, buffs, relics, AP)?
 
 ### Tower & Upgrades
 *   **Upgrade Branching:** Can the player mix upgrade choices across tiers (e.g., Tier 1A + Tier 2B), or must they commit to a single linear path?
-*   **Relic Design:** Specific passive and active ability definitions for each individual relic.
-*   **Buff Design:** Specific effect impacts, gold costs, and cooldown values.
+*   ~~**Relic Design:** Specific passive and active ability definitions for each individual relic.~~
+    **Partially Resolved Mar 07:** 10 relics, 1 per boss, 3 loadout slots confirmed. Individual ability designs still TBD.
+*   ~~**Buff Design:** Specific effect impacts, gold costs, and cooldown values.~~
+    **Partially Resolved Mar 07:** 20 buffs across 3 pricing tiers via FX Credits confirmed. Individual buff effects still TBD.
 
 ### Enemy & Level Design
 *   **Enemy Variants:** Detailed designs for shielded, resistant, and other audio-themed waveform variations.

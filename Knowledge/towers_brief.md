@@ -1,7 +1,7 @@
 # Tower Design Brief — TD-Prototype
 
-**Version:** 0.1 (Living Document)
-**Last Updated:** 2026-03-04
+**Version:** 0.2 (Living Document)
+**Last Updated:** 2026-03-07
 
 ## 1. Design Philosophy
 
@@ -21,9 +21,10 @@ intuitively to the gear, it's the wrong fit.
 - **Rack Allocation**: Towers are allocated to a fixed **6-slot tower array** (`tower_slots`). This allows for specific positioning by the player, which is preserved across the stage run.
 
 ### Target Roster
-- **6–8 unique towers** covering a range of attack types, effects, and upgrade paths.
+- **8 unique towers** covering a range of attack types, effects, and upgrade paths.
 - Each tower fills a distinct **TD archetype** so the player has meaningful loadout
   decisions.
+- With a **6-slot Rack**, the player must drop 2 towers per stage — every cut hurts.
 
 ### Archetypes to Cover
 | Archetype | Role |
@@ -34,8 +35,8 @@ intuitively to the gear, it's the wrong fit.
 | **Damage-over-Time** | Sustained pressure after initial hit |
 | **Burst / Sniper** | Slow but devastating single hits |
 | **Debuff / Support** | Amplifies other towers' effectiveness |
-| **Sustained Beam** | Rewards target focus, punishes swapping |
 | **Anti-Tank / Scaling** | Counters high-HP enemies specifically |
+| **Tower Buffer / Aura** | Boosts adjacent towers' performance |
 
 ---
 
@@ -164,22 +165,26 @@ intuitively to the gear, it's the wrong fit.
 
 ---
 
-### 2.8. The Theremin
+### 2.8. The Metronome
 
 > [!NOTE]
 > **Status: Planned / Not yet implemented**
 
-- **Archetype:** Sustained Beam
-- **Attack:** Continuous damage beam that locks onto the nearest enemy. Damage **ramps
-  up** the longer it stays locked on the same target. Resets if the target leaves range
-  or dies.
-- **Fantasy:** The patient tower. Melts anything that lingers. Punishes enemies slowed
-  by the Subwoofer. The ramp-up prevents it from being a straight upgrade to the
-  Turntable.
+- **Archetype:** Tower Buffer / Aura
+- **Attack:** Deals no damage. Emits a steady rhythmic aura that boosts the **attack
+  speed** of all towers placed within its radius. The pendulum visually ticks in sync
+  with the current stem's BPM.
+- **Fantasy:** Keeps the track in time. On its own, does nothing. Surrounded by DPS
+  towers? It turns a good cluster into a devastating one. Competes with the Equalizer
+  for the "support slot" — EQ debuffs enemies, Metronome buffs towers.
 - **Upgrade Direction:**
-  - Faster ramp-up rate.
-  - Higher damage ceiling.
-  - "Oscillation" mode — slowly sweeps between two targets without fully resetting.
+  - Larger aura radius.
+  - Stronger attack speed multiplier.
+  - "Polyrhythm" — adjacent towers gain a chance to fire double projectiles.
+- **Design Note:** Replaces the originally planned Theremin. The Theremin's sustained
+  beam / ramp-up DPS role overlapped with the Compressor's anti-tank niche. The
+  Metronome fills a genuinely missing archetype (ally buffing) without crowding the
+  damage roster.
 
 ---
 
@@ -188,27 +193,16 @@ intuitively to the gear, it's the wrong fit.
 The best TD games reward **tower combinations**. Below are the key planned synergies:
 
 ```
-Subwoofer (Slow) ──────► Theremin (longer lock-on = more ramp damage)
 Subwoofer (Slow) ──────► Delay Pedal (more echo ticks land while slowed)
+Subwoofer (Slow) ──────► Compressor (target stays in range longer)
 EQ (Debuff) ───────────► Monitor (amplified AoE = wave clear)
 EQ (Debuff) ───────────► Tuning Fork (amplified burst = one-shots)
 Compressor ─────────────► Boss waves (% damage scales with HP)
 Tuning Fork ×2 ────────► Harmonic bonus (rewards double investment)
+Metronome ──────────────► Turntable cluster (faster fire rate = DPS spike)
+Metronome ──────────────► Monitor (faster pulse rate = more AoE hits)
+Metronome vs EQ ────────► Competing support slots (buff towers vs debuff enemies)
 ```
-
----
-
-## 4. Trimming to 6 (If Required)
-
-If 8 towers is too many for the prototype, the two candidates for removal are:
-
-1. **The Theremin** — its "ramp-up beam" niche overlaps with the Compressor's anti-tank
-   role. Could be merged into a Compressor upgrade path instead.
-2. **The Delay Pedal** — DoT can feel invisible to players. Could be folded into the
-   Turntable as an upgrade tier ("Echo Vinyl" mode).
-
-This leaves a tight core six: **Turntable, Monitor, Subwoofer, Compressor, Tuning Fork,
-Equalizer.**
 
 ---
 
@@ -224,7 +218,7 @@ Equalizer.**
 
 ## 6. Open Design Questions
 
-- [ ] **Final roster size:** 6, 7, or 8 towers?
+- [x] **Final roster size:** 8 towers confirmed (Resolved Mar 07).
 - [ ] **Stock values:** How many of each tower can be placed simultaneously?
 - [ ] **AP costs:** Cost tiers per tower (Heavy / Medium / Light)?
 - [ ] **Upgrade system:** Linear upgrade path or branching specialisations?
