@@ -234,6 +234,9 @@ func _exit_tree() -> void:
 			GameManager.peak_meter_changed.disconnect(_on_peak_changed)
 		if GameManager.wave_status_changed.is_connected(_on_wave_status_changed):
 			GameManager.wave_status_changed.disconnect(_on_wave_status_changed)
+	if is_instance_valid(GlobalSignals):
+		if GlobalSignals.loadout_rebuild_requested.is_connected(_on_loadout_rebuild_requested):
+			GlobalSignals.loadout_rebuild_requested.disconnect(_on_loadout_rebuild_requested)
 	if (
 		is_instance_valid(volume_slider)
 		and volume_slider.value_changed.is_connected(_on_volume_changed)

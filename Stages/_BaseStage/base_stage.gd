@@ -148,10 +148,13 @@ func _process(delta: float) -> void:
 
 
 func _exit_tree() -> void:
-	if GameManager.start_wave_requested.is_connected(_on_next_wave_requested):
-		GameManager.start_wave_requested.disconnect(_on_next_wave_requested)
-	if GameManager.stem_failed.is_connected(_on_stem_failed):
-		GameManager.stem_failed.disconnect(_on_stem_failed)
+	if is_instance_valid(GameManager):
+		if GameManager.start_wave_requested.is_connected(_on_next_wave_requested):
+			GameManager.start_wave_requested.disconnect(_on_next_wave_requested)
+		if GameManager.stem_failed.is_connected(_on_stem_failed):
+			GameManager.stem_failed.disconnect(_on_stem_failed)
+		if GameManager.force_complete_stem_requested.is_connected(_on_debug_force_complete_stem_requested):
+			GameManager.force_complete_stem_requested.disconnect(_on_debug_force_complete_stem_requested)
 
 	# Ensure audio is hard-stopped when leaving the scene so it doesn't bleed into Setlist.
 	if is_instance_valid(_stem_audio_player):
