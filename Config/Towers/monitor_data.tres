@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="TowerData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_tdmon"]
+[ext_resource type="Resource" path="res://Config/Towers/Levels/monitor_level_01.tres" id="2_lvl01"]
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_icon"]
+size = Vector2(64, 64)
+
+[resource]
+script = ExtResource("1_tdmon")
+levels = Array[Resource("res://Entities/Towers/_TemplateTower/tower_level_data.gd")]([ExtResource("2_lvl01")])
+tower_scene_path = "res://Entities/Towers/Monitor/monitor.tscn"
+ghost_texture = SubResource("PlaceholderTexture2D_icon")
+ghost_scale = Vector2(1, 1)
+ghost_texture_offset = Vector2(0, 0)
+display_name = "Monitor"
+icon = SubResource("PlaceholderTexture2D_icon")
+description = "Emits pulse waves dealing AoE damage to all enemies in range."
+allocation_cost = 10
+is_unlocked = true

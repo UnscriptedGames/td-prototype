@@ -39,6 +39,18 @@ theme_override_font_sizes/font_size = 48
 text = "THE STUDIO"
 horizontal_alignment = 1
 
+[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="QuickStartButton" type="Button" parent="MarginContainer/VBoxContainer/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 60)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 24
+text = "Quick Start: Stage 1"
+
 [node name="CatalogScroll" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3

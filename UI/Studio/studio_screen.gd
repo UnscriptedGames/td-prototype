@@ -8,10 +8,14 @@ extends Control
 
 @onready var tower_catalog: GridContainer = %TowerCatalog
 @onready var module_catalog: GridContainer = %ModuleCatalog
+@onready var quick_start_button: Button = %QuickStartButton
 
 
 func _ready() -> void:
 	_populate_catalog()
+	
+	if is_instance_valid(quick_start_button):
+		quick_start_button.pressed.connect(_on_quick_start_pressed)
 
 	# Refresh catalog disable states when the rack changes
 	if GlobalSignals.has_signal("loadout_rebuild_requested"):
@@ -22,6 +26,15 @@ func _exit_tree() -> void:
 	if is_instance_valid(GlobalSignals):
 		if GlobalSignals.loadout_rebuild_requested.is_connected(_refresh_catalog_states):
 			GlobalSignals.loadout_rebuild_requested.disconnect(_refresh_catalog_states)
+
+
+func _on_quick_start_pressed() -> void:
+	var STAGE_1_PATH: String = "res://Config/Stages/stage01.tres"
+	var stage: StageData = load(STAGE_1_PATH) as StageData
+	if stage:
+		StageManager.load_stage(stage)
+		StageManager.prewarm_pools()     # Seed enemy/projectile pools before entering gameplay
+		StageManager.start_stem(0)       # Launch the first stem immediately
 
 
 func _populate_catalog() -> void:

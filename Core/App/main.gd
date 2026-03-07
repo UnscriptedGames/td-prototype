@@ -10,4 +10,5 @@ func _ready() -> void:
     call_deferred("_boot_game")
 
 func _boot_game() -> void:
-    SceneManager.load_scene("res://UI/MainMenu/main_menu.tscn", SceneManager.ViewType.MENU)
+    # Bypass Main Menu for faster testing workflow
+    SceneManager.load_scene("res://UI/Studio/studio_screen.tscn", SceneManager.ViewType.MENU)

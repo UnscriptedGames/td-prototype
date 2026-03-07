@@ -1,53 +1,60 @@
 # TD-Prototype: Session Handover
 **Date:** 2026-03-08
-**Time:** 06:47 AM AEDT
+**Time:** 08:27 AM AEDT
 **Status:** Stable ✅
 
 ## 1. Current State
-**Stable.** The Subwoofer tower (AoE Crowd Control / Slow) is now implemented and functional in-game alongside the Turntable:
+**Stable.** Three towers are now implemented (Turntable, Subwoofer, Monitor) and the Studio screen has been upgraded with quality-of-life shortcuts for rapid testing.
 
-- **Template Tower Refactor:** `template_tower.gd` no longer requires a `projectile_scene` to enter the attack state. A safety guard in `_spawn_projectiles()` returns early if no projectile is configured. This enables all future non-projectile towers.
-- **Subwoofer Implementation:** New tower with a "pulse" aura mechanic — applies a 40% slow to all enemies in a 2-tile radius every 1.0s, with the slow lasting 1.25s for seamless overlap.
-- **Window Focus Fix:** Debug builds now use a temporary `ALWAYS_ON_TOP` flag that auto-disables after 0.5s, solving the Windows focus-stealing issue.
+### Changes This Session
+- **Monitor Tower — Visual Fix:** Corrected the AoE pulse animation to use the 84px highlight tile size instead of 64px, and replaced the `PlaceholderTexture2D` with a runtime-generated `ImageTexture` for reliable rendering.
+- **Direct Studio Launch:** `main.gd` now boots directly into `studio_screen.tscn`, bypassing the main menu.
+- **Quick Start Button:** New "Quick Start: Stage 1" button in the Studio header. Calls `StageManager.load_stage()`, `StageManager.prewarm_pools()`, and `StageManager.start_stem(0)` in sequence.
+- **Allocation Meter Fixes:** Stock ± buttons now emit `loadout_rebuild_requested` so the AP meter updates live. The `integrity_label` now displays `X / 50 AP` in Studio context.
+- **Pool Pre-warming Refactor:** `_prewarm_pools()` logic moved from `SetlistScreen` into `StageManager.prewarm_pools()` as a public method, eliminating duplication and enabling the Quick Start path.
+- **Signal Safety:** `StageManager.load_stage()` now guards against double-connecting `stem_completion_requested` and `stem_failed`.
 
 ### Files Changed
-- `Entities/Towers/_TemplateTower/template_tower.gd` — Refactored `_attack()` and `_spawn_projectiles()`.
-- `Entities/Towers/Subwoofer/subwoofer_tower.gd` — **[NEW]** Tower script.
-- `Entities/Towers/Subwoofer/subwoofer.tscn` — **[NEW]** Tower scene with pulse animations.
-- `Config/Towers/subwoofer_data.tres` — **[NEW]** TowerData resource.
-- `Config/Towers/Levels/subwoofer_level_01.tres` — **[NEW]** TowerLevelData (Level 1).
-- `Config/Players/player_config.tres` — Added Subwoofer to default loadout.
-- `Systems/game_manager.gd` — Window focus workaround.
+- `Core/App/main.gd` — Boot target changed to Studio.
+- `UI/Studio/studio_screen.gd` — Added Quick Start handler with pool pre-warming.
+- `UI/Studio/studio_screen.tscn` — Added QuickStartButton node.
+- `UI/HUD/Sidebar/sidebar_button.gd` — Fixed stock ± to emit `loadout_rebuild_requested`.
+- `UI/Layout/game_window.gd` — Added AP label update in Studio `_process()` branch.
+- `Systems/stage_manager.gd` — Added `prewarm_pools()`, signal connection guards.
+- `UI/Setlist/setlist_screen.gd` — Delegated pool logic to `StageManager.prewarm_pools()`.
+- `Entities/Towers/Monitor/monitor_tower.gd` — Fixed scaling, replaced texture, removed debug prints.
 
 ## 2. Signal Maps
-**None.**
+**None** (no new signal connections introduced).
 
-## 3. Immediate Next Step — Build Tower #3: The Monitor
+## 3. Immediate Next Step — Build Tower #4: The Equalizer (EQ)
 
-The agreed workflow is **one tower per session**. The Monitor is the **AoE pulse damage** tower (Section 2.2 of `towers_brief.md`).
+The agreed workflow is **one tower per session**. The Equalizer is the **Debuff / Support** tower (Section 2.7 of `towers_brief.md`).
 
 ### Step 1: Quick Stat Design (10 min)
-Lock the Monitor's base stats:
-- **Range** (pulse radius in tiles)
-- **Damage per pulse**
-- **Pulse rate / fire rate**
-- **Gold cost**
-- **AP Cost**
-- Reference: `Knowledge/towers_brief.md` Section 2.2 for the mechanic description.
+Lock the EQ's base specs:
+- **Range** (debuff application radius in tiles)
+- **Debuff percentage** (increased damage taken by enemies)
+- **Debuff duration** (seconds)
+- **Pulse / application rate**
+- **Gold cost** and **AP Cost**
+- Reference: `Knowledge/towers_brief.md` Section 2.7 for the mechanic description.
 
 ### Step 2: Architecture Audit
-The Monitor deals AoE damage (not CC). Audit:
-- The Subwoofer's implementation — it already iterates `_current_targets` and applies effects. The Monitor can follow the same pattern but deal damage instead.
-- Whether `TemplateEnemy.take_damage()` can be called directly from the tower override, or if a damage source reference is needed.
+The EQ deals **no direct damage** — it marks enemies with a "takes more damage" debuff. Audit:
+- Whether `TemplateEnemy` needs a new `damage_multiplier` property or status effect type.
+- How the debuff interacts with existing damage sources (Turntable projectiles, Monitor pulse, Subwoofer — minimal damage).
+- Whether to implement as a new `StatusEffect` resource or a simple property on the enemy.
 
-### Step 3: Build the Monitor
-- Create placeholder art (charcoal square with a distinct pulse glow colour).
-- Implement the pulse damage mechanic: periodic Area2D detection, deal damage to all enemies in range.
-- Integrate with existing systems: BuildManager, TowerInspector, SidebarHUD.
+### Step 3: Build the Equalizer
+- Create placeholder art (distinct colour glow).
+- Implement the debuff aura mechanic: periodic Area2D detection, apply damage amplification debuff.
+- Integrate with BuildManager, TowerInspector, SidebarHUD.
 
 ### Step 4: Playtest & Iterate
-- Test Monitor + Subwoofer + Turntable together.
-- Validate that the Monitor rewards maze designs that funnel enemies into clusters.
+- Test EQ + Monitor combo (amplified AoE = wave clear).
+- Test EQ + Turntable (amplified single-target).
+- Validate that the EQ feels "worthless alone, devastating in combos."
 
 ---
 **Maintenance Alerts:** Signal Janitor (weekly) last executed 2026-03-02 — **overdue** (due ~Mar 09). Consider running before next major feature.

@@ -383,6 +383,7 @@ func _on_minus_pressed() -> void:
 				GameManager._loadout_stock[tower_data] = new_stock
 				GameManager.loadout_stock_changed.emit(tower_data, new_stock)
 				set_stock(new_stock)
+				GlobalSignals.loadout_rebuild_requested.emit()
 
 
 func _on_plus_pressed() -> void:
@@ -405,3 +406,4 @@ func _on_plus_pressed() -> void:
 			GameManager._loadout_stock[tower_data] = new_stock
 			GameManager.loadout_stock_changed.emit(tower_data, new_stock)
 			set_stock(new_stock)
+			GlobalSignals.loadout_rebuild_requested.emit()

@@ -145,6 +145,10 @@ func _process(delta: float) -> void:
 				target_value = (current_cost / maximum_allocation_points) * 100.0
 			else:
 				target_value = 0.0
+
+			# Update the label to show AP used/max
+			if is_instance_valid(integrity_label):
+				integrity_label.text = "%d / %d AP" % [int(current_cost), int(maximum_allocation_points)]
 		else:
 			target_value = 0.0
 	else:

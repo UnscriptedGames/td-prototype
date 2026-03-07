@@ -1,0 +1,86 @@
+[gd_scene load_steps=8 format=3 uid="uid://b1jgdjhyn0gy0"]
+
+[ext_resource type="Script" path="res://Entities/Towers/Monitor/monitor_tower.gd" id="1_tower"]
+[ext_resource type="Script" path="res://Entities/Towers/_TemplateTower/buff_manager.gd" id="2_buff"]
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_pulse"]
+size = Vector2(64, 64)
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_base"]
+size = Vector2(32, 32)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_62wyb"]
+size = Vector2(64, 64)
+
+[sub_resource type="Animation" id="Animation_idle"]
+resource_name = "level_01_idle"
+length = 1.0
+
+[sub_resource type="Animation" id="Animation_shoot"]
+resource_name = "level_01_shoot"
+length = 0.5
+tracks/0/type = "method"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"_spawn_projectiles"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_monitor"]
+_data = {
+"level_01_idle": SubResource("Animation_idle"),
+"level_01_shoot": SubResource("Animation_shoot")
+}
+
+[node name="MonitorTower" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("1_tower")
+
+[node name="BuffManager" type="Node" parent="."]
+script = ExtResource("2_buff")
+
+[node name="PulseRing" type="Sprite2D" parent="."]
+visible = false
+modulate = Color(0, 1, 1, 0)
+texture = SubResource("PlaceholderTexture2D_pulse")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+modulate = Color(0.2, 0.2, 0.2, 1)
+scale = Vector2(1.5, 1.5)
+texture = SubResource("PlaceholderTexture2D_base")
+
+[node name="Range" type="Area2D" parent="."]
+visible = false
+z_index = -1
+collision_mask = 2
+
+[node name="RangeShape" type="CollisionPolygon2D" parent="Range"]
+polygon = PackedVector2Array(-96, -96, 96, -96, 96, 96, -96, 96)
+
+[node name="Hitbox" type="Area2D" parent="."]
+visible = false
+
+[node name="HitboxShape" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("RectangleShape2D_62wyb")
+
+[node name="FireRateTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="Muzzle" type="Marker2D" parent="."]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_monitor")
+}
+
+[connection signal="area_entered" from="Range" to="." method="_on_range_area_entered"]
+[connection signal="area_exited" from="Range" to="." method="_on_range_area_exited"]
+

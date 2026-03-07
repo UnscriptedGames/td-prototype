@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://t3mvxe5km66p" path="res://Core/Data/Loadout/relic_data.gd" id="2_vt6tu"]
 [ext_resource type="Script" uid="uid://c8knfpcb8mutu" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="4_y4bs6"]
 [ext_resource type="Resource" path="res://Config/Towers/subwoofer_data.tres" id="5_subw"]
+[ext_resource type="Resource" path="res://Config/Towers/monitor_data.tres" id="6_monitor"]
 
 [resource]
 script = ExtResource("1_8rqla")
@@ -15,5 +16,9 @@ tower_slots = [null, null, null, null, null, null]
 tower_slots[0] = {
 "data": ExtResource("5_subw"),
 "stock": 2
+}
+tower_slots[1] = {
+"data": ExtResource("6_monitor"),
+"stock": 3
 }
 buffs = Array[ExtResource("1_rxbeg")]([])

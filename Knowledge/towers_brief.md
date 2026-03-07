@@ -57,8 +57,8 @@ intuitively to the gear, it's the wrong fit.
 
 ### 2.2. The Monitor
 
-> [!NOTE]
-> **Status: Planned / Not yet implemented**
+> [!TIP]
+> **Status: Implemented** (v0.1 — Base level, AoE pulse damage)
 
 - **Archetype:** AoE pulse damage
 - **Attack:** Studio monitor that emits concentric sound wave pulses, damaging all
