@@ -1,0 +1,107 @@
+diff --git a/Knowledge/scheduled_tasks.md b/Knowledge/scheduled_tasks.md
+index 6e20ec9..93c6ab2 100644
+--- a/Knowledge/scheduled_tasks.md
++++ b/Knowledge/scheduled_tasks.md
+@@ -6,7 +6,7 @@ This document contains a list of recurring maintenance tasks for the Jules async
+ 
+ | # | Task Name | Category | Frequency | Mode | Last Executed |
+ |:--|:----------|:---------|:----------|:-----|:--------------|
+-| 1 | The Signal Janitor | Memory Management | Weekly+ | **Interactive** | 2026-03-02 |
++| 1 | The Signal Janitor | Memory Management | Weekly+ | **Interactive** | 2026-03-08 |
+ | 2 | The Constitution Specialist | Naming & Standards | 3–4 Features | **Review** | 2026-03-03 |
+ | 3 | The Documentation Clerk | Project Tracking | Fortnightly | **Interactive** | 2026-03-03 |
+ | 4 | The Test Architect | Quality Assurance | Major System | **Interactive** | 2026-03-04 |
+diff --git a/Stages/_BaseStage/base_stage.gd b/Stages/_BaseStage/base_stage.gd
+index 0524152..b705dce 100644
+--- a/Stages/_BaseStage/base_stage.gd
++++ b/Stages/_BaseStage/base_stage.gd
+@@ -148,10 +148,13 @@ func _process(delta: float) -> void:
+ 
+ 
+ func _exit_tree() -> void:
+-	if GameManager.start_wave_requested.is_connected(_on_next_wave_requested):
+-		GameManager.start_wave_requested.disconnect(_on_next_wave_requested)
+-	if GameManager.stem_failed.is_connected(_on_stem_failed):
+-		GameManager.stem_failed.disconnect(_on_stem_failed)
++	if is_instance_valid(GameManager):
++		if GameManager.start_wave_requested.is_connected(_on_next_wave_requested):
++			GameManager.start_wave_requested.disconnect(_on_next_wave_requested)
++		if GameManager.stem_failed.is_connected(_on_stem_failed):
++			GameManager.stem_failed.disconnect(_on_stem_failed)
++		if GameManager.force_complete_stem_requested.is_connected(_on_debug_force_complete_stem_requested):
++			GameManager.force_complete_stem_requested.disconnect(_on_debug_force_complete_stem_requested)
+ 
+ 	# Ensure audio is hard-stopped when leaving the scene so it doesn't bleed into Setlist.
+ 	if is_instance_valid(_stem_audio_player):
+diff --git a/UI/HUD/Sidebar/sidebar_hud.gd b/UI/HUD/Sidebar/sidebar_hud.gd
+index f863679..78a4a8d 100644
+--- a/UI/HUD/Sidebar/sidebar_hud.gd
++++ b/UI/HUD/Sidebar/sidebar_hud.gd
+@@ -53,12 +53,29 @@ func _exit_tree() -> void:
+ 		if GlobalSignals.buff_applied.is_connected(_on_buff_applied):
+ 			GlobalSignals.buff_applied.disconnect(_on_buff_applied)
+ 
+-	for child in relic_container.get_children():
+-		var button: TextureButton = child as TextureButton
+-		if is_instance_valid(button):
+-			var callables: Array[Dictionary] = button.pressed.get_connections()
+-			for connection in callables:
+-				button.pressed.disconnect(connection["callable"])
++	if is_instance_valid(relic_container):
++		for child in relic_container.get_children():
++			var button: TextureButton = child as TextureButton
++			if is_instance_valid(button):
++				var callables: Array[Dictionary] = button.pressed.get_connections()
++				for connection in callables:
++					button.pressed.disconnect(connection["callable"])
++
++	if is_instance_valid(tower_grid):
++		for child in tower_grid.get_children():
++			var button: TextureButton = child as TextureButton
++			if is_instance_valid(button):
++				var callables: Array[Dictionary] = button.pressed.get_connections()
++				for connection in callables:
++					button.pressed.disconnect(connection["callable"])
++
++	if is_instance_valid(buff_container):
++		for child in buff_container.get_children():
++			var button: TextureButton = child as TextureButton
++			if is_instance_valid(button):
++				var callables: Array[Dictionary] = button.pressed.get_connections()
++				for connection in callables:
++					button.pressed.disconnect(connection["callable"])
+ 
+ 
+ ## Clears and rebuilds the relic, tower, and buff button grids from the
+diff --git a/UI/Layout/game_window.gd b/UI/Layout/game_window.gd
+index d09e41e..3c8f64f 100644
+--- a/UI/Layout/game_window.gd
++++ b/UI/Layout/game_window.gd
+@@ -234,6 +234,9 @@ func _exit_tree() -> void:
+ 			GameManager.peak_meter_changed.disconnect(_on_peak_changed)
+ 		if GameManager.wave_status_changed.is_connected(_on_wave_status_changed):
+ 			GameManager.wave_status_changed.disconnect(_on_wave_status_changed)
++	if is_instance_valid(GlobalSignals):
++		if GlobalSignals.loadout_rebuild_requested.is_connected(_on_loadout_rebuild_requested):
++			GlobalSignals.loadout_rebuild_requested.disconnect(_on_loadout_rebuild_requested)
+ 	if (
+ 		is_instance_valid(volume_slider)
+ 		and volume_slider.value_changed.is_connected(_on_volume_changed)
+diff --git a/UI/Studio/studio_screen.gd b/UI/Studio/studio_screen.gd
+index 5330ad3..94bb4c0 100644
+--- a/UI/Studio/studio_screen.gd
++++ b/UI/Studio/studio_screen.gd
+@@ -27,6 +27,13 @@ func _exit_tree() -> void:
+ 		if GlobalSignals.loadout_rebuild_requested.is_connected(_refresh_catalog_states):
+ 			GlobalSignals.loadout_rebuild_requested.disconnect(_refresh_catalog_states)
+ 
++	if is_instance_valid(tower_catalog):
++		for child in tower_catalog.get_children():
++			if is_instance_valid(child):
++				var callables: Array[Dictionary] = child.item_clicked.get_connections()
++				for connection in callables:
++					child.item_clicked.disconnect(connection["callable"])
++
+ 
+ func _on_quick_start_pressed() -> void:
+ 	var STAGE_1_PATH: String = "res://Config/Stages/stage01.tres"
