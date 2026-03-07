@@ -53,12 +53,29 @@ func _exit_tree() -> void:
 		if GlobalSignals.buff_applied.is_connected(_on_buff_applied):
 			GlobalSignals.buff_applied.disconnect(_on_buff_applied)
 
-	for child in relic_container.get_children():
-		var button: TextureButton = child as TextureButton
-		if is_instance_valid(button):
-			var callables: Array[Dictionary] = button.pressed.get_connections()
-			for connection in callables:
-				button.pressed.disconnect(connection["callable"])
+	if is_instance_valid(relic_container):
+		for child in relic_container.get_children():
+			var button: TextureButton = child as TextureButton
+			if is_instance_valid(button):
+				var callables: Array[Dictionary] = button.pressed.get_connections()
+				for connection in callables:
+					button.pressed.disconnect(connection["callable"])
+
+	if is_instance_valid(tower_grid):
+		for child in tower_grid.get_children():
+			var button: TextureButton = child as TextureButton
+			if is_instance_valid(button):
+				var callables: Array[Dictionary] = button.pressed.get_connections()
+				for connection in callables:
+					button.pressed.disconnect(connection["callable"])
+
+	if is_instance_valid(buff_container):
+		for child in buff_container.get_children():
+			var button: TextureButton = child as TextureButton
+			if is_instance_valid(button):
+				var callables: Array[Dictionary] = button.pressed.get_connections()
+				for connection in callables:
+					button.pressed.disconnect(connection["callable"])
 
 
 ## Clears and rebuilds the relic, tower, and buff button grids from the

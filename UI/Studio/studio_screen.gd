@@ -27,6 +27,13 @@ func _exit_tree() -> void:
 		if GlobalSignals.loadout_rebuild_requested.is_connected(_refresh_catalog_states):
 			GlobalSignals.loadout_rebuild_requested.disconnect(_refresh_catalog_states)
 
+	if is_instance_valid(tower_catalog):
+		for child in tower_catalog.get_children():
+			if is_instance_valid(child):
+				var callables: Array[Dictionary] = child.item_clicked.get_connections()
+				for connection in callables:
+					child.item_clicked.disconnect(connection["callable"])
+
 
 func _on_quick_start_pressed() -> void:
 	var STAGE_1_PATH: String = "res://Config/Stages/stage01.tres"
