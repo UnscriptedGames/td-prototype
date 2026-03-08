@@ -30,7 +30,7 @@ func _exit_tree() -> void:
 	if is_instance_valid(tower_catalog):
 		for child in tower_catalog.get_children():
 			if is_instance_valid(child):
-				var callables: Array[Dictionary] = child.item_clicked.get_connections()
+				var callables: Array = child.item_clicked.get_connections()
 				for connection in callables:
 					child.item_clicked.disconnect(connection["callable"])
 

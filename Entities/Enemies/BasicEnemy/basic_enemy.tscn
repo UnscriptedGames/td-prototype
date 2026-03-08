@@ -6,6 +6,7 @@
 [ext_resource type="StyleBox" uid="uid://6m1q8jw2p6hi" path="res://UI/Themes/Styleboxes/new_style_stun_flat.tres" id="4_stun"]
 [ext_resource type="StyleBox" uid="uid://c1kyee8pg41dh" path="res://UI/Themes/Styleboxes/stylebox_dot_bar.tres" id="5_dot"]
 [ext_resource type="StyleBox" uid="uid://djt88h8lsiqgx" path="res://UI/Themes/Styleboxes/stylebox_slow_bar.tres" id="6_slow"]
+[ext_resource type="StyleBox" path="res://UI/Themes/Styleboxes/stylebox_amplify_bar.tres" id="7_amplify"]
 [ext_resource type="Resource" uid="uid://dgpqmmi5k2cx5" path="res://Config/Enemies/basic_enemy_config.tres" id="7_data"]
 [ext_resource type="Texture2D" uid="uid://ctdck6jqtvtnq" path="res://Entities/Enemies/BasicEnemy/Assets/enemy_basic_full.png" id="9_texture"]
 [ext_resource type="Material" uid="uid://d0c8dqw3das1v" path="res://Entities/Enemies/_TemplateEnemy/template_enemy_material.tres" id="10_material"]
@@ -98,6 +99,14 @@ visible = false
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 theme_override_styles/fill = ExtResource("5_dot")
+value = 50.0
+show_percentage = false
+
+[node name="AmplifyBar" type="ProgressBar" parent="ProgressBarContainer"]
+visible = false
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/fill = ExtResource("7_amplify")
 value = 50.0
 show_percentage = false
 

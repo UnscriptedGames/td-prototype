@@ -394,6 +394,10 @@ func _update_health_bar() -> void:
 
 	var ratio: float = float(_health) / float(max_health)
 
+	if _health < max_health:
+		_ensure_bar_is_visible(health_bar)
+		health_bar.value = ratio * 100.0
+
 	if sprite:
 		sprite.set_instance_shader_parameter("health_ratio", ratio)
 
@@ -402,6 +406,8 @@ func _update_health_bar() -> void:
 func reset() -> void:
 	# Reset health and hide the progress bar container
 	_health = max_health
+	if health_bar:
+		health_bar.value = 100.0
 	if progress_bar_container:
 		progress_bar_container.visible = false
 
@@ -450,8 +456,7 @@ func is_dying() -> bool:
 func _ensure_bar_is_visible(bar: Control) -> void:
 	# Helper to ensure the container and the specific bar are visible.
 	if not progress_bar_container.visible:
-		pass  # Disabled while testing shader health visuals
-		# progress_bar_container.visible = true
+		progress_bar_container.visible = true
 	if not bar.visible:
 		bar.visible = true
 
