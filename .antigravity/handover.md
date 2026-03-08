@@ -1,18 +1,17 @@
 # TD-Prototype: Session Handover
 **Date:** 2026-03-08
-**Time:** 08:27 AM AEDT
+**Time:** 08:59 PM AEDT
 **Status:** Stable ✅
 
 ## 1. Current State
-**Stable.** Three towers are now implemented (Turntable, Subwoofer, Monitor) and the Studio screen has been upgraded with quality-of-life shortcuts for rapid testing.
+**Stable.** Four towers are now implemented (Turntable, Subwoofer, Monitor, Equalizer) and the Studio screen has been upgraded with quality-of-life shortcuts for rapid testing.
 
 ### Changes This Session
-- **Monitor Tower — Visual Fix:** Corrected the AoE pulse animation to use the 84px highlight tile size instead of 64px, and replaced the `PlaceholderTexture2D` with a runtime-generated `ImageTexture` for reliable rendering.
-- **Direct Studio Launch:** `main.gd` now boots directly into `studio_screen.tscn`, bypassing the main menu.
-- **Quick Start Button:** New "Quick Start: Stage 1" button in the Studio header. Calls `StageManager.load_stage()`, `StageManager.prewarm_pools()`, and `StageManager.start_stem(0)` in sequence.
-- **Allocation Meter Fixes:** Stock ± buttons now emit `loadout_rebuild_requested` so the AP meter updates live. The `integrity_label` now displays `X / 50 AP` in Studio context.
-- **Pool Pre-warming Refactor:** `_prewarm_pools()` logic moved from `SetlistScreen` into `StageManager.prewarm_pools()` as a public method, eliminating duplication and enabling the Quick Start path.
-- **Signal Safety:** `StageManager.load_stage()` now guards against double-connecting `stem_completion_requested` and `stem_failed`.
+- **Equalizer Tower Implementation:** Built the EQ tower (Option B: Narrow Notch) which applies an `AMPLIFY` debuff to enemies in range, increasing damage taken by 60%.
+- **Status Effects Extension:** Extended the `StatusEffectData` enum and `TemplateEnemy` health setter math to support multiplicative damage amping. Fixed visual bugs preventing the `AmplifyBar` and other status bars from rendering properly on spawn. 
+- **Signal Janitor Complete:** The `studio_screen.gd` has been successfully swept and dynamic connection cleanups were added to prevent memory leaks.
+- **Direct Studio Launch:** `main.gd` boots directly into `studio_screen.tscn`.
+- **Allocation Meter Fixes:** Stock ± buttons now emit `loadout_rebuild_requested` so the AP meter updates live.
 
 ### Files Changed
 - `Core/App/main.gd` — Boot target changed to Studio.
@@ -27,34 +26,10 @@
 ## 2. Signal Maps
 **None** (no new signal connections introduced).
 
-## 3. Immediate Next Step — Build Tower #4: The Equalizer (EQ)
+## 3. Immediate Next Step — UI Design & Tower Analysis
 
-The agreed workflow is **one tower per session**. The Equalizer is the **Debuff / Support** tower (Section 2.7 of `towers_brief.md`).
-
-### Step 1: Quick Stat Design (10 min)
-Lock the EQ's base specs:
-- **Range** (debuff application radius in tiles)
-- **Debuff percentage** (increased damage taken by enemies)
-- **Debuff duration** (seconds)
-- **Pulse / application rate**
-- **Gold cost** and **AP Cost**
-- Reference: `Knowledge/towers_brief.md` Section 2.7 for the mechanic description.
-
-### Step 2: Architecture Audit
-The EQ deals **no direct damage** — it marks enemies with a "takes more damage" debuff. Audit:
-- Whether `TemplateEnemy` needs a new `damage_multiplier` property or status effect type.
-- How the debuff interacts with existing damage sources (Turntable projectiles, Monitor pulse, Subwoofer — minimal damage).
-- Whether to implement as a new `StatusEffect` resource or a simple property on the enemy.
-
-### Step 3: Build the Equalizer
-- Create placeholder art (distinct colour glow).
-- Implement the debuff aura mechanic: periodic Area2D detection, apply damage amplification debuff.
-- Integrate with BuildManager, TowerInspector, SidebarHUD.
-
-### Step 4: Playtest & Iterate
-- Test EQ + Monitor combo (amplified AoE = wave clear).
-- Test EQ + Turntable (amplified single-target).
-- Validate that the EQ feels "worthless alone, devastating in combos."
+- **Health/Status Bar Design:** Discuss the visual layout and behaviour of enemy health and status effect bars.
+- **Tower Architecture Analysis:** Perform a mathematical and architectural review of the base stats for the current four towers (Turntable, Monitor, Subwoofer, Equalizer) to ensure balanced synergy.
 
 ---
-**Maintenance Alerts:** Signal Janitor (weekly) last executed 2026-03-02 — **overdue** (due ~Mar 09). Consider running before next major feature.
+**Maintenance Alerts:** Signal Janitor up to date (last executed 2026-03-08).

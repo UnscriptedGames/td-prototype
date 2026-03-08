@@ -398,6 +398,11 @@ Enemies are modular **audio waveform tracks** defined by `EnemyData` resources.
 - Additional variant types will be designed to fit the audio/music theme as development
 	progresses.
 
+### Status Effects Core System
+The game handles buffs/debuffs mathematically within the `_process_status_effects` loop or via explicit property intercepts, rather than through separate condition-parsing engines.
+- **Duration / Stacking:** Effects like `SLOW` or `AMPLIFY` do not stack intensity; applying a new effect of the same type updates the highest magnitude and refreshes the full duration.
+- **Property Intercepts:** The `AMPLIFY` status effect does not deal damage on its own. Instead, it mathematically hooks directly into the `TemplateEnemy`'s `health` setter, applying a multiplicative scalar to all incoming damage instances.
+
 ### Goal Behaviour
 - When an enemy reaches the end of the maze, its **remaining health** is added to the
 	Peak Meter.
@@ -617,6 +622,7 @@ future design sessions and playtesting:
 - [x] **Relic Design (Scope):** 10 relics, 1 per boss, 3 loadout slots confirmed. Individual ability designs TBD (Resolved Mar 07).
 - [x] **Buff Design (Scope):** 20 buffs across 3 pricing tiers via FX Credits confirmed. Individual buff effects TBD (Resolved Mar 07).
 - [x] **Tower Roster Size:** 8 towers confirmed. Theremin replaced by Metronome (Resolved Mar 07).
+- [x] **Tower Roster Mechanics:** Equalizer Debuff (AMPLIFY) mechanic locked and integrated via the Narrow Notch balance profile (Resolved Mar 08).
 - [ ] **Final Stage Mechanics:** Does the custom song selection affect gameplay, or is it
 	purely aesthetic?
 - [ ] **Difficulty Scaling:** How does difficulty ramp across stages and within stem levels?

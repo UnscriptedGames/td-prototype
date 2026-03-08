@@ -146,13 +146,11 @@ intuitively to the gear, it's the wrong fit.
 
 ### 2.7. The Equalizer (EQ)
 
-> [!NOTE]
-> **Status: Planned / Not yet implemented**
+> [!TIP]
+> **Status: Implemented** (v0.1 — Option B: Narrow Notch)
 
 - **Archetype:** Debuff / Support
-- **Attack:** Deals no direct damage. Instead, **filters** enemies passing through its
-  range — they take increased damage from all other sources for a duration (like
-  stripping frequencies to expose vulnerabilities).
+- **Attack:** Deals no direct damage but emits a pulse every 3.5 seconds. Applies the `AMPLIFY` status effect (60% Increased Damage Taken) for 2.0 seconds in a 2.0 tile radius.
 - **Fantasy:** The force multiplier. On its own, worthless. Paired with a Turntable and
   a Monitor? Devastating. This is the tower that separates good players from great ones.
 - **Upgrade Direction:**
@@ -202,6 +200,9 @@ Tuning Fork ×2 ────────► Harmonic bonus (rewards double inves
 Metronome ──────────────► Turntable cluster (faster fire rate = DPS spike)
 Metronome ──────────────► Monitor (faster pulse rate = more AoE hits)
 Metronome vs EQ ────────► Competing support slots (buff towers vs debuff enemies)
+
+> [!NOTE]
+> **Synergy Validation (Mar 08)**: The `AMPLIFY` effect mathematically acts as a multiplier inside `TemplateEnemy.gd`'s internal health setter, proving the EQ + Monitor / EQ + Turntable combos behave exactly as mapped above by amplifying all incoming damage types universally.
 ```
 
 ---
