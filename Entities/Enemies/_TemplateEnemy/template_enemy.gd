@@ -45,6 +45,14 @@ var health: int:
 	set(value):
 		if state == State.DYING:
 			return
+			
+		# Apply AMPLIFY effect if taking damage
+		if value < _health and _active_status_effects.has(StatusEffectData.EffectType.AMPLIFY):
+			var damage_taken: int = _health - value
+			var amplify_effect: ActiveStatusEffect = _active_status_effects[StatusEffectData.EffectType.AMPLIFY]
+			damage_taken = roundi(damage_taken * (1.0 + amplify_effect.data.magnitude))
+			value = _health - damage_taken
+			
 		_health = max(0, value)
 		_update_health_bar()
 		if _health == 0:
@@ -86,6 +94,7 @@ var _effect_bars: Dictionary[StatusEffectData.EffectType, ProgressBar] = {}  # M
 @onready var dot_bar: ProgressBar = ($ProgressBarContainer/DotBar as ProgressBar)
 @onready var slow_bar: ProgressBar = ($ProgressBarContainer/SlowBar as ProgressBar)
 @onready var stun_bar: ProgressBar = ($ProgressBarContainer/StunBar as ProgressBar)
+@onready var amplify_bar: ProgressBar = ($ProgressBarContainer/AmplifyBar as ProgressBar)
 @onready var health_bar: TextureProgressBar = ($ProgressBarContainer/HealthBar as TextureProgressBar)
 @onready var target_point: Node2D = ($TargetPoint if has_node("TargetPoint") else self)
 
@@ -104,7 +113,8 @@ func _ready() -> void:
 	_effect_bars = {
 		StatusEffectData.EffectType.DOT: dot_bar,
 		StatusEffectData.EffectType.SLOW: slow_bar,
-		StatusEffectData.EffectType.STUN: stun_bar
+		StatusEffectData.EffectType.STUN: stun_bar,
+		StatusEffectData.EffectType.AMPLIFY: amplify_bar
 	}
 
 	# Hide all bars by default on spawn to guarantee a clean initial state.
@@ -500,6 +510,10 @@ func apply_status_effect(effect: StatusEffectData) -> void:
 			# but we leave the structure in case of future changes.
 			# The stun is now applied only when it's a new effect.
 			pass
+
+		StatusEffectData.EffectType.AMPLIFY:
+			if effect.magnitude > existing_effect.data.magnitude:
+				existing_effect.data.magnitude = effect.magnitude
 
 
 func _process_status_effects(delta: float) -> void:

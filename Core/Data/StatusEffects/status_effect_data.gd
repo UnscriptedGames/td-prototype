@@ -4,7 +4,8 @@ class_name StatusEffectData
 enum EffectType {
 	DOT,
 	SLOW,
-	STUN
+	STUN,
+	AMPLIFY
 }
 
 @export_group("Status Settings")

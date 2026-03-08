@@ -135,10 +135,13 @@ func _ready() -> void:
 
 	GameManager.start_wave_requested.connect(_on_next_wave_requested)
 	GameManager.stem_failed.connect(_on_stem_failed)
-	GameManager.force_complete_stem_requested.connect(
-		func() -> void: _bypass_track_end_penalty = true
-	)
+	GameManager.force_complete_stem_requested.connect(_on_debug_force_complete_stem_requested)
 	_setup_stem_audio()
+
+
+func _on_debug_force_complete_stem_requested() -> void:
+	_bypass_track_end_penalty = true
+
 
 
 func _process(delta: float) -> void:

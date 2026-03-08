@@ -7,6 +7,7 @@
 [ext_resource type="StyleBox" uid="uid://6m1q8jw2p6hi" path="res://UI/Themes/Styleboxes/new_style_stun_flat.tres" id="3_e31ia"]
 [ext_resource type="StyleBox" uid="uid://c1kyee8pg41dh" path="res://UI/Themes/Styleboxes/stylebox_dot_bar.tres" id="3_htrcs"]
 [ext_resource type="StyleBox" uid="uid://djt88h8lsiqgx" path="res://UI/Themes/Styleboxes/stylebox_slow_bar.tres" id="4_wklvk"]
+[ext_resource type="StyleBox" path="res://UI/Themes/Styleboxes/stylebox_amplify_bar.tres" id="5_amplify"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shadow"]
 bg_color = Color(0, 0, 0, 0.6)
@@ -78,6 +79,13 @@ show_percentage = false
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 theme_override_styles/fill = ExtResource("3_htrcs")
+value = 50.0
+show_percentage = false
+
+[node name="AmplifyBar" type="ProgressBar" parent="ProgressBarContainer"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/fill = ExtResource("5_amplify")
 value = 50.0
 show_percentage = false
 

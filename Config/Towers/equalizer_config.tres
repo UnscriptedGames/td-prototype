@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="TowerData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://Entities/Towers/_TemplateTower/tower_data.gd" id="1_tower_data"]
+[ext_resource type="Script" path="res://Entities/Towers/_TemplateTower/tower_level_data.gd" id="2_level_data"]
+[ext_resource type="Resource" path="res://Entities/Towers/Equalizer/equalizer_status.tres" id="3_status"]
+
+[sub_resource type="Resource" id="base_level"]
+script = ExtResource("2_level_data")
+upgrade_name = "Base"
+tower_level = "Base"
+cost = 60
+tower_range = 2
+damage = 0
+fire_rate = 3.5
+projectile_speed = 0.0
+targets = 1
+attack_modifiers = Array[Resource("res://Core/Data/AttackModifiers/attack_modifier_data.gd")]([])
+status_effects = Array[Resource("res://Core/Data/StatusEffects/status_effect_data.gd")]([ExtResource("3_status")])
+shoot_animation = &"level_01_shoot"
+idle_animation = &"level_01_idle"
+
+[resource]
+script = ExtResource("1_tower_data")
+ghost_scale = Vector2(1, 1)
+ghost_texture_offset = Vector2(0, 0)
+levels = Array[ExtResource("2_level_data")]([SubResource("base_level")])
+tower_scene_path = "res://Entities/Towers/Equalizer/equalizer_tower.tscn"
+display_name = "Equalizer"
+description = "Debuff aura that amplifies damage taken by enemies by +60%."
+allocation_cost = 2
